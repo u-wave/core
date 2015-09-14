@@ -13,5 +13,13 @@
   "scripts": {
     "test": "eslint src",
     "build": "babel --out-dir lib src"
+  },
+  "dependencies": {
+    "body-parser": "^1.13.3",
+    "express": "^4.13.3",
+    "jsonwebtoken": "^5.0.5",
+    "mongoose": "^4.1.6",
+    "redis": "^1.0.0",
+    "ws": "^0.8.0"
   }
 }
