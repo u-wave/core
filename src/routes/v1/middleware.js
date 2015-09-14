@@ -2,9 +2,9 @@ import jwt from 'jsonwebtoken';
 
 function checkAuth(router) {
   router.use((req, res, next) => {
-    if(/^\/v1\/auth\/(login|register)$/i.test(req.path)) return next();
+    if (/^\/v1\/auth\/(login|register)$/i.test(req.path)) return next();
 
-    if(!req.query.token) {
+    if (!req.query.token) {
       return res.status(422).json({
         'error': 'no token set'
       });
@@ -31,14 +31,17 @@ function rateLimiter(router) {
 }
 
 export default function middleware(router, config) {
-  if(!router || !config) return;
+  if (!router || !config) return;
 
-  if(config.rateLimiter)
+  if (config.rateLimiter) {
     rateLimiter(router);
+  }
 
-  if(config.checkAuthentication)
+  if (config.checkAuthentication) {
     checkAuth(router);
+  }
 
-  if(config.checkPermission)
+  if (config.checkPermission) {
     checkPermission(router);
+  }
 }
