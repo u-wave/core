@@ -12,7 +12,7 @@ import chat from './chat';
 export default function api(app, config) {
   const router = express.Router();
 
-  middleware(app, config)
+  middleware(app, config && config.middleware);
 
   authenticate(router);
   playlist(router);
