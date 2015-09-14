@@ -10,14 +10,8 @@ import v1 from './routes/v1/api.js';
 
 // config
 import serverConfig from './config/server.json';
+import mongoConfig from './config/mongo.json';
 import apiConfig from './config/api.json';
-
-const mongoOptions = {
-  'db': { 'native_parser': true },
-  'server': { 'poolSize': 5 },
-  'user': serverConfig.db.mongo.user,
-  'pass': serverConfig.db.mongo.pass
-};
 
 const app = express();
 const mongo = mongoose.connection;
@@ -55,5 +49,5 @@ process.on('SIGINT', () => {
   });
 });
 
-mongoLog(`connecting to database '${serverConfig.db.mongo.host}/uwave'...`);
-mongoose.connect(`mongodb://${serverConfig.db.mongo.host}/uwave:${serverConfig.db.mongo.port}`, mongoOptions);
+mongoLog(`connecting to database '${mongoConfig.host}/uwave'...`);
+mongoose.connect(`mongodb://${mongoConfig.host}/uwave:${mongoConfig.port}`, mongoConfig.options);
