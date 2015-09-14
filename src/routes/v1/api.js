@@ -1,7 +1,7 @@
 import express from 'express';
 
 import authenticate from './authenticate';
-import playlist from './playlist';
+import playlist from './playlists';
 import waitlist from './waitlist';
 import booth from './booth';
 import users from './users';
