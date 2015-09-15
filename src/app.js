@@ -8,6 +8,7 @@ server.on('stopped', () => {
   process.exit(0);
 });
 
-server.registerAPI("/v1", v1());
+server.registerMiddleware()
+server.registerAPI('/v1', v1());
 
 server.start();

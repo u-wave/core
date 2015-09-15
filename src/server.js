@@ -37,7 +37,7 @@ export default class UWaveServer extends EventEmitter {
 
     /* ======== SIGINT ======== */
     // workaround to properly stop the server on termination.
-    if (process.platform === "win32") {
+    if (process.platform === 'win32') {
       readline.createInterface({
         'input': process.stdin,
         'output': process.stdout
@@ -47,9 +47,13 @@ export default class UWaveServer extends EventEmitter {
     process.on('SIGINT', () => { this.stop(); });
   }
 
+  registerMiddleware(middleware) {
+    this.app.use(middleware);
+  }
+
   registerAPI(path, router) {
-    if (typeof path !== "string") throw new Error("path has to be of type string");
-    if (typeof router instanceof express.Router) throw new Error("path has to be an instance of router");
+    if (typeof path !== 'string') throw new Error('path has to be of type string');
+    if (typeof router instanceof express.Router) throw new Error('path has to be an instance of router');
 
     this.app.use(path, router);
   }
