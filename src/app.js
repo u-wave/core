@@ -9,9 +9,10 @@ import authenticator from './middleware/authenticator';
 import v1 from './apis/v1/api';
 
 // config
-import config from './config/uwave';
+import serverConfig from './config/uwave';
+import mwareConfig from './config/middleware';
 
-const server = new UWaveServer(config);
+const server = new UWaveServer(serverConfig);
 const middleware = [
   rateLimiter,
   authenticator,
@@ -22,6 +23,6 @@ server.on('stopped', () => {
   process.exit(0);
 });
 
-server.registerAPI('/v1', v1(middleware));
+server.registerAPI('/v1', v1(middleware, mwareConfig));
 
 server.start();
