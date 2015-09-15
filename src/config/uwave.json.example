@@ -1,0 +1,18 @@
+{
+  "server": {
+    "port": 8080
+  },
+  "mongo": {
+    "host": "localhost",
+    "port": 27017,
+    "options": {
+      "db": { "native_parser": true },
+      "server": {
+        "poolSize": 5,
+        "socketOptions": { "keepAlive": 1 }
+      },
+      "user": null,
+      "pass": null
+    }
+  }
+}
