@@ -14,7 +14,6 @@ import mwareConfig from './config/middleware';
 
 const server = new UWaveServer(serverConfig);
 const middleware = [
-  rateLimiter,
   authenticator,
   permissions
 ];
@@ -23,6 +22,7 @@ server.on('stopped', () => {
   process.exit(0);
 });
 
+server.registerMiddleware('/*', rateLimiter);
 server.registerAPI('/v1', v1(middleware, mwareConfig));
 
 server.start();
