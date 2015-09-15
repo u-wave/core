@@ -7,8 +7,14 @@ import booth from './booth';
 import users from './users';
 import chat from './chat';
 
-export default function api(config) {
-  const router = express.Router();
+export default function createV1(middleware, options = {}) {
+  let router = express.Router(options);
+
+  middleware.forEach(ware => {
+    if(typeof ware === 'function') {
+      ware(router, options[ware.name]);
+    }
+  });
 
   authenticate(router);
   playlist(router);
