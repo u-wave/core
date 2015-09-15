@@ -16,7 +16,8 @@ export default class UWaveServer extends EventEmitter {
     this.log = debug('uwave:server');
     this.mongoLog = debug('uwave:mongo');
 
-    this.started = false;
+    this.app.use(bodyParser.json());
+    this.app.use(bodyParser.urlencoded({ extended: true }));
 
     /* ======== mongo events ======== */
     this.mongo.on('error', e => {
@@ -58,11 +59,7 @@ export default class UWaveServer extends EventEmitter {
 
     this.mongo.once('open', () => {
       this.mongoLog('connection successful');
-
-      this.app.use(bodyParser.json());
-      this.app.use(bodyParser.urlencoded({ extended: true }));
       this.app.listen(this.config.server.port);
-
       this.emit('started');
     });
 
