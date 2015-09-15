@@ -47,13 +47,19 @@ export default class UWaveServer extends EventEmitter {
     process.on('SIGINT', () => { this.stop(); });
   }
 
-  registerMiddleware(middleware) {
-    this.app.use(middleware);
+  registerMiddleware(path, middleware) {
+    if (typeof path === "string") {
+      this.app.use(path, middleware);
+    } else if (typeof path === 'function') {
+      this.app.use(middleware);
+    } else {
+      this.log('registerMiddleware called, but no middleware was able to be registered');
+    }
   }
 
   registerAPI(path, router) {
     if (typeof path !== 'string') throw new Error('path has to be of type string');
-    if (typeof router instanceof express.Router) throw new Error('path has to be an instance of router');
+    if (typeof router === 'undefined') throw new Error(`API router for '${path}' was not defined`);
 
     this.app.use(path, router);
   }
