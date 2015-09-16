@@ -10,7 +10,7 @@ import v1 from './apis/v1/api';
 
 // config
 import serverConfig from './config/uwave';
-import mwareConfig from './config/middleware';
+import wareConfig from './config/middleware';
 
 const server = new UWaveServer(serverConfig);
 const middleware = [
@@ -22,7 +22,7 @@ server.on('stopped', () => {
   process.exit(0);
 });
 
-server.registerMiddleware('/*', rateLimiter);
-server.registerAPI('/v1', v1(middleware, mwareConfig));
+server.registerMiddleware('/*', rateLimiter());
+server.registerAPI('/v1', v1(middleware, wareConfig));
 
 server.start();
