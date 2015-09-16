@@ -145,9 +145,14 @@ export default class UWaveServer extends EventEmitter {
 
     this.mongo.once('open', () => {
       this.mongoLog('connection successful');
-      this.app.listen(this.config.server.port);
-      this.emit('started');
-      this.log('server started');
+
+      if (!this.config.server.slave) {
+        this.app.listen(this.config.server.port);
+        this.emit('started');
+        this.log('server started');
+      } else {
+        this.log('server is in slave mode');
+      }
     });
 
     mongoose.connect(`mongodb://${this.config.mongo.host}:${this.config.mongo.port}/uwave`, this.config.mongo.options);
