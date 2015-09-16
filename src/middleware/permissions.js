@@ -1,6 +1,6 @@
-export default function permissions(router, options) {
-  router.use((req, res, next) => {
+export default function _permissions(options) {
+  return function permissions(req, res, next) {
     // TODO: add permission handling for the room
     next();
-  });
+  };
 }

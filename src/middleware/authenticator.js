@@ -1,7 +1,7 @@
 import jwt from 'jsonwebtoken';
 import debug from 'debug';
 
-export default function authenticator(router, config = {}) {
+export default function _authenticator(config = {}) {
   const regex = [];
   const log = debug('middleware:authenticator');
 
@@ -13,7 +13,7 @@ export default function authenticator(router, config = {}) {
 
   log(`registered ${regex.length} exclusion ${regex.length === 1 ? 'rule' : 'rules'}`);
 
-  router.use((req, res, next) => {
+  return function authenticator(req, res, next) {
     if (regex) {
       for (let i = regex.length - 1; i >= 0; i--) {
         if (regex[i].test(req.path)) return next();
@@ -33,5 +33,5 @@ export default function authenticator(router, config = {}) {
       // TODO: check if token is valid
       next();
     });
-  });
+  };
 }
