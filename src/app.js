@@ -1,7 +1,6 @@
 import UWaveServer from './server';
 
 // middleware
-import rateLimiter from './middleware/ratelimiter';
 import permissions from './middleware/permissions';
 import authenticator from './middleware/authenticator';
 
@@ -22,7 +21,6 @@ server.on('stopped', () => {
   process.exit(0);
 });
 
-server.registerMiddleware('/*', rateLimiter());
 server.registerAPI('/v1', v1(middleware, wareConfig));
 
 server.start();
