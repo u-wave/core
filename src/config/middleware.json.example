@@ -1,0 +1,10 @@
+{
+  "authenticator": {
+    "exclude": [
+      {
+        "expression": "\/auth\/(login|register)$",
+        "options": "i"
+      }
+    ]
+  }
+}
