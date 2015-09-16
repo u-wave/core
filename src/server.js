@@ -63,15 +63,16 @@ export default class UWaveServer extends EventEmitter {
   */
   _registerMiddleware(path, middleware) {
     if (typeof path === 'function') {
-      middleware = path;
-      path = null;
-    } else if (typeof path === 'undefined') {
-      throw new Error('a middleware has to be defined');
+      this.app.use(path);
+      this.log(`registered middleware ${path.name}`);
+    } else if (typeof path === 'string') {
+      this.app.use(path, middleware);
+      this.log(`registered middleware ${middleware.name} on path '${path}'`);
+    } else {
+      return this.log('no middleware registered');
     }
 
-    middleware(path, this.app);
     this.emit('registerMiddleware', path, middleware);
-    this.log(`registered middleware '${middleware.name}' ${path ? 'on path \'' + path + '\'' : ''}`);
   }
 
   /**
@@ -99,7 +100,7 @@ export default class UWaveServer extends EventEmitter {
   * @event UWaveServer:registerMiddleware
   */
   registerMiddleware(path, middleware) {
-    // assume that path is an array of middleware
+    // assume that path is an array of middleware functions
     if (!Array.isArray(path)) {
       this._registerMiddleware(path, middleware);
     } else {
@@ -125,6 +126,14 @@ export default class UWaveServer extends EventEmitter {
         this._registerAPI(api.path, api.router);
       });
     }
+  }
+
+  /**
+  * gets the express.app instance. For information about express
+  * see {@link http://expressjs.com}
+  **/
+  getApp() {
+    return this.app;
   }
 
   /**
