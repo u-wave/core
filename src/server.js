@@ -7,6 +7,12 @@ import redis from 'redis';
 import debug from 'debug';
 
 export default class UWaveServer extends EventEmitter {
+  /**
+  * Registers middleware on a route
+  *
+  * @constructor
+  * @param {Object} config - for further information, see src/config/server.json.example
+  */
   constructor(config = {}) {
     super();
     this.config = config;
@@ -47,23 +53,84 @@ export default class UWaveServer extends EventEmitter {
     process.on('SIGINT', () => { this.stop(); });
   }
 
-  registerMiddleware(path, middleware) {
-    if (typeof path === "string") {
-      this.app.use(path, middleware);
-    } else if (typeof path === 'function') {
-      this.app.use(middleware);
-    } else {
-      this.log('registerMiddleware called, but no middleware was able to be registered');
+  /**
+  * Registers middleware on a route
+  *
+  * @param {string} path - path the middleware should be registered at
+  * @param {function} middleware - the middleware that should be registered
+  * @event UWaveServer:registerMiddleware
+  * @private
+  */
+  _registerMiddleware(path, middleware) {
+    if (typeof path === 'function') {
+      middleware = path;
+      path = null;
+    } else if (typeof path === 'undefined') {
+      throw new Error('a middleware has to be defined');
     }
+
+    middleware(path, this.app);
+    this.emit('registerMiddleware', path, middleware);
+    this.log(`registered middleware '${middleware.name}' ${path ? 'on path \'' + path + '\'' : ''}`);
   }
 
-  registerAPI(path, router) {
+  /**
+  * Registers api on a route
+  *
+  * @param {string} path - path the api should be registered at
+  * @param {function} router - the api as an express router
+  * @event UWaveServer:registerAPI
+  * @private
+  */
+  _registerAPI(path, router) {
     if (typeof path !== 'string') throw new Error('path has to be of type string');
     if (typeof router === 'undefined') throw new Error(`API router for '${path}' was not defined`);
 
     this.app.use(path, router);
+    this.emit('registerAPI', path, router);
+    this.log(`registered API ${router.name} on path '${path}'`);
   }
 
+  /**
+  * Registers middleware on a route
+  *
+  * @param {string} path - path the middleware should be registered at
+  * @param {function} middleware - the middleware that should be registered
+  * @event UWaveServer:registerMiddleware
+  */
+  registerMiddleware(path, middleware) {
+    // assume that path is an array of middleware
+    if (!Array.isArray(path)) {
+      this._registerMiddleware(path, middleware);
+    } else {
+      path.forEach(ware => {
+        this._registerMiddleware(ware.path, ware.middleware);
+      });
+    }
+  }
+
+  /**
+  * Registers api on a route
+  *
+  * @param {string} path - path the api should be registered at
+  * @param {function} router - the api as an express router
+  * @event UWaveServer:registerAPI
+  */
+  registerAPI(path, router) {
+    // assume that path is an array of api functions
+    if (!Array.isArray(path)) {
+      this._registerAPI(path, router);
+    } else {
+      path.forEach(api => {
+        this._registerAPI(api.path, api.router);
+      });
+    }
+  }
+
+  /**
+  * Starts server to listen for incoming connections as well as
+  * connecting to be database
+  */
   start() {
     this.log('starting server...');
 
@@ -71,11 +138,15 @@ export default class UWaveServer extends EventEmitter {
       this.mongoLog('connection successful');
       this.app.listen(this.config.server.port);
       this.emit('started');
+      this.log('server started');
     });
 
-    mongoose.connect(`mongodb://${this.config.mongo.host}/uwave:${this.config.mongo.port}`, this.config.mongo.options);
+    mongoose.connect(`mongodb://${this.config.mongo.host}:${this.config.mongo.port}/uwave`, this.config.mongo.options);
   }
 
+  /**
+  * Stops the server
+  */
   stop() {
     this.log('stopping server...');
 
