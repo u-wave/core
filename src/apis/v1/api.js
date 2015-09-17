@@ -8,7 +8,7 @@ import booth from './booth';
 import users from './users';
 import chat from './chat';
 
-const log = debug('apiv1');
+const log = debug('api:v1');
 
 /**
  * creates a router for version 1 of the api
