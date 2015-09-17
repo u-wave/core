@@ -2,9 +2,12 @@ import bodyParser from 'body-parser';
 import EventEmitter from 'events';
 import mongoose from 'mongoose';
 import readline from 'readline';
+import bluebird from 'bluebird';
 import express from 'express';
 import redis from 'redis';
 import debug from 'debug';
+
+mongoose.Promise = bluebird;
 
 export default class UWaveServer extends EventEmitter {
   /**
