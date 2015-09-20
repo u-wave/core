@@ -2,7 +2,6 @@ import UWaveServer from './server';
 
 // middleware
 import limiter from 'express-rate-limit';
-import permissions from './middleware/permissions';
 import authenticator from './middleware/authenticator';
 
 // API
@@ -14,9 +13,8 @@ import wareConfig from './config/middleware';
 
 const server = new UWaveServer(serverConfig);
 const middleware = [
-  limiter(wareConfig.limiter),
-  authenticator(wareConfig.authenticator),
-  permissions(wareConfig.permissions)
+  //limiter(wareConfig.limiter),
+  authenticator(wareConfig.authenticator)
 ];
 
 server.on('stopped', () => {
