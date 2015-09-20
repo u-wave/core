@@ -1,5 +1,9 @@
+import bluebird from 'bluebird';
 import jwt from 'jsonwebtoken';
+import redis from 'ioredis';
 import debug from 'debug';
+
+const verify = bluebird.promisify(jwt.verify);
 
 export default function _authenticator(config = {}) {
   const regex = [];
@@ -25,13 +29,25 @@ export default function _authenticator(config = {}) {
     }
 
     // TODO: should token be static in config or generated every x time units?
-    jwt.verify(req.query.body, config.secret, (err, decoded) => {
-      if (err) {
-        log(`could not verify token '${req.query.body}'`);
-        res.status(422).json('could not verify token');
-      }
-      // TODO: check if token is valid
+    verify(req.query.token, config.secret || 'test')
+    .then(() => {
+      return req.uwave.redis.hgetall(`user:${req.query.token}`);
+    })
+    .then(user => {
+      req.user = user;
       next();
+    })
+    .catch(jwt.JsonWebTokenError, e => {
+      log(`Token '${req.query.token.slice(0, 64)}...' was not valid.`);
+      res.status(410).json('no user found');
+    })
+    .catch(redis.ReplyError, e => {
+      log(`couldn't fetch data from redis. Err: ${e}`);
+      res.status(410).json('no entry found for this token');
+    })
+    .catch(e => {
+      log(`Uknown error: ${e}`);
+      res.status(500).json('internal server error, please try again later');
     });
   };
 }
