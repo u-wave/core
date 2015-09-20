@@ -8,7 +8,13 @@ import booth from './booth';
 import users from './users';
 import chat from './chat';
 
-const log = debug('api:v1');
+import Authentications from '../../models/authentication';
+import Playlist from '../../models/playlist';
+import History from '../../models/history';
+import Media from '../../models/media';
+import User from '../../models/user';
+
+const log = debug('uwave:api:v1');
 
 /**
  * creates a router for version 1 of the api
