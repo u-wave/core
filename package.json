@@ -20,9 +20,9 @@
     "express": "^4.13.3",
     "express-rate-limit": "^1.2.0",
     "html-entities": "^1.1.3",
+    "ioredis": "^1.9.0",
     "jsonwebtoken": "^5.0.5",
     "mongoose": "^4.1.6",
-    "redis": "^1.0.0",
     "ws": "^0.8.0"
   }
 }
