@@ -83,7 +83,7 @@ export default function authenticate(router) {
       log(`couldn't fetch data from redis. Err: ${e}`);
       res.status(410).json('could not save user');
 
-      // the user was already saved, so if anything should go while creating a proper hash etc.
+      // the user was already saved, so if anything should go wrong while creating a proper hash etc.
       // we should clean up the mess we've made.
       user.remove(e => {
         if (e) return log(`couldn't delete user ${user.username}. Err: ${e}`);
@@ -165,6 +165,7 @@ export default function authenticate(router) {
 
   .put((req, res) => {
     const errors = [];
+    let salt = null;
 
     if (!req.body.email) errors.push('email not set');
     if (!req.body.reset) errors.push('reset code not set');
@@ -175,8 +176,30 @@ export default function authenticate(router) {
 
     req.uwave.redis.get(`reset:${req.body.reset}`)
     .then(token => {
-      if(!token) throw new TokenError('token invalid');
-
+      if (!token) throw new TokenError('token invalid');
+      return randomBytes(256);
+    })
+    .then(buf => {
+      salt = buf.toString('hex');
+      return pbkdf2(req.body.password, salt, 2048, 256, 'sha256');
+    })
+    .then(hash => {
+      return Authentication.findOneAndUpdate(
+        { 'email': req.body.email },
+        {
+          'salt': salt,
+          'hash': hash.toString('hex')
+        },
+        { 'upsert': true }
+      ).exec();
+    })
+    .then(auth => {
+      if (!auth) {
+        res.status(404).json(`no user with email '${req.body.email}' found`);
+      } else {
+        res.status(200).json('password updated!');
+        req.uwave.redis.del(`reset:${req.body.reset}`);
+      }
     })
     .catch(TokenInvalid, e => {
       log(`${req.ip} tried to reset password for ${req.body.email} but failed`);
@@ -184,6 +207,10 @@ export default function authenticate(router) {
     })
     .catch(redis.ReplyError, e => {
       res.status(410).json('invalid reset code');
+    })
+    .catch(e => {
+      log(`resetting the password for user with email ${req.body.email} failed. Err: ${e}`);
+      res.status(500).json('internal server error, please try again later');
     });
   });
 
