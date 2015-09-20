@@ -4,7 +4,7 @@ import mongoose from 'mongoose';
 import readline from 'readline';
 import bluebird from 'bluebird';
 import express from 'express';
-import redis from 'redis';
+import redis from 'ioredis';
 import debug from 'debug';
 
 mongoose.Promise = bluebird;
@@ -21,12 +21,20 @@ export default class UWaveServer extends EventEmitter {
     this.config = config;
     this.app = express();
     this.mongo = mongoose.connection;
+    this.redis = null;
 
     this.log = debug('uwave:server');
     this.mongoLog = debug('uwave:mongo');
+    this.redisLog = debug('uwave:redis');
 
     this.app.use(bodyParser.json());
     this.app.use(bodyParser.urlencoded({ extended: true }));
+    this.app.use((req, res, next) => {
+      req.uwave = {
+        'redis': this.redis
+      };
+      next();
+    });
 
     /* ======== mongo events ======== */
     this.mongo.on('error', e => {
@@ -140,24 +148,52 @@ export default class UWaveServer extends EventEmitter {
   }
 
   /**
+  * gets a reference to the redis instance. For information about redis
+  * see {@link http://redis.io}
+  **/
+  getRedis() {
+    return this.redis;
+  }
+
+  /**
   * Starts server to listen for incoming connections as well as
   * connecting to be database
   */
   start() {
     this.log('starting server...');
+    let pendingConnections = 2;
 
-    this.mongo.once('open', () => {
-      this.mongoLog('connection successful');
+    const connected = (dbLog) => {
+      pendingConnections--;
+      dbLog('connection successful');
 
-      if (!this.config.server.slave) {
-        this.app.listen(this.config.server.port);
-        this.emit('started');
-        this.log('server started');
-      } else {
-        this.log('server is in slave mode');
+      if (pendingConnections === 0) {
+        if (!this.config.server.slave) {
+          this.app.listen(this.config.server.port);
+          this.emit('started');
+          this.log('server started');
+        } else {
+          this.log('server is in slave mode');
+        }
       }
+    };
+
+    this.redis = new redis(this.config.redis.port, this.config.redis.host, this.config.redis.options);
+    this.redis.on('ready', () => connected(this.redisLog));
+    this.redis.on('error', e => this.emit('redisError', e));
+    this.redis.on('reconnecting', () => this.redisLog('trying to reconnect...'));
+
+    this.redis.on('end', () => {
+      this.redisLog('disconnected');
+      this.emit('redisDisconnect');
     });
 
+    this.redis.on('connect', () => {
+      this.redisLog('connected');
+      this.emit('redisConnect');
+    });
+
+    this.mongo.once('open', () => connected(this.mongoLog));
     mongoose.connect(`mongodb://${this.config.mongo.host}:${this.config.mongo.port}/uwave`, this.config.mongo.options);
   }
 
@@ -166,6 +202,10 @@ export default class UWaveServer extends EventEmitter {
   */
   stop() {
     this.log('stopping server...');
+    this.redis.save();
+    this.redis.end();
+    this.redis.removeAllListeners();
+    this.redis = null;
 
     mongoose.connection.close(() => {
       this.mongoLog('connection closed');
