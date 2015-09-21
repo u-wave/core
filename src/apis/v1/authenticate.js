@@ -215,7 +215,7 @@ export default function authenticate(router) {
   });
 
   router.delete('/auth/session/:userID', (req, res) => {
-    if (!req.params.userID || req.params.userID.length === 0) return res.status(422).json('no userID set');
+    if (!req.params.userID) return res.status(422).json('no userID set');
 
     Authentication.findOne({ 'user': req.params.userID })
     .then(auth => {
