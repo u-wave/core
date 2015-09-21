@@ -3,7 +3,7 @@ export default function chat(router) {
 
   });
 
-  router.delete('/chat/delete/:uuid', (req, res) => {
+  router.delete('/chat/:uuid', (req, res) => {
 
   });
 }
