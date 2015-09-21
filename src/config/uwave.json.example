@@ -15,5 +15,13 @@
       "user": null,
       "pass": null
     }
+  },
+  "redis": {
+    "host": "localhost",
+    "port": 6379,
+    "options": {
+      "db": 0,
+      "enableReadyCheck": true
+    }
   }
 }
