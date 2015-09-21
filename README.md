@@ -1,2 +1,3 @@
 # u-wave-server
-room server node
+
+Single-room server library for üWave.
