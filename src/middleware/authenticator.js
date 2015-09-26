@@ -24,9 +24,7 @@ export default function _authenticator(config = {}) {
       }
     }
 
-    if (!req.query.token) {
-      return res.status(422).json('no token set');
-    }
+    if (!req.query.token) return res.status(422).json('no token set');
 
     // TODO: should token be static in config or generated every x time units?
     verify(req.query.token, config.secret || 'test')
@@ -34,12 +32,14 @@ export default function _authenticator(config = {}) {
       return req.uwave.redis.hgetall(`user:${req.query.token}`);
     })
     .then(user => {
+      if (!Object.keys(user).length) return res.status(404).json('user not found. Access token expired?');
+      user.role = parseInt(user.role, 10);
       req.user = user;
       next();
     })
     .catch(jwt.JsonWebTokenError, e => {
       log(`Token '${req.query.token.slice(0, 64)}...' was not valid.`);
-      res.status(410).json('no user found');
+      res.status(410).json('access token invalid');
     })
     .catch(redis.ReplyError, e => {
       log(`couldn't fetch data from redis. Err: ${e}`);
@@ -50,4 +50,4 @@ export default function _authenticator(config = {}) {
       res.status(500).json('internal server error, please try again later');
     });
   };
-}
+};
