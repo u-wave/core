@@ -5,7 +5,7 @@ import limiter from 'express-rate-limit';
 import authenticator from './middleware/authenticator';
 
 // API
-import v1 from './apis/v1/api';
+import v1 from 'uwave-api-v1';
 
 // config
 import serverConfig from './config/uwave';
