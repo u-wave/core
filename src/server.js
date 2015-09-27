@@ -20,7 +20,7 @@ export default class UWaveServer extends EventEmitter {
     super();
     this.config = config;
     this.app = express();
-    this.mongo = mongoose.connection;
+    this.mongo = null;
     this.redis = null;
 
     this.log = debug('uwave:server');
@@ -31,25 +31,10 @@ export default class UWaveServer extends EventEmitter {
     this.app.use(bodyParser.urlencoded({ extended: true }));
     this.app.use((req, res, next) => {
       req.uwave = {
-        'redis': this.redis
+        'redis': this.redis,
+        'mongo': this.mongo
       };
       next();
-    });
-
-    /* ======== mongo events ======== */
-    this.mongo.on('error', e => {
-      this.mongoLog(e);
-      this.emit('mongoError', e);
-    });
-
-    this.mongo.on('reconnected', () => {
-      this.mongoLog('reconnected');
-      this.emit('mongoReconnect');
-    });
-
-    this.mongo.on('disconnected', () => {
-      this.mongoLog('disconnected');
-      this.emit('mongoDisconnect');
     });
 
     /* ======== SIGINT ======== */
@@ -156,6 +141,22 @@ export default class UWaveServer extends EventEmitter {
   }
 
   /**
+  * gets a reference to the mongo instance. For information about mongo
+  * see {@link http://mongodb.org}
+  **/
+  getMongo() {
+    return this.mongo;
+  }
+
+  /**
+  * gets a reference to the singleton that mongoose represents. For information about mongoose
+  * see {@link http://mongoosejs.com/docs/api.html}
+  **/
+  getMongoose() {
+    return mongoose;
+  }
+
+  /**
   * Starts server to listen for incoming connections as well as
   * connecting to be database
   */
@@ -170,7 +171,7 @@ export default class UWaveServer extends EventEmitter {
       if (pendingConnections === 0) {
         if (!this.config.server.slave) {
           this.app.listen(this.config.server.port);
-          this.emit('started');
+          this.emit('started', this);
           this.log('server started');
         } else {
           this.log('server is in slave mode');
@@ -178,6 +179,26 @@ export default class UWaveServer extends EventEmitter {
       }
     };
 
+    /* ======== mongo ======== */
+    this.mongo = mongoose.createConnection(`mongodb://${this.config.mongo.host}:${this.config.mongo.port}/uwave`, this.config.mongo.options);
+    this.mongo.once('open', () => connected(this.mongoLog));
+
+    this.mongo.on('error', e => {
+      this.mongoLog(e);
+      this.emit('mongoError', e);
+    });
+
+    this.mongo.on('reconnected', () => {
+      this.mongoLog('reconnected');
+      this.emit('mongoReconnect');
+    });
+
+    this.mongo.on('disconnected', () => {
+      this.mongoLog('disconnected');
+      this.emit('mongoDisconnect');
+    });
+
+    /* ======== redis ======== */
     this.redis = new redis(this.config.redis.port, this.config.redis.host, this.config.redis.options);
     this.redis.on('ready', () => connected(this.redisLog));
     this.redis.on('error', e => this.emit('redisError', e));
@@ -192,9 +213,6 @@ export default class UWaveServer extends EventEmitter {
       this.redisLog('connected');
       this.emit('redisConnect');
     });
-
-    this.mongo.once('open', () => connected(this.mongoLog));
-    mongoose.connect(`mongodb://${this.config.mongo.host}:${this.config.mongo.port}/uwave`, this.config.mongo.options);
   }
 
   /**
@@ -207,7 +225,9 @@ export default class UWaveServer extends EventEmitter {
     this.redis.removeAllListeners();
     this.redis = null;
 
-    mongoose.connection.close(() => {
+    this.mongo.close(() => {
+      this.mongo.removeAllListeners();
+      this.mongo = null;
       this.mongoLog('connection closed');
       this.emit('stopped');
     });
