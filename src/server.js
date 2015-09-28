@@ -5,7 +5,9 @@ import readline from 'readline';
 import bluebird from 'bluebird';
 import express from 'express';
 import redis from 'ioredis';
+import { Server } from 'ws';
 import debug from 'debug';
+import http from 'http';
 
 mongoose.Promise = bluebird;
 
@@ -19,7 +21,11 @@ export default class UWaveServer extends EventEmitter {
   constructor(config = {}) {
     super();
     this.config = config;
+
     this.app = express();
+    this.server = http.createServer(this.app);
+    this.websocket = new Server({ 'server': this.server });
+
     this.mongo = null;
     this.redis = null;
 
@@ -31,6 +37,7 @@ export default class UWaveServer extends EventEmitter {
     this.app.use(bodyParser.urlencoded({ extended: true }));
     this.app.use((req, res, next) => {
       req.uwave = {
+        'websocket': this.websocket,
         'redis': this.redis,
         'mongo': this.mongo
       };
@@ -88,6 +95,43 @@ export default class UWaveServer extends EventEmitter {
     this.log(`registered API ${router.name} on path '${path}'`);
   }
 
+  _createRedisConnection(connected) {
+    this.redis = new redis(this.config.redis.port, this.config.redis.host, this.config.redis.options);
+    this.redis.on('ready', () => connected(this.redisLog));
+    this.redis.on('error', e => this.emit('redisError', e));
+    this.redis.on('reconnecting', () => this.redisLog('trying to reconnect...'));
+
+    this.redis.on('end', () => {
+      this.redisLog('disconnected');
+      this.emit('redisDisconnect');
+    });
+
+    this.redis.on('connect', () => {
+      this.redisLog('connected');
+      this.emit('redisConnect');
+    });
+  }
+
+  _createMongoConnection(connected) {
+    this.mongo = mongoose.createConnection(`mongodb://${this.config.mongo.host}:${this.config.mongo.port}/uwave`, this.config.mongo.options);
+    this.mongo.once('open', () => connected(this.mongoLog));
+
+    this.mongo.on('error', e => {
+      this.mongoLog(e);
+      this.emit('mongoError', e);
+    });
+
+    this.mongo.on('reconnected', () => {
+      this.mongoLog('reconnected');
+      this.emit('mongoReconnect');
+    });
+
+    this.mongo.on('disconnected', () => {
+      this.mongoLog('disconnected');
+      this.emit('mongoDisconnect');
+    });
+  }
+
   /**
   * Registers middleware on a route
   *
@@ -133,6 +177,14 @@ export default class UWaveServer extends EventEmitter {
   }
 
   /**
+  * gets the websocket server instance. For information about websockets
+  * see {@link https://github.com/websockets/ws}
+  **/
+  getWebSocket() {
+    return this.websocket;
+  }
+
+  /**
   * gets a reference to the redis instance. For information about redis
   * see {@link http://redis.io}
   **/
@@ -170,7 +222,7 @@ export default class UWaveServer extends EventEmitter {
 
       if (pendingConnections === 0) {
         if (!this.config.server.slave) {
-          this.app.listen(this.config.server.port);
+          this.server.listen(this.config.server.port);
           this.emit('started', this);
           this.log('server started');
         } else {
@@ -179,40 +231,8 @@ export default class UWaveServer extends EventEmitter {
       }
     };
 
-    /* ======== mongo ======== */
-    this.mongo = mongoose.createConnection(`mongodb://${this.config.mongo.host}:${this.config.mongo.port}/uwave`, this.config.mongo.options);
-    this.mongo.once('open', () => connected(this.mongoLog));
-
-    this.mongo.on('error', e => {
-      this.mongoLog(e);
-      this.emit('mongoError', e);
-    });
-
-    this.mongo.on('reconnected', () => {
-      this.mongoLog('reconnected');
-      this.emit('mongoReconnect');
-    });
-
-    this.mongo.on('disconnected', () => {
-      this.mongoLog('disconnected');
-      this.emit('mongoDisconnect');
-    });
-
-    /* ======== redis ======== */
-    this.redis = new redis(this.config.redis.port, this.config.redis.host, this.config.redis.options);
-    this.redis.on('ready', () => connected(this.redisLog));
-    this.redis.on('error', e => this.emit('redisError', e));
-    this.redis.on('reconnecting', () => this.redisLog('trying to reconnect...'));
-
-    this.redis.on('end', () => {
-      this.redisLog('disconnected');
-      this.emit('redisDisconnect');
-    });
-
-    this.redis.on('connect', () => {
-      this.redisLog('connected');
-      this.emit('redisConnect');
-    });
+    this._createRedisConnection(connected);
+    this._createMongoConnection(connected);
   }
 
   /**
