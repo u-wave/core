@@ -240,6 +240,8 @@ export default class UWaveServer extends EventEmitter {
   */
   stop() {
     this.log('stopping server...');
+    this.websocket.removeAllListeners();
+
     this.redis.save();
     this.redis.end();
     this.redis.removeAllListeners();
