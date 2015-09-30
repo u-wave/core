@@ -10,7 +10,10 @@ const server = new UWaveServer(serverConfig);
 const v1 = new V1();
 
 server.on('stopped', () => process.exit(0));
-server.on('started', srv => v1.registerModels(srv));
+server.on('started', uwave => {
+  v1.registerModels(uwave);
+  v1.registerWSServer(uwave);
+});
 
 server.registerAPI('/v1', v1.getRouter());
 server.start();
