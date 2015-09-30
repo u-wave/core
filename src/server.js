@@ -24,7 +24,6 @@ export default class UWaveServer extends EventEmitter {
 
     this.app = express();
     this.server = http.createServer(this.app);
-    this.websocket = new Server({ 'server': this.server });
 
     this.mongo = null;
     this.redis = null;
@@ -37,7 +36,6 @@ export default class UWaveServer extends EventEmitter {
     this.app.use(bodyParser.urlencoded({ extended: true }));
     this.app.use((req, res, next) => {
       req.uwave = {
-        'websocket': this.websocket,
         'redis': this.redis,
         'mongo': this.mongo
       };
@@ -169,19 +167,25 @@ export default class UWaveServer extends EventEmitter {
   }
 
   /**
+  * get the server config
+  **/
+  getConfig() {
+    return this.config;
+  }
+
+  /**
+  * get the server instance
+  **/
+  getServer() {
+    return this.server;
+  }
+
+  /**
   * gets the express.app instance. For information about express
   * see {@link http://expressjs.com}
   **/
   getApp() {
     return this.app;
-  }
-
-  /**
-  * gets the websocket server instance. For information about websockets
-  * see {@link https://github.com/websockets/ws}
-  **/
-  getWebSocket() {
-    return this.websocket;
   }
 
   /**
@@ -240,8 +244,6 @@ export default class UWaveServer extends EventEmitter {
   */
   stop() {
     this.log('stopping server...');
-    this.websocket.removeAllListeners();
-
     this.redis.save();
     this.redis.end();
     this.redis.removeAllListeners();
