@@ -23,5 +23,10 @@
       "db": 0,
       "enableReadyCheck": true
     }
+  },
+  "cert": "YOUR_CERT_HERE",
+  "keys": {
+    "youtube": "YOUR_API_KEY_HERE",
+    "soundcloud": "YOUR_API_KEY_HERE"
   }
 }

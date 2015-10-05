@@ -6,9 +6,10 @@ import V1 from '../../u-wave-api-v1/src/api';
 
 // config
 import serverConfig from './config/uwave';
+serverConfig.cert = path.normalize(path.join(__dirname, "../test.cert"));
 
 const server = new UWaveServer(serverConfig);
-const v1 = new V1({ 'cert': path.normalize(path.join(__dirname, "../test.cert")) });
+const v1 = new V1(serverConfig);
 
 server.on('stopped', () => process.exit(0));
 server.on('started', uwave => {
