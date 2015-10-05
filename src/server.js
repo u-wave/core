@@ -37,7 +37,8 @@ export default class UWaveServer extends EventEmitter {
     this.app.use((req, res, next) => {
       req.uwave = {
         'redis': this.redis,
-        'mongo': this.mongo
+        'mongo': this.mongo,
+        'keys': this.config.keys
       };
       next();
     });
