@@ -231,6 +231,7 @@ export default class UWaveServer extends EventEmitter {
           this.emit('started', this);
           this.log('server started');
         } else {
+          this.emit('started', this);
           this.log('server is in slave mode');
         }
       }
