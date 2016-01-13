@@ -6,7 +6,7 @@ import V1 from '../../u-wave-api-v1/src/api';
 
 // config
 import serverConfig from './config/uwave';
-serverConfig.cert = path.normalize(path.join(__dirname, "../test.cert"));
+serverConfig.cert = path.normalize(path.join(__dirname, '../test.cert'));
 
 const server = new UWaveServer(serverConfig);
 const v1 = new V1(serverConfig);

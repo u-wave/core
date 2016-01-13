@@ -4,8 +4,7 @@ import mongoose from 'mongoose';
 import readline from 'readline';
 import bluebird from 'bluebird';
 import express from 'express';
-import redis from 'ioredis';
-import { Server } from 'ws';
+import Redis from 'ioredis';
 import debug from 'debug';
 import http from 'http';
 
@@ -95,7 +94,7 @@ export default class UWaveServer extends EventEmitter {
   }
 
   _createRedisConnection(connected) {
-    this.redis = new redis(this.config.redis.port, this.config.redis.host, this.config.redis.options);
+    this.redis = new Redis(this.config.redis.port, this.config.redis.host, this.config.redis.options);
     this.redis.on('ready', () => connected(this.redisLog));
     this.redis.on('error', e => this.emit('redisError', e));
     this.redis.on('reconnecting', () => this.redisLog('trying to reconnect...'));
