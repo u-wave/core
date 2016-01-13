@@ -2,7 +2,7 @@ import path from 'path';
 import UWaveServer from './server';
 
 // API
-import V1 from '../../u-wave-api-v1/src/api';
+import V1 from 'u-wave-api-v1';
 
 // config
 import serverConfig from './config/uwave';
