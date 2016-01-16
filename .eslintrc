@@ -1,6 +1,5 @@
 {
   "extends": "airbnb/base",
-  "parser": "babel-eslint",
 
   "rules": {
     "comma-dangle": [2, "never"]
