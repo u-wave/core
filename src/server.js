@@ -34,11 +34,13 @@ export default class UWaveServer extends EventEmitter {
     this.app.use(bodyParser.json());
     this.app.use(bodyParser.urlencoded({ extended: true }));
     this.app.use((req, res, next) => {
+      /* eslint-disable no-param-reassign */
       req.uwave = {
-        'redis': this.redis,
-        'mongo': this.mongo,
-        'keys': this.config.keys
+        redis: this.redis,
+        mongo: this.mongo,
+        keys: this.config.keys
       };
+      /* eslint-enable no-param-reassign */
       next();
     });
 
@@ -46,8 +48,8 @@ export default class UWaveServer extends EventEmitter {
     // workaround to properly stop the server on termination.
     if (process.platform === 'win32') {
       readline.createInterface({
-        'input': process.stdin,
-        'output': process.stdout
+        input: process.stdin,
+        output: process.stdout
       }).on('SIGINT', () => process.emit('SIGINT'));
     }
 
@@ -94,7 +96,8 @@ export default class UWaveServer extends EventEmitter {
   }
 
   _createRedisConnection(connected) {
-    this.redis = new Redis(this.config.redis.port, this.config.redis.host, this.config.redis.options);
+    const config = this.config.redis;
+    this.redis = new Redis(config.port, config.host, config.options);
     this.redis.on('ready', () => connected(this.redisLog));
     this.redis.on('error', e => this.emit('redisError', e));
     this.redis.on('reconnecting', () => this.redisLog('trying to reconnect...'));
@@ -111,7 +114,10 @@ export default class UWaveServer extends EventEmitter {
   }
 
   _createMongoConnection(connected) {
-    this.mongo = mongoose.createConnection(`mongodb://${this.config.mongo.host}:${this.config.mongo.port}/uwave`, this.config.mongo.options);
+    this.mongo = mongoose.createConnection(
+      `mongodb://${this.config.mongo.host}:${this.config.mongo.port}/uwave`,
+      this.config.mongo.options
+    );
     this.mongo.once('open', () => connected(this.mongoLog));
 
     this.mongo.on('error', e => {
