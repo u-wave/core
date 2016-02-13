@@ -10,6 +10,8 @@ import http from 'http';
 import values from 'object-values';
 
 import Source from './Source';
+import youTubeSource from './sources/youtube';
+import soundCloudSource from './sources/soundcloud';
 
 import models from './models';
 import booth from './plugins/booth';
@@ -45,6 +47,10 @@ export default class UWaveServer extends EventEmitter {
     } else {
       this.redis = new Redis({ lazyConnect: true });
     }
+
+    // Will be removed in the future.
+    this.source('youtube', youTubeSource, { key: config.keys.youtube });
+    this.source('soundcloud', soundCloudSource, { key: config.keys.soundcloud });
 
     this.log = debug('uwave:server');
     this.mongoLog = debug('uwave:mongo');
