@@ -14,7 +14,8 @@
     "express": "^4.13.3",
     "ioredis": "^1.9.0",
     "mongoose": "^4.1.6",
-    "mongoose-model-decorators": "^0.2.1"
+    "mongoose-model-decorators": "^0.2.1",
+    "object-values": "^1.0.0"
   },
   "devDependencies": {
     "babel-eslint": "^5.0.0-beta10",
