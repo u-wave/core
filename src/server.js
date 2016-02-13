@@ -35,11 +35,7 @@ export default class UWaveServer extends EventEmitter {
     this.app.use(bodyParser.urlencoded({ extended: true }));
     this.app.use((req, res, next) => {
       /* eslint-disable no-param-reassign */
-      req.uwave = {
-        redis: this.redis,
-        mongo: this.mongo,
-        keys: this.config.keys
-      };
+      req.uwave = this;
       /* eslint-enable no-param-reassign */
       next();
     });
