@@ -1,13 +1,20 @@
 {
   "name": "u-wave",
   "version": "0.0.0",
-  "description": "Room server node for [üµ]wave.",
+  "description": "Room server node for üWave.",
   "license": "MIT",
   "repository": "u-wave/u-wave-server",
+  "engines": {
+    "node": ">= 4.0"
+  },
   "devDependencies": {
     "babel-cli": "^6.3.17",
-    "babel-preset-es2015": "^6.3.13",
-    "babel-preset-stage-0": "^6.3.13",
+    "babel-plugin-transform-class-properties": "^6.5.2",
+    "babel-plugin-transform-decorators-legacy": "^1.3.4",
+    "babel-plugin-transform-export-extensions": "^6.5.0",
+    "babel-plugin-transform-flow-comments": "^6.5.0",
+    "babel-preset-es2015-node4": "^2.0.3",
+    "babel-preset-stage-2": "^6.5.0",
     "eslint": "^1.10.3",
     "eslint-config-airbnb": "^3.1.0"
   },
