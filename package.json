@@ -15,11 +15,16 @@
     "babel-plugin-transform-flow-comments": "^6.5.0",
     "babel-preset-es2015-node4": "^2.0.3",
     "babel-preset-stage-2": "^6.5.0",
+    "babel-register": "^6.5.2",
+    "chai": "^3.5.0",
     "eslint": "^1.10.3",
-    "eslint-config-airbnb": "^3.1.0"
+    "eslint-config-airbnb": "^3.1.0",
+    "mocha": "^2.4.5"
   },
   "scripts": {
-    "test": "eslint src",
+    "test:mocha": "mocha --compilers js:babel-register --recursive test/",
+    "test:lint": "eslint src",
+    "test": "npm run test:mocha && npm run test:lint",
     "build": "babel --out-dir lib src"
   },
   "dependencies": {
