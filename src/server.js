@@ -24,7 +24,7 @@ export default class UWaveServer extends EventEmitter {
     this.app = express();
     this.server = http.createServer(this.app);
 
-    this.mongo = null;
+    this.mongo = mongoose.createConnection();
     this.redis = null;
 
     this.log = debug('uwave:server');
@@ -115,7 +115,6 @@ export default class UWaveServer extends EventEmitter {
   }
 
   _createMongoConnection() {
-    this.mongo = mongoose.createConnection();
     const promise = this.mongo.open(
       `mongodb://${this.config.mongo.host}:${this.config.mongo.port}/uwave`,
       this.config.mongo.options
