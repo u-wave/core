@@ -18,6 +18,6 @@ server.on('started', uwave => {
 });
 
 server.registerAPI('/v1', v1.getRouter());
-server.start();
+server.connect();
 
 server.server.listen(serverConfig.server.port);
