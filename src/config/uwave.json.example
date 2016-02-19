@@ -1,6 +1,5 @@
 {
   "server": {
-    "slave": false,
     "port": 8080
   },
   "mongo": {

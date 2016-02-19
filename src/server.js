@@ -231,14 +231,8 @@ export default class UWaveServer extends EventEmitter {
       dbLog('connection successful');
 
       if (pendingConnections === 0) {
-        if (!this.config.server.slave) {
-          this.server.listen(this.config.server.port);
-          this.emit('started', this);
-          this.log('server started');
-        } else {
-          this.emit('started', this);
-          this.log('server is in slave mode');
-        }
+        this.emit('started', this);
+        this.log('server started');
       }
     };
 
