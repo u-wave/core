@@ -56,6 +56,10 @@ export default class UWaveServer extends EventEmitter {
     process.on('SIGINT', () => { this.stop(); });
   }
 
+  model(name) {
+    return this.mongo.model(name);
+  }
+
   /**
   * Registers middleware on a route
   *
