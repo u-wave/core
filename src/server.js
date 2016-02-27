@@ -8,6 +8,8 @@ import Redis from 'ioredis';
 import debug from 'debug';
 import http from 'http';
 
+import models from './models';
+
 mongoose.Promise = Promise;
 
 export default class UWaveServer extends EventEmitter {
@@ -26,6 +28,8 @@ export default class UWaveServer extends EventEmitter {
 
     this.mongo = mongoose.createConnection();
     this.redis = null;
+
+    models()(this);
 
     this.log = debug('uwave:server');
     this.mongoLog = debug('uwave:mongo');
