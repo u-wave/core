@@ -8,6 +8,8 @@ import Redis from 'ioredis';
 import debug from 'debug';
 import http from 'http';
 
+import models from './models';
+
 mongoose.Promise = Promise;
 
 export default class UWaveServer extends EventEmitter {
@@ -24,8 +26,10 @@ export default class UWaveServer extends EventEmitter {
     this.app = express();
     this.server = http.createServer(this.app);
 
-    this.mongo = null;
+    this.mongo = mongoose.createConnection();
     this.redis = null;
+
+    models()(this);
 
     this.log = debug('uwave:server');
     this.mongoLog = debug('uwave:mongo');
@@ -35,11 +39,7 @@ export default class UWaveServer extends EventEmitter {
     this.app.use(bodyParser.urlencoded({ extended: true }));
     this.app.use((req, res, next) => {
       /* eslint-disable no-param-reassign */
-      req.uwave = {
-        redis: this.redis,
-        mongo: this.mongo,
-        keys: this.config.keys
-      };
+      req.uwave = this;
       /* eslint-enable no-param-reassign */
       next();
     });
@@ -54,6 +54,10 @@ export default class UWaveServer extends EventEmitter {
     }
 
     process.on('SIGINT', () => { this.stop(); });
+  }
+
+  model(name) {
+    return this.mongo.model(name);
   }
 
   /**
@@ -119,7 +123,6 @@ export default class UWaveServer extends EventEmitter {
   }
 
   _createMongoConnection() {
-    this.mongo = mongoose.createConnection();
     const promise = this.mongo.open(
       `mongodb://${this.config.mongo.host}:${this.config.mongo.port}/uwave`,
       this.config.mongo.options

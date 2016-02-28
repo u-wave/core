@@ -7,6 +7,16 @@
   "engines": {
     "node": ">= 4.0"
   },
+  "dependencies": {
+    "bluebird": "^2.10.0",
+    "body-parser": "^1.13.3",
+    "debug": "^2.2.0",
+    "express": "^4.13.3",
+    "ioredis": "^1.9.0",
+    "mongoose": "^4.1.6",
+    "mongoose-model-decorators": "^0.2.1",
+    "ws": "^0.8.0"
+  },
   "devDependencies": {
     "babel-cli": "^6.3.17",
     "babel-eslint": "^5.0.0-beta10",
@@ -27,14 +37,5 @@
     "test:lint": "eslint src",
     "test": "npm run test:mocha && npm run test:lint",
     "build": "babel --out-dir lib src"
-  },
-  "dependencies": {
-    "bluebird": "^2.10.0",
-    "body-parser": "^1.13.3",
-    "debug": "^2.2.0",
-    "express": "^4.13.3",
-    "ioredis": "^1.9.0",
-    "mongoose": "^4.1.6",
-    "ws": "^0.8.0"
   }
 }
