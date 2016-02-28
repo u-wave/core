@@ -41,6 +41,7 @@
     "test:lint": "eslint src",
     "test": "npm run test:mocha && npm run test:lint",
     "build": "gulp build",
-    "watch": "gulp watch"
+    "watch": "gulp watch",
+    "prepublish": "npm run build"
   }
 }
