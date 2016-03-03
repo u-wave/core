@@ -61,28 +61,6 @@ export default class UWaveServer extends EventEmitter {
   }
 
   /**
-  * Registers middleware on a route
-  *
-  * @param {string} path - path the middleware should be registered at
-  * @param {function} middleware - the middleware that should be registered
-  * @event UWaveServer:registerMiddleware
-  * @private
-  */
-  _registerMiddleware(path, middleware) {
-    if (typeof path === 'function') {
-      this.app.use(path);
-      this.log(`registered middleware ${path.name}`);
-    } else if (typeof path === 'string') {
-      this.app.use(path, middleware);
-      this.log(`registered middleware ${middleware.name} on path '${path}'`);
-    } else {
-      return this.log('no middleware registered');
-    }
-
-    this.emit('registerMiddleware', path, middleware);
-  }
-
-  /**
   * Registers api on a route
   *
   * @param {string} path - path the api should be registered at
@@ -144,24 +122,6 @@ export default class UWaveServer extends EventEmitter {
     });
 
     return promise;
-  }
-
-  /**
-  * Registers middleware on a route
-  *
-  * @param {string} path - path the middleware should be registered at
-  * @param {function} middleware - the middleware that should be registered
-  * @event UWaveServer:registerMiddleware
-  */
-  registerMiddleware(path, middleware) {
-    // assume that path is an array of middleware functions
-    if (!Array.isArray(path)) {
-      this._registerMiddleware(path, middleware);
-    } else {
-      path.forEach(ware => {
-        this._registerMiddleware(ware.path, ware.middleware);
-      });
-    }
   }
 
   /**
