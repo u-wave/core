@@ -21,8 +21,16 @@ function normalizeMedia(media) {
   const [artist, title] = getArtistTitle(media.title, [
     'base', fallBackToArtist(media.user.username)
   ]);
+  const sourceData = {
+    fullTitle: media.title,
+    permalinkUrl: media.permalink_url,
+    streamUrl: media.stream_url,
+    artistUrl: media.user.permalink_url,
+    username: media.user.username
+  };
   return {
     sourceID: media.id,
+    sourceData,
     artist, title,
     duration: Math.round(parseInt(media.duration / 1000, 10)),
     thumbnail: media.artwork_url || media.user.avatar_url,
