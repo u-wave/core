@@ -27,10 +27,18 @@ export default class UWaveServer extends EventEmitter {
     this.server = http.createServer(this.app);
 
     this.mongo = mongoose.createConnection();
-    this.redis = new Redis(config.redis.port, config.redis.host, {
-      ...config.redis.options,
-      lazyConnect: true
-    });
+    if (typeof config.redis === 'string') {
+      this.redis = new Redis(config.redis, { lazyConnect: true });
+    } else if (typeof config.redis === 'object') {
+      this.redis = new Redis(config.redis.port, config.redis.host, {
+        ...config.redis.options,
+        lazyConnect: true
+      });
+    } else if (config.redis instanceof Redis) {
+      this.redis = config.redis;
+    } else {
+      this.redis = new Redis({ lazyConnect: true });
+    }
 
     models()(this);
 
