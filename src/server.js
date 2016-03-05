@@ -60,23 +60,6 @@ export default class UWaveServer extends EventEmitter {
     return this.mongo.model(name);
   }
 
-  /**
-  * Registers api on a route
-  *
-  * @param {string} path - path the api should be registered at
-  * @param {function} router - the api as an express router
-  * @event UWaveServer:registerAPI
-  * @private
-  */
-  _registerAPI(path, router) {
-    if (typeof path !== 'string') throw new Error('path has to be of type string');
-    if (typeof router === 'undefined') throw new Error(`API router for '${path}' was not defined`);
-
-    this.app.use(path, router);
-    this.emit('registerAPI', path, router);
-    this.log(`registered API ${router.name} on path '${path}'`);
-  }
-
   _createRedisConnection() {
     return new Promise((resolve, reject) => {
       const config = this.config.redis;
@@ -122,24 +105,6 @@ export default class UWaveServer extends EventEmitter {
     });
 
     return promise;
-  }
-
-  /**
-  * Registers api on a route
-  *
-  * @param {string} path - path the api should be registered at
-  * @param {function} router - the api as an express router
-  * @event UWaveServer:registerAPI
-  */
-  registerAPI(path, router) {
-    // assume that path is an array of api functions
-    if (!Array.isArray(path)) {
-      this._registerAPI(path, router);
-    } else {
-      path.forEach(api => {
-        this._registerAPI(api.path, api.router);
-      });
-    }
   }
 
   /**
