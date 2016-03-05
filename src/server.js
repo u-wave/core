@@ -27,7 +27,10 @@ export default class UWaveServer extends EventEmitter {
     this.server = http.createServer(this.app);
 
     this.mongo = mongoose.createConnection();
-    this.redis = null;
+    this.redis = new Redis(config.redis.port, config.redis.host, {
+      ...config.redis.options,
+      lazyConnect: true
+    });
 
     models()(this);
 
@@ -61,26 +64,22 @@ export default class UWaveServer extends EventEmitter {
   }
 
   _createRedisConnection() {
-    return new Promise((resolve, reject) => {
-      const config = this.config.redis;
-      this.redis = new Redis(config.port, config.host, config.options);
-      this.redis.on('ready', resolve);
-      this.redis.on('error', e => {
-        reject(e);
-        this.emit('redisError', e);
-      });
-      this.redis.on('reconnecting', () => this.redisLog('trying to reconnect...'));
-
-      this.redis.on('end', () => {
-        this.redisLog('disconnected');
-        this.emit('redisDisconnect');
-      });
-
-      this.redis.on('connect', () => {
-        this.redisLog('connected');
-        this.emit('redisConnect');
-      });
+    this.redis.on('error', e => {
+      this.emit('redisError', e);
     });
+    this.redis.on('reconnecting', () => this.redisLog('trying to reconnect...'));
+
+    this.redis.on('end', () => {
+      this.redisLog('disconnected');
+      this.emit('redisDisconnect');
+    });
+
+    this.redis.on('connect', () => {
+      this.redisLog('connected');
+      this.emit('redisConnect');
+    });
+
+    return this.redis.connect();
   }
 
   _createMongoConnection() {
@@ -177,6 +176,27 @@ export default class UWaveServer extends EventEmitter {
    */
   start() {
     return this.connect();
+  }
+
+  /**
+   * Create a Redis subscription to the üWave channel.
+   *
+   * @return {IORedis} Redis instance, subscribed to the üWave channel.
+   */
+  subscription() {
+    const sub = this.redis.duplicate();
+    sub.subscribe('uwave');
+    return sub;
+  }
+
+  /**
+   * Publish an event to the üWave channel.
+   */
+  publish(command, data) {
+    this.redis.publish('uwave', JSON.stringify({
+      command, data
+    }));
+    return this;
   }
 
   /**
