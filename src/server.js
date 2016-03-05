@@ -107,52 +107,6 @@ export default class UWaveServer extends EventEmitter {
   }
 
   /**
-  * get the server config
-  **/
-  getConfig() {
-    return this.config;
-  }
-
-  /**
-  * get the server instance
-  **/
-  getServer() {
-    return this.server;
-  }
-
-  /**
-  * gets the express.app instance. For information about express
-  * see {@link http://expressjs.com}
-  **/
-  getApp() {
-    return this.app;
-  }
-
-  /**
-  * gets a reference to the redis instance. For information about redis
-  * see {@link http://redis.io}
-  **/
-  getRedis() {
-    return this.redis;
-  }
-
-  /**
-  * gets a reference to the mongo instance. For information about mongo
-  * see {@link http://mongodb.org}
-  **/
-  getMongo() {
-    return this.mongo;
-  }
-
-  /**
-  * gets a reference to the singleton that mongoose represents. For information about mongoose
-  * see {@link http://mongoosejs.com/docs/api.html}
-  **/
-  getMongoose() {
-    return mongoose;
-  }
-
-  /**
    * Set up database connections.
    */
   async connect() {
