@@ -41,6 +41,13 @@ function normalizeMedia(media) {
 export default function soundCloudSource(uw, opts = {}) {
   const params = { client_id: opts.key };
 
+  async function resolve(url) {
+    const [response] = await request('/resolve', {
+      qs: { ...params, url }
+    });
+    return normalizeMedia(response.body);
+  }
+
   async function get(sourceIDs) {
     const [response] = await request('/tracks', {
       qs: {
@@ -60,6 +67,10 @@ export default function soundCloudSource(uw, opts = {}) {
   }
 
   async function search(query, offset = 0) {
+    if (/^https?:\/\/(api\.)?soundcloud\.com\//.test(query)) {
+      const track = await resolve(query);
+      return [track];
+    }
     const [response] = await request('/tracks', {
       qs: {
         ...params,
