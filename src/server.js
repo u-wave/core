@@ -144,7 +144,7 @@ export default class UWaveServer extends EventEmitter {
   }
 
   /**
-   * Publish an event to the üWave channel.
+   * Publish an event to the üWave channel.
    */
   publish(command, data) {
     this.redis.publish('uwave', JSON.stringify({
