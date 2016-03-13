@@ -9,6 +9,7 @@ import debug from 'debug';
 import http from 'http';
 
 import models from './models';
+import booth from './plugins/booth';
 
 mongoose.Promise = Promise;
 
@@ -40,11 +41,12 @@ export default class UWaveServer extends EventEmitter {
       this.redis = new Redis({ lazyConnect: true });
     }
 
-    models()(this);
-
     this.log = debug('uwave:server');
     this.mongoLog = debug('uwave:mongo');
     this.redisLog = debug('uwave:redis');
+
+    this.use(models());
+    this.use(booth());
 
     this.app.use(bodyParser.json());
     this.app.use(bodyParser.urlencoded({ extended: true }));
@@ -67,8 +69,18 @@ export default class UWaveServer extends EventEmitter {
     process.on('SIGINT', () => { this.stop(); });
   }
 
+  use(plugin) {
+    plugin(this);
+    return this;
+  }
+
   model(name) {
     return this.mongo.model(name);
+  }
+
+  advance(opts = {}) {
+    this.log('advance', opts);
+    return this.booth.advance(opts);
   }
 
   _createRedisConnection() {
