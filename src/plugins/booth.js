@@ -10,6 +10,26 @@ export class Booth {
 
   constructor(uw) {
     this.uw = uw;
+
+    uw.on('started', this.onStart.bind(this));
+  }
+
+  async onStart() {
+    const current = await this.getCurrentEntry();
+    if (current && this.timeout === null) {
+      // Restart the advance timer after a server restart, if a track was
+      // playing before the server restarted.
+      const duration = (current.media.end - current.media.start) * 1000;
+      const endTime = Number(current.played) + duration;
+      if (endTime > Date.now()) {
+        this.timeout = setTimeout(
+          () => this.uw.advance(),
+          endTime - Date.now()
+        );
+      } else {
+        this.uw.advance();
+      }
+    }
   }
 
   async getCurrentEntry() {
