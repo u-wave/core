@@ -98,8 +98,6 @@ export default class UWaveServer extends EventEmitter {
       this.redisLog('connected');
       this.emit('redisConnect');
     });
-
-    return this.redis.connect();
   }
 
   _createMongoConnection() {
