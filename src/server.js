@@ -7,6 +7,11 @@ import express from 'express';
 import Redis from 'ioredis';
 import debug from 'debug';
 import http from 'http';
+import values from 'object-values';
+
+import Source from './Source';
+import youTubeSource from './sources/youtube';
+import soundCloudSource from './sources/soundcloud';
 
 import models from './models';
 import booth from './plugins/booth';
@@ -14,6 +19,8 @@ import booth from './plugins/booth';
 mongoose.Promise = Promise;
 
 export default class UWaveServer extends EventEmitter {
+  _sources = {};
+
   /**
   * Registers middleware on a route
   *
@@ -40,6 +47,10 @@ export default class UWaveServer extends EventEmitter {
     } else {
       this.redis = new Redis({ lazyConnect: true });
     }
+
+    // Will be removed in the future.
+    this.source('youtube', youTubeSource, { key: config.keys.youtube });
+    this.source('soundcloud', soundCloudSource, { key: config.keys.soundcloud });
 
     this.log = debug('uwave:server');
     this.mongoLog = debug('uwave:mongo');
@@ -81,6 +92,48 @@ export default class UWaveServer extends EventEmitter {
   advance(opts = {}) {
     this.log('advance', opts);
     return this.booth.advance(opts);
+  }
+
+  /**
+   * An array of registered sources.
+   */
+  get sources() {
+    return values(this._sources);
+  }
+
+  /**
+   * Find or register a source plugin.
+   * If only the first parameter is passed, returns an existing source plugin.
+   * If more parameters are passed, adds a source plugin and returns its wrapped
+   * source plugin.
+   *
+   * @param sourceType {string} Source type name. Used to signal where a given
+   *     media item originated from.
+   * @param sourcePlugin {Function|Object} Source plugin or plugin factory.
+   * @param opts {Object} Options to pass to the source plugin. Only used if
+   *     a source plugin factory was passed to `sourcePlugin`.
+   */
+  source(sourceType, sourcePlugin, opts = {}) {
+    if (arguments.length === 1) {
+      return this._sources[sourceType];
+    }
+
+    const sourceFactory = sourcePlugin.default || sourcePlugin;
+    const type = typeof sourceFactory;
+    if (type !== 'function' && type !== 'object') {
+      throw new TypeError(`Source plugin should be a function, got ${type}`);
+    }
+
+    const newSource = new Source(
+      sourceType,
+      type === 'function'
+        ? sourceFactory(this, opts)
+        : sourceFactory
+    );
+
+    this._sources[sourceType] = newSource;
+
+    return newSource;
   }
 
   _createRedisConnection() {

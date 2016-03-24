@@ -12,9 +12,14 @@
     "body-parser": "^1.13.3",
     "debug": "^2.2.0",
     "express": "^4.13.3",
+    "get-artist-title": "0.0.3",
+    "googleapis": "^2.1.7",
     "ioredis": "^1.9.0",
     "mongoose": "^4.1.6",
-    "mongoose-model-decorators": "^0.2.1"
+    "mongoose-model-decorators": "^0.2.1",
+    "object-values": "^1.0.0",
+    "parse-iso-duration": "^1.0.0",
+    "request": "^2.69.0"
   },
   "devDependencies": {
     "babel-eslint": "^5.0.0-beta10",
@@ -26,6 +31,7 @@
     "babel-preset-stage-2": "^6.5.0",
     "babel-register": "^6.5.2",
     "chai": "^3.5.0",
+    "chai-as-promised": "^5.2.0",
     "eslint": "^1.10.3",
     "eslint-config-airbnb": "^3.1.0",
     "gulp": "^3.9.1",
