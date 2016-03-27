@@ -1,6 +1,7 @@
 import Promise from 'bluebird';
 import parseIsoDuration from 'parse-iso-duration';
 import getArtistTitle, { fallBackToArtist } from 'get-artist-title';
+import chunk from 'chunk';
 
 import googleapis from 'googleapis';
 
@@ -46,7 +47,7 @@ function normalizeMedia(video) {
 export default function youTubeSource(uw, opts = {}) {
   const params = opts.key ? { key: opts.key } : {};
 
-  async function get(sourceIDs) {
+  async function getPage(sourceIDs) {
     const [result] = await youTubeGet({
       ...params,
       part: 'snippet,contentDetails',
@@ -61,6 +62,13 @@ export default function youTubeSource(uw, opts = {}) {
     });
 
     return result.items.map(normalizeMedia);
+  }
+
+  async function get(sourceIDs) {
+    const pages = await Promise.all(
+      chunk(sourceIDs, 50).map(getPage)
+    );
+    return pages.reduce((result, page) => result.concat(page), []);
   }
 
   async function search(query, page = null) {
