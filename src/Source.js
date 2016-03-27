@@ -10,10 +10,16 @@ export default class Source {
   }
 
   /**
-   * Add a sourceType property to a list of media items.
+   * Add a default sourceType property to a list of media items.
+   *
+   * Media items can provide their own sourceType, too, so media sources can
+   * aggregate items from different source types.
    */
   addSourceType(items) {
-    return items.map(item => ({ ...item, sourceType: this.type }));
+    return items.map(item => ({
+      sourceType: this.type,
+      ...item
+    }));
   }
 
   /**
