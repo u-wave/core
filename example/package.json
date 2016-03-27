@@ -1,0 +1,19 @@
+{
+  "private": true,
+  "name": "u-wave-example",
+  "dependencies": {
+    "express": "4.x",
+    "u-wave-core": "1.x",
+    "u-wave-api-v1": "1.x",
+    "u-wave-web": "1.x"
+  },
+  "devDependencies": {
+    "babel-cli": "^6.6.0",
+    "babel-preset-es2015-node4": "^2.0.3",
+    "babel-preset-stage-2": "^6.6.0"
+  },
+  "scripts": {
+    "build": "babel --presets es2015-node4,stage-2 index.js > index.compiled.js",
+    "start": "node index.compiled.js"
+  }
+}
