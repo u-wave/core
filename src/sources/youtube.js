@@ -1,6 +1,6 @@
 import Promise from 'bluebird';
 import parseIsoDuration from 'parse-iso-duration';
-import getArtistTitle from 'get-artist-title';
+import getArtistTitle, { fallBackToArtist } from 'get-artist-title';
 
 import googleapis from 'googleapis';
 
@@ -8,14 +8,6 @@ const youTube = googleapis.youtube('v3');
 
 const youTubeSearch = Promise.promisify(youTube.search.list);
 const youTubeGet = Promise.promisify(youTube.videos.list);
-
-// Create a getArtistTitle plugin to fall back to the given artist name when no
-// other plugins detected an artist/title combination.
-function fallBackToArtist(artist) {
-  return {
-    splitArtistTitle: title => [artist, title]
-  };
-}
 
 function selectThumbnail(thumbnails) {
   if (thumbnails) {

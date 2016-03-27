@@ -1,6 +1,6 @@
 import Promise from 'bluebird';
 import requestCb from 'request';
-import getArtistTitle from 'get-artist-title';
+import getArtistTitle, { fallBackToArtist } from 'get-artist-title';
 
 const request = Promise.promisify(requestCb.defaults({
   baseUrl: 'https://api.soundcloud.com',
@@ -8,14 +8,6 @@ const request = Promise.promisify(requestCb.defaults({
 }));
 
 const PAGE_SIZE = 50;
-
-// Create a getArtistTitle plugin to fall back to the given artist name when no
-// other plugins detected an artist/title combination.
-function fallBackToArtist(artist) {
-  return {
-    splitArtistTitle: title => [artist, title]
-  };
-}
 
 function normalizeMedia(media) {
   const [artist, title] = getArtistTitle(media.title, [
