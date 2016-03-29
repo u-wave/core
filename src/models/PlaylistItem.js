@@ -7,8 +7,8 @@ export default () => {
   class PlaylistItem {
     static schema = {
       media: { type: Types.ObjectId, ref: 'Media', required: true },
-      artist: { type: String, max: 128, required: true },
-      title: { type: String, max: 128, required: true },
+      artist: { type: String, max: 128, required: true, index: true },
+      title: { type: String, max: 128, required: true, index: true },
       start: { type: Number, min: 0, default: 0 },
       end: { type: Number, min: 0, default: 0 }
     };
