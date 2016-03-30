@@ -19,7 +19,15 @@ export default uw => {
     static timestamps = true;
 
     static schema = {
-      username: { type: String, min: 3, max: 32, required: true, unique: true, index: true },
+      username: {
+        type: String,
+        minlength: [3, 'Usernames have to be at least 3 characters long.'],
+        maxlength: [32, 'Usernames can be at most 32 characters long.'],
+        match: [/^[^\s]+$/, 'Usernames can\'t contain spaces.'],
+        required: true,
+        unique: true,
+        index: true
+      },
       language: { type: String, min: 2, max: 2, default: 'en' },
       role: { type: Number, min: 0, max: 5, default: 0, index: true },
       avatar: { type: String, min: 0, max: 256, default: '' },
