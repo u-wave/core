@@ -1,5 +1,6 @@
 import mongoose from 'mongoose';
 import { createSchema, pre } from 'mongoose-model-decorators';
+import slugify from 'speakingurl';
 
 const Types = mongoose.Schema.Types;
 
@@ -31,7 +32,12 @@ export default uw => {
       language: { type: String, min: 2, max: 2, default: 'en' },
       role: { type: Number, min: 0, max: 5, default: 0, index: true },
       avatar: { type: String, min: 0, max: 256, default: '' },
-      slug: { type: String, min: 3, max: 256, required: true },
+      slug: {
+        type: String,
+        unique: true,
+        required: true,
+        index: true
+      },
       level: { type: Number, min: 0, max: 9001, default: 0 },
       lastSeenAt: { type: Date, default: Date.now },
       exiled: { type: Boolean, default: false },
@@ -47,9 +53,9 @@ export default uw => {
       return await this.model('Playlist').findOne({ _id: playlistID });
     }
 
-    @pre('validate')
+    @pre('save')
     makeSlug() {
-      this.slug = this.username.toLowerCase();
+      this.slug = slugify(this.username, { lang: this.language });
     }
   }
 
