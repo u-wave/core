@@ -44,8 +44,23 @@ function normalizeMedia(video) {
   };
 }
 
+const defaultSearchOptions = {
+  part: 'id',
+  fields: `
+    items(id/videoId),
+    pageInfo,
+    nextPageToken,
+    prevPageToken
+  `.replace(/\s+/g, ''),
+  type: 'video',
+  maxResults: 50,
+  safeSearch: 'none',
+  videoSyndicated: true
+};
+
 export default function youTubeSource(uw, opts = {}) {
   const params = opts.key ? { key: opts.key } : {};
+  const searchOptions = opts.search || {};
 
   async function getPage(sourceIDs) {
     const [result] = await youTubeGet({
@@ -73,18 +88,9 @@ export default function youTubeSource(uw, opts = {}) {
 
   async function search(query, page = null) {
     const [result] = await youTubeSearch({
+      ...defaultSearchOptions,
+      ...searchOptions,
       ...params,
-      part: 'id',
-      fields: `
-        items(id/videoId),
-        pageInfo,
-        nextPageToken,
-        prevPageToken
-      `.replace(/\s+/g, ''),
-      type: 'video',
-      maxResults: 50,
-      safeSearch: 'none',
-      videoSyndicated: true,
       q: query,
       pageToken: page
     });
