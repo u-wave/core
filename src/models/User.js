@@ -9,7 +9,7 @@ export default uw => {
     static schema = {
       moderator: { type: Types.ObjectId, ref: 'User', index: true },
       duration: { type: Number, required: true },
-      expiresAt: { type: Date, required: true },
+      expiresAt: { type: Date, required: true, index: true },
       reason: { type: String, default: '' }
     };
   }
