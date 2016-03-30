@@ -5,6 +5,8 @@ const Types = mongoose.Schema.Types;
 
 export default () => {
   class Authentication {
+    static timestamps = true;
+
     static schema = {
       user: { type: Types.ObjectId, ref: 'User', index: true },
       email: { type: String, max: 254, required: true, unique: true, index: true },

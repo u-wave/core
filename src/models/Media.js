@@ -2,6 +2,8 @@ import { createSchema } from 'mongoose-model-decorators';
 
 export default () => {
   class Media {
+    static timestamps = true;
+
     static schema = {
       sourceID: { type: String, max: 128, required: true, index: true },
       sourceType: { type: String, max: 128, required: true, index: true },

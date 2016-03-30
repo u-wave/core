@@ -20,7 +20,7 @@ export default () => {
         start: { type: Number, default: 0 },
         end: { type: Number, default: 0 }
       },
-      played: { type: Date, default: Date.now, index: true },
+      playedAt: { type: Date, default: Date.now, index: true },
       upvotes: listOfUsers,
       downvotes: listOfUsers,
       favorites: listOfUsers
