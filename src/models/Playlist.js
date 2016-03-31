@@ -5,8 +5,9 @@ const Types = mongoose.Schema.Types;
 
 export default () => {
   class Playlist {
+    static timestamps = true;
+
     static schema = {
-      created: { type: Date, default: Date.now, index: true },
       name: { type: String, min: 0, max: 128, required: true },
       description: { type: String, min: 0, max: 512 },
       author: { type: Types.ObjectId, ref: 'User', required: true, index: true },

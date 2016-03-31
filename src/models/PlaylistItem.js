@@ -5,6 +5,8 @@ const Types = mongoose.Schema.Types;
 
 export default () => {
   class PlaylistItem {
+    static timestamps = true;
+
     static schema = {
       media: { type: Types.ObjectId, ref: 'Media', required: true },
       artist: { type: String, max: 128, required: true, index: true },
