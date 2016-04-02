@@ -18,6 +18,11 @@ import booth from './plugins/booth';
 
 mongoose.Promise = Promise;
 
+type UwaveOptions = {
+  mongoose: ?string|Object,
+  redis: ?string|Object|Redis
+};
+
 export default class UWaveServer extends EventEmitter {
   _sources = {};
 
@@ -25,32 +30,20 @@ export default class UWaveServer extends EventEmitter {
   * Registers middleware on a route
   *
   * @constructor
-  * @param {Object} config - for further information, see src/config/server.json.example
+  * @param {Object} options
   */
-  constructor(config = {}) {
+  constructor(options: UwaveOptions = {}) {
     super();
-    this.config = config;
+    this.parseOptions(options);
 
     this.app = express();
     this.server = http.createServer(this.app);
 
     this.mongo = mongoose.createConnection();
-    if (typeof config.redis === 'string') {
-      this.redis = new Redis(config.redis, { lazyConnect: true });
-    } else if (typeof config.redis === 'object') {
-      this.redis = new Redis(config.redis.port, config.redis.host, {
-        ...config.redis.options,
-        lazyConnect: true
-      });
-    } else if (config.redis instanceof Redis) {
-      this.redis = config.redis;
-    } else {
-      this.redis = new Redis({ lazyConnect: true });
-    }
 
     // Will be removed in the future.
-    this.source('youtube', youTubeSource, { key: config.keys.youtube });
-    this.source('soundcloud', soundCloudSource, { key: config.keys.soundcloud });
+    this.source('youtube', youTubeSource, { key: options.keys.youtube });
+    this.source('soundcloud', soundCloudSource, { key: options.keys.soundcloud });
 
     this.log = debug('uwave:server');
     this.mongoLog = debug('uwave:mongo');
@@ -78,6 +71,28 @@ export default class UWaveServer extends EventEmitter {
     }
 
     process.on('SIGINT', () => { this.stop(); });
+  }
+
+  /**
+   * Deprecated in favour of `.options`.
+   */
+  get config() {
+    return this.options;
+  }
+
+  parseOptions(options: UwaveOptions) {
+    if (typeof options.redis === 'string') {
+      this.redis = new Redis(options.redis, { lazyConnect: true });
+    } else if (typeof options.redis === 'object') {
+      this.redis = new Redis(options.redis.port, options.redis.host, {
+        ...options.redis.options,
+        lazyConnect: true
+      });
+    } else if (options.redis instanceof Redis) {
+      this.redis = options.redis;
+    } else {
+      this.redis = new Redis({ lazyConnect: true });
+    }
   }
 
   use(plugin) {
@@ -155,8 +170,8 @@ export default class UWaveServer extends EventEmitter {
 
   _createMongoConnection() {
     const promise = this.mongo.open(
-      `mongodb://${this.config.mongo.host}:${this.config.mongo.port}/uwave`,
-      this.config.mongo.options
+      `mongodb://${this.options.mongo.host}:${this.options.mongo.port}/uwave`,
+      this.options.mongo.options
     );
 
     this.mongo.on('error', e => {
