@@ -1,6 +1,6 @@
 import bodyParser from 'body-parser';
 import EventEmitter from 'events';
-import mongoose from 'mongoose';
+import mongoose, { Connection as MongooseConnection } from 'mongoose';
 import readline from 'readline';
 import Promise from 'bluebird';
 import express from 'express';
@@ -8,6 +8,7 @@ import Redis from 'ioredis';
 import debug from 'debug';
 import http from 'http';
 import values from 'object-values';
+import isPlainObject from 'lodash.isplainobject';
 
 import Source from './Source';
 import youTubeSource from './sources/youtube';
@@ -18,6 +19,11 @@ import booth from './plugins/booth';
 
 mongoose.Promise = Promise;
 
+type UwaveOptions = {
+  mongoose: ?string|Object,
+  redis: ?string|Object|Redis
+};
+
 export default class UWaveServer extends EventEmitter {
   _sources = {};
 
@@ -25,39 +31,32 @@ export default class UWaveServer extends EventEmitter {
   * Registers middleware on a route
   *
   * @constructor
-  * @param {Object} config - for further information, see src/config/server.json.example
+  * @param {Object} options
   */
-  constructor(config = {}) {
+  constructor(options: UwaveOptions = {}) {
     super();
-    this.config = config;
+    this.parseOptions(options);
 
     this.app = express();
     this.server = http.createServer(this.app);
 
-    this.mongo = mongoose.createConnection();
-    if (typeof config.redis === 'string') {
-      this.redis = new Redis(config.redis, { lazyConnect: true });
-    } else if (typeof config.redis === 'object') {
-      this.redis = new Redis(config.redis.port, config.redis.host, {
-        ...config.redis.options,
-        lazyConnect: true
-      });
-    } else if (config.redis instanceof Redis) {
-      this.redis = config.redis;
-    } else {
-      this.redis = new Redis({ lazyConnect: true });
-    }
-
     // Will be removed in the future.
-    this.source('youtube', youTubeSource, { key: config.keys.youtube });
-    this.source('soundcloud', soundCloudSource, { key: config.keys.soundcloud });
+    this.source('youtube', youTubeSource, { key: options.keys.youtube });
+    this.source('soundcloud', soundCloudSource, { key: options.keys.soundcloud });
 
     this.log = debug('uwave:server');
     this.mongoLog = debug('uwave:mongo');
     this.redisLog = debug('uwave:redis');
 
+    this.attachRedisEvents();
+    this.attachMongooseEvents();
+
     this.use(models());
     this.use(booth());
+
+    process.nextTick(() => {
+      this.emit('started');
+    });
 
     this.app.use(bodyParser.json());
     this.app.use(bodyParser.urlencoded({ extended: true }));
@@ -78,6 +77,38 @@ export default class UWaveServer extends EventEmitter {
     }
 
     process.on('SIGINT', () => { this.stop(); });
+  }
+
+  /**
+   * Deprecated in favour of `.options`.
+   */
+  get config() {
+    return this.options;
+  }
+
+  parseOptions(options: UwaveOptions) {
+    if (Array.isArray(options.mongo)) {
+      this.mongo = mongoose.createConnection(...options.mongo);
+    } else if (typeof options.mongo === 'string' || isPlainObject(options.mongo)) {
+      this.mongo = mongoose.createConnection(options.mongo);
+    } else if (options.mongo instanceof MongooseConnection) {
+      this.mongo = options.mongo;
+    } else {
+      this.mongo = mongoose.createConnection('mongodb://localhost:27017/uwave');
+    }
+
+    if (typeof options.redis === 'string') {
+      this.redis = new Redis(options.redis, { lazyConnect: true });
+    } else if (typeof options.redis === 'object') {
+      this.redis = new Redis(options.redis.port, options.redis.host, {
+        ...options.redis.options,
+        lazyConnect: true
+      });
+    } else if (options.redis instanceof Redis) {
+      this.redis = options.redis;
+    } else {
+      this.redis = new Redis({ lazyConnect: true });
+    }
   }
 
   use(plugin) {
@@ -136,7 +167,7 @@ export default class UWaveServer extends EventEmitter {
     return newSource;
   }
 
-  _createRedisConnection() {
+  attachRedisEvents() {
     this.redis.on('error', e => {
       this.emit('redisError', e);
     });
@@ -153,12 +184,7 @@ export default class UWaveServer extends EventEmitter {
     });
   }
 
-  _createMongoConnection() {
-    const promise = this.mongo.open(
-      `mongodb://${this.config.mongo.host}:${this.config.mongo.port}/uwave`,
-      this.config.mongo.options
-    );
-
+  attachMongooseEvents() {
     this.mongo.on('error', e => {
       this.mongoLog(e);
       this.emit('mongoError', e);
@@ -174,33 +200,28 @@ export default class UWaveServer extends EventEmitter {
       this.emit('mongoDisconnect');
     });
 
-    return promise;
+    this.mongo.on('connected', () => {
+      this.mongoLog('connected');
+      this.emit('mongoConnect');
+    });
   }
 
   /**
    * Set up database connections.
+   *
+   * @deprecated Noop.
    */
-  async connect() {
-    this.log('starting server...');
-
-    await Promise.all([
-      this._createRedisConnection(),
-      this._createMongoConnection()
-    ]);
-
-    this.emit('started', this);
-    this.log('server started');
-
+  connect() {
     return this;
   }
 
   /**
    * Old name for connect().
    *
-   * @deprecated
+   * @deprecated Noop.
    */
   start() {
-    return this.connect();
+    return this;
   }
 
   /**
