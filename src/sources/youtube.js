@@ -1,4 +1,5 @@
 import Promise from 'bluebird';
+import getYouTubeID from 'get-youtube-id';
 import parseIsoDuration from 'parse-iso-duration';
 import getArtistTitle, { fallBackToArtist } from 'get-artist-title';
 import chunk from 'chunk';
@@ -91,7 +92,10 @@ export default function youTubeSource(uw, opts = {}) {
       ...defaultSearchOptions,
       ...searchOptions,
       ...params,
-      q: query,
+      // When searching for a video URL, we want to search for the video ID
+      // only, because search results are very inconsistent with some types of
+      // URLs.
+      q: getYouTubeID(query, { fuzzy: false }) || query,
       pageToken: page
     });
 
