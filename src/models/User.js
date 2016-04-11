@@ -53,7 +53,7 @@ export default uw => {
       return await this.model('Playlist').findOne({ _id: playlistID });
     }
 
-    @pre('save')
+    @pre('validate')
     makeSlug() {
       this.slug = slugify(this.username, { lang: this.language });
     }
