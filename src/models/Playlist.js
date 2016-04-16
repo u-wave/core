@@ -6,6 +6,7 @@ const Types = mongoose.Schema.Types;
 export default () => {
   class Playlist {
     static timestamps = true;
+    static toJSON = { getters: true };
 
     static schema = {
       name: { type: String, min: 0, max: 128, required: true },
