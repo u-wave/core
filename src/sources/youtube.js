@@ -93,7 +93,9 @@ const getPlaylistsOptions = {
       snippet/channelTitle,
       snippet/thumbnails,
       contentDetails/itemCount
-    )
+    ),
+    pageInfo,
+    nextPageToken
   `.replace(/\s+/g, ''),
   maxResults: 50
 };
@@ -244,6 +246,32 @@ export default function youTubeSource(uw, opts = {}) {
     };
   }
 
+  async function getChannelPlaylistsPage(channelID, page = null) {
+    const [result] = await youTubeGetPlaylists({
+      ...params,
+      ...getPlaylistsOptions,
+      channelId: channelID,
+      pageToken: page
+    });
+
+    return {
+      nextPage: result.nextPageToken,
+      items: result.items
+    };
+  }
+
+  async function getChannelPlaylists(channelID) {
+    const playlists = [];
+    let page;
+    do {
+      const res = await getChannelPlaylistsPage(channelID, page);
+      page = res.nextPage;
+      playlists.push(...res.items);
+    } while (page);
+
+    return playlists;
+  }
+
   async function getPlaylistMetasForUser(url) {
     const channel = await getChannelMeta(url);
 
@@ -252,17 +280,13 @@ export default function youTubeSource(uw, opts = {}) {
       ...getPlaylistsOptions,
       id: values(channel.playlists)
     });
-    const playlists = youTubeGetPlaylists({
-      ...params,
-      ...getPlaylistsOptions,
-      channelId: channel.id
-    });
+    const playlists = getChannelPlaylists(channel.id);
 
     const result = await Promise.all([specials, playlists]);
 
     const allPlaylists = [
       ...result[0][0].items,
-      ...result[1][0].items
+      ...result[1]
     ];
 
     return {
