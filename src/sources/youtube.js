@@ -46,7 +46,10 @@ function normalizeMedia(video) {
 
   return {
     sourceID: video.id,
-    artist, title,
+    // TODO Fix the detection in get-artist-title so that it doesn't split the
+    // title into parts with only fluff.
+    artist: artist || '[unknown]',
+    title: title || '[unknown]',
     duration: parseYouTubeDuration(video.contentDetails.duration),
     thumbnail: selectThumbnail(video.snippet.thumbnails),
     restricted: getRegionRestriction(video.contentDetails)
