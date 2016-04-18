@@ -13,7 +13,7 @@
     "chunk": "0.0.2",
     "debug": "^2.2.0",
     "express": "^4.13.3",
-    "get-artist-title": "^0.1.0",
+    "get-artist-title": "^0.2.1",
     "get-youtube-id": "^1.0.0",
     "googleapis": "^2.1.7",
     "ioredis": "^1.9.0",
