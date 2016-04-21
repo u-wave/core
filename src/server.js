@@ -156,6 +156,7 @@ export default class UWaveServer extends EventEmitter {
     }
 
     const newSource = new Source(
+      this,
       sourceType,
       type === 'function'
         ? sourceFactory(this, opts)

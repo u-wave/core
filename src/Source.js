@@ -1,8 +1,11 @@
+import ImportContext from './sources/ImportContext';
+
 /**
  * Wrapper around source plugins with some more convenient aliases.
  */
 export default class Source {
-  constructor(sourceType, sourcePlugin) {
+  constructor(uw, sourceType, sourcePlugin) {
+    this.uw = uw;
     this.type = sourceType;
     this.plugin = sourcePlugin;
 
@@ -45,5 +48,15 @@ export default class Source {
   search(query, page, ...args) {
     return this.plugin.search(query, page, ...args)
       .then(this.addSourceType);
+  }
+
+  /**
+   * Import *something* from this media source. Because media sources can
+   * provide wildly different imports, üWave trusts clients to know what they're
+   * doing.
+   */
+  async 'import'(user, ...args) {
+    const importContext = new ImportContext(this.uw, this, user);
+    return await this.plugin.import(importContext, ...args);
   }
 }

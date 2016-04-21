@@ -17,6 +17,7 @@
     "get-youtube-id": "^1.0.0",
     "googleapis": "^2.1.7",
     "ioredis": "^1.9.0",
+    "lodash.groupby": "^4.3.0",
     "lodash.isplainobject": "^4.0.3",
     "mongoose": "^4.1.6",
     "mongoose-model-decorators": "^0.2.1",
