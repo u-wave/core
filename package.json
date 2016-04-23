@@ -4,15 +4,14 @@
   "description": "Room server node for üWave.",
   "license": "MIT",
   "repository": "u-wave/u-wave-server",
+  "main": "lib/index.js",
   "engines": {
     "node": ">= 4.0"
   },
   "dependencies": {
     "bluebird": "^2.10.0",
-    "body-parser": "^1.13.3",
     "chunk": "0.0.2",
     "debug": "^2.2.0",
-    "express": "^4.13.3",
     "get-artist-title": "^0.2.1",
     "get-youtube-id": "^1.0.0",
     "googleapis": "^2.1.7",

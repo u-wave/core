@@ -1,11 +1,11 @@
 import { expect } from 'chai';
 
-import Server from '../lib/server';
+import uwave, { Uwave } from '../';
 
-describe('üWave Server', () => {
-  it('can instantiate a Server object', () => {
+describe('üWave Core', () => {
+  it('can create a üWave instance', () => {
     expect(
-      new Server(require('./test-server-config'))
-    ).to.be.instanceOf(Server);
+      uwave(require('./test-server-config'))
+    ).to.be.instanceOf(Uwave);
   });
 });
