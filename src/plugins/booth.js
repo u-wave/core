@@ -12,6 +12,7 @@ export class Booth {
     this.uw = uw;
 
     uw.on('started', this.onStart.bind(this));
+    uw.on('stop', this.onStop.bind(this));
   }
 
   async onStart() {
@@ -30,6 +31,10 @@ export class Booth {
         this.uw.advance();
       }
     }
+  }
+
+  onStop() {
+    this.maybeStop();
   }
 
   async getCurrentEntry() {
