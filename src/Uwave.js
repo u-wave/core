@@ -1,12 +1,8 @@
-import bodyParser from 'body-parser';
 import EventEmitter from 'events';
 import mongoose, { Connection as MongooseConnection } from 'mongoose';
-import readline from 'readline';
 import Promise from 'bluebird';
-import express from 'express';
 import Redis from 'ioredis';
 import debug from 'debug';
-import http from 'http';
 import values from 'object-values';
 import isPlainObject from 'lodash.isplainobject';
 
@@ -37,16 +33,13 @@ export default class UWaveServer extends EventEmitter {
     super();
     this.parseOptions(options);
 
-    this.app = express();
-    this.server = http.createServer(this.app);
-
     // Will be removed in the future.
     this.source('youtube', youTubeSource, { key: options.keys.youtube });
     this.source('soundcloud', soundCloudSource, { key: options.keys.soundcloud });
 
-    this.log = debug('uwave:server');
-    this.mongoLog = debug('uwave:mongo');
-    this.redisLog = debug('uwave:redis');
+    this.log = debug('uwave:core');
+    this.mongoLog = debug('uwave:core:mongo');
+    this.redisLog = debug('uwave:core:redis');
 
     this.attachRedisEvents();
     this.attachMongooseEvents();
@@ -57,26 +50,6 @@ export default class UWaveServer extends EventEmitter {
     process.nextTick(() => {
       this.emit('started');
     });
-
-    this.app.use(bodyParser.json());
-    this.app.use(bodyParser.urlencoded({ extended: true }));
-    this.app.use((req, res, next) => {
-      /* eslint-disable no-param-reassign */
-      req.uwave = this;
-      /* eslint-enable no-param-reassign */
-      next();
-    });
-
-    /* ======== SIGINT ======== */
-    // workaround to properly stop the server on termination.
-    if (process.platform === 'win32') {
-      readline.createInterface({
-        input: process.stdin,
-        output: process.stdout
-      }).on('SIGINT', () => process.emit('SIGINT'));
-    }
-
-    process.on('SIGINT', () => { this.stop(); });
   }
 
   /**
@@ -247,10 +220,10 @@ export default class UWaveServer extends EventEmitter {
   }
 
   /**
-  * Stops the server
+  * Stop this üWave instance.
   */
   stop() {
-    this.log('stopping server...');
+    this.log('stopping üWave...');
     this.redis.save();
     this.redis.end();
     this.redis.removeAllListeners();

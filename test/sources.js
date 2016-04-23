@@ -3,13 +3,13 @@ import asPromised from 'chai-as-promised';
 
 chai.use(asPromised);
 
-import Server from '../lib/server';
+import uwave from '../';
 import Source from '../lib/Source';
 
 describe('Media Sources', () => {
   let server;
   beforeEach(() => {
-    server = new Server(require('./test-server-config'));
+    server = uwave(require('./test-server-config'));
   });
 
   class TestSource {
