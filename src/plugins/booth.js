@@ -187,7 +187,6 @@ export class Booth {
 
     if (next) {
       await next.save();
-      await this.play(next);
     } else {
       this.maybeStop();
     }
@@ -197,6 +196,7 @@ export class Booth {
     if (next) {
       await this.update(next);
       await this.cyclePlaylist(next.playlist);
+      await this.play(next);
     } else {
       await this.clear();
     }
