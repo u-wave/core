@@ -1,9 +1,12 @@
 import mongoose from 'mongoose';
 import { createSchema } from 'mongoose-model-decorators';
 
+import NotFoundError from '../errors/NotFoundError';
+import Page from '../Page';
+
 const Types = mongoose.Schema.Types;
 
-export default () => {
+export default uw => {
   class Playlist {
     static timestamps = true;
     static toJSON = { getters: true };
@@ -21,8 +24,40 @@ export default () => {
       return this.media.length;
     }
 
+    getItem(id) {
+      if (!this.media.some(item => `${item}` === `${id}`)) {
+        throw new NotFoundError('Playlist item not found.');
+      }
+      return uw.playlists.getPlaylistItem(id);
+    }
+
     getItemAt(index): Promise {
-      return this.model('PlaylistItem').findOne(this.media[index]);
+      return uw.playlists.getPlaylistItem(this.media[index]);
+    }
+
+    getItems(filter, page): Promise<Page> {
+      return uw.playlists.getPlaylistItems(this, filter, page);
+    }
+
+    addItems(items, opts = {}): Promise {
+      return uw.playlists.addPlaylistItems(this, items, opts);
+    }
+
+    async updateItem(id, patch = {}): Promise {
+      const item = await this.getItem(id);
+      return await uw.playlists.updatePlaylistItem(item, patch);
+    }
+
+    moveItems(ids, afterID) {
+      return uw.playlists.movePlaylistItems(this, ids, afterID);
+    }
+
+    removeItem(id): Promise {
+      return this.removeItems([id]);
+    }
+
+    removeItems(ids): Promise {
+      return uw.playlists.removePlaylistItems(this, ids);
     }
   }
 

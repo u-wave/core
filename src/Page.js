@@ -10,6 +10,10 @@ export default class Page {
     return this.opts.pageSize || this.length;
   }
 
+  get filteredSize() {
+    return this.opts.filtered;
+  }
+
   get totalSize() {
     return this.opts.total;
   }

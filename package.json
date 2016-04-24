@@ -13,6 +13,7 @@
     "bluebird": "^2.10.0",
     "chunk": "0.0.2",
     "debug": "^2.2.0",
+    "escape-string-regexp": "^1.0.5",
     "get-artist-title": "^0.2.1",
     "get-youtube-id": "^1.0.0",
     "googleapis": "^2.1.7",
