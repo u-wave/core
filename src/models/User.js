@@ -44,18 +44,29 @@ export default uw => {
       banned: new BannedSchema()
     };
 
+    @pre('validate')
+    makeSlug() {
+      this.slug = slugify(this.username, { lang: this.language });
+    }
+
     getActivePlaylistID(): Promise<string> {
       return uw.redis.get(`playlist:${this.id}`);
     }
 
     async getActivePlaylist(): Promise {
       const playlistID = await this.getActivePlaylistID();
-      return await this.model('Playlist').findOne({ _id: playlistID });
+      return await this.model('Playlist').findById(playlistID);
     }
 
-    @pre('validate')
-    makeSlug() {
-      this.slug = slugify(this.username, { lang: this.language });
+    async mute(...args): Promise {
+      return await uw.chat.mute(this, ...args);
+    }
+    async unmute(...args): Promise {
+      return await uw.chat.unmute(this, ...args);
+    }
+
+    async isMuted(): Promise<boolean> {
+      return await uw.chat.isMuted(this);
     }
   }
 
