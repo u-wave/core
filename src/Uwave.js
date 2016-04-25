@@ -8,7 +8,7 @@ import isPlainObject from 'lodash.isplainobject';
 
 import Source from './Source';
 import youTubeSource from './sources/youtube';
-import soundCloudSource from './sources/soundcloud';
+import soundCloudSource from 'u-wave-source-soundcloud';
 
 import models from './models';
 import booth from './plugins/booth';
