@@ -5,11 +5,19 @@ import uwave from 'u-wave-core';
 import createWebApi from 'u-wave-api-v1';
 import createWebClient from 'u-wave-web';
 
+import youTubeSource from 'u-wave-source-youtube';
+import soundCloudSource from 'u-wave-source-soundcloud';
+
 const port = process.env.PORT || 80;
 
 const config = require('./config.json');
 
 const uw = uwave(config);
+
+// Register your Media Sources. The API keys are configured in the config.json
+// file.
+uw.source('youtube', youTubeSource, config.youtube);
+uw.source('soundcloud', soundCloudSource, config.soundcloud);
 
 const app = express();
 const server = app.listen(port);
