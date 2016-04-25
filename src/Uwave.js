@@ -12,6 +12,7 @@ import soundCloudSource from 'u-wave-source-soundcloud';
 
 import models from './models';
 import booth from './plugins/booth';
+import chat from './plugins/chat';
 
 mongoose.Promise = Promise;
 
@@ -46,6 +47,7 @@ export default class UWaveServer extends EventEmitter {
 
     this.use(models());
     this.use(booth());
+    this.use(chat());
 
     process.nextTick(() => {
       this.emit('started');
@@ -96,6 +98,14 @@ export default class UWaveServer extends EventEmitter {
   advance(opts = {}) {
     this.log('advance', opts);
     return this.booth.advance(opts);
+  }
+
+  sendChat(user, message) {
+    return this.chat.send(user, message);
+  }
+
+  deleteChat(filter = {}, opts = {}) {
+    return this.chat.delete(filter, opts);
   }
 
   /**
