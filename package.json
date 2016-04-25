@@ -9,6 +9,7 @@
     "node": ">= 4.0"
   },
   "dependencies": {
+    "bcrypt": "^0.8.6",
     "bluebird": "^2.10.0",
     "chunk": "0.0.2",
     "debug": "^2.2.0",

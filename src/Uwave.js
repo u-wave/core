@@ -12,6 +12,7 @@ import models from './models';
 import booth from './plugins/booth';
 import chat from './plugins/chat';
 import motd from './plugins/motd';
+import users from './plugins/users';
 
 mongoose.Promise = Promise;
 
@@ -44,6 +45,7 @@ export default class UWaveServer extends EventEmitter {
     this.use(booth());
     this.use(chat());
     this.use(motd());
+    this.use(users());
 
     process.nextTick(() => {
       this.emit('started');
@@ -110,6 +112,23 @@ export default class UWaveServer extends EventEmitter {
 
   setMotd(text) {
     return this.motd.set(text);
+  }
+
+  // TODO add filter
+  getUsers(page = {}) {
+    return this.users.getUsers(page);
+  }
+
+  getUser(id) {
+    return this.users.getUser(id);
+  }
+
+  createUser(opts) {
+    return this.users.createUser(opts);
+  }
+
+  updateUser(user, update, opts = {}) {
+    return this.users.updateUser(user, update, opts);
   }
 
   /**
