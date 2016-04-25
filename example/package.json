@@ -5,7 +5,9 @@
     "express": "4.x",
     "u-wave-core": "1.x",
     "u-wave-api-v1": "1.x",
-    "u-wave-web": "1.x"
+    "u-wave-web": "1.x",
+    "u-wave-source-soundcloud": "^1.0.0",
+    "u-wave-source-youtube": "^1.0.0"
   },
   "devDependencies": {
     "babel-cli": "^6.6.0",

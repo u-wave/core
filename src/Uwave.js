@@ -7,8 +7,6 @@ import values from 'object-values';
 import isPlainObject from 'lodash.isplainobject';
 
 import Source from './Source';
-import youTubeSource from 'u-wave-source-youtube';
-import soundCloudSource from 'u-wave-source-soundcloud';
 
 import models from './models';
 import booth from './plugins/booth';
@@ -32,10 +30,6 @@ export default class UWaveServer extends EventEmitter {
   constructor(options: UwaveOptions = {}) {
     super();
     this.parseOptions(options);
-
-    // Will be removed in the future.
-    this.source('youtube', youTubeSource, { key: options.keys.youtube });
-    this.source('soundcloud', soundCloudSource, { key: options.keys.soundcloud });
 
     this.log = debug('uwave:core');
     this.mongoLog = debug('uwave:core:mongo');
