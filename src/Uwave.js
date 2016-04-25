@@ -7,7 +7,7 @@ import values from 'object-values';
 import isPlainObject from 'lodash.isplainobject';
 
 import Source from './Source';
-import youTubeSource from './sources/youtube';
+import youTubeSource from 'u-wave-source-youtube';
 import soundCloudSource from 'u-wave-source-soundcloud';
 
 import models from './models';
