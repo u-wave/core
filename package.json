@@ -23,7 +23,8 @@
     "object-values": "^1.0.0",
     "parse-iso-duration": "^1.0.0",
     "request": "^2.69.0",
-    "speakingurl": "^9.0.0"
+    "speakingurl": "^9.0.0",
+    "u-wave-source-soundcloud": "^1.0.0"
   },
   "devDependencies": {
     "babel-eslint": "^5.0.0-beta10",
