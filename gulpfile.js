@@ -1,6 +1,8 @@
 const gulp = require('gulp');
 const babel = require('gulp-babel');
 const newer = require('gulp-newer');
+const plumber = require('gulp-plumber');
+const watch = require('gulp-watch');
 const through = require('through2');
 const log = require('gulp-util').log;
 const colors = require('gulp-util').colors;
@@ -13,6 +15,7 @@ gulp.task('default', ['build']);
 
 gulp.task('build', () => {
   return gulp.src(src)
+    .pipe(plumber())
     .pipe(newer(dest))
     .pipe(through.obj((file, enc, cb) => {
       const path = relative(__dirname, file.path);
@@ -24,5 +27,7 @@ gulp.task('build', () => {
 });
 
 gulp.task('watch', ['build'], () => {
-  gulp.watch(src, ['build']);
+  watch(src, () => {
+    gulp.start('build');
+  });
 });
