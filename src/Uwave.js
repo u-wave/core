@@ -229,21 +229,16 @@ export default class UWaveServer extends EventEmitter {
   /**
   * Stop this üWave instance.
   */
-  stop() {
+  async stop() {
     this.emit('stop');
 
     this.log('stopping üWave...');
 
-    this.redis.save();
-    this.redis.end();
-    this.redis.removeAllListeners();
-    this.redis = null;
+    await Promise.all([
+      this.redis.end(),
+      this.mongo.close()
+    ]);
 
-    this.mongo.close(() => {
-      this.mongo.removeAllListeners();
-      this.mongo = null;
-      this.mongoLog('connection closed');
-      this.emit('stopped');
-    });
+    this.emit('stopped');
   }
 }
