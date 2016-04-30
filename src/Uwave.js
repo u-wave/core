@@ -11,6 +11,7 @@ import Source from './Source';
 import models from './models';
 import booth from './plugins/booth';
 import chat from './plugins/chat';
+import motd from './plugins/motd';
 
 mongoose.Promise = Promise;
 
@@ -42,6 +43,7 @@ export default class UWaveServer extends EventEmitter {
     this.use(models());
     this.use(booth());
     this.use(chat());
+    this.use(motd());
 
     process.nextTick(() => {
       this.emit('started');
@@ -100,6 +102,14 @@ export default class UWaveServer extends EventEmitter {
 
   deleteChat(filter = {}, opts = {}) {
     return this.chat.delete(filter, opts);
+  }
+
+  getMotd() {
+    return this.motd.get();
+  }
+
+  setMotd(text) {
+    return this.motd.set(text);
   }
 
   /**
