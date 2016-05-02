@@ -1,9 +1,9 @@
 {
-  "name": "u-wave",
+  "name": "u-wave-core",
   "version": "0.0.0",
-  "description": "Room server node for üWave.",
+  "description": "The üWave core library.",
   "license": "MIT",
-  "repository": "u-wave/u-wave-server",
+  "repository": "u-wave/u-wave-core",
   "main": "lib/index.js",
   "engines": {
     "node": ">= 4.0"
