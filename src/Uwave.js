@@ -151,7 +151,7 @@ export default class UWaveServer extends EventEmitter {
    *     a source plugin factory was passed to `sourcePlugin`.
    */
   source(sourceType, sourcePlugin, opts = {}) {
-    if (arguments.length === 1) {
+    if (arguments.length === 1) { // eslint-disable-line prefer-rest-params
       return this._sources[sourceType];
     }
 

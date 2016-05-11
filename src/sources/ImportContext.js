@@ -29,11 +29,7 @@ export default class ImportContext {
 
     const itemsBySourceType = groupBy(items, 'sourceType');
     const playlistItems = [];
-    for (const sourceType in itemsBySourceType) {
-      if (!itemsBySourceType.hasOwnProperty(sourceType)) {
-        continue;
-      }
-
+    for (const sourceType of Object.keys(itemsBySourceType)) {
       const sourceItems = itemsBySourceType[sourceType];
       const knownMedias = await Media.find({
         sourceType,
