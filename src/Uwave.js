@@ -12,6 +12,7 @@ import models from './models';
 import booth from './plugins/booth';
 import chat from './plugins/chat';
 import motd from './plugins/motd';
+import playlists from './plugins/playlists';
 import users from './plugins/users';
 
 mongoose.Promise = Promise;
@@ -45,6 +46,7 @@ export default class UWaveServer extends EventEmitter {
     this.use(booth());
     this.use(chat());
     this.use(motd());
+    this.use(playlists());
     this.use(users());
 
     process.nextTick(() => {

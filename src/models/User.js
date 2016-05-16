@@ -49,13 +49,31 @@ export default uw => {
       this.slug = slugify(this.username, { lang: this.language });
     }
 
+    getPlaylists(): Promise<Array> {
+      return uw.playlists.getUserPlaylists(this);
+    }
+
+    getPlaylist(id): Promise {
+      return uw.playlists.getUserPlaylist(this, id);
+    }
+
     getActivePlaylistID(): Promise<string> {
       return uw.redis.get(`playlist:${this.id}`);
     }
 
     async getActivePlaylist(): Promise {
       const playlistID = await this.getActivePlaylistID();
-      return await this.model('Playlist').findById(playlistID);
+      return await uw.playlists.getPlaylist(playlistID);
+    }
+
+    async setActivePlaylist(id): Promise {
+      const playlist = await this.getPlaylist(id);
+      await uw.redis.set(`playlist:${this.id}`, playlist.id);
+      return this;
+    }
+
+    createPlaylist(props): Promise {
+      return uw.playlists.createPlaylist(this, props);
     }
 
     async mute(...args): Promise {

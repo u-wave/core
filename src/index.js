@@ -1,7 +1,13 @@
 import Uwave from './Uwave';
+import UwaveError from './errors/UwaveError';
+import NotFoundError from './errors/NotFoundError';
 
 module.exports = function uwave(opts) {
   return new Uwave(opts);
 };
 
-module.exports.Uwave = Uwave;
+Object.assign(module.exports, {
+  Uwave,
+  UwaveError,
+  NotFoundError
+});
