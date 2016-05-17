@@ -65,6 +65,7 @@ export class Booth {
   }
 
   async getNextDJ(opts) {
+    return await this.uw.waitlist.peek();
     const User = this.uw.model('User');
     let userID = await this.uw.redis.lindex('waitlist', 0);
     if (!userID && !opts.remove) {
@@ -105,15 +106,11 @@ export class Booth {
   }
 
   async cycleWaitlist(previous, opts) {
-    const waitlistLen = await this.uw.redis.llen('waitlist');
-    if (waitlistLen > 0) {
-      await this.uw.redis.lpop('waitlist');
-      if (previous && !opts.remove) {
-        // The previous DJ should only be added to the waitlist again if it was
-        // not empty. If it was empty, the previous DJ is already in the booth.
-        await this.uw.redis.rpush('waitlist', previous.user);
-      }
+    const { waitlist } = this.uw;
+    if (opts.remove) {
+      await waitlist.remove(previous);
     }
+    await waitlist.cycle();
   }
 
   clear() {
@@ -154,8 +151,9 @@ export class Booth {
     return entry;
   }
 
-  getWaitlist() {
-    return this.uw.redis.lrange('waitlist', 0, -1);
+  async getWaitlist() {
+    const { waitlist } = this.uw;
+    return await waitlist.users();
   }
 
   async publish(next) {
@@ -191,7 +189,7 @@ export class Booth {
       this.maybeStop();
     }
 
-    await this.cycleWaitlist(previous, opts);
+    await this.cycleWaitlist(previous.user, opts);
 
     if (next) {
       await this.update(next);
