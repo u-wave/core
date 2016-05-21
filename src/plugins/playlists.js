@@ -228,7 +228,7 @@ export class PlaylistsRepository {
       const knownMedias = await Media.find({
         sourceType,
         sourceID: { $in: sourceItems.map(item => item.sourceID) }
-      }).select({ sourceID: 1 });
+      });
 
       const unknownMediaIDs = [];
       sourceItems.forEach(item => {
