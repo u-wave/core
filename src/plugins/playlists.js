@@ -232,7 +232,7 @@ export class PlaylistsRepository {
 
       const unknownMediaIDs = [];
       sourceItems.forEach(item => {
-        if (!knownMedias.some(media => media.sourceID === item.sourceID)) {
+        if (!knownMedias.some(media => media.sourceID === String(item.sourceID))) {
           unknownMediaIDs.push(item.sourceID);
         }
       });
@@ -245,7 +245,7 @@ export class PlaylistsRepository {
 
       const itemsWithMedia = sourceItems.map(item => toPlaylistItem(
         item,
-        allMedias.find(media => media.sourceID === item.sourceID)
+        allMedias.find(media => media.sourceID === String(item.sourceID))
       ));
       playlistItems.push(...itemsWithMedia);
     }
