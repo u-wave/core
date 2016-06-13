@@ -20,6 +20,7 @@
     "ioredis": "^1.9.0",
     "lodash.groupby": "^4.3.0",
     "lodash.isplainobject": "^4.0.3",
+    "lodash.shuffle": "^4.0.0",
     "mongoose": "^4.1.6",
     "mongoose-model-decorators": "^0.2.1",
     "object-values": "^1.0.0",

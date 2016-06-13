@@ -1,4 +1,5 @@
 import groupBy from 'lodash.groupby';
+import shuffle from 'lodash.shuffle';
 import escapeStringRegExp from 'escape-string-regexp';
 
 import NotFoundError from '../errors/NotFoundError';
@@ -86,6 +87,12 @@ export class PlaylistsRepository {
   async updatePlaylist(playlistOrID, patch = {}) {
     const playlist = await this.getPlaylist(playlistOrID);
     Object.assign(playlist, patch);
+    return await playlist.save();
+  }
+
+  async shufflePlaylist(playlistOrID) {
+    const playlist = await this.getPlaylist(playlistOrID);
+    playlist.media = shuffle(playlist.media);
     return await playlist.save();
   }
 
