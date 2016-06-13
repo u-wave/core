@@ -20,7 +20,7 @@ export default class ImportContext {
    * @return Playlist model.
    */
   async createPlaylist(name, itemOrItems) {
-    const playlist = await this.uw.playlists.createPlaylist(this.user, name);
+    const playlist = await this.uw.playlists.createPlaylist(this.user, { name });
 
     const rawItems = this.source.addSourceType(
       Array.isArray(itemOrItems) ? itemOrItems : [itemOrItems]
