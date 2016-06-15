@@ -48,6 +48,10 @@ export default uw => {
       return await uw.playlists.updatePlaylistItem(item, patch);
     }
 
+    shuffle(): Promise {
+      return uw.playlists.shufflePlaylist(this);
+    }
+
     moveItems(ids, afterID) {
       return uw.playlists.movePlaylistItems(this, ids, afterID);
     }
