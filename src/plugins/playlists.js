@@ -148,11 +148,11 @@ export class PlaylistsRepository {
   async getPlaylistItems(playlistOrID, filter = null, pagination = null) {
     const PlaylistItem = this.uw.model('PlaylistItem');
     const playlist = await this.getPlaylist(playlistOrID);
-    const allItemIDs = filter
+    const filteredItemIDs = filter
       ? await this.getPlaylistItemIDsFiltered(playlist, filter)
       : this.getPlaylistItemIDsUnfiltered(playlist);
 
-    let itemIDs = allItemIDs;
+    let itemIDs = filteredItemIDs;
     if (pagination) {
       const start = pagination.offset;
       const end = start + pagination.limit;
@@ -170,8 +170,8 @@ export class PlaylistsRepository {
 
     return new Page(results, {
       pageSize: pagination ? pagination.limit : null,
-      filtered: playlist.media.length,
-      total: allItemIDs.length,
+      filtered: filteredItemIDs.length,
+      total: playlist.media.length,
 
       current: pagination,
       next: pagination ? {
