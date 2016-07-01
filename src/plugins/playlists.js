@@ -179,7 +179,7 @@ export class PlaylistsRepository {
         limit: pagination.limit
       } : null,
       previous: pagination ? {
-        offset: Math.min(pagination.offset - pagination.limit, 0),
+        offset: Math.max(pagination.offset - pagination.limit, 0),
         limit: pagination.limit
       } : null
     });
