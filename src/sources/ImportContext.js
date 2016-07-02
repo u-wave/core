@@ -27,7 +27,7 @@ export default class ImportContext {
     );
 
     if (rawItems.length > 0) {
-      await this.addPlaylistItems(playlist, rawItems);
+      await playlist.addItems(rawItems);
     }
 
     return playlist;
