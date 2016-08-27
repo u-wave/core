@@ -10,6 +10,7 @@ import Source from './Source';
 
 import models from './models';
 import booth from './plugins/booth';
+import waitlist from './plugins/waitlist';
 import chat from './plugins/chat';
 import motd from './plugins/motd';
 import playlists from './plugins/playlists';
@@ -44,6 +45,7 @@ export default class UWaveServer extends EventEmitter {
 
     this.use(models());
     this.use(booth());
+    this.use(waitlist());
     this.use(chat());
     this.use(motd());
     this.use(playlists());

@@ -31,9 +31,14 @@ export class CyclingQueue {
   }
 
   async add(user) {
-    const { users } = this.uw;
+    const { booth, users } = this.uw;
     this.list.push(await users.getUser(user));
-    this.publishUpdate();
+    const entry = await booth.getCurrentEntry();
+    if (!entry) {
+      await booth.advance();
+    } else {
+      this.publishUpdate();
+    }
   }
 
   async remove(user) {
