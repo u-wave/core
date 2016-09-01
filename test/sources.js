@@ -1,7 +1,4 @@
-import chai, { expect } from 'chai';
-import asPromised from 'chai-as-promised';
-
-chai.use(asPromised);
+import { expect } from 'chai';
 
 import uwave from '../';
 import Source from '../lib/Source';
