@@ -36,7 +36,8 @@ function toPlaylistItem(itemProps, media) {
     media,
     artist: artist || media.artist,
     title: title || media.title,
-    start, end
+    start,
+    end
   };
 }
 

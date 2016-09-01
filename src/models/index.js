@@ -7,7 +7,7 @@ import UserSchema from './User';
 
 function model(uw, name, schemaCreator) {
   const Schema = schemaCreator(uw);
-  uw.mongo.model(name, new Schema);
+  uw.mongo.model(name, new Schema());
 }
 
 export default function models() {

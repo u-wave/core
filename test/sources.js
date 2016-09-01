@@ -2,11 +2,12 @@ import { expect } from 'chai';
 
 import uwave from '../';
 import Source from '../lib/Source';
+import testConfig from './test-server-config.json';
 
 describe('Media Sources', () => {
   let server;
   beforeEach(() => {
-    server = uwave(require('./test-server-config'));
+    server = uwave(testConfig);
   });
 
   class TestSource {
@@ -71,11 +72,11 @@ describe('Media Sources', () => {
       }
     });
 
-    expect(getCalled).to.be.false;
+    expect(getCalled).to.equal(false);
 
     const promise = server.source('test-source').getOne(id);
 
-    expect(getCalled).to.be.true;
+    expect(getCalled).to.equal(true);
 
     return expect(promise).to.eventually.eql(
       { sourceType: 'test-source', sourceID: id }
