@@ -30,7 +30,7 @@ export default (uw) => {
         index: true
       },
       language: { type: String, min: 2, max: 2, default: 'en' },
-      role: { type: Number, min: 0, max: 5, default: 0, index: true },
+      roles: [{ type: String, ref: 'AclRole' }],
       avatar: { type: String, min: 0, max: 256, default: '' },
       slug: {
         type: String,
@@ -47,6 +47,22 @@ export default (uw) => {
     @pre('validate')
     makeSlug() {
       this.slug = slugify(this.username, { lang: this.language });
+    }
+
+    getPermissions(): Promise<Array<string>> {
+      return uw.acl.getAllPermissions(this);
+    }
+
+    can(permission: string): Promise<boolean> {
+      return uw.acl.isAllowed(this, permission);
+    }
+
+    allow(permissions: Array<string>): Promise {
+      return uw.acl.allow(this, permissions);
+    }
+
+    disallow(permissions: Array<string>): Promise {
+      return uw.acl.disallow(this, permissions);
     }
 
     getPlaylists(): Promise<Array> {

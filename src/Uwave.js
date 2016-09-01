@@ -14,6 +14,7 @@ import chat from './plugins/chat';
 import motd from './plugins/motd';
 import playlists from './plugins/playlists';
 import users from './plugins/users';
+import acl from './plugins/acl';
 
 mongoose.Promise = Promise;
 
@@ -54,6 +55,7 @@ export default class UWaveServer extends EventEmitter {
       this.use(motd());
       this.use(playlists());
       this.use(users());
+      this.use(acl());
     }
 
     process.nextTick(() => {
