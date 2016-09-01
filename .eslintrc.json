@@ -1,0 +1,13 @@
+{
+  "extends": "airbnb-base",
+  "parser": "babel-eslint",
+
+  "rules": {
+    "comma-dangle": ["error", "never"],
+    // https://github.com/eslint/eslint/issues/7012
+    "generator-star-spacing": "off",
+    // Conflicts with `_id` property names from MongoDB
+    "no-underscore-dangle": "off",
+    "import/no-extraneous-dependencies": ["error", { "devDependencies": true }]
+  }
+}
