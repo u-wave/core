@@ -3,7 +3,7 @@ import { createSchema } from 'mongoose-model-decorators';
 
 const Types = mongoose.Schema.Types;
 
-export default () => {
+export default function authenticationModel() {
   class Authentication {
     static timestamps = true;
 
@@ -15,5 +15,8 @@ export default () => {
     };
   }
 
-  return createSchema({ minimize: false })(Authentication);
-};
+  const AuthSchema = createSchema({ minimize: false })(Authentication);
+
+  return uw =>
+    uw.mongo.model('Authentication', new AuthSchema());
+}

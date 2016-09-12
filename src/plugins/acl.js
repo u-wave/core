@@ -1,5 +1,3 @@
-import mongoose from 'mongoose';
-import { createSchema } from 'mongoose-model-decorators';
 import flatten from 'lodash.flatten';
 import includes from 'lodash.includes';
 import defaultRoles from '../config/defaultRoles';

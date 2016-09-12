@@ -1,5 +1,4 @@
 import { expect } from 'chai';
-import mongoose from 'mongoose';
 import uwave from '../src';
 import userModel from '../src/models/User';
 import aclRoleModel from '../src/models/AclRole';

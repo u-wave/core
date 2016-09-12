@@ -1,7 +1,6 @@
-import mongoose from 'mongoose';
 import { createSchema } from 'mongoose-model-decorators';
 
-export default uw => {
+export default function aclRoleModel() {
   class AclRole {
     static collection = 'acl_roles';
     static idKey = 'name';
@@ -12,5 +11,7 @@ export default uw => {
     };
   }
 
-  return createSchema({ minimize: true })(AclRole);
-};
+  const AclRoleSchema = createSchema({ minimize: true })(AclRole);
+  return uw =>
+    uw.mongo.model('AclRole', new AclRoleSchema());
+}
