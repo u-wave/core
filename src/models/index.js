@@ -11,7 +11,7 @@ function model(uw, name, schemaCreator) {
 }
 
 export default function models() {
-  return uw => {
+  return (uw) => {
     model(uw, 'Authentication', AuthenticationSchema);
     model(uw, 'History', HistorySchema);
     model(uw, 'Media', MediaSchema);

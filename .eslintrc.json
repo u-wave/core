@@ -3,6 +3,8 @@
   "parser": "babel-eslint",
 
   "rules": {
+    // async arrow functions don't play well with this rule ATM.
+    "arrow-parens": "off",
     "comma-dangle": ["error", "never"],
     // https://github.com/eslint/eslint/issues/7012
     "generator-star-spacing": "off",

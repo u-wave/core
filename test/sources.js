@@ -10,14 +10,14 @@ describe('Media Sources', () => {
     server = uwave(testConfig);
   });
 
-  class TestSource {
+  const testSourceObject = {
     async search(query) {
       return [{ sourceID: query }];
-    }
+    },
     async get(ids) {
       return ids.map(sourceID => ({ sourceID }));
     }
-  }
+  };
 
   const testSource = () => {
     const search = async query => [{ sourceID: query }];
@@ -29,7 +29,7 @@ describe('Media Sources', () => {
   };
 
   it('should register sources from objects', () => {
-    server.source('test-source', new TestSource());
+    server.source('test-source', testSourceObject);
     expect(
       server.source('test-source')
     ).to.be.instanceOf(Source);

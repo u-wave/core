@@ -6,7 +6,7 @@ import Page from '../Page';
 
 const Types = mongoose.Schema.Types;
 
-export default uw => {
+export default (uw) => {
   class Playlist {
     static timestamps = true;
     static toJSON = { getters: true };
