@@ -11,12 +11,8 @@
   "dependencies": {
     "bcrypt": "^0.8.6",
     "bluebird": "^2.10.0",
-    "chunk": "0.0.2",
     "debug": "^2.2.0",
     "escape-string-regexp": "^1.0.5",
-    "get-artist-title": "^0.2.1",
-    "get-youtube-id": "^1.0.0",
-    "googleapis": "^2.1.7",
     "ioredis": "^1.9.0",
     "lodash.groupby": "^4.3.0",
     "lodash.isplainobject": "^4.0.3",
@@ -24,8 +20,6 @@
     "mongoose": "^4.1.6",
     "mongoose-model-decorators": "^0.2.1",
     "object-values": "^1.0.0",
-    "parse-iso-duration": "^1.0.0",
-    "request": "^2.69.0",
     "speakingurl": "^9.0.0"
   },
   "devDependencies": {
