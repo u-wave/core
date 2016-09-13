@@ -58,7 +58,7 @@
     "through2": "^2.0.1"
   },
   "scripts": {
-    "test:mocha": "mocha --compilers js:babel-register --recursive test/",
+    "test:mocha": "mocha",
     "test:lint": "eslint --cache src test gulpfile.js",
     "test": "npm run test:mocha && npm run test:lint",
     "build": "gulp build",
