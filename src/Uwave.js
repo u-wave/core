@@ -177,7 +177,7 @@ export default class UWaveServer extends EventEmitter {
   }
 
   attachRedisEvents() {
-    this.redis.on('error', e => {
+    this.redis.on('error', (e) => {
       this.emit('redisError', e);
     });
     this.redis.on('reconnecting', () => this.redisLog('trying to reconnect...'));
@@ -194,7 +194,7 @@ export default class UWaveServer extends EventEmitter {
   }
 
   attachMongooseEvents() {
-    this.mongo.on('error', e => {
+    this.mongo.on('error', (e) => {
       this.mongoLog(e);
       this.emit('mongoError', e);
     });

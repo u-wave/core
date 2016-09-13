@@ -121,7 +121,8 @@ export class PlaylistsRepository {
     return playlist.media.filter(id => allItemIDs.indexOf(`${id}`) !== -1);
   }
 
-  getPlaylistItemIDsUnfiltered(playlist) {
+  // eslint-disable-next-line class-methods-use-this
+  async getPlaylistItemIDsUnfiltered(playlist) {
     return playlist.media;
   }
 
@@ -151,7 +152,7 @@ export class PlaylistsRepository {
     const playlist = await this.getPlaylist(playlistOrID);
     const filteredItemIDs = filter
       ? await this.getPlaylistItemIDsFiltered(playlist, filter)
-      : this.getPlaylistItemIDsUnfiltered(playlist);
+      : await this.getPlaylistItemIDsUnfiltered(playlist);
 
     let itemIDs = filteredItemIDs;
     if (pagination) {
@@ -239,7 +240,7 @@ export class PlaylistsRepository {
       });
 
       const unknownMediaIDs = [];
-      sourceItems.forEach(item => {
+      sourceItems.forEach((item) => {
         if (!knownMedias.some(media => media.sourceID === String(item.sourceID))) {
           unknownMediaIDs.push(item.sourceID);
         }
@@ -334,7 +335,7 @@ export class PlaylistsRepository {
 }
 
 export default function playlistsPlugin() {
-  return uw => {
+  return (uw) => {
     uw.playlists = new PlaylistsRepository(uw); // eslint-disable-line no-param-reassign
   };
 }

@@ -4,7 +4,7 @@ import slugify from 'speakingurl';
 
 const Types = mongoose.Schema.Types;
 
-export default uw => {
+export default (uw) => {
   class Banned {
     static schema = {
       moderator: { type: Types.ObjectId, ref: 'User', index: true },

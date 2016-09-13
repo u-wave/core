@@ -5,6 +5,12 @@ const debug = require('debug')('uwave:advance');
 
 const ObjectId = MongoTypes.ObjectId;
 
+async function cyclePlaylist(playlist) {
+  const item = playlist.media.shift();
+  playlist.media.push(item);
+  return await playlist.save();
+}
+
 export class Booth {
   timeout: ?number = null;
 
@@ -56,12 +62,6 @@ export class Booth {
 
     Object.assign(entry, stats);
     return await entry.save();
-  }
-
-  async cyclePlaylist(playlist) {
-    const item = playlist.media.shift();
-    playlist.media.push(item);
-    return await playlist.save();
   }
 
   async getNextDJ(opts) {
@@ -195,7 +195,7 @@ export class Booth {
 
     if (next) {
       await this.update(next);
-      await this.cyclePlaylist(next.playlist);
+      await cyclePlaylist(next.playlist);
       await this.play(next);
     } else {
       await this.clear();
@@ -210,7 +210,7 @@ export class Booth {
 }
 
 export default function booth() {
-  return uw => {
+  return (uw) => {
     uw.booth = new Booth(uw); // eslint-disable-line no-param-reassign
   };
 }

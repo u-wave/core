@@ -49,7 +49,7 @@ export class Chat {
       return;
     }
 
-    this.chatID++;
+    this.chatID += 1;
 
     this.uw.publish('chat:message', {
       id: `${user.id}-${this.chatID}`,
@@ -73,7 +73,7 @@ export class Chat {
 }
 
 export default function chat(opts = {}) {
-  return uw => {
+  return (uw) => {
     uw.chat = new Chat(uw, opts); // eslint-disable-line no-param-reassign
   };
 }
