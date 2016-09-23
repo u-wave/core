@@ -1,4 +1,5 @@
 import { expect } from 'chai';
+import mongoose from 'mongoose';
 import uwave from '../src';
 import userModel from '../src/models/User';
 import aclRoleModel from '../src/models/AclRole';
@@ -7,7 +8,10 @@ import aclPlugin from '../src/plugins/acl';
 import createUser from './utils/createUser';
 
 function createUwaveWithAclTest() {
-  const uw = uwave({ useDefaultPlugins: false });
+  const uw = uwave({
+    useDefaultPlugins: false,
+    mongo: mongoose.createConnection('mongodb://localhost/acl')
+  });
   uw.use(userModel());
   uw.use(aclRoleModel());
   uw.use(usersPlugin());
