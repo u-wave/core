@@ -6,20 +6,19 @@ Single-room server library for üWave.
 
 For now, do this:
 
-```
-git clone git@github.com:goto-bus-stop/u-wave-core.git
+```bash
+git clone git@github.com:u-wave/core.git u-wave-core
 cd u-wave-core
 npm install
-npm run build
-# This will add a "global" link to the plugin, so it'll be easy to use in other
-# packages (u-wave-api-v1, u-wave-web) during development:
+# This will add a "global" link to the package, so it'll be easy to use
+# in other packages (u-wave-api-v1, u-wave-web) during development:
 npm link
 ```
 
 No worries, once we're public & on NPM, you'll be able to do this instead!
 :smile:
 
-```
+```bash
 npm install u-wave-core
 ```
 
@@ -33,13 +32,16 @@ The build step compiles the futuristic JavaScript that's used in this repository
 to code that can be used in engines today, using Babel. To compile the code,
 run:
 
-```
+```bash
 npm run build
 ```
 
-Note that you have to do this again every time you make a change to any
-JavaScript file. It's a bit inconvenient--hopefully we can add NPM scripts for
-commands/tools that make this easier :)
+That's inconvenient if it has to be done manually each time you make a change.
+Instead, there's the `watch` command that will automatically recompile files:
+
+```bash
+npm run watch
+```
 
 ## License
 
