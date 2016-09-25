@@ -3,7 +3,7 @@ const defaultOptions = {
 };
 
 export class Chat {
-  chatId = Date.now();
+  chatID = Date.now();
 
   constructor(uw, options = {}) {
     this.uw = uw;
