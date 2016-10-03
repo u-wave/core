@@ -1,5 +1,5 @@
-import groupBy from 'lodash.groupby';
-import shuffle from 'lodash.shuffle';
+import groupBy from 'lodash/groupBy';
+import shuffle from 'lodash/shuffle';
 import escapeStringRegExp from 'escape-string-regexp';
 
 import NotFoundError from '../errors/NotFoundError';

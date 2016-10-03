@@ -4,7 +4,7 @@ import Promise from 'bluebird';
 import Redis from 'ioredis';
 import debug from 'debug';
 import values from 'object-values';
-import isPlainObject from 'lodash.isplainobject';
+import isPlainObject from 'lodash/isPlainObject';
 
 import Source from './Source';
 

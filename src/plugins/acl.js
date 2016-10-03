@@ -1,5 +1,5 @@
-import flatten from 'lodash.flatten';
-import includes from 'lodash.includes';
+import flatten from 'lodash/flatten';
+import includes from 'lodash/includes';
 import defaultRoles from '../config/defaultRoles';
 
 const debug = require('debug')('uwave:acl');
