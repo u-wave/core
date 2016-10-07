@@ -75,6 +75,13 @@ export class Acl {
     return this.uw.getUser(user);
   }
 
+  async getAllRoles() {
+    const roles = await this.AclRole.find().lean();
+    return roles.reduce((map, role) => Object.assign(map, {
+      [role._id]: role.roles
+    }), {});
+  }
+
   async createRole(name, permissions) {
     const roles = await this.getAclRoles(permissions, { create: true });
     await this.AclRole.findByIdAndUpdate(
