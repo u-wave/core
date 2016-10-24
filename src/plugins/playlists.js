@@ -232,7 +232,7 @@ export class PlaylistsRepository {
     // one call.
     const itemsBySourceType = groupBy(items, 'sourceType');
     const playlistItems = [];
-    for (const sourceType of Object.keys(itemsBySourceType)) {
+    const promises = Object.keys(itemsBySourceType).map(async (sourceType) => {
       const sourceItems = itemsBySourceType[sourceType];
       const knownMedias = await Media.find({
         sourceType,
@@ -257,7 +257,9 @@ export class PlaylistsRepository {
         allMedias.find(media => media.sourceID === String(item.sourceID))
       ));
       playlistItems.push(...itemsWithMedia);
-    }
+    });
+
+    await Promise.all(promises);
 
     return await PlaylistItem.create(playlistItems);
   }
@@ -318,13 +320,13 @@ export class PlaylistsRepository {
     const stringIDs = itemsOrIDs.map(item => String(item));
     const toRemove = [];
     const toKeep = [];
-    for (const itemID of playlist.media) {
+    playlist.media.forEach((itemID) => {
       if (stringIDs.indexOf(`${itemID}`) !== -1) {
         toRemove.push(itemID);
       } else {
         toKeep.push(itemID);
       }
-    }
+    });
 
     playlist.media = toKeep;
     await playlist.save();
