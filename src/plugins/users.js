@@ -86,7 +86,7 @@ export class UsersRepository {
     const moderator = opts && opts.moderator && await this.getUser(opts.moderator);
 
     const old = {};
-    Object.keys(update).forEach(key => {
+    Object.keys(update).forEach((key) => {
       old[key] = user[key];
     });
     Object.assign(user, update);
@@ -105,7 +105,7 @@ export class UsersRepository {
 }
 
 export default function usersPlugin() {
-  return uw => {
+  return (uw) => {
     uw.users = new UsersRepository(uw); // eslint-disable-line no-param-reassign
   };
 }
