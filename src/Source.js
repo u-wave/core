@@ -55,8 +55,8 @@ export default class Source {
    * provide wildly different imports, üWave trusts clients to know what they're
    * doing.
    */
-  async 'import'(user, ...args) {
+  'import'(user, ...args) {
     const importContext = new ImportContext(this.uw, this, user);
-    return await this.plugin.import(importContext, ...args);
+    return this.plugin.import(importContext, ...args);
   }
 }

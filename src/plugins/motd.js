@@ -3,12 +3,12 @@ class MOTD {
     this.uw = uw;
   }
 
-  async get() {
-    return await this.uw.redis.get('motd');
+  get() {
+    return this.uw.redis.get('motd');
   }
 
-  async set(motd) {
-    return await this.uw.redis.set('motd', motd);
+  set(motd) {
+    return this.uw.redis.set('motd', motd);
   }
 }
 

@@ -88,13 +88,13 @@ export class PlaylistsRepository {
   async updatePlaylist(playlistOrID, patch = {}) {
     const playlist = await this.getPlaylist(playlistOrID);
     Object.assign(playlist, patch);
-    return await playlist.save();
+    return playlist.save();
   }
 
   async shufflePlaylist(playlistOrID) {
     const playlist = await this.getPlaylist(playlistOrID);
     playlist.media = shuffle(playlist.media);
-    return await playlist.save();
+    return playlist.save();
   }
 
   async deletePlaylist(playlistOrID) {
@@ -261,7 +261,7 @@ export class PlaylistsRepository {
 
     await Promise.all(promises);
 
-    return await PlaylistItem.create(playlistItems);
+    return PlaylistItem.create(playlistItems);
   }
 
   /**
@@ -292,7 +292,7 @@ export class PlaylistsRepository {
 
     Object.assign(item, patch);
 
-    return await item.save();
+    return item.save();
   }
 
   async movePlaylistItems(playlistOrID, itemIDs, { afterID }) {

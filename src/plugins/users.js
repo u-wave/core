@@ -28,12 +28,12 @@ export class UsersRepository {
     return users;
   }
 
-  async getUser(id) {
+  getUser(id) {
     const User = this.uw.model('User');
     if (id instanceof User) {
       return id;
     }
-    return await User.findById(id);
+    return User.findById(id);
   }
 
   async createUser({ username, email, password, role = 0 }) {

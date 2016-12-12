@@ -5,10 +5,10 @@ const debug = require('debug')('uwave:advance');
 
 const ObjectId = MongoTypes.ObjectId;
 
-async function cyclePlaylist(playlist) {
+function cyclePlaylist(playlist) {
   const item = playlist.media.shift();
   playlist.media.push(item);
-  return await playlist.save();
+  return playlist.save();
 }
 
 export class Booth {
@@ -50,7 +50,7 @@ export class Booth {
       return null;
     }
 
-    return await History.findOne(new ObjectId(historyID));
+    return History.findOne(new ObjectId(historyID));
   }
 
   async saveStats(entry) {
@@ -61,7 +61,7 @@ export class Booth {
     });
 
     Object.assign(entry, stats);
-    return await entry.save();
+    return entry.save();
   }
 
   async getNextDJ(opts) {
@@ -75,7 +75,7 @@ export class Booth {
       return null;
     }
 
-    return await User.findOne(new ObjectId(userID));
+    return User.findOne(new ObjectId(userID));
   }
 
   async getNextEntry(opts) {

@@ -45,7 +45,7 @@ export default (uw) => {
 
     async updateItem(id, patch = {}): Promise {
       const item = await this.getItem(id);
-      return await uw.playlists.updatePlaylistItem(item, patch);
+      return uw.playlists.updatePlaylistItem(item, patch);
     }
 
     shuffle(): Promise {
