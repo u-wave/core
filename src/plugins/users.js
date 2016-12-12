@@ -1,11 +1,9 @@
 import * as bcrypt from 'bcrypt';
-import { promisify } from 'bluebird';
 
 const debug = require('debug')('uwave:users');
 
-const bcryptHash = promisify(bcrypt.hash);
 function encryptPassword(password) {
-  return bcryptHash(password, 10);
+  return bcrypt.hash(password, 10);
 }
 
 export class UsersRepository {
