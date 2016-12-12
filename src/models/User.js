@@ -63,7 +63,7 @@ export default (uw) => {
 
     async getActivePlaylist(): Promise {
       const playlistID = await this.getActivePlaylistID();
-      return await uw.playlists.getPlaylist(playlistID);
+      return uw.playlists.getPlaylist(playlistID);
     }
 
     async setActivePlaylist(id): Promise {
@@ -76,15 +76,15 @@ export default (uw) => {
       return uw.playlists.createPlaylist(this, props);
     }
 
-    async mute(...args): Promise {
-      return await uw.chat.mute(this, ...args);
+    mute(...args): Promise {
+      return uw.chat.mute(this, ...args);
     }
-    async unmute(...args): Promise {
-      return await uw.chat.unmute(this, ...args);
+    unmute(...args): Promise {
+      return uw.chat.unmute(this, ...args);
     }
 
-    async isMuted(): Promise<boolean> {
-      return await uw.chat.isMuted(this);
+    isMuted(): Promise<boolean> {
+      return uw.chat.isMuted(this);
     }
   }
 
