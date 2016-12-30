@@ -1,28 +1,53 @@
 # u-wave-core
 
-Single-room server library for üWave.
+Core library for üWave, the collaborative listening platform.
+
+[Getting Started][#getting-started] - [API](#api) - [Building](#contributing) -
+[License](#license)
+
+> Note: üWave is still under development. Particularly the `u-wave-core` and
+> `u-wave-api-v1` modules will change a lot before the "official" 1.0.0 release.
+> Make sure to always upgrade both of them at the same time.
 
 ## Getting Started
 
-For now, do this:
+üWave consists of three parts: the core library, the HTTP API, and the web
+client.
 
-```bash
-git clone git@github.com:u-wave/core.git u-wave-core
-cd u-wave-core
-npm install
-# This will add a "global" link to the package, so it'll be easy to use
-# in other packages (u-wave-api-v1, u-wave-web) during development:
-npm link
-```
+See the [example/][example] directory for a usage example.
 
-No worries, once we're public & on NPM, you'll be able to do this instead!
-:smile:
+## API
 
-```bash
-npm install u-wave-core
-```
+API documentation is very incomplete and might change a lot before 1.0.0.
+Take care!
 
-[TODO docs on like, actually using it, and not just installing]
+### uw = uwave(options={})
+
+Create and start a üWave server.
+
+**Parameters**
+
+ - `mongo` - A MongoDB URL or [Mongoose][] connection instance.
+ - `redis` - A Redis URL or [IORedis][] instance.
+
+### uw.source(sourceType, sourcePlugin, options={})
+
+Add a media source plugin. Source plugins can be used to search and import media
+from remote sources like YouTube or SoundCloud. Existing source plugins can be
+found on npm with the [u-wave-source keyword][].
+
+**Parameters**
+
+ * `sourceType` - Source type name as a string. Used to signal where a given
+   media item originated from.
+ * `sourcePlugin` - Source plugin or plugin factory. Receives two parameters:
+   The `uw` üWave Core instance, and the plugin options.
+ * `options` - Options to pass to the source plugin. Only used if
+   a source plugin factory was passed to `sourcePlugin`.
+
+### uw.stop(): Promise
+
+Stops the üWave server.
 
 ## Contributing
 
@@ -45,4 +70,11 @@ npm run watch
 
 ## License
 
-[MIT](./LICENSE)
+[MIT][]
+
+[Mongoose]: http://mongoosejs.com/
+[IORedis]: https://github.com/luin/ioredis
+[u-wave-source keyword]: https://www.npmjs.com/browse/keyword/u-wave-source
+
+[example]: example/
+[MIT]: ./LICENSE
