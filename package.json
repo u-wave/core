@@ -1,9 +1,15 @@
 {
   "name": "u-wave-core",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "description": "The üWave core library.",
   "license": "MIT",
-  "repository": "u-wave/u-wave-core",
+  "repository": "u-wave/core",
+  "author": "SooYou <souyoou@googlemail.com>",
+  "contributors": [
+    "Felix Wong <felix@fawong.com>",
+    "Goz3rr <goz3rr@gmail.com>",
+    "Renée Kooi <renee@kooi.me>"
+  ],
   "main": "lib/index.js",
   "engines": {
     "node": ">= 4.0"
