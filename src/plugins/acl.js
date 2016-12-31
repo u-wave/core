@@ -51,9 +51,11 @@ export class Acl {
     debug('existing roles', existingRoles);
     if (existingRoles === 0) {
       debug('no roles found, adding defaults');
-      for (const roleName of Object.keys(defaultRoles)) {
-        await this.createRole(roleName, defaultRoles[roleName]);
-      }
+      const promises = Object.keys(defaultRoles).map(roleName =>
+        this.createRole(roleName, defaultRoles[roleName])
+      );
+
+      await Promise.all(promises);
     }
   }
 
@@ -101,9 +103,9 @@ export class Acl {
   async allow(user, roleNames) {
     const aclRoles = await this.getAclRoles(roleNames);
     const aclUser = await this.getAclUser(user);
-    for (const role of aclRoles) {
-      aclUser.roles.push(role);
-    }
+
+    aclUser.roles.push(...aclRoles);
+
     await aclUser.save();
   }
 
@@ -139,7 +141,7 @@ export class Acl {
 }
 
 export default function acl() {
-  return uw => {
+  return (uw) => {
     uw.acl = new Acl(uw); // eslint-disable-line no-param-reassign
   };
 }
