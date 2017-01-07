@@ -21,6 +21,7 @@
     "debug": "^2.6.0",
     "escape-string-regexp": "^1.0.5",
     "ioredis": "^2.4.0",
+    "is-empty-object": "^1.1.1",
     "lodash": "^4.16.3",
     "mongoose": "^4.1.6",
     "mongoose-model-decorators": "^0.3.1",

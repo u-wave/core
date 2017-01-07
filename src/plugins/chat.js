@@ -1,3 +1,25 @@
+import Promise from 'bluebird';
+import isEmpty from 'is-empty-object';
+
+/**
+ * Filter a message tags object to remove tags that cannot be used by the given
+ * user.
+ */
+function filterAllowedTags(user, tags) {
+  if (isEmpty(tags)) {
+    return {};
+  }
+
+  const allowedTagNames = Promise.all(Object.keys(tags))
+    .filter(tagName => user.can(`chat.tags.${tagName}`));
+
+  return allowedTagNames.reduce((obj, tagName) => {
+    // eslint-disable-next-line no-param-reassign
+    obj[tagName] = tags[tagName];
+    return obj;
+  });
+}
+
 const defaultOptions = {
   maxLength: 300
 };
@@ -44,10 +66,15 @@ export class Chat {
     return message.slice(0, this.options.maxLength);
   }
 
-  async send(user, message) {
+  /**
+   * Send a chat message.
+   */
+  async send(user, message, tags = {}) {
     if (await this.isMuted(user)) {
       return;
     }
+
+    const allowedTags = await filterAllowedTags(user, tags);
 
     this.chatID += 1;
 
@@ -55,7 +82,8 @@ export class Chat {
       id: `${user.id}-${this.chatID}`,
       userID: user.id,
       message: this.truncate(message),
-      timestamp: Date.now()
+      timestamp: Date.now(),
+      tags: allowedTags
     });
   }
 
