@@ -5,8 +5,8 @@ const Types = mongoose.Schema.Types;
 
 const listOfUsers = [{ type: Types.ObjectId, ref: 'User' }];
 
-export default () => {
-  class History {
+export default function historyModel() {
+  class HistoryEntry {
     static collection = 'historyentries';
 
     static schema = {
@@ -27,5 +27,8 @@ export default () => {
     };
   }
 
-  return createSchema({ minimize: false })(History);
-};
+  const HistorySchema = createSchema({ minimize: false })(HistoryEntry);
+
+  return uw =>
+    uw.mongo.model('History', new HistorySchema());
+}

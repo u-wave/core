@@ -4,7 +4,7 @@ import Promise from 'bluebird';
 import Redis from 'ioredis';
 import debug from 'debug';
 import values from 'object-values';
-import isPlainObject from 'lodash.isplainobject';
+import isPlainObject from 'lodash/isPlainObject';
 
 import Source from './Source';
 
@@ -14,16 +14,22 @@ import chat from './plugins/chat';
 import motd from './plugins/motd';
 import playlists from './plugins/playlists';
 import users from './plugins/users';
+import acl from './plugins/acl';
 
 mongoose.Promise = Promise;
 
 type UwaveOptions = {
-  mongoose: ?string|Object,
+  useDefaultPlugins: ?bool,
+  mongo: ?string|Object,
   redis: ?string|Object|Redis
 };
 
 export default class UWaveServer extends EventEmitter {
   _sources = {};
+
+  options = {
+    useDefaultPlugins: true
+  };
 
   /**
   * Registers middleware on a route
@@ -42,12 +48,15 @@ export default class UWaveServer extends EventEmitter {
     this.attachRedisEvents();
     this.attachMongooseEvents();
 
-    this.use(models());
-    this.use(booth());
-    this.use(chat());
-    this.use(motd());
-    this.use(playlists());
-    this.use(users());
+    if (this.options.useDefaultPlugins) {
+      this.use(models());
+      this.use(booth());
+      this.use(chat());
+      this.use(motd());
+      this.use(playlists());
+      this.use(users());
+      this.use(acl());
+    }
 
     process.nextTick(() => {
       this.emit('started');
@@ -84,6 +93,8 @@ export default class UWaveServer extends EventEmitter {
     } else {
       this.redis = new Redis({ lazyConnect: true });
     }
+
+    Object.assign(this.options, options);
   }
 
   use(plugin) {

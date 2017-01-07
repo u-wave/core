@@ -3,7 +3,7 @@ import { createSchema } from 'mongoose-model-decorators';
 
 const Types = mongoose.Schema.Types;
 
-export default () => {
+export default function playlistItemModel() {
   class PlaylistItem {
     static timestamps = true;
 
@@ -16,5 +16,8 @@ export default () => {
     };
   }
 
-  return createSchema({ minimize: false })(PlaylistItem);
-};
+  const PlaylistItemSchema = createSchema({ minimize: false })(PlaylistItem);
+
+  return uw =>
+    uw.mongo.model('PlaylistItem', new PlaylistItemSchema());
+}

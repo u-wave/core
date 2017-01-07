@@ -1,22 +1,19 @@
-import AuthenticationSchema from './Authentication';
-import HistorySchema from './History';
-import MediaSchema from './Media';
-import PlaylistSchema from './Playlist';
-import PlaylistItemSchema from './PlaylistItem';
-import UserSchema from './User';
-
-function model(uw, name, schemaCreator) {
-  const Schema = schemaCreator(uw);
-  uw.mongo.model(name, new Schema());
-}
+import aclRoleModel from './AclRole';
+import authenticationModel from './Authentication';
+import historyModel from './History';
+import mediaModel from './Media';
+import playlistModel from './Playlist';
+import playlistItemModel from './PlaylistItem';
+import userModel from './User';
 
 export default function models() {
   return (uw) => {
-    model(uw, 'Authentication', AuthenticationSchema);
-    model(uw, 'History', HistorySchema);
-    model(uw, 'Media', MediaSchema);
-    model(uw, 'Playlist', PlaylistSchema);
-    model(uw, 'PlaylistItem', PlaylistItemSchema);
-    model(uw, 'User', UserSchema);
+    uw.use(aclRoleModel());
+    uw.use(authenticationModel());
+    uw.use(historyModel());
+    uw.use(mediaModel());
+    uw.use(playlistModel());
+    uw.use(playlistItemModel());
+    uw.use(userModel());
   };
 }

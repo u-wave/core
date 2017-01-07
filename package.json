@@ -20,9 +20,7 @@
     "debug": "^2.6.0",
     "escape-string-regexp": "^1.0.5",
     "ioredis": "^2.4.0",
-    "lodash.groupby": "^4.3.0",
-    "lodash.isplainobject": "^4.0.3",
-    "lodash.shuffle": "^4.0.0",
+    "lodash": "^4.16.3",
     "mongoose": "^4.1.6",
     "mongoose-model-decorators": "^0.3.1",
     "object-values": "^1.0.0",
@@ -56,7 +54,7 @@
     "through2": "^2.0.1"
   },
   "scripts": {
-    "test:mocha": "mocha --compilers js:babel-register --recursive test/",
+    "test:mocha": "mocha",
     "test:lint": "eslint --cache src test gulpfile.js",
     "test": "npm run test:mocha && npm run test:lint",
     "build": "gulp build",

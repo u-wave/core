@@ -1,6 +1,6 @@
 import { createSchema } from 'mongoose-model-decorators';
 
-export default () => {
+export default function mediaModel() {
   class Media {
     static timestamps = true;
 
@@ -15,5 +15,8 @@ export default () => {
     };
   }
 
-  return createSchema({ minimize: false })(Media);
-};
+  const MediaSchema = createSchema({ minimize: false })(Media);
+
+  return uw =>
+    uw.mongo.model('Media', new MediaSchema());
+}
