@@ -1,4 +1,5 @@
 import * as bcrypt from 'bcryptjs';
+import Page from '../Page';
 
 const debug = require('debug')('uwave:users');
 
@@ -23,7 +24,18 @@ export class UsersRepository {
       .skip(offset)
       .limit(limit);
 
-    return users;
+    const total = await User.count();
+
+    return new Page(users, {
+      pageSize: limit,
+      filtered: total,
+      total,
+      current: { offset, limit },
+      next: offset + limit <= total ? { offset: offset + limit, limit } : null,
+      previous: offset > 0
+        ? { offset: Math.max(offset - limit, 0), limit }
+        : null
+    });
   }
 
   getUser(id) {
