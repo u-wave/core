@@ -2,6 +2,8 @@ import mongoose from 'mongoose';
 import { createSchema, pre } from 'mongoose-model-decorators';
 import slugify from 'speakingurl';
 
+import Page from '../Page';
+
 const Types = mongoose.Schema.Types;
 
 export default function userModel() {
@@ -91,6 +93,10 @@ export default function userModel() {
 
       createPlaylist(props): Promise {
         return uw.playlists.createPlaylist(this, props);
+      }
+
+      getPlayHistory(pagination = {}): Promise<Page> {
+        return uw.history.getUserHistory(this, pagination);
       }
 
       async mute(...args): Promise {

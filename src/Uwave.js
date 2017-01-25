@@ -7,6 +7,7 @@ import values from 'object-values';
 import isPlainObject from 'lodash/isPlainObject';
 
 import Source from './Source';
+import Page from './Page';
 
 import models from './models';
 import booth from './plugins/booth';
@@ -14,6 +15,7 @@ import chat from './plugins/chat';
 import motd from './plugins/motd';
 import playlists from './plugins/playlists';
 import users from './plugins/users';
+import history from './plugins/history';
 import acl from './plugins/acl';
 
 mongoose.Promise = Promise;
@@ -55,6 +57,7 @@ export default class UWaveServer extends EventEmitter {
       this.use(motd());
       this.use(playlists());
       this.use(users());
+      this.use(history());
       this.use(acl());
     }
 
@@ -109,6 +112,10 @@ export default class UWaveServer extends EventEmitter {
   advance(opts = {}) {
     this.log('advance', opts);
     return this.booth.advance(opts);
+  }
+
+  getHistory(pagination = {}): Promise<Page> {
+    return this.history.getRoomHistory(pagination);
   }
 
   sendChat(user, message) {
@@ -269,8 +276,8 @@ export default class UWaveServer extends EventEmitter {
   }
 
   /**
-  * Stop this üWave instance.
-  */
+   * Stop this üWave instance.
+   */
   async stop() {
     this.emit('stop');
 
