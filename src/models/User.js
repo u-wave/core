@@ -95,7 +95,7 @@ export default function userModel() {
         return uw.playlists.createPlaylist(this, props);
       }
 
-      getPlayHistory(pagination = {}): Promise<Page> {
+      getHistory(pagination = {}): Promise<Page> {
         return uw.history.getUserHistory(this, pagination);
       }
 
