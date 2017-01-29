@@ -17,6 +17,7 @@
   "dependencies": {
     "bcrypt": "^1.0.0",
     "bluebird": "^3.4.6",
+    "clamp": "^1.0.1",
     "debug": "^2.6.0",
     "escape-string-regexp": "^1.0.5",
     "ioredis": "^2.4.0",
