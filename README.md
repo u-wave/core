@@ -2,7 +2,7 @@
 
 Core library for üWave, the collaborative listening platform.
 
-[Getting Started][#getting-started] - [API](#api) - [Building](#contributing) -
+[Getting Started](#getting-started) - [API](#api) - [Building](#contributing) -
 [License](#license)
 
 > Note: üWave is still under development. Particularly the `u-wave-core` and
