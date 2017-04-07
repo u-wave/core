@@ -38,7 +38,7 @@ export default function userModel() {
         slug: {
           type: String,
           unique: true,
-          required: true,
+          required: [true, 'Usernames must not consist of punctuation only.'],
           index: true
         },
         level: { type: Number, min: 0, max: 9001, default: 0 },
