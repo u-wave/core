@@ -1,6 +1,6 @@
 import mongoose from 'mongoose';
 import { createSchema, pre } from 'mongoose-model-decorators';
-import slugify from 'speakingurl';
+import { slugify } from 'transliteration';
 
 import Page from '../Page';
 
@@ -49,7 +49,7 @@ export default function userModel() {
 
       @pre('validate')
       makeSlug() {
-        this.slug = slugify(this.username, { lang: this.language });
+        this.slug = slugify(this.username);
       }
 
       getPermissions(): Promise<Array<string>> {
