@@ -34,6 +34,10 @@ export default function userModel() {
         },
         language: { type: String, min: 2, max: 2, default: 'en' },
         roles: [{ type: String, ref: 'AclRole' }],
+        // Deprecated, `roles` should be used instead.
+        // However some clients (*cough* u-wave-web *cough*) haven't updated to the
+        // ACL system so they need this key to exist.
+        role: { type: Number, min: 0, default: 0 },
         avatar: { type: String, min: 0, max: 256, default: '' },
         slug: {
           type: String,
