@@ -7,15 +7,17 @@ import usersPlugin from '../src/plugins/users';
 import aclPlugin from '../src/plugins/acl';
 import createUser from './utils/createUser';
 
+const DB_NAME = 'uw_test_acl';
+
 function createUwaveWithAclTest() {
   const uw = uwave({
     useDefaultPlugins: false,
-    mongo: mongoose.createConnection('mongodb://localhost/acl')
+    mongo: mongoose.createConnection(`mongodb://localhost/${DB_NAME}`)
   });
   uw.use(userModel());
   uw.use(aclRoleModel());
   uw.use(usersPlugin());
-  uw.use(aclPlugin());
+  uw.use(aclPlugin({ defaultRoles: false }));
   return uw;
 }
 
@@ -30,6 +32,7 @@ describe('acl', () => {
     user = createUser(uw);
   });
   afterEach(async () => {
+    await uw.mongo.dropDatabase();
     await uw.stop();
   });
 
@@ -72,11 +75,9 @@ describe('acl', () => {
   });
 
   it('provides convenience methods on the User model class', async () => {
-    await Promise.all([
-      acl.createRole('waitlist.add', []),
-      acl.createRole('waitlist.remove', []),
-      acl.createRole('waitlist.clear', [])
-    ]);
+    await acl.createRole('waitlist.add', []);
+    await acl.createRole('waitlist.remove', []);
+    await acl.createRole('waitlist.clear', []);
     await acl.createRole('moderate.waitlist', ['waitlist.add', 'waitlist.remove']);
 
     await user.allow(['moderate.waitlist']);
