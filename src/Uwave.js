@@ -1,6 +1,5 @@
 import EventEmitter from 'events';
 import mongoose, { Connection as MongooseConnection } from 'mongoose';
-import Promise from 'bluebird';
 import Redis from 'ioredis';
 import debug from 'debug';
 import values from 'object-values';

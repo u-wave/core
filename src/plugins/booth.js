@@ -1,4 +1,3 @@
-import Promise from 'bluebird';
 import { Types as MongoTypes } from 'mongoose';
 
 const debug = require('debug')('uwave:advance');
