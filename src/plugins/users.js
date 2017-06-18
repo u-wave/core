@@ -50,7 +50,7 @@ export class UsersRepository {
     const User = this.uw.model('User');
     const LocalAuth = this.uw.model('Authentication');
 
-    debug('create user', username, email, role);
+    debug('create user', username, email.toLowerCase(), role);
 
     const hash = await encryptPassword(password);
 
@@ -62,7 +62,7 @@ export class UsersRepository {
 
     const auth = new LocalAuth({
       user,
-      email,
+      email: email.toLowerCase(),
       hash
     });
 
@@ -81,7 +81,7 @@ export class UsersRepository {
 
     this.uw.publish('user:create', {
       user: user.toJSON(),
-      auth: { email }
+      auth: { email: email.toLowerCase() }
     });
 
     return user;
