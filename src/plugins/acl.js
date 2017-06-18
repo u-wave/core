@@ -1,3 +1,4 @@
+import Promise from 'bluebird';
 import flatten from 'lodash/flatten';
 import includes from 'lodash/includes';
 import defaultRoles from '../config/defaultRoles';
@@ -36,10 +37,12 @@ const getRoleName = role => (
 export class Acl {
   superRole = '*';
 
-  constructor(uw) {
+  constructor(uw, opts) {
     this.uw = uw;
 
-    this.maybeAddDefaultRoles();
+    if (opts.defaultRoles !== false) {
+      this.maybeAddDefaultRoles();
+    }
   }
 
   get AclRole() {
@@ -51,11 +54,9 @@ export class Acl {
     debug('existing roles', existingRoles);
     if (existingRoles === 0) {
       debug('no roles found, adding defaults');
-      const promises = Object.keys(defaultRoles).map(roleName =>
+      await Promise.all(Object.keys(defaultRoles)).each(roleName =>
         this.createRole(roleName, defaultRoles[roleName])
       );
-
-      await Promise.all(promises);
     }
   }
 
@@ -140,8 +141,8 @@ export class Acl {
   }
 }
 
-export default function acl() {
+export default function acl(opts = {}) {
   return (uw) => {
-    uw.acl = new Acl(uw); // eslint-disable-line no-param-reassign
+    uw.acl = new Acl(uw, opts); // eslint-disable-line no-param-reassign
   };
 }

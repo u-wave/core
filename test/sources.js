@@ -7,7 +7,10 @@ import testConfig from './test-server-config.json';
 describe('Media Sources', () => {
   let server;
   beforeEach(() => {
-    server = uwave(testConfig);
+    server = uwave({
+      ...testConfig,
+      useDefaultPlugins: false
+    });
   });
 
   const testSourceObject = {
