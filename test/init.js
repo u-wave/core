@@ -14,7 +14,7 @@ chai.use(asPromised);
 chai.use(sinonChai);
 
 const mockgoose = new Mockgoose(mongoose);
-before(async function () {
+before(async function prepareMockgoose() {
   // May have to download mongodb-prebuilt which can take a long time.
   this.timeout(0);
   await mockgoose.prepareStorage();
