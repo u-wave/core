@@ -1,3 +1,15 @@
+# 0.2.1 / 21 Jun 2017
+
+Features:
+
+ * Make email addresses case insensitive. (#112)
+
+Internal:
+
+ * Fix warnings in tests. (#113)
+ * Ensure `Promise` always refers to bluebird. (#114)
+ * Add Node 8 to Travis. (#115)
+
 # 0.2.0 / 15 Jun 2017
 
 Features:
