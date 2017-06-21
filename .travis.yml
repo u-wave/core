@@ -1,20 +1,18 @@
 language: node_js
 sudo: false
+node_js:
+  - 8
+  - 7
+  - 6
+  - 4
+
 before_install:
   - npm install -g npm@latest
+  - npm install -g greenkeeper-lockfile@1
+
+before_script:
+  - greenkeeper-lockfile-update
 script:
   - npm test
-node_js:
-  - "4"
-  - "6"
-  - "7"
-
-addons:
-  apt:
-    sources:
-    - ubuntu-toolchain-r-test
-    packages:
-    - gcc-4.8
-    - g++-4.8
-env:
-  - TRAVIS=travis CXX=g++-4.8
+after_script:
+  - greenkeeper-lockfile-upload
