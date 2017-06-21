@@ -17,5 +17,6 @@ const mockgoose = new Mockgoose(mongoose);
 before(async function prepareMockgoose() {
   // May have to download mongodb-prebuilt which can take a long time.
   this.timeout(0);
+  mockgoose.helper.setDbVersion('3.4.3');
   await mockgoose.prepareStorage();
 });
