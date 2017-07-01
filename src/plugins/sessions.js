@@ -10,6 +10,11 @@ class Sessions {
   async connect(user) {
     debug('connect', user.id);
     const count = await this.uw.redis.incr(`sessionCounts:${user.id}`);
+
+    user.seen().catch((err) => {
+      debug(err);
+    });
+
     if (count > 1) return;
 
     debug('is new connection', user.id);

@@ -123,6 +123,11 @@ export default function userModel() {
       isBanned(): Promise<boolean> {
         return uw.bans.isBanned(this);
       }
+
+      async seen(): Promise {
+        this.lastSeenAt = Date.now();
+        await this.save();
+      }
     }
 
     const UserSchema = createSchema({ minimize: true })(User);
