@@ -15,6 +15,7 @@ import motd from './plugins/motd';
 import playlists from './plugins/playlists';
 import users from './plugins/users';
 import bans from './plugins/bans';
+import sessions from './plugins/sessions';
 import history from './plugins/history';
 import acl from './plugins/acl';
 
@@ -61,6 +62,7 @@ export default class UWaveServer extends EventEmitter {
       this.use(playlists());
       this.use(users());
       this.use(bans());
+      this.use(sessions());
       this.use(history());
       this.use(acl());
     }
@@ -273,6 +275,7 @@ export default class UWaveServer extends EventEmitter {
    * Publish an event to the üWave channel.
    */
   publish(command, data) {
+    this.redisLog(command, data);
     this.redis.publish('uwave', JSON.stringify({
       command, data,
     }));
