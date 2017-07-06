@@ -1,4 +1,9 @@
+import Promise from 'bluebird';
 import { Types as MongoTypes } from 'mongoose';
+
+class PlaylistIsEmptyError extends Error {
+  code = 'PLAYLIST_IS_EMPTY';
+}
 
 const debug = require('debug')('uwave:advance');
 
@@ -85,6 +90,9 @@ export class Booth {
       return null;
     }
     const playlist = await user.getActivePlaylist();
+    if (playlist.size === 0) {
+      throw new PlaylistIsEmptyError();
+    }
     const playlistItem = await playlist.getItemAt(0);
 
     await playlistItem.populate('media').execPopulate();
@@ -172,7 +180,19 @@ export class Booth {
 
   async advance(opts = {}) {
     const previous = await this.getCurrentEntry();
-    const next = await this.getNextEntry(opts);
+    let next;
+    try {
+      next = await this.getNextEntry(opts);
+    } catch (err) {
+      // If the next user's playlist was empty, remove them from the waitlist
+      // and try advancing again.
+      if (err.code === 'PLAYLIST_IS_EMPTY') {
+        debug('user has empty playlist, skipping on to the next');
+        await this.cycleWaitlist(previous, opts);
+        return this.advance({ ...opts, remove: true });
+      }
+      throw err;
+    }
 
     if (previous) {
       await this.saveStats(previous);
