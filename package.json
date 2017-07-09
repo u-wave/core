@@ -24,7 +24,9 @@
     "lodash": "^4.16.3",
     "mongoose": "^4.1.6",
     "mongoose-model-decorators": "^0.3.1",
+    "ms": "^2.0.0",
     "object-values": "^1.0.0",
+    "redlock": "^3.0.0",
     "transliteration": "^1.6.2"
   },
   "devDependencies": {
