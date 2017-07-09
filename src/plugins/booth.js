@@ -1,5 +1,7 @@
 import Promise from 'bluebird';
+import ms from 'ms';
 import { Types as MongoTypes } from 'mongoose';
+import RedLock from 'redlock';
 
 class PlaylistIsEmptyError extends Error {
   code = 'PLAYLIST_IS_EMPTY';
@@ -26,11 +28,13 @@ export class Booth {
   }
 
   async onStart() {
+    this.locker = new RedLock([this.uw.redis]);
+
     const current = await this.getCurrentEntry();
     if (current && this.timeout === null) {
       // Restart the advance timer after a server restart, if a track was
       // playing before the server restarted.
-      const duration = (current.media.end - current.media.start) * 1000;
+      const duration = (current.media.end - current.media.start) * ms('1 second');
       const endTime = Number(current.playedAt) + duration;
       if (endTime > Date.now()) {
         this.timeout = setTimeout(
@@ -134,15 +138,11 @@ export class Booth {
   }
 
   update(next) {
-    return Promise.all([
-      this.uw.redis.del([
-        'booth:upvotes',
-        'booth:downvotes',
-        'booth:favorites'
-      ]),
-      this.uw.redis.set('booth:historyID', next.id),
-      this.uw.redis.set('booth:currentDJ', next.user.id)
-    ]);
+    return this.uw.redis.multi()
+      .del(['booth:upvotes', 'booth:downvotes', 'booth:favorites'])
+      .set('booth:historyID', next.id)
+      .set('booth:currentDJ', next.user.id)
+      .exec();
   }
 
   maybeStop() {
@@ -156,7 +156,7 @@ export class Booth {
     this.maybeStop();
     this.timeout = setTimeout(
       () => this.uw.advance(),
-      (entry.media.end - entry.media.start) * 1000
+      (entry.media.end - entry.media.start) * ms('1 second')
     );
     return entry;
   }
@@ -178,7 +178,18 @@ export class Booth {
     this.uw.publish('waitlist:update', await this.getWaitlist());
   }
 
-  async advance(opts = {}) {
+  async advance(opts = {}, reuseLock = null) {
+    let lock;
+    try {
+      if (reuseLock) {
+        lock = await reuseLock.extend(ms('2 seconds'));
+      } else {
+        lock = await this.locker.lock('booth:advancing', ms('2 seconds'));
+      }
+    } catch (err) {
+      throw new Error('Another advance is still in progress.');
+    }
+
     const previous = await this.getCurrentEntry();
     let next;
     try {
@@ -189,7 +200,7 @@ export class Booth {
       if (err.code === 'PLAYLIST_IS_EMPTY') {
         debug('user has empty playlist, skipping on to the next');
         await this.cycleWaitlist(previous, opts);
-        return this.advance({ ...opts, remove: true });
+        return this.advance({ ...opts, remove: true }, lock);
       }
       throw err;
     }
@@ -223,6 +234,10 @@ export class Booth {
     if (opts.publish !== false) {
       await this.publish(next);
     }
+
+    lock.unlock().catch(() => {
+      // Don't really care if this fails, it'll expire in some seconds anyway.
+    });
 
     return next;
   }
