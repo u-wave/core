@@ -16,3 +16,6 @@ script:
   - npm test
 after_script:
   - greenkeeper-lockfile-upload
+
+services:
+  - mongodb
