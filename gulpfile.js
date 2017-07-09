@@ -1,4 +1,5 @@
 const gulp = require('gulp');
+const sourcemaps = require('gulp-sourcemaps');
 const babel = require('gulp-babel');
 const newer = require('gulp-newer');
 const plumber = require('gulp-plumber');
@@ -22,7 +23,9 @@ gulp.task('build', () =>
       log(`Compiling '${colors.cyan(path)}'...`);
       cb(null, file);
     }))
+    .pipe(sourcemaps.init())
     .pipe(babel())
+    .pipe(sourcemaps.write('.'))
     .pipe(gulp.dest(dest))
 );
 
