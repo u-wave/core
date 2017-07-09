@@ -1,3 +1,17 @@
+# 0.2.2 / 09 Jul 2017
+
+Features:
+
+ * Implement locking during booth advances. (#124)
+
+Bugfixes:
+
+ * Skip user plays when their playlist is empty while entering the booth. (#121)
+
+Internal:
+
+ * Use temporary databases instead of mockgoose while running tests. (#123)
+
 # 0.2.1 / 21 Jun 2017
 
 Features:
