@@ -2,6 +2,22 @@ import createDebug from 'debug';
 
 const debug = createDebug('uwave:core:sessions');
 
+const CONNECT_SCRIPT = `
+  local currentCount = redis.call("incr", KEYS[1])
+  if currentCount == 1 then
+    redis.call("sadd", "sessions", ARGV[1])
+  end
+  return currentCount
+`;
+const DISCONNECT_SCRIPT = `
+  local currentCount = redis.call("decr", KEYS[1])
+  if currentCount == 0 then
+    redis.call("srem", "sessions", ARGV[1])
+    redis.call("del", KEYS[1])
+  end
+  return currentCount
+`;
+
 class Sessions {
   constructor(uw) {
     this.uw = uw;
@@ -9,7 +25,7 @@ class Sessions {
 
   async connect(user) {
     debug('connect', user.id);
-    const count = await this.uw.redis.incr(`sessionCounts:${user.id}`);
+    const count = await this.uw.redis.eval(CONNECT_SCRIPT, 1, `sessionCounts:${user.id}`, user.id);
 
     user.seen().catch((err) => {
       debug(err);
@@ -18,18 +34,15 @@ class Sessions {
     if (count > 1) return;
 
     debug('is new connection', user.id);
-    await this.uw.redis.sadd('sessions', user.id);
     this.uw.publish('user:connect', { userID: user.id });
   }
 
   async disconnect(user) {
     debug('disconnect', user.id);
-    const count = await this.uw.redis.decr(`sessionCounts:${user.id}`);
+    const count = await this.uw.redis.eval(DISCONNECT_SCRIPT, 1, `sessionCounts:${user.id}`, user.id);
     if (count > 0) return;
 
     debug('is last connection', user.id);
-    await this.uw.redis.srem('sessions', user.id);
-    await this.uw.redis.del(`sessionCounts:${user.id}`);
 
     const dj = await this.uw.booth.getCurrentDJ();
     if (dj.id === user.id) {
