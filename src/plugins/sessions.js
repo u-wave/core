@@ -45,7 +45,7 @@ class Sessions {
     debug('is last connection', user.id);
 
     const dj = await this.uw.booth.getCurrentDJ();
-    if (dj.id === user.id) {
+    if (dj && dj.id === user.id) {
       debug('disconnecting from booth', user.id);
       await this.uw.advance({ remove: true });
     } else {
