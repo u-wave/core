@@ -18,7 +18,7 @@
     "bcryptjs": "^2.4.3",
     "bluebird": "^3.4.6",
     "clamp": "^1.0.1",
-    "debug": "^2.6.0",
+    "debug": "^3.0.0",
     "escape-string-regexp": "^1.0.5",
     "ioredis": "^3.0.0",
     "lodash": "^4.16.3",
