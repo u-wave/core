@@ -9,7 +9,7 @@ class PlaylistIsEmptyError extends Error {
 
 const debug = require('debug')('uwave:advance');
 
-const ObjectId = MongoTypes.ObjectId;
+const { ObjectId } = MongoTypes;
 
 function cyclePlaylist(playlist) {
   const item = playlist.media.shift();
@@ -208,7 +208,8 @@ export class Booth {
     if (previous) {
       await this.saveStats(previous);
 
-      debug('previous track:', previous.media.artist, '—', previous.media.title,
+      debug(
+        'previous track:', previous.media.artist, '—', previous.media.title,
         `👍 ${previous.upvotes.length} ` +
         `★ ${previous.favorites.length} ` +
         `👎 ${previous.downvotes.length}`

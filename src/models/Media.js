@@ -5,8 +5,12 @@ export default function mediaModel() {
     static timestamps = true;
 
     static schema = {
-      sourceID: { type: String, max: 128, required: true, index: true },
-      sourceType: { type: String, max: 128, required: true, index: true },
+      sourceID: {
+        type: String, max: 128, required: true, index: true
+      },
+      sourceType: {
+        type: String, max: 128, required: true, index: true
+      },
       sourceData: {},
       artist: { type: String, max: 128, required: true },
       title: { type: String, max: 128, required: true },

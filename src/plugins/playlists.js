@@ -167,8 +167,7 @@ export class PlaylistsRepository {
       : [];
 
     const results = itemIDs.map(itemID =>
-      items.find(item => `${item.id}` === `${itemID}`)
-    );
+      items.find(item => `${item.id}` === `${itemID}`));
 
     return new Page(results, {
       pageSize: pagination ? pagination.limit : null,
@@ -300,8 +299,7 @@ export class PlaylistsRepository {
 
     // First remove the given items,
     const newMedia = playlist.media.filter(item =>
-      itemIDs.indexOf(`${item}`) === -1
-    );
+      itemIDs.indexOf(`${item}`) === -1);
     // then reinsert them at their new position.
     const insertIndex = newMedia.findIndex(item => `${item}` === afterID);
     newMedia.splice(insertIndex + 1, 0, ...itemIDs);

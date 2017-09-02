@@ -22,12 +22,11 @@ export default class ImportContext {
   async createPlaylist(name, itemOrItems) {
     const playlist = await this.uw.playlists.createPlaylist(this.user, { name });
 
-    const rawItems = this.source.addSourceType(
-      Array.isArray(itemOrItems) ? itemOrItems : [itemOrItems]
-    );
+    const rawItems = Array.isArray(itemOrItems) ? itemOrItems : [itemOrItems];
+    const items = this.source.addSourceType(rawItems);
 
-    if (rawItems.length > 0) {
-      await playlist.addItems(rawItems);
+    if (items.length > 0) {
+      await playlist.addItems(items);
     }
 
     return playlist;
