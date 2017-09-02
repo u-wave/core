@@ -1,7 +1,7 @@
 import mongoose from 'mongoose';
 import { createSchema } from 'mongoose-model-decorators';
 
-const  { Types } = mongoose.Schema;
+const { Types } = mongoose.Schema;
 
 const listOfUsers = [{ type: Types.ObjectId, ref: 'User' }];
 
