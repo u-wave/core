@@ -4,7 +4,7 @@ import { slugify } from 'transliteration';
 
 import Page from '../Page';
 
-const Types = mongoose.Schema.Types;
+const { Types } = mongoose.Schema;
 
 export default function userModel() {
   return (uw) => {
@@ -32,20 +32,26 @@ export default function userModel() {
           unique: true,
           index: true
         },
-        language: { type: String, min: 2, max: 2, default: 'en' },
+        language: {
+          type: String, min: 2, max: 2, default: 'en'
+        },
         roles: [{ type: String, ref: 'AclRole' }],
         // Deprecated, `roles` should be used instead.
         // However some clients (*cough* u-wave-web *cough*) haven't updated to the
         // ACL system so they need this key to exist.
         role: { type: Number, min: 0, default: 0 },
-        avatar: { type: String, min: 0, max: 256, default: '' },
+        avatar: {
+          type: String, min: 0, max: 256, default: ''
+        },
         slug: {
           type: String,
           unique: true,
           required: [true, 'Usernames must not consist of punctuation only.'],
           index: true
         },
-        level: { type: Number, min: 0, max: 9001, default: 0 },
+        level: {
+          type: Number, min: 0, max: 9001, default: 0
+        },
         lastSeenAt: { type: Date, default: Date.now },
         exiled: { type: Boolean, default: false },
         banned: new BannedSchema()

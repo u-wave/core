@@ -55,8 +55,7 @@ export class Acl {
     if (existingRoles === 0) {
       debug('no roles found, adding defaults');
       await Promise.all(Object.keys(defaultRoles)).each(roleName =>
-        this.createRole(roleName, defaultRoles[roleName])
-      );
+        this.createRole(roleName, defaultRoles[roleName]));
     }
   }
 
@@ -66,9 +65,7 @@ export class Acl {
       !existingRoles.some(role => role.id === name)
     ));
     if (options.create && newNames.length > 0) {
-      const newRoles = await this.AclRole.create(
-        newNames.map(name => ({ _id: name }))
-      );
+      const newRoles = await this.AclRole.create(newNames.map(name => ({ _id: name })));
       existingRoles.push(...newRoles);
     }
     return existingRoles;
@@ -114,8 +111,7 @@ export class Acl {
     const aclRoles = await this.getAclRoles(roleNames);
     const aclUser = await this.getAclUser(user);
     aclUser.roles = aclUser.roles.filter(role =>
-      aclRoles.every(remove => remove.id !== getRoleName(role))
-    );
+      aclRoles.every(remove => remove.id !== getRoleName(role)));
     await aclUser.save();
   }
 

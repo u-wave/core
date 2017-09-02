@@ -46,7 +46,9 @@ export class UsersRepository {
     return User.findById(id);
   }
 
-  async createUser({ username, email, password, role = 0 }) {
+  async createUser({
+    username, email, password, role = 0
+  }) {
     const User = this.uw.model('User');
     const LocalAuth = this.uw.model('Authentication');
 

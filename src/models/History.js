@@ -1,7 +1,7 @@
 import mongoose from 'mongoose';
 import { createSchema } from 'mongoose-model-decorators';
 
-const Types = mongoose.Schema.Types;
+const { Types } = mongoose.Schema;
 
 const listOfUsers = [{ type: Types.ObjectId, ref: 'User' }];
 
@@ -10,7 +10,9 @@ export default function historyModel() {
     static collection = 'historyentries';
 
     static schema = {
-      user: { type: Types.ObjectId, ref: 'User', required: true, index: true },
+      user: {
+        type: Types.ObjectId, ref: 'User', required: true, index: true
+      },
       playlist: { type: Types.ObjectId, ref: 'Playlist' },
       item: { type: Types.ObjectId, ref: 'PlaylistItem' },
       media: {

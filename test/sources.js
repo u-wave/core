@@ -33,32 +33,24 @@ describe('Media Sources', () => {
 
   it('should register sources from objects', () => {
     server.source('test-source', testSourceObject);
-    expect(
-      server.source('test-source')
-    ).to.be.instanceOf(Source);
+    expect(server.source('test-source')).to.be.instanceOf(Source);
   });
   it('should register sources from a factory function', () => {
     server.source('test-source', testSource);
-    expect(
-      server.source('test-source')
-    ).to.be.instanceOf(Source);
+    expect(server.source('test-source')).to.be.instanceOf(Source);
   });
 
   it('should respond to search(query) API calls', () => {
     server.source('test-source', testSource);
     const query = 'search-query';
-    return expect(
-      server.source('test-source').search(query)
-    ).to.eventually.eql([
+    return expect(server.source('test-source').search(query)).to.eventually.eql([
       { sourceType: 'test-source', sourceID: query }
     ]);
   });
 
   it('should respond to get(ids) API calls', () => {
     server.source('test-source', testSource);
-    return expect(
-      server.source('test-source').get(['one', 'two'])
-    ).to.eventually.eql([
+    return expect(server.source('test-source').get(['one', 'two'])).to.eventually.eql([
       { sourceType: 'test-source', sourceID: 'one' },
       { sourceType: 'test-source', sourceID: 'two' }
     ]);
@@ -81,8 +73,6 @@ describe('Media Sources', () => {
 
     expect(getCalled).to.equal(true);
 
-    return expect(promise).to.eventually.eql(
-      { sourceType: 'test-source', sourceID: id }
-    );
+    return expect(promise).to.eventually.eql({ sourceType: 'test-source', sourceID: id });
   });
 });
