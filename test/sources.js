@@ -1,7 +1,7 @@
 import { expect } from 'chai';
 
-import uwave from '../';
-import Source from '../lib/Source';
+import uwave from '../src';
+import Source from '../src/Source';
 import testConfig from './test-server-config.json';
 
 describe('Media Sources', () => {
