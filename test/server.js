@@ -1,6 +1,6 @@
 import { expect } from 'chai';
 
-import uwave, { Uwave } from '../';
+import uwave, { Uwave } from '../src';
 import testConfig from './test-server-config.json';
 
 describe('üWave Core', () => {
