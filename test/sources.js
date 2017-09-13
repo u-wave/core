@@ -43,14 +43,14 @@ describe('Media Sources', () => {
   it('should respond to search(query) API calls', () => {
     server.source('test-source', testSource);
     const query = 'search-query';
-    return expect(server.source('test-source').search(query)).to.eventually.eql([
+    return expect(server.source('test-source').search(null, query)).to.eventually.eql([
       { sourceType: 'test-source', sourceID: query }
     ]);
   });
 
   it('should respond to get(ids) API calls', () => {
     server.source('test-source', testSource);
-    return expect(server.source('test-source').get(['one', 'two'])).to.eventually.eql([
+    return expect(server.source('test-source').get(null, ['one', 'two'])).to.eventually.eql([
       { sourceType: 'test-source', sourceID: 'one' },
       { sourceType: 'test-source', sourceID: 'two' }
     ]);
@@ -69,7 +69,7 @@ describe('Media Sources', () => {
 
     expect(getCalled).to.equal(false);
 
-    const promise = server.source('test-source').getOne(id);
+    const promise = server.source('test-source').getOne(null, id);
 
     expect(getCalled).to.equal(true);
 

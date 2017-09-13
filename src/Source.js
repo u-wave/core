@@ -1,3 +1,4 @@
+import SourceContext from './sources/SourceContext';
 import ImportContext from './sources/ImportContext';
 
 /**
@@ -10,6 +11,10 @@ export default class Source {
     this.plugin = sourcePlugin;
 
     this.addSourceType = this.addSourceType.bind(this);
+  }
+
+  get apiVersion() {
+    return this.plugin.api || 1;
   }
 
   /**
@@ -28,26 +33,38 @@ export default class Source {
   /**
    * Find a single media item by ID.
    */
-  getOne(id) {
-    return this.get([id])
+  getOne(user, id) {
+    return this.get(user, [id])
       .then(items => items[0]);
   }
 
   /**
    * Find several media items by ID.
    */
-  get(ids) {
-    return this.plugin.get(ids)
-      .then(this.addSourceType);
+  async get(user, ids) {
+    let items;
+    if (this.apiVersion > 1) {
+      const context = new SourceContext(this.uw, this, user);
+      items = await this.plugin.get(context, ids);
+    } else {
+      items = await this.plugin.get(ids);
+    }
+    return this.addSourceType(items);
   }
 
   /**
    * Search this media source for items. Parameters can really be anything, but
    * will usually include a search string `query` and a page identifier `page`.
    */
-  search(query, page, ...args) {
-    return this.plugin.search(query, page, ...args)
-      .then(this.addSourceType);
+  async search(user, query, page, ...args) {
+    let results;
+    if (this.apiVersion > 1) {
+      const context = new SourceContext(this.uw, this, user);
+      results = await this.plugin.search(context, query, page, ...args);
+    } else {
+      results = await this.plugin.search(query, page, ...args);
+    }
+    return this.addSourceType(results);
   }
 
   /**
