@@ -186,46 +186,19 @@ export class PlaylistsRepository {
     });
   }
 
-  async getMedia(props) {
-    const Media = this.uw.model('Media');
-
-    const { sourceType, sourceID } = props;
-    let media = await Media.findOne({ sourceType, sourceID });
-    if (!media) {
-      const mediaProps = await this.uw.source(sourceType).getOne(sourceID);
-      media = await Media.create(mediaProps);
-    }
-    return media;
-  }
-
-  /**
-   * Create a playlist item.
-   */
-  async createItem(props) {
-    const PlaylistItem = this.uw.model('PlaylistItem');
-
-    const media = await this.getMedia(props);
-    const playlistItem = new PlaylistItem(toPlaylistItem(props, media));
-
-    try {
-      await playlistItem.save();
-    } catch (e) {
-      throw new Error('Could not save playlist items. Please try again later.');
-    }
-
-    return playlistItem;
-  }
-
   /**
    * Bulk create playlist items from arbitrary sources.
    */
-  async createPlaylistItems(items) {
+  async createPlaylistItems(userID, items) {
     const Media = this.uw.model('Media');
     const PlaylistItem = this.uw.model('PlaylistItem');
+    const User = this.uw.model('User');
 
     if (!items.every(isValidPlaylistItem)) {
       throw new Error('Cannot add a playlist item without a proper media source type and ID.');
     }
+
+    const user = await User.findById(userID);
 
     // Group by source so we can retrieve all unknown medias from the source in
     // one call.
@@ -247,7 +220,8 @@ export class PlaylistsRepository {
 
       let allMedias = knownMedias;
       if (unknownMediaIDs.length > 0) {
-        const unknownMedias = await this.uw.source(sourceType).get(unknownMediaIDs);
+        const unknownMedias = await this.uw.source(sourceType)
+          .get(user, unknownMediaIDs);
         allMedias = allMedias.concat(await Media.create(unknownMedias));
       }
 
@@ -268,7 +242,8 @@ export class PlaylistsRepository {
    */
   async addPlaylistItems(playlistOrID, items, { after = null } = {}) {
     const playlist = await this.getPlaylist(playlistOrID);
-    const newItems = await this.createPlaylistItems(items);
+    const userID = playlist.author.toString();
+    const newItems = await this.createPlaylistItems(userID, items);
     const oldMedia = playlist.media;
     const insertIndex = oldMedia.findIndex(item => `${item}` === after);
     playlist.media = [
