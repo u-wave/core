@@ -186,36 +186,6 @@ export class PlaylistsRepository {
     });
   }
 
-  async getMedia(props) {
-    const Media = this.uw.model('Media');
-
-    const { sourceType, sourceID } = props;
-    let media = await Media.findOne({ sourceType, sourceID });
-    if (!media) {
-      const mediaProps = await this.uw.source(sourceType).getOne(sourceID);
-      media = await Media.create(mediaProps);
-    }
-    return media;
-  }
-
-  /**
-   * Create a playlist item.
-   */
-  async createItem(props) {
-    const PlaylistItem = this.uw.model('PlaylistItem');
-
-    const media = await this.getMedia(props);
-    const playlistItem = new PlaylistItem(toPlaylistItem(props, media));
-
-    try {
-      await playlistItem.save();
-    } catch (e) {
-      throw new Error('Could not save playlist items. Please try again later.');
-    }
-
-    return playlistItem;
-  }
-
   /**
    * Bulk create playlist items from arbitrary sources.
    */
