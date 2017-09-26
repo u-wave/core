@@ -54,7 +54,7 @@
     "gulp-util": "^3.0.7",
     "gulp-watch": "^4.3.5",
     "mocha": "^3.5.0",
-    "sinon": "^3.2.1",
+    "sinon": "^4.0.0",
     "sinon-chai": "^2.13.0",
     "through2": "^2.0.1"
   },
