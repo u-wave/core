@@ -14,6 +14,6 @@ class MOTD {
 
 export default function motdPlugin() {
   return (uw) => {
-    uw.motd = new MOTD(uw); // eslint-disable-line no-param-reassign
+    uw.motd = new MOTD(uw);
   };
 }

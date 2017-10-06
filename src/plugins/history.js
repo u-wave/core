@@ -52,6 +52,6 @@ export class HistoryRepository {
 
 export default function history() {
   return (uw) => {
-    uw.history = new HistoryRepository(uw); // eslint-disable-line no-param-reassign
+    uw.history = new HistoryRepository(uw);
   };
 }

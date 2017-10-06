@@ -74,6 +74,6 @@ export class Chat {
 
 export default function chat(opts = {}) {
   return (uw) => {
-    uw.chat = new Chat(uw, opts); // eslint-disable-line no-param-reassign
+    uw.chat = new Chat(uw, opts);
   };
 }

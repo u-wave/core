@@ -139,6 +139,6 @@ export class Acl {
 
 export default function acl(opts = {}) {
   return (uw) => {
-    uw.acl = new Acl(uw, opts); // eslint-disable-line no-param-reassign
+    uw.acl = new Acl(uw, opts);
   };
 }

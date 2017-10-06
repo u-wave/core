@@ -19,6 +19,8 @@ import acl from './plugins/acl';
 
 mongoose.Promise = Promise;
 
+const kSources = Symbol('Media sources');
+
 type UwaveOptions = {
   useDefaultPlugins: ?bool,
   mongo: ?string|Object,
@@ -26,7 +28,7 @@ type UwaveOptions = {
 };
 
 export default class UWaveServer extends EventEmitter {
-  _sources = {};
+  [kSources] = {};
 
   options = {
     useDefaultPlugins: true,
@@ -154,7 +156,7 @@ export default class UWaveServer extends EventEmitter {
    * An array of registered sources.
    */
   get sources() {
-    return values(this._sources);
+    return values(this[kSources]);
   }
 
   /**
@@ -171,7 +173,7 @@ export default class UWaveServer extends EventEmitter {
    */
   source(sourceType, sourcePlugin, opts = {}) {
     if (arguments.length === 1) { // eslint-disable-line prefer-rest-params
-      return this._sources[sourceType];
+      return this[kSources][sourceType];
     }
 
     const sourceFactory = sourcePlugin.default || sourcePlugin;
@@ -188,7 +190,7 @@ export default class UWaveServer extends EventEmitter {
         : sourceFactory,
     );
 
-    this._sources[sourceType] = newSource;
+    this[kSources][sourceType] = newSource;
 
     return newSource;
   }

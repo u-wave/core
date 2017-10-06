@@ -118,6 +118,6 @@ export class UsersRepository {
 
 export default function usersPlugin() {
   return (uw) => {
-    uw.users = new UsersRepository(uw); // eslint-disable-line no-param-reassign
+    uw.users = new UsersRepository(uw);
   };
 }

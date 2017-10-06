@@ -246,6 +246,6 @@ export class Booth {
 
 export default function booth() {
   return (uw) => {
-    uw.booth = new Booth(uw); // eslint-disable-line no-param-reassign
+    uw.booth = new Booth(uw);
   };
 }

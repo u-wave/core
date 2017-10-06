@@ -311,6 +311,6 @@ export class PlaylistsRepository {
 
 export default function playlistsPlugin() {
   return (uw) => {
-    uw.playlists = new PlaylistsRepository(uw); // eslint-disable-line no-param-reassign
+    uw.playlists = new PlaylistsRepository(uw);
   };
 }
