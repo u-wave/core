@@ -5,7 +5,7 @@ import sinonChai from 'sinon-chai';
 
 Bluebird.config({
   longStackTraces: true,
-  warnings: true
+  warnings: true,
 });
 
 chai.use(asPromised);

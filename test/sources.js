@@ -9,7 +9,7 @@ describe('Media Sources', () => {
   beforeEach(() => {
     server = uwave({
       ...testConfig,
-      useDefaultPlugins: false
+      useDefaultPlugins: false,
     });
   });
 
@@ -19,7 +19,7 @@ describe('Media Sources', () => {
     },
     async get(ids) {
       return ids.map(sourceID => ({ sourceID }));
-    }
+    },
   };
 
   const testSource = () => {
@@ -27,7 +27,7 @@ describe('Media Sources', () => {
     const get = async ids => ids.map(sourceID => ({ sourceID }));
     return {
       search,
-      get: get // eslint-disable-line object-shorthand
+      get: get, // eslint-disable-line object-shorthand
     };
   };
 
@@ -44,7 +44,7 @@ describe('Media Sources', () => {
     server.source('test-source', testSource);
     const query = 'search-query';
     return expect(server.source('test-source').search(null, query)).to.eventually.eql([
-      { sourceType: 'test-source', sourceID: query }
+      { sourceType: 'test-source', sourceID: query },
     ]);
   });
 
@@ -52,7 +52,7 @@ describe('Media Sources', () => {
     server.source('test-source', testSource);
     return expect(server.source('test-source').get(null, ['one', 'two'])).to.eventually.eql([
       { sourceType: 'test-source', sourceID: 'one' },
-      { sourceType: 'test-source', sourceID: 'two' }
+      { sourceType: 'test-source', sourceID: 'two' },
     ]);
   });
 
@@ -64,7 +64,7 @@ describe('Media Sources', () => {
         expect(ids).to.eql([id]);
         getCalled = true;
         return ids.map(sourceID => ({ sourceID }));
-      }
+      },
     });
 
     expect(getCalled).to.equal(false);

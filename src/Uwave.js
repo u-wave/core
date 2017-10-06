@@ -29,7 +29,7 @@ export default class UWaveServer extends EventEmitter {
   _sources = {};
 
   options = {
-    useDefaultPlugins: true
+    useDefaultPlugins: true,
   };
 
   /**
@@ -88,7 +88,7 @@ export default class UWaveServer extends EventEmitter {
     } else if (typeof options.redis === 'object') {
       this.redis = new Redis(options.redis.port, options.redis.host, {
         ...options.redis.options,
-        lazyConnect: true
+        lazyConnect: true,
       });
     } else if (options.redis instanceof Redis) {
       this.redis = options.redis;
@@ -185,7 +185,7 @@ export default class UWaveServer extends EventEmitter {
       sourceType,
       type === 'function'
         ? sourceFactory(this, opts)
-        : sourceFactory
+        : sourceFactory,
     );
 
     this._sources[sourceType] = newSource;
@@ -269,7 +269,7 @@ export default class UWaveServer extends EventEmitter {
    */
   publish(command, data) {
     this.redis.publish('uwave', JSON.stringify({
-      command, data
+      command, data,
     }));
     return this;
   }
@@ -284,7 +284,7 @@ export default class UWaveServer extends EventEmitter {
 
     await Promise.all([
       this.redis.quit(),
-      this.mongo.close()
+      this.mongo.close(),
     ]);
 
     this.emit('stopped');

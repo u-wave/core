@@ -13,7 +13,7 @@ export default function userModel() {
         moderator: { type: Types.ObjectId, ref: 'User', index: true },
         duration: { type: Number, required: true },
         expiresAt: { type: Date, required: true, index: true },
-        reason: { type: String, default: '' }
+        reason: { type: String, default: '' },
       };
     }
 
@@ -30,10 +30,10 @@ export default function userModel() {
           match: [/^[^\s]+$/, 'Usernames can\'t contain spaces.'],
           required: true,
           unique: true,
-          index: true
+          index: true,
         },
         language: {
-          type: String, min: 2, max: 2, default: 'en'
+          type: String, min: 2, max: 2, default: 'en',
         },
         roles: [{ type: String, ref: 'AclRole' }],
         // Deprecated, `roles` should be used instead.
@@ -41,20 +41,20 @@ export default function userModel() {
         // ACL system so they need this key to exist.
         role: { type: Number, min: 0, default: 0 },
         avatar: {
-          type: String, min: 0, max: 256, default: ''
+          type: String, min: 0, max: 256, default: '',
         },
         slug: {
           type: String,
           unique: true,
           required: [true, 'Usernames must not consist of punctuation only.'],
-          index: true
+          index: true,
         },
         level: {
-          type: Number, min: 0, max: 9001, default: 0
+          type: Number, min: 0, max: 9001, default: 0,
         },
         lastSeenAt: { type: Date, default: Date.now },
         exiled: { type: Boolean, default: false },
-        banned: new BannedSchema()
+        banned: new BannedSchema(),
       };
 
       @pre('validate')

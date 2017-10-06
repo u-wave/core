@@ -9,5 +9,5 @@ module.exports = function uwave(opts) {
 Object.assign(module.exports, {
   Uwave,
   UwaveError,
-  NotFoundError
+  NotFoundError,
 });

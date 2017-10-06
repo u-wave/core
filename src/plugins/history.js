@@ -18,7 +18,7 @@ export class HistoryRepository {
     const offset = pagination.offset || 0;
     const size = clamp(
       'limit' in pagination ? pagination.limit : DEFAULT_PAGE_SIZE,
-      0, MAX_PAGE_SIZE
+      0, MAX_PAGE_SIZE,
     );
 
     const total = await this.HistoryEntry.where(filter).count();
@@ -37,7 +37,7 @@ export class HistoryRepository {
       previous: offset > 0
         ? { offset: Math.max(offset - size, 0), limit: size }
         : null,
-      results
+      results,
     });
   }
 

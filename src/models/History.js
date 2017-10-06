@@ -11,7 +11,7 @@ export default function historyModel() {
 
     static schema = {
       user: {
-        type: Types.ObjectId, ref: 'User', required: true, index: true
+        type: Types.ObjectId, ref: 'User', required: true, index: true,
       },
       playlist: { type: Types.ObjectId, ref: 'Playlist' },
       item: { type: Types.ObjectId, ref: 'PlaylistItem' },
@@ -20,12 +20,12 @@ export default function historyModel() {
         artist: { type: String, index: true },
         title: { type: String, index: true },
         start: { type: Number, default: 0 },
-        end: { type: Number, default: 0 }
+        end: { type: Number, default: 0 },
       },
       playedAt: { type: Date, default: Date.now, index: true },
       upvotes: listOfUsers,
       downvotes: listOfUsers,
-      favorites: listOfUsers
+      favorites: listOfUsers,
     };
   }
 

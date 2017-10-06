@@ -6,9 +6,9 @@ import chatPlugin from '../src/plugins/chat';
 function createUwaveWithChatTest() {
   const uw = {
     redis: {
-      exists: sinon.stub().returns(false)
+      exists: sinon.stub().returns(false),
     },
-    publish: sinon.spy()
+    publish: sinon.spy(),
   };
 
   chatPlugin()(uw);
@@ -27,7 +27,7 @@ describe('Chat', () => {
     await uw.chat.send({ id: 1 }, 'Message text');
     expect(uw.publish).to.have.been.calledWithMatch('chat:message', {
       userID: 1,
-      message: 'Message text'
+      message: 'Message text',
     });
   });
 
@@ -40,10 +40,10 @@ describe('Chat', () => {
     await uw.chat.send({ id: 2 }, 'Message text');
 
     expect(uw.publish).to.have.been.calledWithMatch('chat:message', {
-      userID: 1
+      userID: 1,
     });
     expect(uw.publish).to.not.have.been.calledWithMatch('chat:message', {
-      userID: 2
+      userID: 2,
     });
   });
 });

@@ -17,7 +17,7 @@ export class UsersRepository {
 
     const {
       offset = 0,
-      limit = 50
+      limit = 50,
     } = page;
 
     const users = await User.find()
@@ -34,7 +34,7 @@ export class UsersRepository {
       next: offset + limit <= total ? { offset: offset + limit, limit } : null,
       previous: offset > 0
         ? { offset: Math.max(offset - limit, 0), limit }
-        : null
+        : null,
     });
   }
 
@@ -47,7 +47,7 @@ export class UsersRepository {
   }
 
   async createUser({
-    username, email, password, role = 0
+    username, email, password, role = 0,
   }) {
     const User = this.uw.model('User');
     const LocalAuth = this.uw.model('Authentication');
@@ -58,20 +58,20 @@ export class UsersRepository {
 
     const user = new User({
       username,
-      role
+      role,
     });
     await user.validate();
 
     const auth = new LocalAuth({
       user,
       email: email.toLowerCase(),
-      hash
+      hash,
     });
 
     try {
       await Promise.all([
         user.save(),
-        auth.save()
+        auth.save(),
       ]);
     } catch (e) {
       if (!auth.isNew) {
@@ -83,7 +83,7 @@ export class UsersRepository {
 
     this.uw.publish('user:create', {
       user: user.toJSON(),
-      auth: { email: email.toLowerCase() }
+      auth: { email: email.toLowerCase() },
     });
 
     return user;
@@ -109,7 +109,7 @@ export class UsersRepository {
       userID: user.id,
       moderatorID: moderator ? moderator.id : null,
       old,
-      new: update
+      new: update,
     });
 
     return user;

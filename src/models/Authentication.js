@@ -10,10 +10,10 @@ export default function authenticationModel() {
     static schema = {
       user: { type: Types.ObjectId, ref: 'User', index: true },
       email: {
-        type: String, max: 254, required: true, unique: true, index: true
+        type: String, max: 254, required: true, unique: true, index: true,
       },
       hash: { type: String, required: true },
-      validated: { type: Boolean, default: false }
+      validated: { type: Boolean, default: false },
     };
   }
 
