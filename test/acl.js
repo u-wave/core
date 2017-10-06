@@ -32,8 +32,8 @@ describe('acl', () => {
     user = createUser(uw);
   });
   afterEach(async () => {
-    await uw.mongo.dropDatabase();
     await uw.stop();
+    await uw.mongo.dropDatabase();
   });
 
   it('can check if a user is not allowed to do something', async () => {
