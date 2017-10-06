@@ -78,7 +78,7 @@ export class Acl {
   async getAllRoles() {
     const roles = await this.AclRole.find().lean();
     return roles.reduce((map, role) => Object.assign(map, {
-      [role._id]: role.roles
+      [role._id]: role.roles,
     }), {});
   }
 
@@ -87,7 +87,7 @@ export class Acl {
     await this.AclRole.findByIdAndUpdate(
       name,
       { roles },
-      { upsert: true }
+      { upsert: true },
     );
   }
 
@@ -139,6 +139,6 @@ export class Acl {
 
 export default function acl(opts = {}) {
   return (uw) => {
-    uw.acl = new Acl(uw, opts); // eslint-disable-line no-param-reassign
+    uw.acl = new Acl(uw, opts);
   };
 }

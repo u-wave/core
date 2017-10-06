@@ -1,5 +1,5 @@
 const defaultOptions = {
-  maxLength: 300
+  maxLength: 300,
 };
 
 export class Chat {
@@ -10,20 +10,20 @@ export class Chat {
 
     this.options = {
       ...defaultOptions,
-      ...options
+      ...options,
     };
   }
 
   async mute(user, duration, opts = {}) {
     await this.uw.redis.set(
       `mute:${user.id}`, opts.moderator.id,
-      'PX', duration
+      'PX', duration,
     );
 
     this.uw.publish('chat:mute', {
       moderatorID: opts.moderator.id,
       userID: user.id,
-      duration
+      duration,
     });
   }
 
@@ -32,7 +32,7 @@ export class Chat {
 
     this.uw.publish('chat:unmute', {
       moderatorID: opts.moderator.id,
-      userID: user.id
+      userID: user.id,
     });
   }
 
@@ -55,13 +55,13 @@ export class Chat {
       id: `${user.id}-${this.chatID}`,
       userID: user.id,
       message: this.truncate(message),
-      timestamp: Date.now()
+      timestamp: Date.now(),
     });
   }
 
   delete(filter = {}, opts = {}) {
     const deletion = {
-      filter: typeof filter === 'string' ? { id: filter } : filter
+      filter: typeof filter === 'string' ? { id: filter } : filter,
     };
 
     if (opts.moderator) {
@@ -74,6 +74,6 @@ export class Chat {
 
 export default function chat(opts = {}) {
   return (uw) => {
-    uw.chat = new Chat(uw, opts); // eslint-disable-line no-param-reassign
+    uw.chat = new Chat(uw, opts);
   };
 }

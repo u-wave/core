@@ -7,7 +7,7 @@ export default function aclRoleModel() {
 
     static schema = {
       _id: String,
-      roles: [{ type: String, ref: 'AclRole', index: true }]
+      roles: [{ type: String, ref: 'AclRole', index: true }],
     };
   }
 

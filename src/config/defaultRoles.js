@@ -1,12 +1,12 @@
 export default {
   admin: [
-    '*'
+    '*',
   ],
   manager: [
     'moderator',
     'waitlist.clear',
     'chat.mention.everyone',
-    'motd.set'
+    'motd.set',
   ],
   moderator: [
     'user',
@@ -22,10 +22,10 @@ export default {
     'users.list',
     'users.bans.list',
     'users.bans.add',
-    'users.bans.remove'
+    'users.bans.remove',
   ],
   special: [
-    'user'
+    'user',
   ],
   user: [
     'waitlist.join',
@@ -33,7 +33,7 @@ export default {
     'booth.skip.self',
     'booth.vote',
     'chat.send',
-    'chat.mention.staff'
+    'chat.mention.staff',
   ],
-  guest: []
+  guest: [],
 };

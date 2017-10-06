@@ -12,7 +12,7 @@ const DB_NAME = 'uw_test_acl';
 function createUwaveWithAclTest() {
   const uw = uwave({
     useDefaultPlugins: false,
-    mongo: mongoose.createConnection(`mongodb://localhost/${DB_NAME}`)
+    mongo: mongoose.createConnection(`mongodb://localhost/${DB_NAME}`),
   });
   uw.use(userModel());
   uw.use(aclRoleModel());
@@ -56,10 +56,10 @@ describe('acl', () => {
       'test.role',
       'some.other.role',
       'universe.destroy',
-      'universe.create'
+      'universe.create',
     ]);
     await acl.createRole('other.group.of.roles', [
-      'strawberry.eat'
+      'strawberry.eat',
     ]);
 
     await acl.allow(user, ['group.of.roles']);

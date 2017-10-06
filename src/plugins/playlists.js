@@ -37,7 +37,7 @@ function toPlaylistItem(itemProps, media) {
     artist: artist || media.artist,
     title: title || media.title,
     start,
-    end
+    end,
   };
 }
 
@@ -73,7 +73,7 @@ export class PlaylistsRepository {
 
     const playlist = await Playlist.create({
       name,
-      author: user
+      author: user,
     });
 
     return playlist;
@@ -110,7 +110,7 @@ export class PlaylistsRepository {
     const rx = new RegExp(escapeStringRegExp(filter), 'i');
     const matches = await PlaylistItem.where({
       _id: { $in: playlist.media },
-      $or: [{ artist: rx }, { title: rx }]
+      $or: [{ artist: rx }, { title: rx }],
     }).select('_id');
 
     const allItemIDs = matches.map(item => item.id);
@@ -177,12 +177,12 @@ export class PlaylistsRepository {
       current: pagination,
       next: pagination ? {
         offset: pagination.offset + pagination.limit,
-        limit: pagination.limit
+        limit: pagination.limit,
       } : null,
       previous: pagination ? {
         offset: Math.max(pagination.offset - pagination.limit, 0),
-        limit: pagination.limit
-      } : null
+        limit: pagination.limit,
+      } : null,
     });
   }
 
@@ -208,7 +208,7 @@ export class PlaylistsRepository {
       const sourceItems = itemsBySourceType[sourceType];
       const knownMedias = await Media.find({
         sourceType,
-        sourceID: { $in: sourceItems.map(item => item.sourceID) }
+        sourceID: { $in: sourceItems.map(item => item.sourceID) },
       });
 
       const unknownMediaIDs = [];
@@ -227,7 +227,7 @@ export class PlaylistsRepository {
 
       const itemsWithMedia = sourceItems.map(item => toPlaylistItem(
         item,
-        allMedias.find(media => media.sourceID === String(item.sourceID))
+        allMedias.find(media => media.sourceID === String(item.sourceID)),
       ));
       playlistItems.push(...itemsWithMedia);
     });
@@ -249,7 +249,7 @@ export class PlaylistsRepository {
     playlist.media = [
       ...oldMedia.slice(0, insertIndex + 1),
       ...newItems,
-      ...oldMedia.slice(insertIndex + 1)
+      ...oldMedia.slice(insertIndex + 1),
     ];
 
     await playlist.save();
@@ -257,7 +257,7 @@ export class PlaylistsRepository {
     return {
       added: newItems,
       afterID: after,
-      playlistSize: playlist.media.length
+      playlistSize: playlist.media.length,
     };
   }
 
@@ -311,6 +311,6 @@ export class PlaylistsRepository {
 
 export default function playlistsPlugin() {
   return (uw) => {
-    uw.playlists = new PlaylistsRepository(uw); // eslint-disable-line no-param-reassign
+    uw.playlists = new PlaylistsRepository(uw);
   };
 }

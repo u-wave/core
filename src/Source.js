@@ -26,7 +26,7 @@ export default class Source {
   addSourceType(items) {
     return items.map(item => ({
       sourceType: this.type,
-      ...item
+      ...item,
     }));
   }
 

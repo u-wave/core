@@ -39,7 +39,7 @@ export class Booth {
       if (endTime > Date.now()) {
         this.timeout = setTimeout(
           () => this.uw.advance(),
-          endTime - Date.now()
+          endTime - Date.now(),
         );
       } else {
         this.uw.advance();
@@ -65,7 +65,7 @@ export class Booth {
     const stats = await Promise.props({
       upvotes: this.uw.redis.lrange('booth:upvotes', 0, -1),
       downvotes: this.uw.redis.lrange('booth:downvotes', 0, -1),
-      favorites: this.uw.redis.lrange('booth:favorites', 0, -1)
+      favorites: this.uw.redis.lrange('booth:favorites', 0, -1),
     });
 
     Object.assign(entry, stats);
@@ -110,8 +110,8 @@ export class Booth {
         artist: playlistItem.artist,
         title: playlistItem.title,
         start: playlistItem.start,
-        end: playlistItem.end
-      }
+        end: playlistItem.end,
+      },
     });
   }
 
@@ -133,7 +133,7 @@ export class Booth {
       'booth:currentDJ',
       'booth:upvotes',
       'booth:downvotes',
-      'booth:favorites'
+      'booth:favorites',
     ]);
   }
 
@@ -156,7 +156,7 @@ export class Booth {
     this.maybeStop();
     this.timeout = setTimeout(
       () => this.uw.advance(),
-      (entry.media.end - entry.media.start) * ms('1 second')
+      (entry.media.end - entry.media.start) * ms('1 second'),
     );
     return entry;
   }
@@ -170,7 +170,7 @@ export class Booth {
       this.uw.publish('advance:complete', next);
       this.uw.publish('playlist:cycle', {
         userID: next.user.id,
-        playlistID: next.playlist.id
+        playlistID: next.playlist.id,
       });
     } else {
       this.uw.publish('advance:complete', null);
@@ -212,7 +212,7 @@ export class Booth {
         'previous track:', previous.media.artist, '—', previous.media.title,
         `👍 ${previous.upvotes.length} ` +
         `★ ${previous.favorites.length} ` +
-        `👎 ${previous.downvotes.length}`
+        `👎 ${previous.downvotes.length}`,
       );
     }
 
@@ -246,6 +246,6 @@ export class Booth {
 
 export default function booth() {
   return (uw) => {
-    uw.booth = new Booth(uw); // eslint-disable-line no-param-reassign
+    uw.booth = new Booth(uw);
   };
 }
