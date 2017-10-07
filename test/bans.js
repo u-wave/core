@@ -13,7 +13,7 @@ const DB_NAME = 'uw_test_bans';
 function createUwaveWithBansTest() {
   const uw = uwave({
     useDefaultPlugins: false,
-    mongo: mongoose.createConnection(`mongodb://localhost/${DB_NAME}`)
+    mongo: mongoose.createConnection(`mongodb://localhost/${DB_NAME}`),
   });
   uw.use(userModel());
   uw.use(usersPlugin());

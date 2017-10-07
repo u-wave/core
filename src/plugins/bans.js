@@ -35,16 +35,16 @@ class Bans {
     const offset = pagination.offset || 0;
     const size = clamp(
       'limit' in pagination ? pagination.limit : 50,
-      0, 100
+      0, 100,
     );
 
     const queryFilter = {
       banned: { $ne: null },
-      'banned.expiresAt': { $gt: new Date() }
+      'banned.expiresAt': { $gt: new Date() },
     };
     if (filter) {
       Object.assign(queryFilter, {
-        username: { $regex: RegExp(escapeStringRegExp(filter), 'i') }
+        username: { $regex: RegExp(escapeStringRegExp(filter), 'i') },
       });
     }
 
@@ -73,12 +73,12 @@ class Bans {
       previous: offset > 0
         ? { offset: Math.max(offset - size, 0), limit: size }
         : null,
-      results
+      results,
     });
   }
 
   async ban(userID, {
-    duration, moderator, permanent = false, reason = ''
+    duration, moderator, permanent = false, reason = '',
   }) {
     const { users } = this.uw;
 
@@ -93,7 +93,7 @@ class Bans {
       duration: permanent ? -1 : duration,
       expiresAt: permanent ? 0 : Date.now() + duration,
       moderator: typeof moderator === 'object' ? moderator._id : moderator,
-      reason
+      reason,
     };
 
     await user.save();
@@ -104,7 +104,7 @@ class Bans {
       moderatorID: user.banned.moderator.id,
       duration: user.banned.duration,
       expiresAt: user.banned.expiresAt,
-      permanent
+      permanent,
     });
 
     return user.banned;
@@ -125,7 +125,7 @@ class Bans {
 
     this.uw.publish('user:unban', {
       userID: `${user.id}`,
-      moderatorID: typeof moderator === 'object' ? `${moderator.id}` : moderator
+      moderatorID: typeof moderator === 'object' ? `${moderator.id}` : moderator,
     });
   }
 }
