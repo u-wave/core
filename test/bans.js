@@ -6,6 +6,7 @@ import userModel from '../src/models/User';
 import usersPlugin from '../src/plugins/users';
 import bansPlugin from '../src/plugins/bans';
 import createUser from './utils/createUser';
+import mongoConnected from './utils/mongoConnected';
 
 const DB_NAME = 'uw_test_bans';
 
@@ -31,6 +32,7 @@ describe('bans', () => {
     await user.save();
   });
   afterEach(async () => {
+    await mongoConnected(uw.mongo);
     await uw.mongo.dropDatabase();
     await uw.stop();
   });

@@ -6,6 +6,7 @@ import aclRoleModel from '../src/models/AclRole';
 import usersPlugin from '../src/plugins/users';
 import aclPlugin from '../src/plugins/acl';
 import createUser from './utils/createUser';
+import mongoConnected from './utils/mongoConnected';
 
 const DB_NAME = 'uw_test_acl';
 
@@ -32,8 +33,9 @@ describe('acl', () => {
     user = createUser(uw);
   });
   afterEach(async () => {
-    await uw.stop();
+    await mongoConnected(uw.mongo);
     await uw.mongo.dropDatabase();
+    await uw.stop();
   });
 
   it('can check if a user is not allowed to do something', async () => {
