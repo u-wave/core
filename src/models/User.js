@@ -119,6 +119,10 @@ export default function userModel() {
       async isMuted(): Promise<boolean> {
         return uw.chat.isMuted(this);
       }
+
+      isBanned(): Promise<boolean> {
+        return uw.bans.isBanned(this);
+      }
     }
 
     const UserSchema = createSchema({ minimize: true })(User);
