@@ -78,7 +78,7 @@ export class UsersRepository {
         auth.save(),
       ]);
       await user.update({
-        avatar: getDefaultAvatar(user)
+        avatar: getDefaultAvatar(user),
       });
     } catch (e) {
       if (!auth.isNew) {
