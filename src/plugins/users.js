@@ -7,6 +7,10 @@ function encryptPassword(password) {
   return bcrypt.hash(password, 10);
 }
 
+function getDefaultAvatar(user) {
+  return `https://sigil.u-wave.net/${user.id}`;
+}
+
 export class UsersRepository {
   constructor(uw) {
     this.uw = uw;
@@ -73,6 +77,9 @@ export class UsersRepository {
         user.save(),
         auth.save(),
       ]);
+      await user.update({
+        avatar: getDefaultAvatar(user)
+      });
     } catch (e) {
       if (!auth.isNew) {
         await auth.remove();
