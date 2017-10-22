@@ -1,5 +1,5 @@
 import EventEmitter from 'events';
-import mongoose, { Connection as MongooseConnection } from 'mongoose';
+import mongoose from 'mongoose';
 import Redis from 'ioredis';
 import debug from 'debug';
 import values from 'object-values';
@@ -19,6 +19,7 @@ import history from './plugins/history';
 import acl from './plugins/acl';
 
 mongoose.Promise = Promise;
+const MongooseConnection = mongoose.Connection;
 
 const kSources = Symbol('Media sources');
 
