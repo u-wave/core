@@ -163,20 +163,20 @@ export default class UWaveServer extends EventEmitter {
   }
 
   /**
-   * Find or register a source plugin.
-   * If only the first parameter is passed, returns an existing source plugin.
-   * If more parameters are passed, adds a source plugin and returns its wrapped
-   * source plugin.
+   * Get or register a source plugin.
+   * If the first parameter is a string, returns an existing source plugin.
+   * Else, adds a source plugin and returns its wrapped source plugin.
    *
-   * @param sourceType {string} Source type name. Used to signal where a given
-   *     media item originated from.
-   * @param sourcePlugin {Function|Object} Source plugin or plugin factory.
+   * @param sourcePlugin {string|Function|Object} Source name or definition.
+   *     When a string: Source type name.
+   *     Used to signal where a given media item originated from.
+   *     When a function or object: Source plugin or plugin factory.
    * @param opts {Object} Options to pass to the source plugin. Only used if
    *     a source plugin factory was passed to `sourcePlugin`.
    */
-  source(sourceType, sourcePlugin, opts = {}) {
-    if (arguments.length === 1) { // eslint-disable-line prefer-rest-params
-      return this[kSources][sourceType];
+  source(sourcePlugin, opts = {}) {
+    if (arguments.length === 1 && typeof sourcePlugin === 'string') { // eslint-disable-line prefer-rest-params
+      return this[kSources][sourcePlugin];
     }
 
     const sourceFactory = sourcePlugin.default || sourcePlugin;
@@ -185,13 +185,14 @@ export default class UWaveServer extends EventEmitter {
       throw new TypeError(`Source plugin should be a function, got ${type}`);
     }
 
-    const newSource = new Source(
-      this,
-      sourceType,
-      type === 'function'
-        ? sourceFactory(this, opts)
-        : sourceFactory,
-    );
+    const sourceDefinition = type === 'function'
+      ? sourceFactory(this, opts)
+      : sourceFactory
+    const sourceType = sourceDefinition.name;
+    if (typeof sourceType !== 'string') {
+      throw new TypeError('Source plugin does not specify a name. It may be incompatible with this version of üWave.');
+    }
+    const newSource = new Source(this, sourceType, sourceDefinition);
 
     this[kSources][sourceType] = newSource;
 
