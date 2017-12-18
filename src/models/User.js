@@ -57,7 +57,6 @@ export default function userModel() {
         banned: new BannedSchema(),
       };
 
-      @pre('validate')
       makeSlug() {
         this.slug = slugify(this.username);
       }
@@ -126,7 +125,11 @@ export default function userModel() {
     }
 
     const UserSchema = createSchema({ minimize: true })(User);
+    const schema = new UserSchema();
+    schema.pre('validate', function () {
+      this.makeSlug();
+    });
 
-    return uw.mongo.model('User', new UserSchema());
+    return uw.mongo.model('User', schema);
   };
 }
