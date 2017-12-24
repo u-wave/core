@@ -35,7 +35,7 @@
     "@babel/plugin-proposal-object-rest-spread": "^7.0.0-beta.3",
     "@babel/plugin-transform-classes": "^7.0.0-beta.3",
     "@babel/plugin-transform-flow-comments": "^7.0.0-beta.3",
-    "@babel/preset-env": "^7.0.0-beta.3",
+    "@babel/plugin-transform-modules-commonjs": "^7.0.0-beta.35",
     "@babel/register": "^7.0.0-beta.3",
     "babel-eslint": "^8.0.0",
     "babel-plugin-transform-promise-to-bluebird": "^2.0.0-beta",
@@ -44,24 +44,20 @@
     "eslint": "^4.6.0",
     "eslint-config-airbnb-base": "^12.0.0",
     "eslint-plugin-import": "^2.7.0",
-    "gulp": "^3.9.1",
-    "gulp-babel": "^8.0.0-beta.0",
-    "gulp-newer": "^1.1.0",
-    "gulp-plumber": "^1.1.0",
-    "gulp-sourcemaps": "^2.6.1",
-    "gulp-util": "^3.0.7",
-    "gulp-watch": "^4.3.5",
+    "is-builtin-module": "^2.0.0",
     "mocha": "^3.5.0",
+    "rollup": "^0.53.0",
+    "rollup-plugin-babel": "^4.0.0-beta.0",
+    "rollup-plugin-node-resolve": "^3.0.0",
     "sinon": "^4.0.0",
-    "sinon-chai": "^2.13.0",
-    "through2": "^2.0.1"
+    "sinon-chai": "^2.13.0"
   },
   "scripts": {
     "test:mocha": "mocha",
-    "test:lint": "eslint --cache src test gulpfile.js",
+    "test:lint": "eslint --cache src test rollup.config.js",
     "test": "npm run test:mocha && npm run test:lint",
-    "build": "gulp build",
-    "watch": "gulp watch",
+    "build": "rollup -c",
+    "watch": "rollup -c -w",
     "prepublish": "npm run build"
   }
 }
