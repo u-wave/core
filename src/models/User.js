@@ -1,5 +1,5 @@
 import mongoose from 'mongoose';
-import { createSchema, pre } from 'mongoose-model-decorators';
+import { createSchema } from 'mongoose-model-decorators';
 import { slugify } from 'transliteration';
 
 import Page from '../Page';
@@ -57,7 +57,6 @@ export default function userModel() {
         banned: new BannedSchema(),
       };
 
-      @pre('validate')
       makeSlug() {
         this.slug = slugify(this.username);
       }
@@ -126,7 +125,12 @@ export default function userModel() {
     }
 
     const UserSchema = createSchema({ minimize: true })(User);
+    const schema = new UserSchema();
+    schema.pre('validate', function preValidate(next) {
+      this.makeSlug();
+      next();
+    });
 
-    return uw.mongo.model('User', new UserSchema());
+    return uw.mongo.model('User', schema);
   };
 }
