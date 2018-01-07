@@ -1,17 +1,18 @@
-import { createSchema } from 'mongoose-model-decorators';
+import mongoose from 'mongoose';
+
+const { Schema } = mongoose;
 
 export default function aclRoleModel() {
-  class AclRole {
-    static collection = 'acl_roles';
-    static idKey = 'name';
+  const schema = new Schema({
+    _id: String,
+    roles: [{ type: String, ref: 'AclRole', index: true }],
+  }, {
+    collection: 'acl_roles',
+    idKey: 'name',
+    minimize: true,
+  });
 
-    static schema = {
-      _id: String,
-      roles: [{ type: String, ref: 'AclRole', index: true }],
-    };
-  }
-
-  const AclRoleSchema = createSchema({ minimize: true })(AclRole);
-  return uw =>
-    uw.mongo.model('AclRole', new AclRoleSchema());
+  return (uw) => {
+    uw.mongo.model('AclRole', schema);
+  };
 }
