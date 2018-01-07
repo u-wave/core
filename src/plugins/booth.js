@@ -51,6 +51,11 @@ export class Booth {
     this.maybeStop();
   }
 
+  async getCurrentDJ() {
+    const id = await this.uw.redis.get('booth:currentDJ');
+    return this.uw.getUser(id);
+  }
+
   async getCurrentEntry() {
     const History = this.uw.model('History');
     const historyID = await this.uw.redis.get('booth:historyID');
