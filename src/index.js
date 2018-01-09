@@ -2,11 +2,11 @@ import Uwave from './Uwave';
 import UwaveError from './errors/UwaveError';
 import NotFoundError from './errors/NotFoundError';
 
-module.exports = function uwave(opts) {
+export default function uwave(opts) {
   return new Uwave(opts);
-};
+}
 
-Object.assign(module.exports, {
+Object.assign(uwave, {
   Uwave,
   UwaveError,
   NotFoundError,
