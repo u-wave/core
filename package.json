@@ -10,7 +10,8 @@
     "Goz3rr <goz3rr@gmail.com>",
     "Renée Kooi <renee@kooi.me>"
   ],
-  "main": "lib/index.js",
+  "main": "dist/u-wave-core.js",
+  "module": "dist/u-wave-core.es.js",
   "engines": {
     "node": ">= 6.0"
   },
