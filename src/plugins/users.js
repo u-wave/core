@@ -1,7 +1,8 @@
 import * as bcrypt from 'bcryptjs';
+import createDebug from 'debug';
 import Page from '../Page';
 
-const debug = require('debug')('uwave:users');
+const debug = createDebug('uwave:users');
 
 function encryptPassword(password) {
   return bcrypt.hash(password, 10);

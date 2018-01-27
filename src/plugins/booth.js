@@ -2,12 +2,13 @@ import Promise from 'bluebird';
 import ms from 'ms';
 import { Types as MongoTypes } from 'mongoose';
 import RedLock from 'redlock';
+import createDebug from 'debug';
 
 class PlaylistIsEmptyError extends Error {
   code = 'PLAYLIST_IS_EMPTY';
 }
 
-const debug = require('debug')('uwave:advance');
+const debug = createDebug('uwave:advance');
 
 const { ObjectId } = MongoTypes;
 

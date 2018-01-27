@@ -1,9 +1,10 @@
 import Promise from 'bluebird';
 import flatten from 'lodash/flatten';
 import includes from 'lodash/includes';
+import createDebug from 'debug';
 import defaultRoles from '../config/defaultRoles';
 
-const debug = require('debug')('uwave:acl');
+const debug = createDebug('uwave:acl');
 
 async function getSubRoles(role) {
   if (role.roles.length === 0) {
