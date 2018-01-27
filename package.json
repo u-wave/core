@@ -13,7 +13,7 @@
   "main": "dist/u-wave-core.js",
   "module": "dist/u-wave-core.es.js",
   "engines": {
-    "node": ">= 6.0"
+    "node": ">= 8.9"
   },
   "dependencies": {
     "bcryptjs": "^2.4.3",
