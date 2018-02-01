@@ -70,10 +70,11 @@ export class PlaylistsRepository {
 
   async createPlaylist(user, { name }) {
     const Playlist = this.uw.model('Playlist');
+    const userID = typeof user === 'object' ? user.id : user;
 
     const playlist = await Playlist.create({
       name,
-      author: user,
+      author: userID,
     });
 
     return playlist;
@@ -81,7 +82,8 @@ export class PlaylistsRepository {
 
   async getUserPlaylists(user) {
     const Playlist = this.uw.model('Playlist');
-    const playlists = await Playlist.where('author').eq(user);
+    const userID = typeof user === 'object' ? user.id : user;
+    const playlists = await Playlist.where('author').eq(userID);
     return playlists;
   }
 
