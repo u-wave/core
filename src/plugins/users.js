@@ -51,11 +51,62 @@ export class UsersRepository {
     return User.findById(id);
   }
 
+  async findOrCreateSocialUser({
+    type,
+    id,
+    username,
+    avatar,
+    role = 0,
+  }) {
+    const User = this.uw.model('User');
+    const Authentication = this.uw.model('Authentication');
+
+    debug('find or create social', type, id);
+
+    let auth = await Authentication.findOne({ type, id });
+    if (auth) {
+      await auth.populate('user').execPopulate();
+    } else {
+      const user = new User({
+        username: username.replace(/\s/g, ''),
+        avatar,
+        role,
+      });
+      await user.validate();
+
+      auth = new Authentication({
+        type,
+        user,
+        id,
+      });
+
+      try {
+        await Promise.all([
+          user.save(),
+          auth.save()
+        ]);
+      } catch (e) {
+        if (!auth.isNew) {
+          await auth.remove();
+        }
+        await user.remove();
+        throw e;
+      }
+
+      this.uw.publish('user:create', {
+        user: user.toJSON(),
+        auth: { type, id },
+      });
+    }
+
+    return auth.user;
+  }
+
   async createUser({
     username, email, password, role = 0,
   }) {
     const User = this.uw.model('User');
-    const LocalAuth = this.uw.model('Authentication');
+    const Authentication = this.uw.model('Authentication');
 
     debug('create user', username, email.toLowerCase(), role);
 
@@ -67,7 +118,8 @@ export class UsersRepository {
     });
     await user.validate();
 
-    const auth = new LocalAuth({
+    const auth = new Authentication({
+      type: 'local',
       user,
       email: email.toLowerCase(),
       hash,
@@ -91,7 +143,7 @@ export class UsersRepository {
 
     this.uw.publish('user:create', {
       user: user.toJSON(),
-      auth: { email: email.toLowerCase() },
+      auth: { type: 'local', email: email.toLowerCase() },
     });
 
     return user;
