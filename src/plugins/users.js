@@ -78,6 +78,8 @@ export class UsersRepository {
         type,
         user,
         id,
+        // HACK, providing a fake email so we can use `unique: true` on emails
+        email: `${id}@${type}.sociallogin`
       });
 
       try {
