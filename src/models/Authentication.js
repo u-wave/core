@@ -9,11 +9,14 @@ export default function authenticationModel() {
 
     static schema = {
       user: { type: Types.ObjectId, ref: 'User', index: true },
+      type: { type: String, required: true, default: 'local' },
+      // Local login
       email: {
-        type: String, max: 254, required: true, unique: true, index: true,
+        type: String, max: 254, unique: true, index: true,
       },
-      hash: { type: String, required: true },
-      validated: { type: Boolean, default: false },
+      hash: { type: String },
+      // Social login
+      id: { type: String },
     };
   }
 
