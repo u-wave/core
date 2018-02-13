@@ -1,27 +1,25 @@
 import mongoose from 'mongoose';
-import { createSchema } from 'mongoose-model-decorators';
 
+const { Schema } = mongoose;
 const { Types } = mongoose.Schema;
 
 export default function authenticationModel() {
-  class Authentication {
-    static timestamps = true;
+  const schema = new Schema({
+    user: { type: Types.ObjectId, ref: 'User', index: true },
+    type: { type: String, required: true, default: 'local' },
+    // Local login
+    email: {
+      type: String, max: 254, unique: true, index: true,
+    },
+    hash: { type: String },
+    // Social login
+    id: { type: String },
+  }, {
+    timestamps: true,
+    minimize: false,
+  });
 
-    static schema = {
-      user: { type: Types.ObjectId, ref: 'User', index: true },
-      type: { type: String, required: true, default: 'local' },
-      // Local login
-      email: {
-        type: String, max: 254, unique: true, index: true,
-      },
-      hash: { type: String },
-      // Social login
-      id: { type: String },
-    };
-  }
-
-  const AuthSchema = createSchema({ minimize: false })(Authentication);
-
-  return uw =>
-    uw.mongo.model('Authentication', new AuthSchema());
+  return (uw) => {
+    uw.mongo.model('Authentication', schema);
+  };
 }

@@ -1,30 +1,31 @@
 import mongoose from 'mongoose';
-import { createSchema } from 'mongoose-model-decorators';
-
 import NotFoundError from '../errors/NotFoundError';
 import Page from '../Page';
 
+const { Schema } = mongoose;
 const { Types } = mongoose.Schema;
 
 export default function playlistModel() {
   return (uw) => {
-    class Playlist {
-      static timestamps = true;
-      static toJSON = { getters: true };
+    const schema = new Schema({
+      name: {
+        type: String, min: 0, max: 128, required: true,
+      },
+      description: { type: String, min: 0, max: 512 },
+      author: {
+        type: Types.ObjectId, ref: 'User', required: true, index: true,
+      },
+      shared: { type: Boolean, default: false },
+      nsfw: { type: Boolean, default: false },
+      media: [{ type: Types.ObjectId, ref: 'PlaylistItem', index: true }],
+    }, {
+      collection: 'playlists',
+      timestamps: true,
+      toJSON: { getters: true },
+      minimize: false,
+    });
 
-      static schema = {
-        name: {
-          type: String, min: 0, max: 128, required: true,
-        },
-        description: { type: String, min: 0, max: 512 },
-        author: {
-          type: Types.ObjectId, ref: 'User', required: true, index: true,
-        },
-        shared: { type: Boolean, default: false },
-        nsfw: { type: Boolean, default: false },
-        media: [{ type: Types.ObjectId, ref: 'PlaylistItem', index: true }],
-      };
-
+    schema.loadClass(class Playlist {
       get size(): number {
         return this.media.length;
       }
@@ -68,10 +69,8 @@ export default function playlistModel() {
       removeItems(ids): Promise {
         return uw.playlists.removePlaylistItems(this, ids);
       }
-    }
+    });
 
-    const PlaylistSchema = createSchema({ minimize: false })(Playlist);
-
-    return uw.mongo.model('Playlist', new PlaylistSchema());
+    uw.mongo.model('Playlist', schema);
   };
 }
