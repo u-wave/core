@@ -14,6 +14,7 @@ describe('Media Sources', () => {
   });
 
   const testSourceObject = {
+    name: 'test-source',
     async search(query) {
       return [{ sourceID: query }];
     },
@@ -26,22 +27,23 @@ describe('Media Sources', () => {
     const search = async query => [{ sourceID: query }];
     const get = async ids => ids.map(sourceID => ({ sourceID }));
     return {
+      name: 'test-source',
       search,
       get: get, // eslint-disable-line object-shorthand
     };
   };
 
   it('should register sources from objects', () => {
-    server.source('test-source', testSourceObject);
+    server.source(testSourceObject);
     expect(server.source('test-source')).to.be.instanceOf(Source);
   });
   it('should register sources from a factory function', () => {
-    server.source('test-source', testSource);
+    server.source(testSource);
     expect(server.source('test-source')).to.be.instanceOf(Source);
   });
 
   it('should respond to search(query) API calls', () => {
-    server.source('test-source', testSource);
+    server.source(testSource);
     const query = 'search-query';
     return expect(server.source('test-source').search(null, query)).to.eventually.eql([
       { sourceType: 'test-source', sourceID: query },
@@ -49,7 +51,7 @@ describe('Media Sources', () => {
   });
 
   it('should respond to get(ids) API calls', () => {
-    server.source('test-source', testSource);
+    server.source(testSource);
     return expect(server.source('test-source').get(null, ['one', 'two'])).to.eventually.eql([
       { sourceType: 'test-source', sourceID: 'one' },
       { sourceType: 'test-source', sourceID: 'two' },
@@ -59,7 +61,8 @@ describe('Media Sources', () => {
   it('should relay getOne(id) API calls to get()', () => {
     const id = 'media-id';
     let getCalled = false;
-    server.source('test-source', {
+    server.source({
+      name: 'test-source',
       async get(ids) {
         expect(ids).to.eql([id]);
         getCalled = true;

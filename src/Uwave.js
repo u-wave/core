@@ -187,7 +187,7 @@ export default class UWaveServer extends EventEmitter {
 
     const sourceDefinition = type === 'function'
       ? sourceFactory(this, opts)
-      : sourceFactory
+      : sourceFactory;
     const sourceType = sourceDefinition.name;
     if (typeof sourceType !== 'string') {
       throw new TypeError('Source plugin does not specify a name. It may be incompatible with this version of üWave.');

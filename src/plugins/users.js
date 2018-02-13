@@ -79,13 +79,13 @@ export class UsersRepository {
         user,
         id,
         // HACK, providing a fake email so we can use `unique: true` on emails
-        email: `${id}@${type}.sociallogin`
+        email: `${id}@${type}.sociallogin`,
       });
 
       try {
         await Promise.all([
           user.save(),
-          auth.save()
+          auth.save(),
         ]);
       } catch (e) {
         if (!auth.isNew) {
