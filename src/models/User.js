@@ -75,6 +75,10 @@ export default function userModel() {
         return uw.acl.disallow(this, permissions);
       }
 
+      updatePassword(password: string): Promise {
+        return uw.users.updatePassword(this, password);
+      }
+
       getPlaylists(): Promise<Array> {
         return uw.playlists.getUserPlaylists(this);
       }

@@ -1,6 +1,8 @@
 import * as bcrypt from 'bcryptjs';
 import createDebug from 'debug';
 import Page from '../Page';
+import NotFoundError from '../errors/NotFoundError';
+import PasswordError from '../errors/PasswordError';
 
 const debug = createDebug('uwave:users');
 
@@ -49,6 +51,41 @@ export class UsersRepository {
       return id;
     }
     return User.findById(id);
+  }
+
+  login({ type, ...params }) {
+    if (type === 'local') {
+      return this.localLogin(params);
+    }
+    return this.socialLogin(type, params);
+  }
+
+  async localLogin({ email, password }) {
+    const Authentication = this.uw.model('Authentication');
+
+    const auth = await Authentication.findOne({
+      email: email.toLowerCase(),
+    }).populate('user').exec();
+    if (!auth) {
+      throw new NotFoundError('No user was found with that email address.');
+    }
+
+    const correct = await bcrypt.compare(password, auth.hash);
+    if (!correct) {
+      throw new PasswordError('That password is incorrect.');
+    }
+
+    return auth.user;
+  }
+
+  async socialLogin(type, { profile }) {
+    const user = {
+      type,
+      id: profile.id,
+      username: profile.displayName,
+      avatar: profile.photos.length > 0 ? profile.photos[0].value : null,
+    };
+    return this.uw.users.findOrCreateSocialUser(user);
   }
 
   async findOrCreateSocialUser({
@@ -151,9 +188,27 @@ export class UsersRepository {
     return user;
   }
 
+  async updatePassword(id, password) {
+    const Authentication = this.uw.model('Authentication');
+
+    const user = await this.getUser(id);
+    if (!user) throw new NotFoundError('User not found.');
+
+    const hash = await encryptPassword(password);
+
+    const auth = await Authentication.findOneAndUpdate({
+      type: 'local',
+      user: user.id,
+    }, { hash });
+
+    if (!auth) {
+      throw new NotFoundError('No user was found with that email address.');
+    }
+  }
+
   async updateUser(id, update = {}, opts = {}) {
     const user = await this.getUser(id);
-    if (!user) throw new Error('User not found.');
+    if (!user) throw new NotFoundError('User not found.');
 
     debug('update user', user.id, user.username, update);
 
