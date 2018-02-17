@@ -1,8 +1,0 @@
-{
-  "redis": {},
-  "mongo": "mongodb://localhost:27017/uw_test_default",
-  "keys": {
-    "youtube": "",
-    "soundcloud": ""
-  }
-}

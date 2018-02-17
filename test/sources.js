@@ -1,16 +1,18 @@
 import { expect } from 'chai';
-
+import mongoose from 'mongoose';
 import uwave from '../src';
 import Source from '../src/Source';
-import testConfig from './test-server-config.json';
 
 describe('Media Sources', () => {
   let server;
   beforeEach(() => {
     server = uwave({
-      ...testConfig,
+      mongo: mongoose.createConnection('mongodb://localhost:27017/uw_test_sources'),
       useDefaultPlugins: false,
     });
+  });
+  afterEach(async () => {
+    await server.stop();
   });
 
   const testSourceObject = {
