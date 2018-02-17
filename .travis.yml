@@ -5,7 +5,7 @@ node_js:
   - 8.9
 
 script:
-  - npm test
+  - DEBUG=uwave:* npm test
 
 services:
   - mongodb
