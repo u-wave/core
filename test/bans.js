@@ -33,6 +33,7 @@ describe('bans', () => {
   });
   afterEach(async () => {
     await mongoConnected(uw.mongo);
+    await uw.mongo.dropDatabase();
     await uw.stop();
   });
 
