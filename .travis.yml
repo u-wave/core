@@ -9,3 +9,4 @@ script:
 
 services:
   - mongodb
+  - redis-server
