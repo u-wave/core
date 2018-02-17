@@ -1,10 +1,21 @@
 import { expect } from 'chai';
-
+import mongoose from 'mongoose';
+import { delay } from 'bluebird';
 import uwave from '../src';
-import testConfig from './test-server-config.json';
 
 describe('üWave Core', () => {
-  it('can create a üWave instance', () => {
-    expect(uwave(testConfig)).to.be.instanceOf(uwave.Uwave);
+  let uw;
+  beforeEach(() => {
+    uw = uwave({
+      mongo: mongoose.createConnection('mongodb://localhost:27017/uw_test_server'),
+    });
+  });
+  afterEach(async () => {
+    await uw.stop();
+  });
+
+  it('can create a üWave instance', async () => {
+    expect(uw).to.be.instanceOf(uwave.Uwave);
+    await delay(50); // HACK Give mongo some time to connect
   });
 });
