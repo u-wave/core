@@ -289,8 +289,8 @@ export default class UWaveServer extends EventEmitter {
     this.log('stopping üWave...');
 
     await Promise.all([
-      this.redis.quit().then(() => { console.error('redis ok') }),
-      this.mongo.close().then(() => { console.error('mongo ok') }),
+      this.redis.quit(),
+      this.mongo.close(),
     ]);
 
     this.emit('stopped');
