@@ -34,9 +34,6 @@ describe('bans', () => {
   afterEach(async () => {
     await mongoConnected(uw.mongo);
     await uw.stop();
-    const mongo = mongoose.createConnection(`mongodb://${DB_NAME}`);
-    await mongo.dropDatabase();
-    await mongo.close();
   });
 
   describe('isBanned(user)', () => {
