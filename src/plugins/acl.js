@@ -1,6 +1,7 @@
 import flatten from 'lodash/flatten';
 import includes from 'lodash/includes';
 import createDebug from 'debug';
+import eachSeries from 'p-each-series';
 import defaultRoles from '../config/defaultRoles';
 
 const debug = createDebug('uwave:acl');
@@ -54,8 +55,8 @@ export class Acl {
     debug('existing roles', existingRoles);
     if (existingRoles === 0) {
       debug('no roles found, adding defaults');
-      await Promise.all(Object.keys(defaultRoles).map(roleName =>
-        this.createRole(roleName, defaultRoles[roleName])));
+      await eachSeries(Object.keys(defaultRoles), roleName =>
+        this.createRole(roleName, defaultRoles[roleName]));
     }
   }
 
