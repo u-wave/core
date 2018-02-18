@@ -25,6 +25,7 @@
     "mongoose": "^5.0.0",
     "ms": "^2.1.1",
     "object-values": "^1.0.0",
+    "p-each-series": "^1.0.0",
     "p-props": "^1.1.0",
     "redlock": "^3.1.0",
     "transliteration": "^1.6.2"
@@ -39,6 +40,7 @@
     "babel-eslint": "^8.2.1",
     "chai": "^4.1.2",
     "chai-as-promised": "^7.1.1",
+    "delay": "^2.0.0",
     "eslint": "^4.15.0",
     "eslint-config-airbnb-base": "^12.1.0",
     "eslint-plugin-import": "^2.8.0",

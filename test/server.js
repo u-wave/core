@@ -1,6 +1,6 @@
 import { expect } from 'chai';
 import mongoose from 'mongoose';
-import { delay } from 'bluebird';
+import delay from 'delay';
 import uwave from '../src';
 
 describe('üWave Core', () => {
