@@ -1,6 +1,5 @@
 import Promise from 'bluebird';
 import ms from 'ms';
-import { Types as MongoTypes } from 'mongoose';
 import RedLock from 'redlock';
 import createDebug from 'debug';
 
@@ -9,8 +8,6 @@ class PlaylistIsEmptyError extends Error {
 }
 
 const debug = createDebug('uwave:advance');
-
-const { ObjectId } = MongoTypes;
 
 function cyclePlaylist(playlist) {
   const item = playlist.media.shift();
@@ -59,7 +56,7 @@ export class Booth {
       return null;
     }
 
-    return History.findOne(new ObjectId(historyID));
+    return History.findById(historyID);
   }
 
   async saveStats(entry) {
@@ -84,7 +81,7 @@ export class Booth {
       return null;
     }
 
-    return User.findOne(new ObjectId(userID));
+    return User.findById(userID);
   }
 
   async getNextEntry(opts) {
