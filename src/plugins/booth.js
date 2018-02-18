@@ -1,4 +1,4 @@
-import Promise from 'bluebird';
+import props from 'p-props';
 import ms from 'ms';
 import RedLock from 'redlock';
 import createDebug from 'debug';
@@ -60,7 +60,7 @@ export class Booth {
   }
 
   async saveStats(entry) {
-    const stats = await Promise.props({
+    const stats = await props({
       upvotes: this.uw.redis.lrange('booth:upvotes', 0, -1),
       downvotes: this.uw.redis.lrange('booth:downvotes', 0, -1),
       favorites: this.uw.redis.lrange('booth:favorites', 0, -1),

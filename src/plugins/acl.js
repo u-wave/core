@@ -1,4 +1,3 @@
-import Promise from 'bluebird';
 import flatten from 'lodash/flatten';
 import includes from 'lodash/includes';
 import createDebug from 'debug';

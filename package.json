@@ -17,7 +17,6 @@
   },
   "dependencies": {
     "bcryptjs": "^2.4.3",
-    "bluebird": "^3.5.1",
     "clamp": "^1.0.1",
     "debug": "^3.1.0",
     "escape-string-regexp": "^1.0.5",
@@ -26,6 +25,7 @@
     "mongoose": "^5.0.0",
     "ms": "^2.1.1",
     "object-values": "^1.0.0",
+    "p-props": "^1.1.0",
     "redlock": "^3.1.0",
     "transliteration": "^1.6.2"
   },
@@ -38,7 +38,6 @@
     "@babel/plugin-transform-modules-commonjs": "^7.0.0-beta.37",
     "@babel/register": "^7.0.0-beta.37",
     "babel-eslint": "^8.2.1",
-    "babel-plugin-transform-promise-to-bluebird": "^2.0.0-beta",
     "chai": "^4.1.2",
     "chai-as-promised": "^7.1.1",
     "eslint": "^4.15.0",
