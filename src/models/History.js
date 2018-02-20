@@ -14,8 +14,16 @@ export default function historyModel() {
     item: { type: Types.ObjectId, ref: 'PlaylistItem' },
     media: {
       media: { type: Types.ObjectId, ref: 'Media', required: true },
-      artist: { type: String, index: true },
-      title: { type: String, index: true },
+      artist: {
+        type: String,
+        index: true,
+        set: artist => artist.normalize('NFKC'),
+      },
+      title: {
+        type: String,
+        index: true,
+        set: title => title.normalize('NFKC'),
+      },
       start: { type: Number, default: 0 },
       end: { type: Number, default: 0 },
     },

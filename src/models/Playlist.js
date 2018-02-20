@@ -9,7 +9,11 @@ export default function playlistModel() {
   return (uw) => {
     const schema = new Schema({
       name: {
-        type: String, min: 0, max: 128, required: true,
+        type: String,
+        min: 0,
+        max: 128,
+        required: true,
+        set: name => name.normalize('NFKC'),
       },
       description: { type: String, min: 0, max: 512 },
       author: {

@@ -222,6 +222,12 @@ export class UsersRepository {
 
     await user.save();
 
+    // Take updated keys from the Model again,
+    // as it may apply things like Unicode normalization on the values.
+    Object.keys(update).forEach((key) => {
+      update[key] = user[key];
+    });
+
     this.uw.publish('user:update', {
       userID: user.id,
       moderatorID: moderator ? moderator.id : null,
