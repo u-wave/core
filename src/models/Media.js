@@ -11,8 +11,18 @@ export default function mediaModel() {
       type: String, max: 128, required: true, index: true,
     },
     sourceData: {},
-    artist: { type: String, max: 128, required: true },
-    title: { type: String, max: 128, required: true },
+    artist: {
+      type: String,
+      max: 128,
+      required: true,
+      set: artist => artist.normalize('NFKC'),
+    },
+    title: {
+      type: String,
+      max: 128,
+      required: true,
+      set: title => title.normalize('NFKC'),
+    },
     duration: { type: Number, min: 0, default: 0 },
     thumbnail: { type: String, max: 256, default: '' },
   }, {
