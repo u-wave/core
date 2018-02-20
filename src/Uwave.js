@@ -70,13 +70,6 @@ export default class UWaveServer extends EventEmitter {
     });
   }
 
-  /**
-   * Deprecated in favour of `.options`.
-   */
-  get config() {
-    return this.options;
-  }
-
   parseOptions(options: UwaveOptions) {
     if (Array.isArray(options.mongo)) {
       this.mongo = mongoose.createConnection(...options.mongo);
@@ -236,24 +229,6 @@ export default class UWaveServer extends EventEmitter {
       this.mongoLog('connected');
       this.emit('mongoConnect');
     });
-  }
-
-  /**
-   * Set up database connections.
-   *
-   * @deprecated Noop.
-   */
-  connect() {
-    return this;
-  }
-
-  /**
-   * Old name for connect().
-   *
-   * @deprecated Noop.
-   */
-  start() {
-    return this;
   }
 
   /**

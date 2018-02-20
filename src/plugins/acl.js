@@ -1,5 +1,4 @@
 import flatten from 'lodash/flatten';
-import includes from 'lodash/includes';
 import createDebug from 'debug';
 import eachSeries from 'p-each-series';
 import defaultRoles from '../config/defaultRoles';
@@ -134,7 +133,7 @@ export class Acl {
 
     debug('role ids', roleIds, 'check', aclUser, role.id, 'super', this.superRole);
 
-    return includes(roleIds, role.id) || includes(roleIds, this.superRole);
+    return roleIds.includes(role.id) || roleIds.includes(this.superRole);
   }
 }
 
