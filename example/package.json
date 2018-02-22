@@ -2,20 +2,14 @@
   "private": true,
   "name": "u-wave-example",
   "dependencies": {
-    "express": "4.x",
-    "u-wave-core": "1.x",
-    "u-wave-api-v1": "1.x",
-    "u-wave-web": "1.x",
+    "u-wave-core": "^1.0.0",
+    "u-wave-http-api": "^1.0.0",
+    "u-wave-web": "^1.0.0",
     "u-wave-source-soundcloud": "^1.0.0",
-    "u-wave-source-youtube": "^1.0.0"
-  },
-  "devDependencies": {
-    "babel-cli": "^6.6.0",
-    "babel-preset-es2015-node4": "^2.0.3",
-    "babel-preset-stage-2": "^6.6.0"
+    "u-wave-source-youtube": "^1.0.0",
+    "express": "4.x"
   },
   "scripts": {
-    "build": "babel --presets es2015-node4,stage-2 index.js > index.compiled.js",
-    "start": "node index.compiled.js"
+    "start": "node index.js"
   }
 }
