@@ -91,8 +91,8 @@ export class Acl {
     );
   }
 
-  async deleteRole(name, roleName) {
-    const role = await this.getAclRoles([roleName]);
+  async deleteRole(name) {
+    const role = await this.AclRole.findById(name);
     if (role) {
       await role.remove();
     }

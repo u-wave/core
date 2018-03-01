@@ -88,4 +88,11 @@ describe('acl', () => {
     expect(await user.can('waitlist.remove')).to.equal(true);
     expect(await user.can('waitlist.clear')).to.equal(false);
   });
+
+  it('can delete roles', async () => {
+    await acl.createRole('test.role', []);
+    expect(Object.keys(await acl.getAllRoles())).to.deep.equal(['test.role']);
+    await acl.deleteRole('test.role');
+    expect(Object.keys(await acl.getAllRoles())).to.deep.equal([]);
+  });
 });

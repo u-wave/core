@@ -36,4 +36,8 @@ export default {
     'chat.mention.staff',
   ],
   guest: [],
+
+  // Individual roles, only assigned to superusers via the '*' role by default.
+  'acl.create': [],
+  'acl.delete': [],
 };
