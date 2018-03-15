@@ -61,9 +61,9 @@ export class Booth {
 
   async saveStats(entry) {
     const stats = await props({
-      upvotes: this.uw.redis.lrange('booth:upvotes', 0, -1),
-      downvotes: this.uw.redis.lrange('booth:downvotes', 0, -1),
-      favorites: this.uw.redis.lrange('booth:favorites', 0, -1),
+      upvotes: this.uw.redis.smembers('booth:upvotes'),
+      downvotes: this.uw.redis.smembers('booth:downvotes'),
+      favorites: this.uw.redis.smembers('booth:favorites'),
     });
 
     Object.assign(entry, stats);
