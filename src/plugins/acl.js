@@ -105,6 +105,11 @@ export class Acl {
     aclUser.roles.push(...aclRoles);
 
     await aclUser.save();
+
+    this.uw.publish('acl:allow', {
+      userID: aclUser.id,
+      roles: aclRoles.map(role => role.id),
+    });
   }
 
   async disallow(user, roleNames) {
@@ -113,6 +118,11 @@ export class Acl {
     aclUser.roles = aclUser.roles.filter(role =>
       aclRoles.every(remove => remove.id !== getRoleName(role)));
     await aclUser.save();
+
+    this.uw.publish('acl:disallow', {
+      userID: aclUser.id,
+      roles: aclRoles.map(role => role.id),
+    });
   }
 
   async getAllPermissions(user) {
