@@ -2,8 +2,7 @@ import EventEmitter from 'events';
 import mongoose from 'mongoose';
 import Redis from 'ioredis';
 import debug from 'debug';
-import values from 'object-values';
-import isPlainObject from 'lodash/isPlainObject';
+import { values, isPlainObject } from 'lodash';
 
 import Source from './Source';
 import Page from './Page';

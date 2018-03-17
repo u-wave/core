@@ -1,5 +1,4 @@
-import groupBy from 'lodash/groupBy';
-import shuffle from 'lodash/shuffle';
+import { groupBy, shuffle } from 'lodash';
 import escapeStringRegExp from 'escape-string-regexp';
 
 import NotFoundError from '../errors/NotFoundError';
