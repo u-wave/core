@@ -1,4 +1,4 @@
-import clamp from 'clamp';
+import { clamp } from 'lodash';
 
 import Page from '../Page';
 

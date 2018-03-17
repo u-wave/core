@@ -1,4 +1,4 @@
-import clamp from 'clamp';
+import { clamp } from 'lodash';
 import escapeStringRegExp from 'escape-string-regexp';
 import Page from '../Page';
 

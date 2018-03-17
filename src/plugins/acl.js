@@ -1,4 +1,4 @@
-import flatten from 'lodash/flatten';
+import { flatten } from 'lodash';
 import createDebug from 'debug';
 import eachSeries from 'p-each-series';
 import defaultRoles from '../config/defaultRoles';
