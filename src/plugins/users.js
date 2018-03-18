@@ -93,7 +93,6 @@ export class UsersRepository {
     id,
     username,
     avatar,
-    role = 0,
   }) {
     const User = this.uw.model('User');
     const Authentication = this.uw.model('Authentication');
@@ -107,7 +106,7 @@ export class UsersRepository {
       const user = new User({
         username: username.replace(/\s/g, ''),
         avatar,
-        role,
+        roles: ['user'],
       });
       await user.validate();
 
@@ -142,18 +141,18 @@ export class UsersRepository {
   }
 
   async createUser({
-    username, email, password, role = 0,
+    username, email, password,
   }) {
     const User = this.uw.model('User');
     const Authentication = this.uw.model('Authentication');
 
-    debug('create user', username, email.toLowerCase(), role);
+    debug('create user', username, email.toLowerCase());
 
     const hash = await encryptPassword(password);
 
     const user = new User({
       username,
-      role,
+      roles: ['user'],
     });
     await user.validate();
 
