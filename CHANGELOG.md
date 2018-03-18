@@ -1,3 +1,25 @@
+# 0.3.0 / 18 Mar 2018
+
+Features:
+
+ * Add optional `user` parameter to media sources. (#133)
+ * Use `IORedis#quit` instead of `IORedis#end`. (#139)
+ * Implement bans. (#104)
+ * Set a default avatar. (#146)
+ * Generate cjs and es modules builds. (#166)
+ * Accept user object in more playlist methods. (#183)
+ * Add `users.findOrCreateSocialUser`. (#187)
+ * Remove custom sourceType parameter. (#153)
+ * Add login and password change to users plugin. (#200)
+ * Publish ACL role changes. (#211)
+
+Bugfixes:
+
+ * Fix adding items to playlist. (#136)
+ * Normalize unicode strings before inserting into DB. (#205)
+ * Fix `acl.deleteRole`. (#207)
+ * Use Redis sets to store votes. (#212)
+
 # 0.2.2 / 09 Jul 2017
 
 Features:

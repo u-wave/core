@@ -1,6 +1,6 @@
 {
   "name": "u-wave-core",
-  "version": "0.2.2",
+  "version": "0.3.0",
   "description": "The üWave core library.",
   "license": "MIT",
   "repository": "u-wave/core",
