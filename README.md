@@ -1,5 +1,7 @@
 # u-wave-core
 
+[![Greenkeeper badge](https://badges.greenkeeper.io/u-wave/core.svg)](https://greenkeeper.io/)
+
 Core library for üWave, the collaborative listening platform.
 
 [Getting Started](#getting-started) - [API](#api) - [Building](#contributing) -
