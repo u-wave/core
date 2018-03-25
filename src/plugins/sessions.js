@@ -6,8 +6,9 @@ import NotFoundError from '../errors/NotFoundError';
 const { Schema } = mongoose;
 
 type SessionToken = Buffer;
+type HashedSessionToken = Buffer;
 
-function hash(token) {
+function hash(token: SessionToken): HashedSessionToken {
   return secureToken.hash(token, 'session');
 }
 
@@ -55,31 +56,31 @@ class Sessions {
   /**
    * Sign a user in and create a new session.
    */
-  async createSession(credentials): SessionToken {
+  async createSession(credentials): { token: SessionToken, user: any } {
     const { users } = this.uw;
     const { Session } = this;
 
     const user = await users.login(credentials);
 
     const token = secureToken.create();
-    const session = await Session.create({
+    await Session.create({
       token: hash(token),
       user,
     });
 
-    return token;
+    return { token, user };
   }
 
   /**
    * Destroy a session.
    */
-  async destroySession(token: SessionToken) {
+  async destroySession(token: HashedSessionToken) {
     const { redis } = this.uw;
 
     const session = await this.getSession(token);
 
     if (await this.isActive(token)) {
-      const hex = hash(token).toString('hex');
+      const hex = token.toString('hex');
       await redis.multi()
         .del(`sessions:${hex}`)
         .srem('sessions:active', hex)
@@ -96,13 +97,23 @@ class Sessions {
   /**
    * Get the session belonging to a token.
    */
-  async getSession(token: SessionToken) {
+  async getSession(token: HashedSessionToken) {
     return this.Session.findOne({
-      token: hash(token),
+      token,
     });
   }
 
-  async getUser(token: SessionToken) {
+  /**
+   * Securely the user for the given session.
+   */
+  async getSecureUser(token: SessionToken) {
+    return this.getUser(hash(token));
+  }
+
+  /**
+   * Get the user for the given session, by their semi-not-secret hashed session token.
+   */
+  async getUser(token: HashedSessionToken) {
     const { users } = this.uw;
 
     const session = await this.getSession(token);
@@ -116,17 +127,20 @@ class Sessions {
    */
   async attachSession(token: SessionToken) {
     const { redis } = this.uw;
+    const hashedToken = hash(token);
 
-    if (await this.isActive(token)) {
+    if (await this.isActive(hashedToken)) {
       return;
     }
 
-    const session = await this.getSession(token);
+    const session = await this.getSession(hashedToken);
     if (!session) {
       throw new NotFoundError('Session expired or does not exist.');
     }
 
-    const hex = hash(token).toString('hex');
+    const emitJoin = !(await this.isActiveUser(session.user));
+
+    const hex = hashedToken.toString('hex');
     await redis.multi()
       .sadd('sessions:active', hex)
       .incr(`sessions:${hex}`)
@@ -136,41 +150,62 @@ class Sessions {
     this.uw.publish('session:attach', {
       userID: `${session.user}`,
     });
+    if (emitJoin) {
+      this.uw.publish('user:join', {
+        userID: `${session.user}`,
+      });
+    }
   }
 
   /**
    * Detach from a session, marking it inactive.
    */
-  async detachSession(token: SessionToken) {
+  async detachSession(token: HashedSessionToken) {
     const { redis } = this.uw;
 
     if (await this.isActive(token)) {
+      const session = await this.getSession(token);
+
       const hex = hash(token).toString('hex');
       const left = await redis.decr(`sessions:${hex}`);
       if (left === 0) {
         await redis.srem('sessions:active', hex);
 
-        const session = await this.getSession(token);
         this.uw.publish('session:detach', {
           userID: `${session.user}`,
         });
       }
+
+      // If no active sessions are left for this user, emit leave.
+      if (!(await this.isActiveUser(session.user))) {
+        await this.removeActiveUser(session.user);
+      }
     }
   }
 
+  async removeActiveUser(user: any) {
+    const { booth } = this.uw;
+
+    await booth.removeUser(user);
+
+    this.uw.publish('user:leave', {
+      userID: `${user}`,
+    });
+  }
+
   async refreshSession(token: SessionToken) {
-    const { redis } = this.uw;
-    const session = await this.getSession(token);
+    const hashedToken = hash(token);
+    const session = await this.getSession(hashedToken);
     await session.save(); // set `updatedAt`.
   }
 
-  async isActive(token: SessionToken) {
+  async isActive(token: HashedSessionToken) {
     const { redis } = this.uw;
 
-    return redis.sismember('sessions:active', hash(token).toString('hex'));
+    return redis.sismember('sessions:active', token.toString('hex'));
   }
 
-  async exists(token: SessionToken) {
+  async exists(token: HashedSessionToken) {
     const session = await this.getSession(token);
 
     return !!session;
@@ -187,6 +222,23 @@ class Sessions {
     });
 
     return sessions;
+  }
+
+  async isActiveUser(userID) {
+    const { users, redis } = this.uw;
+    const user = await users.getUser(userID);
+
+    const userSessions = await this.Session.find({ user }).select('+token');
+
+    const query = userSessions.reduce(
+      (pipe, session) =>
+        pipe.sismember('sessions:active', session.token.toString('hex')),
+      redis.multi(),
+    );
+
+    const results = await query.exec();
+
+    return results.some(result => !!result[1]);
   }
 
   async getActiveUsers() {
@@ -206,10 +258,13 @@ class Sessions {
     const sessions = await this.Session.where({
       updatedAt: { $lt: new Date(Date.now() + ms('31 days')) },
     });
+
+    // TODO implement
+    void sessions; // eslint-disable-line
   }
 }
 
-export default function sessions() {
+export default function sessionsPlugin() {
   return (uw) => {
     uw.sessions = new Sessions(uw);
   };

@@ -240,6 +240,16 @@ export class Booth {
 
     return next;
   }
+
+  async removeUser(userID) {
+    const { users } = this.uw;
+
+    const user = await users.getUser(userID);
+    const currentDJ = await this.uw.redis.get('booth:currentDJ');
+    if (user.id === currentDJ) {
+      await this.advance({ remove: true });
+    }
+  }
 }
 
 export default function booth() {
