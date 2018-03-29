@@ -32,6 +32,7 @@ function hash(token: SessionToken): HashedSessionToken {
 class Sessions {
   constructor(uw) {
     this.uw = uw;
+    this.guests = 0; // This is not stored in a database.
 
     this.uw.mongo.model('Session', new Schema({
       token: {
@@ -261,6 +262,18 @@ class Sessions {
 
     // TODO implement
     void sessions; // eslint-disable-line
+  }
+
+  async attachGuest() {
+    this.guests += 1;
+  }
+
+  async detachGuest() {
+    this.guests -= 1;
+  }
+
+  async getGuestCount() {
+    return this.guests;
   }
 }
 
