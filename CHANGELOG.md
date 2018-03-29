@@ -1,3 +1,9 @@
+# 0.3.1 / 29 Mar 2018
+
+Bugfixes:
+
+ * Assign "user" role by default. (#214)
+
 # 0.3.0 / 18 Mar 2018
 
 Features:
