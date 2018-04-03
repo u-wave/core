@@ -14,6 +14,7 @@ export default {
     'waitlist.remove',
     'waitlist.move',
     'waitlist.lock',
+    'waitlist.join.locked',
     'booth.skip.other',
     'chat.delete',
     'chat.mute',
