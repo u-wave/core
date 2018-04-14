@@ -130,9 +130,8 @@ export default class UWaveServer extends EventEmitter {
     return this.motd.set(text);
   }
 
-  // TODO add filter
-  getUsers(page = {}) {
-    return this.users.getUsers(page);
+  getUsers(filter = null, page = {}) {
+    return this.users.getUsers(filter, page);
   }
 
   getUser(id) {
