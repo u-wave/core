@@ -1,5 +1,6 @@
 import * as bcrypt from 'bcryptjs';
 import createDebug from 'debug';
+import escapeStringRegExp from 'escape-string-regexp';
 import Page from '../Page';
 import NotFoundError from '../errors/NotFoundError';
 import PasswordError from '../errors/PasswordError';
@@ -19,23 +20,49 @@ export class UsersRepository {
     this.uw = uw;
   }
 
-  async getUsers(page = {}) {
+  async getUsers(filter = null, page = {}) {
     const User = this.uw.model('User');
+
+    if (filter && (typeof filter.offset === 'number' || typeof filter.limit === 'number')) {
+      page = filter; // eslint-disable-line no-param-reassign
+      filter = null; // eslint-disable-line no-param-reassign
+    }
+
+    debug('getUsers', filter, page);
 
     const {
       offset = 0,
       limit = 50,
     } = page;
 
-    const users = await User.find()
+    const query = User.find()
       .skip(offset)
       .limit(limit);
+    let queryFilter = null;
 
-    const total = await User.count();
+    if (filter) {
+      if (typeof filter !== 'string') throw new TypeError('User filter must be a string');
+      queryFilter = {
+        username: new RegExp(escapeStringRegExp(filter)),
+      };
+      query.where(queryFilter);
+    }
+
+    const totalPromise = User.count();
+
+    const [
+      users,
+      filtered,
+      total,
+    ] = await Promise.all([
+      query,
+      queryFilter ? User.find().where(queryFilter).count() : totalPromise,
+      totalPromise,
+    ]);
 
     return new Page(users, {
       pageSize: limit,
-      filtered: total,
+      filtered,
       total,
       current: { offset, limit },
       next: offset + limit <= total ? { offset: offset + limit, limit } : null,
