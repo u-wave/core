@@ -1,16 +1,22 @@
-# 0.3.2 / 03 Apr 2018
+# u-wave-web change log
+
+All notable changes to this project will be documented in this file.
+
+This project adheres to [Semantic Versioning](http://semver.org/).
+
+## 0.3.2 / 03 Apr 2018
 
 Bugfixes:
 
  * Add waitlist.join.locked permission to default moderator role. (#218)
 
-# 0.3.1 / 29 Mar 2018
+## 0.3.1 / 29 Mar 2018
 
 Bugfixes:
 
  * Assign "user" role by default. (#214)
 
-# 0.3.0 / 18 Mar 2018
+## 0.3.0 / 18 Mar 2018
 
 Features:
 
@@ -32,7 +38,7 @@ Bugfixes:
  * Fix `acl.deleteRole`. (#207)
  * Use Redis sets to store votes. (#212)
 
-# 0.2.2 / 09 Jul 2017
+## 0.2.2 / 09 Jul 2017
 
 Features:
 
@@ -46,7 +52,7 @@ Internal:
 
  * Use temporary databases instead of mockgoose while running tests. (#123)
 
-# 0.2.1 / 21 Jun 2017
+## 0.2.1 / 21 Jun 2017
 
 Features:
 
@@ -58,7 +64,7 @@ Internal:
  * Ensure `Promise` always refers to bluebird. (#114)
  * Add Node 8 to Travis. (#115)
 
-# 0.2.0 / 15 Jun 2017
+## 0.2.0 / 15 Jun 2017
 
 Features:
 
@@ -73,6 +79,6 @@ Internal:
  * Switch to `bcryptjs` from `bcrypt`. (#97)
  * Switch to `transliteration` from `speakingurl`. (#98)
 
-# 0.1.0 / 30 Dec 2016
+## 0.1.0 / 30 Dec 2016
 
 Start tracking changes.
