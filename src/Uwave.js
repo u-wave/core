@@ -16,6 +16,7 @@ import users from './plugins/users';
 import bans from './plugins/bans';
 import history from './plugins/history';
 import acl from './plugins/acl';
+import waitlist from './plugins/waitlist';
 
 mongoose.Promise = Promise;
 const MongooseConnection = mongoose.Connection;
@@ -62,6 +63,7 @@ export default class UWaveServer extends EventEmitter {
       this.use(bans());
       this.use(history());
       this.use(acl());
+      this.use(waitlist());
     }
 
     process.nextTick(() => {
