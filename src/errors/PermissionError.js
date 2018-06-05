@@ -5,7 +5,7 @@ export default class PermissionError extends UwaveError {
   name = 'PermissionError';
   code = 'NOT_ALLOWED';
 
-  constructor (message, { requiredRole }) {
+  constructor(message, { requiredRole }) {
     super(message);
     this.requiredRole = requiredRole;
   }

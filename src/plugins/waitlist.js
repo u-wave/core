@@ -11,13 +11,9 @@ class Waitlist {
     this.uw = uw;
   }
 
-  #getCurrentDJ = () => {
-    return this.uw.redis.get('booth:currentDJ');
-  }
+  #getCurrentDJ = () => this.uw.redis.get('booth:currentDJ')
 
-  #isBoothEmpty = async () => {
-    return !(await this.uw.redis.get('booth:historyID'));
-  }
+  #isBoothEmpty = async () => !(await this.uw.redis.get('booth:historyID'))
 
   #isCurrentDJ = async (userID: string) => {
     const dj = await this.#getCurrentDJ();
@@ -99,10 +95,8 @@ class Waitlist {
       throw new PermissionError('You are already currently playing.');
     }
     if (!(await this.#hasValidPlaylist(user))) {
-      throw new Error(
-        'You don\'t have anything to play. Please add some songs to your ' +
-        'playlist and try again.',
-      );
+      throw new Error('You don\'t have anything to play. Please add some songs to your ' +
+        'playlist and try again.');
     }
 
     if (!moderator || user.id === moderator.id) {
