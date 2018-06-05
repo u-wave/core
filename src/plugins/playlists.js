@@ -82,7 +82,8 @@ export class PlaylistsRepository {
 
     // If this is the user's first playlist, immediately activate it.
     try {
-    const activeID = await user.getActivePlaylist();
+      // Throws if we don't have an active playlist yet.
+      await user.getActivePlaylist();
     } catch (err) {
       debug(`activating first playlist for ${user.id} ${user.username}`);
       await user.setActivePlaylist(playlist);
