@@ -134,6 +134,7 @@ export class UsersRepository {
         username: username.replace(/\s/g, ''),
         avatar,
         roles: ['user'],
+        pendingActivation: type,
       });
       await user.validate();
 
