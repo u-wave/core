@@ -40,7 +40,7 @@
     "chai-as-promised": "^7.1.1",
     "delay": "^3.0.0",
     "eslint": "^4.15.0",
-    "eslint-config-airbnb-base": "^12.1.0",
+    "eslint-config-airbnb-base": "^13.0.0",
     "eslint-plugin-import": "^2.8.0",
     "is-builtin-module": "^2.0.0",
     "mocha": "^5.0.1",
