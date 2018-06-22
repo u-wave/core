@@ -5,9 +5,9 @@ import NotFoundError from '../errors/NotFoundError';
 import Page from '../Page';
 
 function isValidPlaylistItem(item) {
-  return typeof item === 'object' &&
-    typeof item.sourceType === 'string' &&
-    (typeof item.sourceID === 'string' || typeof item.sourceID === 'number');
+  return typeof item === 'object'
+    && typeof item.sourceType === 'string'
+    && (typeof item.sourceID === 'string' || typeof item.sourceID === 'number');
 }
 
 /**
@@ -167,8 +167,7 @@ export class PlaylistsRepository {
         .populate('media')
       : [];
 
-    const results = itemIDs.map(itemID =>
-      items.find(item => `${item.id}` === `${itemID}`));
+    const results = itemIDs.map(itemID => items.find(item => `${item.id}` === `${itemID}`));
 
     return new Page(results, {
       pageSize: pagination ? pagination.limit : null,
@@ -274,8 +273,7 @@ export class PlaylistsRepository {
     const playlist = await this.getPlaylist(playlistOrID);
 
     // First remove the given items,
-    const newMedia = playlist.media.filter(item =>
-      itemIDs.indexOf(`${item}`) === -1);
+    const newMedia = playlist.media.filter(item => itemIDs.indexOf(`${item}`) === -1);
     // then reinsert them at their new position.
     const insertIndex = newMedia.findIndex(item => `${item}` === afterID);
     newMedia.splice(insertIndex + 1, 0, ...itemIDs);

@@ -54,8 +54,8 @@ export class Acl {
     debug('existing roles', existingRoles);
     if (existingRoles === 0) {
       debug('no roles found, adding defaults');
-      await eachSeries(Object.keys(defaultRoles), roleName =>
-        this.createRole(roleName, defaultRoles[roleName]));
+      const roleNames = Object.keys(defaultRoles);
+      await eachSeries(roleNames, roleName => this.createRole(roleName, defaultRoles[roleName]));
     }
   }
 
@@ -115,8 +115,8 @@ export class Acl {
   async disallow(user, roleNames) {
     const aclRoles = await this.getAclRoles(roleNames);
     const aclUser = await this.getAclUser(user);
-    aclUser.roles = aclUser.roles.filter(role =>
-      aclRoles.every(remove => remove.id !== getRoleName(role)));
+    const shouldRemove = roleName => aclRoles.some(remove => remove.id === roleName);
+    aclUser.roles = aclUser.roles.filter(role => !shouldRemove(getRoleName(role)));
     await aclUser.save();
 
     this.uw.publish('acl:disallow', {

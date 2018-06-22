@@ -208,9 +208,9 @@ export class Booth {
 
       debug(
         'previous track:', previous.media.artist, '—', previous.media.title,
-        `👍 ${previous.upvotes.length} ` +
-        `★ ${previous.favorites.length} ` +
-        `👎 ${previous.downvotes.length}`,
+        `👍 ${previous.upvotes.length} `
+        + `★ ${previous.favorites.length} `
+        + `👎 ${previous.downvotes.length}`,
       );
     }
 
