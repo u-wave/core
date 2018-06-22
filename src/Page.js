@@ -21,9 +21,11 @@ export default class Page {
   get prevPage() {
     return this.opts.previous;
   }
+
   get currentPage() {
     return this.opts.current;
   }
+
   get nextPage() {
     return this.opts.next;
   }

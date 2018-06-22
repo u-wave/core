@@ -114,6 +114,7 @@ export default function userModel() {
       async mute(...args): Promise {
         return uw.chat.mute(this, ...args);
       }
+
       async unmute(...args): Promise {
         return uw.chat.unmute(this, ...args);
       }
