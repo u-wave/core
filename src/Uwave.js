@@ -23,6 +23,9 @@ const MongooseConnection = mongoose.Connection;
 
 const kSources = Symbol('Media sources');
 
+const DEFAULT_MONGO_URL = 'mongodb://localhost:27017/uwave';
+const DEFAULT_REDIS_URL = 'redis://localhost:6379';
+
 type UwaveOptions = {
   useDefaultPlugins: ?bool,
   mongo: ?string|Object,
@@ -72,19 +75,17 @@ export default class UWaveServer extends EventEmitter {
   }
 
   parseOptions(options: UwaveOptions) {
-    if (Array.isArray(options.mongo)) {
-      this.mongo = mongoose.createConnection(...options.mongo);
-    } else if (typeof options.mongo === 'string' || isPlainObject(options.mongo)) {
+    if (typeof options.mongo === 'string' || isPlainObject(options.mongo)) {
       this.mongo = mongoose.createConnection(options.mongo);
     } else if (options.mongo instanceof MongooseConnection) {
       this.mongo = options.mongo;
     } else {
-      this.mongo = mongoose.createConnection('mongodb://localhost:27017/uwave');
+      this.mongo = mongoose.createConnection(DEFAULT_MONGO_URL);
     }
 
     if (typeof options.redis === 'string') {
       this.redis = new Redis(options.redis, { lazyConnect: true });
-    } else if (typeof options.redis === 'object') {
+    } else if (isPlainObject(options.redis)) {
       this.redis = new Redis(options.redis.port, options.redis.host, {
         ...options.redis.options,
         lazyConnect: true,
@@ -92,7 +93,7 @@ export default class UWaveServer extends EventEmitter {
     } else if (options.redis instanceof Redis) {
       this.redis = options.redis;
     } else {
-      this.redis = new Redis({ lazyConnect: true });
+      this.redis = new Redis(DEFAULT_REDIS_URL, { lazyConnect: true });
     }
 
     Object.assign(this.options, options);
