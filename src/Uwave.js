@@ -8,6 +8,7 @@ import Source from './Source';
 import Page from './Page';
 
 import models from './models';
+import configStore from './plugins/configStore';
 import booth from './plugins/booth';
 import chat from './plugins/chat';
 import motd from './plugins/motd';
@@ -58,6 +59,7 @@ export default class UWaveServer extends EventEmitter {
 
     if (this.options.useDefaultPlugins) {
       this.use(models());
+      this.use(configStore());
       this.use(booth());
       this.use(chat());
       this.use(motd());

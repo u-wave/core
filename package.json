@@ -16,6 +16,7 @@
     "node": ">= 8.9"
   },
   "dependencies": {
+    "ajv": "^6.5.2",
     "bcryptjs": "^2.4.3",
     "debug": "^4.0.0",
     "escape-string-regexp": "^1.0.5",
