@@ -48,6 +48,10 @@ class ConfigStore {
     this.emit(key, value, user);
   }
 
+  getAllConfig() {
+    return this.#load();
+  }
+
   getSchema() {
     const properties = {};
     Object.entries(this.registry).forEach(([key, validate]) => {
