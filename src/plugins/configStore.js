@@ -47,6 +47,18 @@ class ConfigStore {
 
     this.emit(key, value, user);
   }
+
+  getSchema() {
+    const properties = {};
+    Object.entries(this.registry).forEach(([key, validate]) => {
+      properties[key] = validate.schema;
+    });
+
+    return {
+      type: 'object',
+      properties,
+    };
+  }
 }
 
 export default function configStorePlugin() {
