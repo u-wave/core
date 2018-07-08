@@ -11,6 +11,7 @@ const configSchema = new Schema({
 }, {
   collection: 'config_store',
   strict: false,
+  toJSON: { versionKey: false },
 });
 
 class ConfigStore {
@@ -34,11 +35,12 @@ class ConfigStore {
   );
 
   #load = async (key) => {
-    const model = await this.#ConfigModel.findById(key).lean();
-    if (model) {
-      delete model._id;
-    }
-    return model;
+    const model = await this.#ConfigModel.findById(key);
+    if (!model) return null;
+
+    const doc = model.toJSON();
+    delete doc._id;
+    return doc;
   };
 
   register(key, schema) {
@@ -66,11 +68,11 @@ class ConfigStore {
   }
 
   async getAllConfig() {
-    const all = await this.ConfigModel.find().lean();
+    const all = await this.#ConfigModel.find();
     const object = {};
     all.forEach((model) => {
-      object[model._id] = model;
-      delete model._id;
+      object[model._id] = model.toJSON();
+      delete object[model._id]._id;
     });
     return object;
   }
