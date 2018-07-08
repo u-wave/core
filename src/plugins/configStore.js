@@ -1,60 +1,83 @@
+import mongoose from 'mongoose';
 import EventEmitter from 'events';
 import Ajv from 'ajv';
 import ValidationError from '../errors/ValidationError';
 
+const { Schema } = mongoose;
 const KEY_NAME = 'uw_config';
 
-class ConfigStore {
-  constructor(redis) {
-    this.redis = redis;
-    this.emitter = new EventEmitter();
-    this.on = this.emitter.on.bind(this);
-    this.off = this.emitter.removeListener.bind(this);
-    this.emit = this.emitter.emit.bind(this);
+const configSchema = new Schema({
+  _id: { type: String },
+}, {
+  collection: 'config_store',
+  strict: false,
+});
 
-    this.ajv = new Ajv();
-    this.registry = Object.create(null);
+class ConfigStore {
+  #ConfigModel = null;
+  #ajv = new Ajv();
+  #emitter = new EventEmitter();
+  #registry = Object.create(null);
+
+  constructor(mongo) {
+    this.#ConfigModel = mongo.model('ConfigStore', configSchema);
+
+    this.on = this.#emitter.on.bind(this);
+    this.off = this.#emitter.removeListener.bind(this);
+    this.emit = this.#emitter.emit.bind(this);
   }
 
-  #save = json => this.redis.set(KEY_NAME, JSON.stringify(json));
+  #save = (key, values) => this.#ConfigModel.findByIdAndUpdate(
+    key,
+    { _id: key, ...values },
+    { upsert: true },
+  );
 
-  #load = async () => JSON.parse(await this.redis.get(KEY_NAME));
+  #load = async (key) => {
+    const model = await this.#ConfigModel.findById(key).lean();
+    if (model) {
+      delete model._id;
+    }
+    return model;
+  };
 
   register(key, schema) {
-    this.registry[key] = this.ajv.compile(schema);
+    this.#registry[key] = this.#ajv.compile(schema);
   }
 
   async get(key) {
-    const all = await this.#load();
-    if (!all) return undefined;
+    const config = await this.#load(key);
+    if (!config) return undefined;
 
-    return all[key];
+    return config;
   }
 
   async set(key, value, { user } = {}) {
-    const validate = this.registry[key];
+    const validate = this.#registry[key];
     if (validate) {
       if (!validate(value)) {
-        throw new ValidationError(validate.errors, this.ajv);
+        throw new ValidationError(validate.errors, this.#ajv);
       }
     }
-    const all = await this.#load();
 
-    await this.#save({
-      ...all,
-      [key]: value,
-    });
+    await this.#save(key, value);
 
     this.emit(key, value, user);
   }
 
-  getAllConfig() {
-    return this.#load();
+  async getAllConfig() {
+    const all = await this.ConfigModel.find().lean();
+    const object = {};
+    all.forEach((model) => {
+      object[model._id] = model;
+      delete model._id;
+    });
+    return object;
   }
 
   getSchema() {
     const properties = {};
-    Object.entries(this.registry).forEach(([key, validate]) => {
+    Object.entries(this.#registry).forEach(([key, validate]) => {
       properties[key] = validate.schema;
     });
 
@@ -67,7 +90,7 @@ class ConfigStore {
 
 export default function configStorePlugin() {
   return (uw) => {
-    uw.config = new ConfigStore(uw.redis);
+    uw.config = new ConfigStore(uw.mongo);
     uw.config.on('set', (key, value, user) => {
       uw.publish('configStore:update', {
         key,
