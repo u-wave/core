@@ -2,7 +2,6 @@ import mongoose from 'mongoose';
 import EventEmitter from 'events';
 import Ajv from 'ajv';
 import ValidationError from '../errors/ValidationError';
-import type Uwave from '../Uwave'; // eslint-disable-line import/no-cycle
 
 type ConfigValues = {
   [string]: any,
@@ -104,7 +103,7 @@ class ConfigStore {
 }
 
 export default function configStorePlugin() {
-  return (uw: Uwave) => {
+  return (uw) => {
     uw.config = new ConfigStore(uw.mongo);
     uw.config.on('set', (key, value, user) => {
       uw.publish('configStore:update', {
