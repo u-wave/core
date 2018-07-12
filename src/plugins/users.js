@@ -224,7 +224,7 @@ export class UsersRepository {
 
     const auth = await Authentication.findOneAndUpdate({
       type: 'local',
-      user: user.id,
+      user: user._id,
     }, { hash });
 
     if (!auth) {
