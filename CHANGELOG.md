@@ -4,6 +4,16 @@ All notable changes to this project will be documented in this file.
 
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## 0.4.0 / 15 Jul 2018
+
+Features:
+ * Implement filter parameter for getUsers(). (#220)
+ * Move waitlist into core. (#250)
+
+Internal:
+ * Rename prepublish npm script to prepare.
+ * Dependency updates.
+
 ## 0.3.2 / 03 Apr 2018
 
 Bugfixes:
