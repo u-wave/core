@@ -223,8 +223,10 @@ export class UsersRepository {
     const hash = await encryptPassword(password);
 
     const auth = await Authentication.findOneAndUpdate({
-      type: 'local',
-      user: user.id,
+      // TODO re enable once a migrations thing is set up so that all existing
+      // records can be updated to add this.
+      // type: 'local',
+      user: user._id,
     }, { hash });
 
     if (!auth) {
