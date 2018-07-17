@@ -4,6 +4,13 @@ All notable changes to this project will be documented in this file.
 
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## 0.4.1 / 17 Jul 2018
+
+Bugfixes:
+ * Fix changing passwords: (#280)
+   * Fix finding Authentication method when resetting password.
+   * Temporarily disable the `type: local` constraint on password changes.
+
 ## 0.4.0 / 15 Jul 2018
 
 Features:
