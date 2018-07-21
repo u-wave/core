@@ -15,5 +15,15 @@ export default function models() {
     uw.use(playlistModel());
     uw.use(playlistItemModel());
     uw.use(userModel());
+
+    uw.models = {
+      AclRole: uw.model('AclRole'),
+      Authentication: uw.model('Authentication'),
+      HistoryEntry: uw.model('History'),
+      Media: uw.model('Media'),
+      Playlist: uw.model('Playlist'),
+      PlaylistItem: uw.model('PlaylistItem'),
+      User: uw.model('User'),
+    };
   };
 }
