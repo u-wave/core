@@ -80,6 +80,10 @@ export default function userModel() {
         return uw.users.updatePassword(this, password);
       }
 
+      setAvatar(avatar: string): Promise {
+        return uw.users.updateUser(this, { avatar });
+      }
+
       getPlaylists(): Promise<Array> {
         return uw.playlists.getUserPlaylists(this);
       }

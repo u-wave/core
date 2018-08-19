@@ -13,6 +13,7 @@ import chat from './plugins/chat';
 import motd from './plugins/motd';
 import playlists from './plugins/playlists';
 import users from './plugins/users';
+import avatars from './plugins/avatars';
 import bans from './plugins/bans';
 import history from './plugins/history';
 import acl from './plugins/acl';
@@ -63,6 +64,7 @@ export default class UWaveServer extends EventEmitter {
       this.use(motd());
       this.use(playlists());
       this.use(users());
+      this.use(avatars());
       this.use(bans());
       this.use(history());
       this.use(acl());
