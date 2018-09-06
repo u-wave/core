@@ -7,9 +7,12 @@ wlk.yt includes emoji and integrates with the https://hub.u-wave.net announce se
 Try it by running:
 
 ```shell
+npm install
 # Pick a port you like! :)
-PORT=80 npm start
+PORT=8080 npm start
 ```
+
+Then open http://localhost:8080.
 
 [http-api]: https://github.com/u-wave/u-wave-http-api
 [web]: https://github.com/u-wave/u-wave-web
