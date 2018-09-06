@@ -1,16 +1,16 @@
-üWave Example
-=============
+# üWave Example
 
-This is an example of a üWave web application using [u-wave-api-v1][api-v1] and
-[u-wave-web][web].
+This is an example of a üWave web application using [u-wave-http-api][http-api] and
+[u-wave-web][web]. It's very barebones—for a more advanced example, check out [wlk.yt][wlk.yt].
+wlk.yt includes emoji and integrates with the https://hub.u-wave.net announce server.
 
 Try it by running:
 
 ```shell
-npm run build
 # Pick a port you like! :)
 PORT=80 npm start
 ```
 
-[api-v1]: https://github.com/u-wave/u-wave-api-v1
+[http-api]: https://github.com/u-wave/u-wave-http-api
 [web]: https://github.com/u-wave/u-wave-web
+[wlk.yt]: https://github.com/welovekpop/wlk.yt

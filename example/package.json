@@ -2,12 +2,12 @@
   "private": true,
   "name": "u-wave-example",
   "dependencies": {
-    "u-wave-core": "^1.0.0",
-    "u-wave-http-api": "^1.0.0",
-    "u-wave-web": "^1.0.0",
+    "express": "4.x",
+    "u-wave-core": "^0.4.1",
+    "u-wave-http-api": "^0.5.0",
     "u-wave-source-soundcloud": "^1.0.0",
     "u-wave-source-youtube": "^1.0.0",
-    "express": "4.x"
+    "u-wave-web": "^1.11.3"
   },
   "scripts": {
     "start": "node index.js"
