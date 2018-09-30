@@ -24,7 +24,7 @@ const configSchema = new Schema({
 class ConfigStore {
   #ConfigModel = null;
 
-  #ajv = new Ajv();
+  #ajv = new Ajv({ useDefaults: true });
 
   #emitter = new EventEmitter();
 
@@ -60,8 +60,11 @@ class ConfigStore {
   }
 
   async get(key: string): ?ConfigValues {
-    const config = await this.#load(key);
-    if (!config) return undefined;
+    const validate = this.#registry[key];
+    if (!validate) return undefined;
+
+    const config = (await this.#load(key)) || {};
+    validate(config);
 
     return config;
   }
@@ -81,23 +84,31 @@ class ConfigStore {
 
   async getAllConfig(): Promise<{ [string]: ConfigValues }> {
     const all = await this.#ConfigModel.find();
+    const keys = Object.keys(this.#registry);
     const object = {};
-    all.forEach((model) => {
-      object[model._id] = model.toJSON();
-      delete object[model._id]._id;
+    keys.forEach((key) => {
+      const validate = this.#registry[key];
+
+      const model = all.find((m) => m._id === key);
+      object[key] = model ? model.toJSON() : {};
+      delete object[key]._id;
+      validate(object[key]);
     });
     return object;
   }
 
   getSchema(): JSONSchema {
     const properties = {};
+    const required = [];
     Object.entries(this.#registry).forEach(([key, validate]) => {
       properties[key] = validate.schema;
+      required.push(key);
     });
 
     return {
       type: 'object',
       properties,
+      required,
     };
   }
 }
