@@ -56,6 +56,10 @@ class Avatars {
       });
     }
 
+    if (typeof this.store === 'object' && typeof this.opts.publicPath !== 'string') {
+      throw new TypeError('`publicPath` is not set, but it is required because `store` is set.');
+    }
+
     this.magicAvatars = new Map();
 
     if (this.options.sigil) {
@@ -102,7 +106,7 @@ class Avatars {
       type: 'magic',
       name,
       url,
-    }));
+    })).filter(({ url }) => url != null);
   }
 
   async setMagicAvatar(userID, name) {
@@ -175,7 +179,7 @@ class Avatars {
   }
 
   /**
-   * Use a custom avatar.
+   * Use a custom avatar, read from a stream.
    */
   async setCustomAvatar(userID, stream) {
     const { users } = this.uw;
