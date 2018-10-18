@@ -56,8 +56,8 @@ class Avatars {
       });
     }
 
-    if (typeof this.store === 'object' && this.store != null &&
-        typeof this.options.publicPath !== 'string') {
+    if (typeof this.store === 'object' && this.store != null
+        && typeof this.options.publicPath !== 'string') {
       throw new TypeError('`publicPath` is not set, but it is required because `store` is set.');
     }
 
