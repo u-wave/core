@@ -89,7 +89,7 @@ class ConfigStore {
     keys.forEach((key) => {
       const validate = this.#registry[key];
 
-      const model = all.find((m) => m._id === key);
+      const model = all.find(m => m._id === key);
       object[key] = model ? model.toJSON() : {};
       delete object[key]._id;
       validate(object[key]);
