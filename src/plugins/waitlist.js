@@ -11,16 +11,20 @@ class Waitlist {
     this.uw = uw;
   }
 
-  #getCurrentDJ = () => this.uw.redis.get('booth:currentDJ')
+  #getCurrentDJ() {
+    return this.uw.redis.get('booth:currentDJ');
+  }
 
-  #isBoothEmpty = async () => !(await this.uw.redis.get('booth:historyID'))
+  async #isBoothEmpty() {
+    return !(await this.uw.redis.get('booth:historyID'));
+  }
 
-  #isCurrentDJ = async (userID: string) => {
+  async #isCurrentDJ(userID: string) {
     const dj = await this.#getCurrentDJ();
     return dj !== null && dj === userID;
   }
 
-  #hasValidPlaylist = async (userID) => {
+  async #hasValidPlaylist(userID) {
     const { users } = this.uw;
     const user = await users.getUser(userID);
     const playlist = await user.getActivePlaylist();
@@ -36,7 +40,7 @@ class Waitlist {
   }
 
   // POST waitlist/ handler for joining the waitlist.
-  #doJoinWaitlist = async (user) => {
+  async #doJoinWaitlist(user) {
     await this.uw.redis.rpush('waitlist', user.id);
 
     const waitlist = await this.getUserIDs();
@@ -50,7 +54,7 @@ class Waitlist {
   }
 
   // POST waitlist/ handler for adding a (different) user to the waitlist.
-  #doAddToWaitlist = async (user, { moderator, waitlist, position }) => {
+  async #doAddToWaitlist(user, { moderator, waitlist, position }) {
     const clampedPosition = clamp(position, 0, waitlist.length);
 
     if (clampedPosition < waitlist.length) {
@@ -210,7 +214,7 @@ class Waitlist {
     });
   }
 
-  #lockWaitlist = async (lock, moderator) => {
+  async #lockWaitlist(lock, moderator) {
     if (lock) {
       await this.uw.redis.set('waitlist:lock', lock);
     } else {
