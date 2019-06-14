@@ -25,7 +25,7 @@
     "ms": "^2.1.1",
     "p-each-series": "^2.0.0",
     "p-props": "^3.0.0",
-    "redlock": "^3.1.0",
+    "redlock": "^4.0.0",
     "transliteration": "^1.6.2"
   },
   "devDependencies": {
