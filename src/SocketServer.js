@@ -510,12 +510,12 @@ export default class SocketServer {
   /**
    * Stop the socket server.
    */
-  destroy() {
+  async destroy() {
     clearInterval(this.pinger);
+    this.wss.close();
     this.sub.removeAllListeners();
     this.sub.unsubscribe('v1', 'uwave');
-    this.sub.close();
-    this.wss.shutdown();
+    await this.sub.quit();
   }
 
   /**

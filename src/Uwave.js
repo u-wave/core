@@ -4,6 +4,8 @@ import Redis from 'ioredis';
 import debug from 'debug';
 import { values, isPlainObject } from 'lodash';
 
+import HttpApi from './HttpApi';
+import SocketServer from './SocketServer';
 import Source from './Source';
 import Page from './Page';
 
@@ -56,8 +58,8 @@ export default class UWaveServer extends EventEmitter {
     this.#attachRedisEvents();
     this.#attachMongooseEvents();
 
+    this.use(models());
     if (this.options.useDefaultPlugins) {
-      this.use(models());
       this.use(booth());
       this.use(chat());
       this.use(motd());
@@ -68,6 +70,17 @@ export default class UWaveServer extends EventEmitter {
       this.use(acl());
       this.use(waitlist());
     }
+
+    // TODO possibly auto-add to server
+    // TODO possibly create http server here
+    this.httpApi = new HttpApi(this, {
+      secret: this.options.secret,
+    });
+    this.socketServer = new SocketServer(this, {
+      secret: this.options.secret,
+      server: this.options.server,
+      port: this.options.port,
+    });
 
     process.nextTick(() => {
       this.emit('started');
@@ -227,6 +240,8 @@ export default class UWaveServer extends EventEmitter {
     this.emit('stop');
 
     this.log('stopping üWave...');
+
+    await this.socketServer.destroy();
 
     await Promise.all([
       this.redis.quit(),
