@@ -32,19 +32,17 @@ const testTransport = {
 
 function loadDevModules() {
   const corePath = path.join(__dirname, '../src');
+
   require('@babel/register').default({
     plugins: [require('@babel/plugin-transform-modules-commonjs').default],
     only: [ p => p.startsWith(corePath) ],
   });
-  const uwave = require('../src/index.js').default;
 
-  return { uwave };
+  return require('../src/index.js').default;
 }
 
 function loadProdModules() {
-  const uwave = require('..');
-
-  return { uwave };
+  return require('..');
 }
 
 /**
@@ -54,7 +52,7 @@ function start() {
   const port = argv.port || 6042;
   const watch = argv.watch || false;
 
-  const { uwave } = watch ? loadDevModules() : loadProdModules();
+  const uwave = watch ? loadDevModules() : loadProdModules();
 
   const app = express();
   const server = app.listen(port, () => {
