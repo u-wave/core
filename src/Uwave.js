@@ -2,7 +2,7 @@ import EventEmitter from 'events';
 import mongoose from 'mongoose';
 import Redis from 'ioredis';
 import debug from 'debug';
-import { values, isPlainObject } from 'lodash';
+import { isPlainObject } from 'lodash';
 
 import HttpApi from './HttpApi';
 import SocketServer from './SocketServer';
@@ -36,7 +36,7 @@ type UwaveOptions = {
 };
 
 export default class UWaveServer extends EventEmitter {
-  [kSources] = {};
+  [kSources] = new Map();
   locale = i18n.cloneInstance();
 
   options = {
@@ -132,7 +132,7 @@ export default class UWaveServer extends EventEmitter {
    * An array of registered sources.
    */
   get sources() {
-    return values(this[kSources]);
+    return [...this[kSources].values()];
   }
 
   /**
@@ -149,7 +149,7 @@ export default class UWaveServer extends EventEmitter {
    */
   source(sourcePlugin, opts = {}) {
     if (arguments.length === 1 && typeof sourcePlugin === 'string') { // eslint-disable-line prefer-rest-params
-      return this[kSources][sourcePlugin];
+      return this[kSources].get(sourcePlugin);
     }
 
     const sourceFactory = sourcePlugin.default || sourcePlugin;
@@ -167,7 +167,7 @@ export default class UWaveServer extends EventEmitter {
     }
     const newSource = new Source(this, sourceType, sourceDefinition);
 
-    this[kSources][sourceType] = newSource;
+    this[kSources].set(sourceType, newSource);
 
     return newSource;
   }
