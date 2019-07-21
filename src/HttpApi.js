@@ -23,6 +23,7 @@ import attachUwaveMeta from './middleware/attachUwaveMeta';
 import errorHandler from './middleware/errorHandler';
 import rateLimit from './middleware/rateLimit';
 
+// utils
 import createPassport from './passport';
 import AuthRegistry from './AuthRegistry';
 
