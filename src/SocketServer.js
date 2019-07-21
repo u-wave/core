@@ -87,7 +87,7 @@ export default class SocketServer {
 
     this.wss = new WebSocket.Server({
       server: options.server,
-      port: options.port,
+      port: options.server ? null : options.port,
       clientTracking: false,
     });
 

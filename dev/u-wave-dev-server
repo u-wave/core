@@ -36,7 +36,7 @@ function loadDevModules() {
     plugins: [require('@babel/plugin-transform-modules-commonjs').default],
     only: [ p => p.startsWith(corePath) ],
   });
-  const uwave = require('../src/index.js');
+  const uwave = require('../src/index.js').default;
 
   return { uwave };
 }

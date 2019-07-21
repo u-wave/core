@@ -47,7 +47,7 @@ export async function getState(req) {
   const { authRegistry, passport } = req.uwaveHttp;
   const { user } = req;
 
-  const motd = uw.getMotd();
+  const motd = uw.motd.get();
   const users = getOnlineUsers(uw);
   const guests = getGuestsCount(uw);
   const roles = uw.acl.getAllRoles();
