@@ -1,4 +1,4 @@
-import joi from 'joi';
+import joi from '@hapi/joi';
 import wrapMiddleware from '../utils/wrapMiddleware';
 
 export default function checkFields(types) {

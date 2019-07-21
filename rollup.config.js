@@ -6,6 +6,12 @@ const pkg = require('./package.json');
 
 const external = Object.keys(pkg.dependencies);
 
+function getPackageBasename(id) {
+  return id[0] === '@'
+    ? id.split('/').slice(0, 2).join('/')
+    : id.split('/')[0]
+}
+
 process.env.BABEL_ENV = 'rollup';
 
 export default {
@@ -20,7 +26,7 @@ export default {
     format: 'es',
     sourcemap: true,
   }],
-  external: id => isBuiltinModule(id) || external.some(m => id.split('/')[0] === m),
+  external: id => isBuiltinModule(id) || external.some(m => getPackageBasename(id) === m),
   plugins: [
     babel(),
     nodeResolve(),

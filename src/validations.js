@@ -1,4 +1,4 @@
-import joi from 'joi';
+import joi from '@hapi/joi';
 
 const objectID = joi.string().length(24);
 const userName = joi.string()
