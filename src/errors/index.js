@@ -1,11 +1,13 @@
+import {
+  Forbidden,
+  InternalServerError,
+  NotFound,
+  TooManyRequests,
+} from 'http-errors';
 import { t } from '../locale';
 
-export class EmailError extends Error {
-  constructor(message) {
-    super();
-    Error.captureStackTrace(this);
-    this.message = message;
-  }
+export class EmailError extends InternalServerError {
+  name = 'EmailError';
 }
 
 export class APIError extends Error {
@@ -56,12 +58,8 @@ export class NotFoundError extends HTTPError {
   }
 }
 
-export class PermissionError extends HTTPError {
+export class PermissionError extends Forbidden {
   name = 'PermissionError';
-
-  constructor(message) {
-    super(403, message);
-  }
 }
 
 function createErrorClass(name, {
@@ -96,6 +94,7 @@ export const RateLimitError = createErrorClass('RateLimitError', {
   status: 429,
   code: 'too-many-requests',
   string: 'errors.tooManyRequests',
+  base: TooManyRequests,
 });
 
 export const NameChangeRateLimitError = createErrorClass('NameChangeRateLimitError', {
@@ -109,46 +108,54 @@ export const UserNotFoundError = createErrorClass('UserNotFoundError', {
   status: 404,
   code: 'user-not-found',
   string: 'errors.userNotFound',
+  base: NotFound,
 });
 
 export const PlaylistNotFoundError = createErrorClass('PlaylistNotFoundError', {
   status: 404,
   code: 'playlist-not-found',
   string: 'errors.playlistNotFound',
+  base: NotFound,
 });
 
 export const PlaylistItemNotFoundError = createErrorClass('PlaylistItemNotFoundError', {
   status: 404,
   code: 'playlist-item-not-found',
   string: 'errors.playlistItemNotFound',
+  base: NotFound,
 });
 
 export const HistoryEntryNotFoundError = createErrorClass('HistoryEntryNotFoundError', {
   status: 404,
   code: 'history-entry-not-found',
   string: 'errors.historyEntryNotFound',
+  base: NotFound,
 });
 
 export const CannotSelfFavoriteError = createErrorClass('CannotSelfFavoriteError', {
   status: 403,
   code: 'no-self-favorite',
   string: 'errors.noSelfFavorite',
+  base: Forbidden,
 });
 
 export const CannotSelfMuteError = createErrorClass('CannotSelfMuteError', {
   status: 403,
   code: 'no-self-mute',
   string: ({ unmute }) => (unmute ? 'errors.noSelfUnmute' : 'errors.noSelfMute'),
+  base: Forbidden,
 });
 
 export const SourceNotFoundError = createErrorClass('SourceNotFoundError', {
   status: 404,
   code: 'source-not-found',
   string: 'errors.sourceNotFound',
+  base: NotFound,
 });
 
 export const SourceNoImportError = createErrorClass('SourceNoImportError', {
   status: 404,
   code: 'source-no-import',
   string: 'errors.sourceNoImport',
+  base: NotFound,
 });
