@@ -72,7 +72,7 @@ export class Acl {
   }
 
   getAclUser(user) {
-    return this.uw.getUser(user);
+    return this.uw.users.getUser(user);
   }
 
   async getAllRoles() {

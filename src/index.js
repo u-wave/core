@@ -5,9 +5,7 @@ import UwaveError from './errors/UwaveError';
 import NotFoundError from './errors/NotFoundError';
 
 export default function uwave(opts) {
-  const uw = new Uwave(opts);
-  const api = new HttpApi(uw, opts);
-  const sockets = new SocketServer(uw, opts);
+  return new Uwave(opts);
 }
 
 Object.assign(uwave, {

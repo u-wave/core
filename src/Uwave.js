@@ -53,8 +53,8 @@ export default class UWaveServer extends EventEmitter {
     this.mongoLog = debug('uwave:core:mongo');
     this.redisLog = debug('uwave:core:redis');
 
-    this.attachRedisEvents();
-    this.attachMongooseEvents();
+    this.#attachRedisEvents();
+    this.#attachMongooseEvents();
 
     if (this.options.useDefaultPlugins) {
       this.use(models());
@@ -113,42 +113,6 @@ export default class UWaveServer extends EventEmitter {
     return this.booth.advance(opts);
   }
 
-  getHistory(pagination = {}): Promise<Page> {
-    return this.history.getRoomHistory(pagination);
-  }
-
-  sendChat(user, message) {
-    return this.chat.send(user, message);
-  }
-
-  deleteChat(filter = {}, opts = {}) {
-    return this.chat.delete(filter, opts);
-  }
-
-  getMotd() {
-    return this.motd.get();
-  }
-
-  setMotd(text) {
-    return this.motd.set(text);
-  }
-
-  getUsers(filter = null, page = {}) {
-    return this.users.getUsers(filter, page);
-  }
-
-  getUser(id) {
-    return this.users.getUser(id);
-  }
-
-  createUser(opts) {
-    return this.users.createUser(opts);
-  }
-
-  updateUser(user, update, opts = {}) {
-    return this.users.updateUser(user, update, opts);
-  }
-
   /**
    * An array of registered sources.
    */
@@ -193,7 +157,7 @@ export default class UWaveServer extends EventEmitter {
     return newSource;
   }
 
-  attachRedisEvents() {
+  #attachRedisEvents = () => {
     this.redis.on('error', (e) => {
       this.emit('redisError', e);
     });
@@ -208,9 +172,9 @@ export default class UWaveServer extends EventEmitter {
       this.redisLog('connected');
       this.emit('redisConnect');
     });
-  }
+  };
 
-  attachMongooseEvents() {
+  #attachMongooseEvents = () => {
     this.mongo.on('error', (e) => {
       this.mongoLog(e);
       this.emit('mongoError', e);
@@ -230,7 +194,7 @@ export default class UWaveServer extends EventEmitter {
       this.mongoLog('connected');
       this.emit('mongoConnect');
     });
-  }
+  };
 
   /**
    * Create a Redis subscription to the üWave channel.
