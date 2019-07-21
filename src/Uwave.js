@@ -8,6 +8,7 @@ import HttpApi from './HttpApi';
 import SocketServer from './SocketServer';
 import Source from './Source';
 import Page from './Page';
+import i18n from './locale';
 
 import models from './models';
 import booth from './plugins/booth';
@@ -36,6 +37,7 @@ type UwaveOptions = {
 
 export default class UWaveServer extends EventEmitter {
   [kSources] = {};
+  locale = i18n.cloneInstance();
 
   options = {
     useDefaultPlugins: true,
