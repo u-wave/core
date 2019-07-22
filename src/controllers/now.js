@@ -44,7 +44,8 @@ async function isWaitlistLocked(uw) {
 // eslint-disable-next-line import/prefer-default-export
 export async function getState(req) {
   const uw = req.uwave;
-  const { authRegistry, passport } = req.uwaveHttp;
+  const { authRegistry } = req.uwaveHttp;
+  const { passport } = uw;
   const { user } = req;
 
   const motd = uw.motd.get();

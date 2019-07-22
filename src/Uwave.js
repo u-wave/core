@@ -20,6 +20,7 @@ import bans from './plugins/bans';
 import history from './plugins/history';
 import acl from './plugins/acl';
 import waitlist from './plugins/waitlist';
+import passport from './plugins/passport';
 
 mongoose.Promise = Promise;
 const MongooseConnection = mongoose.Connection;
@@ -61,6 +62,10 @@ export default class UWaveServer extends EventEmitter {
     this.#attachMongooseEvents();
 
     this.use(models());
+    this.use(passport({
+      secret: this.options.secret,
+      auth: this.options.auth || {},
+    }));
     if (this.options.useDefaultPlugins) {
       this.use(booth());
       this.use(chat());

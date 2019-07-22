@@ -29,7 +29,7 @@ export function getCurrentUser(req) {
 }
 
 export function getAuthStrategies(req) {
-  const { passport } = req.uwaveHttp;
+  const { passport } = req.uwave;
 
   const strategies = passport.strategies();
 

@@ -2,9 +2,9 @@ import { Passport } from 'passport';
 import { Strategy as LocalStrategy } from 'passport-local';
 import { Strategy as GoogleStrategy } from 'passport-google-oauth20';
 import { callbackify } from 'util';
-import JWTStrategy from './auth/JWTStrategy';
+import JWTStrategy from '../auth/JWTStrategy';
 
-export default function configurePassport(uw, options) {
+function configurePassport(uw, options) {
   const passport = new Passport();
 
   async function localLogin(email, password) {
@@ -22,7 +22,7 @@ export default function configurePassport(uw, options) {
     return user.id;
   }
   async function deserializeUser(id) {
-    return uw.getUser(id);
+    return uw.users.getUser(id);
   }
 
   passport.use('local', new LocalStrategy({
@@ -39,7 +39,7 @@ export default function configurePassport(uw, options) {
     }, callbackify(socialLogin)));
   }
 
-  passport.use('jwt', new JWTStrategy(options.secret, user => uw.getUser(user.id)));
+  passport.use('jwt', new JWTStrategy(options.secret, user => uw.users.getUser(user.id)));
   passport.serializeUser(callbackify(serializeUser));
   passport.deserializeUser(callbackify(deserializeUser));
 
@@ -53,3 +53,9 @@ export default function configurePassport(uw, options) {
 
   return passport;
 }
+
+export default (options = {}) => {
+  return (uw) => {
+    uw.passport = configurePassport(uw, options);
+  };
+};

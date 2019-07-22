@@ -24,7 +24,6 @@ import errorHandler from './middleware/errorHandler';
 import rateLimit from './middleware/rateLimit';
 
 // utils
-import createPassport from './passport';
 import AuthRegistry from './AuthRegistry';
 
 function defaultCreatePasswordResetEmail({ token, requestUrl }) {
@@ -75,18 +74,13 @@ export default class UwaveHttpApi extends Router {
 
     this.authRegistry = new AuthRegistry(uw.redis);
 
-    this.passport = createPassport(uw, {
-      secret: options.secret,
-      auth: options.auth || {},
-    });
-
     this
       .use(bodyParser.json())
       .use(cookieParser())
-      .use(this.passport.initialize())
+      .use(uw.passport.initialize())
       .use(addFullUrl())
       .use(this.attachUwaveToRequest())
-      .use(this.passport.authenticate('jwt'))
+      .use(uw.passport.authenticate('jwt'))
       .use(rateLimit('api-http', { max: 500, duration: 60 * 1000 }));
 
     this
