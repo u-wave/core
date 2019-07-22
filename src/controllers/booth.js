@@ -58,7 +58,7 @@ async function doSkip(uw, moderatorID, userID, reason, opts = {}) {
     reason,
   });
 
-  await uw.advance({
+  await uw.booth.advance({
     remove: opts.remove === true,
   });
 }
@@ -122,7 +122,7 @@ export async function replaceBooth(req) {
     userID,
   });
 
-  await uw.advance();
+  await uw.booth.advance();
 
   return toItemResponse({});
 }

@@ -52,7 +52,7 @@ export default class UWaveServer extends EventEmitter {
   */
   constructor(options: UwaveOptions = {}) {
     super();
-    this.parseOptions(options);
+    this.#parseOptions(options);
 
     this.log = debug('uwave:core');
     this.mongoLog = debug('uwave:core:mongo');
@@ -94,7 +94,7 @@ export default class UWaveServer extends EventEmitter {
     });
   }
 
-  parseOptions(options: UwaveOptions) {
+  #parseOptions = (options: UwaveOptions) => {
     if (typeof options.mongo === 'string' || isPlainObject(options.mongo)) {
       this.mongo = mongoose.createConnection(options.mongo);
     } else if (options.mongo instanceof MongooseConnection) {
@@ -117,7 +117,7 @@ export default class UWaveServer extends EventEmitter {
     }
 
     Object.assign(this.options, options);
-  }
+  };
 
   use(plugin) {
     plugin(this);
@@ -126,11 +126,6 @@ export default class UWaveServer extends EventEmitter {
 
   model(name) {
     return this.mongo.model(name);
-  }
-
-  advance(opts = {}) {
-    this.log('advance', opts);
-    return this.booth.advance(opts);
   }
 
   /**

@@ -115,7 +115,7 @@ class Waitlist {
     }
 
     if (await this.#isBoothEmpty()) {
-      await this.uw.advance();
+      await this.uw.booth.advance();
     }
   }
 
