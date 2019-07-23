@@ -2,6 +2,7 @@ import { flatten } from 'lodash';
 import createDebug from 'debug';
 import eachSeries from 'p-each-series';
 import defaultRoles from '../config/defaultRoles';
+import routes from '../routes/acl';
 
 const debug = createDebug('uwave:acl');
 
@@ -150,5 +151,6 @@ export class Acl {
 export default function acl(opts = {}) {
   return (uw) => {
     uw.acl = new Acl(uw, opts);
+    uw.httpApi.use(routes());
   };
 }

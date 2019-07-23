@@ -66,17 +66,6 @@ export default class UWaveServer extends EventEmitter {
       secret: this.options.secret,
       auth: this.options.auth || {},
     }));
-    if (this.options.useDefaultPlugins) {
-      this.use(booth());
-      this.use(chat());
-      this.use(motd());
-      this.use(playlists());
-      this.use(users());
-      this.use(bans());
-      this.use(history());
-      this.use(acl());
-      this.use(waitlist());
-    }
 
     // TODO possibly auto-add to server
     // TODO possibly create http server here
@@ -88,6 +77,18 @@ export default class UWaveServer extends EventEmitter {
       server: this.options.server,
       port: this.options.port,
     });
+
+    if (this.options.useDefaultPlugins) {
+      this.use(booth());
+      this.use(chat());
+      this.use(motd());
+      this.use(playlists());
+      this.use(users());
+      this.use(bans());
+      this.use(history());
+      this.use(acl());
+      this.use(waitlist());
+    }
 
     process.nextTick(() => {
       this.emit('started');

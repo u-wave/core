@@ -1,6 +1,7 @@
 import { clamp } from 'lodash';
 import NotFoundError from '../errors/NotFoundError';
 import PermissionError from '../errors/PermissionError';
+import routes from '../routes/waitlist';
 
 function isInWaitlist(waitlist, userID) {
   return waitlist.some(waitingID => waitingID === userID);
@@ -241,5 +242,6 @@ class Waitlist {
 export default function waitlistPlugin() {
   return (uw) => {
     uw.waitlist = new Waitlist(uw); // eslint-disable-line no-param-reassign
+    uw.httpApi.use(routes());
   };
 }

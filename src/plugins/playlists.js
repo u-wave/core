@@ -1,8 +1,8 @@
 import { groupBy, shuffle } from 'lodash';
 import escapeStringRegExp from 'escape-string-regexp';
-
 import NotFoundError from '../errors/NotFoundError';
 import Page from '../Page';
+import routes from '../routes/playlists';
 
 function isValidPlaylistItem(item) {
   return typeof item === 'object'
@@ -311,5 +311,6 @@ export class PlaylistsRepository {
 export default function playlistsPlugin() {
   return (uw) => {
     uw.playlists = new PlaylistsRepository(uw);
+    uw.httpApi.use(routes());
   };
 }

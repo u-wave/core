@@ -2,6 +2,7 @@ import props from 'p-props';
 import ms from 'ms';
 import RedLock from 'redlock';
 import createDebug from 'debug';
+import routes from '../routes/booth';
 
 class PlaylistIsEmptyError extends Error {
   code = 'PLAYLIST_IS_EMPTY';
@@ -245,5 +246,6 @@ export class Booth {
 export default function booth() {
   return (uw) => {
     uw.booth = new Booth(uw);
+    uw.httpApi.use(routes());
   };
 }

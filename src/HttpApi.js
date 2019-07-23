@@ -5,15 +5,9 @@ import url from 'url';
 
 // routes
 import authenticate from './routes/authenticate';
-import acl from './routes/acl';
 import bans from './routes/bans';
-import playlist from './routes/playlists';
-import waitlist from './routes/waitlist';
 import search from './routes/search';
-import booth from './routes/booth';
 import users from './routes/users';
-import chat from './routes/chat';
-import motd from './routes/motd';
 import now from './routes/now';
 import imports from './routes/import';
 
@@ -91,17 +85,11 @@ export default class UwaveHttpApi extends Router {
         createPasswordResetEmail:
           options.createPasswordResetEmail || defaultCreatePasswordResetEmail,
       }))
-      .use('/roles', acl(this))
       .use('/bans', bans(this))
-      .use('/booth', booth(this))
-      .use('/chat', chat(this))
       .use('/import', imports(this))
-      .use('/motd', motd(this))
       .use('/now', now(this))
-      .use('/playlists', playlist(this))
       .use('/search', search(this))
-      .use('/users', users(this))
-      .use('/waitlist', waitlist(this));
+      .use('/users', users(this));
 
     this.use(errorHandler(options));
 
