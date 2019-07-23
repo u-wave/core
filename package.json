@@ -71,6 +71,7 @@
     "is-builtin-module": "^3.0.0",
     "minimist": "^1.2.0",
     "mocha": "^6.1.4",
+    "nodemon": "^1.19.1",
     "recaptcha-test-keys": "^1.0.0",
     "rollup": "^1.10.1",
     "rollup-plugin-babel": "^4.3.2",
@@ -88,6 +89,7 @@
     "test:mocha": "mocha",
     "test:lint": "eslint --cache src test rollup.config.js",
     "test": "npm run test:mocha && npm run test:lint",
+    "start": "nodemon dev/u-wave-dev-server -- --watch",
     "build": "rollup -c",
     "watch": "rollup -c -w",
     "prepare": "npm run build"
