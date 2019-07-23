@@ -62,7 +62,7 @@ function serializeError(err) {
       title: 'Database error, please try again later.',
     }];
   }
-  if (err.public) {
+  if (err.expose) {
     return [{
       status: err.status || 400,
       code: err.code,
