@@ -21,6 +21,7 @@ import history from './plugins/history';
 import acl from './plugins/acl';
 import waitlist from './plugins/waitlist';
 import passport from './plugins/passport';
+import errorHandler from './middleware/errorHandler';
 
 mongoose.Promise = Promise;
 const MongooseConnection = mongoose.Connection;
@@ -89,6 +90,8 @@ export default class UWaveServer extends EventEmitter {
       this.use(acl());
       this.use(waitlist());
     }
+
+    this.httpApi.use(errorHandler());
 
     process.nextTick(() => {
       this.emit('started');

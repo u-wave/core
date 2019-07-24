@@ -442,9 +442,9 @@ export default class SocketServer {
       }
     },
     'user:join': async ({ userID }) => {
-      const { uw } = this;
-      const user = await uw.getUser(userID);
-      await uw.redis.rpush('users', user.id);
+      const { users, redis } = this.uw;
+      const user = await users.getUser(userID);
+      await redis.rpush('users', user.id);
       this.broadcast('join', user.toJSON());
     },
     /**

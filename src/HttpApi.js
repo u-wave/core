@@ -14,7 +14,6 @@ import imports from './routes/import';
 // middleware
 import addFullUrl from './middleware/addFullUrl';
 import attachUwaveMeta from './middleware/attachUwaveMeta';
-import errorHandler from './middleware/errorHandler';
 import rateLimit from './middleware/rateLimit';
 
 // utils
@@ -90,8 +89,6 @@ export default class UwaveHttpApi extends Router {
       .use('/now', now(this))
       .use('/search', search(this))
       .use('/users', users(this));
-
-    this.use(errorHandler(options));
 
     return router;
   }
