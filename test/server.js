@@ -10,7 +10,7 @@ describe('üWave Core', () => {
   beforeEach(() => {
     server = createServer();
     uw = uwave({
-      mongo: mongoose.createConnection('mongodb://localhost:27017/uw_test_server'),
+      mongo: mongoose.createConnection('mongodb://localhost:27017/uw_test_server', { useNewUrlParser: true }),
       secret: 'uw_test_secret',
       server,
     });

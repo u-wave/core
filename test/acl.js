@@ -13,7 +13,7 @@ function createUwaveWithAclTest() {
   const server = createServer();
   const uw = uwave({
     useDefaultPlugins: false,
-    mongo: mongoose.createConnection(`mongodb://localhost/${DB_NAME}`),
+    mongo: mongoose.createConnection(`mongodb://localhost/${DB_NAME}`, { useNewUrlParser: true }),
     secret: Buffer.from(`secret_${DB_NAME}`),
     server,
   });

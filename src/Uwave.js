@@ -100,11 +100,16 @@ export default class UWaveServer extends EventEmitter {
 
   #parseOptions = (options: UwaveOptions) => {
     if (typeof options.mongo === 'string' || isPlainObject(options.mongo)) {
-      this.mongo = mongoose.createConnection(options.mongo);
+      this.mongo = mongoose.createConnection({
+        useNewUrlParser: true,
+        ...options.mongo,
+      });
     } else if (options.mongo instanceof MongooseConnection) {
       this.mongo = options.mongo;
     } else {
-      this.mongo = mongoose.createConnection(DEFAULT_MONGO_URL);
+      this.mongo = mongoose.createConnection(DEFAULT_MONGO_URL, {
+        useNewUrlParser: true,
+      });
     }
 
     if (typeof options.redis === 'string') {
