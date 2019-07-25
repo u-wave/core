@@ -515,7 +515,6 @@ export default class SocketServer {
     this.wss.close();
     this.sub.removeAllListeners();
     this.sub.unsubscribe('v1', 'uwave');
-    await this.sub.quit();
   }
 
   /**

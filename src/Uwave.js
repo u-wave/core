@@ -224,7 +224,7 @@ export default class UWaveServer extends EventEmitter {
     const sub = this.redis.duplicate();
     sub.subscribe('uwave');
     this.on('stop', () => {
-      sub.end();
+      sub.quit();
     });
     return sub;
   }
