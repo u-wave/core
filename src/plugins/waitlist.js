@@ -242,6 +242,6 @@ class Waitlist {
 export default function waitlistPlugin() {
   return (uw) => {
     uw.waitlist = new Waitlist(uw); // eslint-disable-line no-param-reassign
-    uw.httpApi.use(routes());
+    uw.httpApi.use('/waitlist', routes());
   };
 }

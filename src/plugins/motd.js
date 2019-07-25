@@ -17,6 +17,6 @@ class MOTD {
 export default function motdPlugin() {
   return (uw) => {
     uw.motd = new MOTD(uw);
-    uw.httpApi.use(routes());
+    uw.httpApi.use('/motd', routes());
   };
 }

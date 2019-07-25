@@ -15,6 +15,7 @@ const recaptchaTestKeys = require('recaptcha-test-keys');
 const express = require('express');
 const config = require('./dev-server-config.json');
 const mailDebug = require('debug')('uwave:mail');
+const debug = require('debug')('uwave:dev-server');
 
 const testTransport = {
   name: 'test',
@@ -93,6 +94,10 @@ function start() {
 
   app.set('json spaces', 2);
   app.use(apiUrl, uw.httpApi);
+  app.use((error, req, res, next) => {
+    debug(error);
+    next(error);
+  })
 
   return app;
 }

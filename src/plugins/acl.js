@@ -151,6 +151,6 @@ export class Acl {
 export default function acl(opts = {}) {
   return (uw) => {
     uw.acl = new Acl(uw, opts);
-    uw.httpApi.use(routes());
+    uw.httpApi.use('/acl', routes());
   };
 }

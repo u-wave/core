@@ -246,6 +246,6 @@ export class Booth {
 export default function booth() {
   return (uw) => {
     uw.booth = new Booth(uw);
-    uw.httpApi.use(routes());
+    uw.httpApi.use('/booth', routes());
   };
 }

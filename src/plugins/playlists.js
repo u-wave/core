@@ -311,6 +311,6 @@ export class PlaylistsRepository {
 export default function playlistsPlugin() {
   return (uw) => {
     uw.playlists = new PlaylistsRepository(uw);
-    uw.httpApi.use(routes());
+    uw.httpApi.use('/playlists', routes());
   };
 }
