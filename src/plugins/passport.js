@@ -54,8 +54,6 @@ function configurePassport(uw, options) {
   return passport;
 }
 
-export default (options = {}) => {
-  return (uw) => {
-    uw.passport = configurePassport(uw, options);
-  };
+export default (options = {}) => (uw) => {
+  uw.passport = configurePassport(uw, options);
 };

@@ -7,7 +7,6 @@ import { isPlainObject } from 'lodash';
 import HttpApi from './HttpApi';
 import SocketServer from './SocketServer';
 import Source from './Source';
-import Page from './Page';
 import i18n from './locale';
 
 import models from './models';
@@ -39,6 +38,7 @@ type UwaveOptions = {
 
 export default class UWaveServer extends EventEmitter {
   [kSources] = new Map();
+
   locale = i18n.cloneInstance();
 
   options = {

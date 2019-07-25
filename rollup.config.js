@@ -10,7 +10,7 @@ const external = Object.keys(pkg.dependencies);
 function getPackageBasename(id) {
   return id[0] === '@'
     ? id.split('/').slice(0, 2).join('/')
-    : id.split('/')[0]
+    : id.split('/')[0];
 }
 
 process.env.BABEL_ENV = 'rollup';
