@@ -258,7 +258,7 @@ export default class SocketServer {
   clientActions = {
     sendChat: (user, message) => {
       debug('sendChat', user, message);
-      this.uw.sendChat(user, message);
+      this.uw.chat.send(user, message);
     },
     vote: (user, direction) => {
       vote(this.uw, user.id, direction);

@@ -21,7 +21,7 @@ export async function getUsers(req) {
   const pagination = getOffsetPagination(req.query, {
     defaultSize: 50,
   });
-  const { users } = req;
+  const { users } = req.uwave;
 
   debug('getUsers', filter, pagination);
 
