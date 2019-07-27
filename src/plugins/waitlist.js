@@ -1,6 +1,7 @@
 import { clamp } from 'lodash';
 import NotFoundError from '../errors/NotFoundError';
 import PermissionError from '../errors/PermissionError';
+import { UserNotFoundError } from '../errors';
 import routes from '../routes/waitlist';
 
 function isInWaitlist(waitlist, userID) {
@@ -79,7 +80,7 @@ class Waitlist {
     const { users } = this.uw;
 
     const user = await users.getUser(userID);
-    if (!user) throw new NotFoundError('User not found.');
+    if (!user) throw new UserNotFoundError({ id: userID });
 
     const canForceJoin = await user.can('waitlist.join.locked');
     if (!canForceJoin && await this.isLocked()) {
@@ -125,7 +126,7 @@ class Waitlist {
 
     const user = await users.getUser(userID.toLowerCase());
     if (!user) {
-      throw new NotFoundError('User not found.');
+      throw new UserNotFoundError({ id: userID });
     }
 
     let waitlist = await this.getUserIDs();
