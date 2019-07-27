@@ -13,9 +13,9 @@ const ytSource = require('u-wave-source-youtube');
 const scSource = require('u-wave-source-soundcloud');
 const recaptchaTestKeys = require('recaptcha-test-keys');
 const express = require('express');
-const config = require('./dev-server-config.json');
 const mailDebug = require('debug')('uwave:mail');
 const debug = require('debug')('uwave:dev-server');
+const config = require('./dev-server-config.json');
 
 const testTransport = {
   name: 'test',
@@ -25,10 +25,10 @@ const testTransport = {
       mailDebug(mail.message.getEnvelope().to, message.toString('utf8'));
       callback(null, {
         envelope: mail.message.getEnvelope(),
-        messageId: mail.message.messageId()
+        messageId: mail.message.messageId(),
       });
     }));
-  }
+  },
 };
 
 function loadDevModules() {
@@ -36,7 +36,7 @@ function loadDevModules() {
 
   require('@babel/register').default({
     plugins: [require('@babel/plugin-transform-modules-commonjs').default],
-    only: [ p => p.startsWith(corePath) ],
+    only: [p => p.startsWith(corePath)],
   });
 
   return require('../src/index.js').default;
@@ -97,7 +97,7 @@ function start() {
   app.use((error, req, res, next) => {
     debug(error);
     next(error);
-  })
+  });
 
   return app;
 }
