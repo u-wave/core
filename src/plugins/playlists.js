@@ -272,9 +272,10 @@ export class PlaylistsRepository {
   async movePlaylistItems(playlistOrID, itemIDs, { afterID }) {
     const playlist = await this.getPlaylist(playlistOrID);
 
-    // First remove the given items,
-    const newMedia = playlist.media.filter(item => itemIDs.indexOf(`${item}`) === -1);
-    // then reinsert them at their new position.
+    // Create a plain array instead of a mongoose array because it crashes on splice()
+    // otherwise.
+    const newMedia = [...playlist.media].filter(item => !itemIDs.includes(`${item}`));
+    // Reinsert items at their new position.
     const insertIndex = newMedia.findIndex(item => `${item}` === afterID);
     newMedia.splice(insertIndex + 1, 0, ...itemIDs);
     playlist.media = newMedia;
