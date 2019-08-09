@@ -2,6 +2,7 @@ import props from 'p-props';
 import ms from 'ms';
 import RedLock from 'redlock';
 import createDebug from 'debug';
+import routes from '../routes/booth';
 
 class PlaylistIsEmptyError extends Error {
   code = 'PLAYLIST_IS_EMPTY';
@@ -36,11 +37,11 @@ export class Booth {
       const endTime = Number(current.playedAt) + duration;
       if (endTime > Date.now()) {
         this.timeout = setTimeout(
-          () => this.uw.advance(),
+          () => this.advance(),
           endTime - Date.now(),
         );
       } else {
-        this.uw.advance();
+        this.advance();
       }
     }
   }
@@ -153,7 +154,7 @@ export class Booth {
   play(entry) {
     this.maybeStop();
     this.timeout = setTimeout(
-      () => this.uw.advance(),
+      () => this.advance(),
       (entry.media.end - entry.media.start) * ms('1 second'),
     );
     return entry;
@@ -245,5 +246,6 @@ export class Booth {
 export default function booth() {
   return (uw) => {
     uw.booth = new Booth(uw);
+    uw.httpApi.use('/booth', routes());
   };
 }

@@ -8,6 +8,9 @@ function createUwaveWithChatTest() {
     redis: {
       exists: sinon.stub().returns(false),
     },
+    httpApi: {
+      use: sinon.stub(),
+    },
     publish: sinon.spy(),
   };
 
