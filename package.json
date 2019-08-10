@@ -13,7 +13,7 @@
   "main": "dist/u-wave-core.js",
   "module": "dist/u-wave-core.es.js",
   "engines": {
-    "node": ">= 8.9"
+    "node": ">= 10"
   },
   "dependencies": {
     "@hapi/joi": "^15.1.0",
