@@ -89,11 +89,34 @@ export async function login(options, req, res) {
   });
 }
 
-export async function socialLoginCallback(options, req, res) {
+export async function socialLoginCallback(options, service, req, res) {
   const { user } = req;
 
   if (await user.isBanned()) {
     throw new PermissionError('You have been banned.');
+  }
+
+  let script = '';
+  if (user.pendingActivation) {
+    script = `
+      var opener = window.opener;
+      if (opener) {
+        opener.postMessage({
+          pending: true,
+          socialAvatar: ${JSON.stringify(user.avatar)},
+          type: ${JSON.stringify(service)}
+        }, '*');
+      }
+      window.close();
+    `;
+  } else {
+    script = `
+      var opener = window.opener;
+      if (opener) {
+        opener.postMessage({ pending: false }, '*');
+      }
+      window.close();
+    `;
   }
 
   await refreshSession(res, req.uwaveHttp, user, {
@@ -108,12 +131,39 @@ export async function socialLoginCallback(options, req, res) {
         <meta charset="utf-8">
         <title>Success</title>
       </head>
-      <body>
+      <body style="background: #151515; color: #fff; font: 12pt 'Open Sans', sans-serif">
         You can now close this window.
-        <script>close()</script>
+        <script>${script}</script>
       </body>
     </html>
   `);
+}
+
+export async function socialLoginFinish(options, service, req, res) {
+  const { user } = req;
+  const sessionType = req.query.session === 'cookie' ? 'cookie' : 'token';
+
+  if (await user.isBanned()) {
+    throw new PermissionError('You have been banned.');
+  }
+
+  const { username } = req.body;
+
+  user.username = username;
+  user.pendingActivation = undefined;
+  await user.save();
+
+  const { token, socketToken } = await refreshSession(res, req.uwaveHttp, user, {
+    ...options,
+    session: sessionType,
+  });
+
+  return toItemResponse(user, {
+    meta: {
+      jwt: sessionType === 'token' ? token : 'cookie',
+      socketToken,
+    },
+  });
 }
 
 export async function getSocketToken(req) {
