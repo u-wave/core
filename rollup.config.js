@@ -27,7 +27,7 @@ export default {
     format: 'es',
     sourcemap: true,
   }],
-  external: id => isBuiltinModule(id) || external.some(m => getPackageBasename(id) === m),
+  external: (id) => isBuiltinModule(id) || external.some((m) => getPackageBasename(id) === m),
   plugins: [
     babel(),
     esModuleInterop(),

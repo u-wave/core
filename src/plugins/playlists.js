@@ -127,12 +127,12 @@ export class PlaylistsRepository {
       $or: [{ artist: rx }, { title: rx }],
     }).select('_id');
 
-    const allItemIDs = matches.map(item => item.id);
+    const allItemIDs = matches.map((item) => item.id);
 
     // We want this sorted by the original playlist item order, so we can
     // just walk through the original playlist and only keep the items that we
     // need.
-    return playlist.media.filter(id => allItemIDs.indexOf(`${id}`) !== -1);
+    return playlist.media.filter((id) => allItemIDs.indexOf(`${id}`) !== -1);
   }
 
   // eslint-disable-next-line class-methods-use-this
@@ -180,7 +180,7 @@ export class PlaylistsRepository {
         .populate('media')
       : [];
 
-    const results = itemIDs.map(itemID => items.find(item => `${item.id}` === `${itemID}`));
+    const results = itemIDs.map((itemID) => items.find((item) => `${item.id}` === `${itemID}`));
 
     return new Page(results, {
       pageSize: pagination ? pagination.limit : null,
@@ -221,12 +221,12 @@ export class PlaylistsRepository {
       const sourceItems = itemsBySourceType[sourceType];
       const knownMedias = await Media.find({
         sourceType,
-        sourceID: { $in: sourceItems.map(item => item.sourceID) },
+        sourceID: { $in: sourceItems.map((item) => item.sourceID) },
       });
 
       const unknownMediaIDs = [];
       sourceItems.forEach((item) => {
-        if (!knownMedias.some(media => media.sourceID === String(item.sourceID))) {
+        if (!knownMedias.some((media) => media.sourceID === String(item.sourceID))) {
           unknownMediaIDs.push(item.sourceID);
         }
       });
@@ -238,9 +238,9 @@ export class PlaylistsRepository {
         allMedias = allMedias.concat(await Media.create(unknownMedias));
       }
 
-      const itemsWithMedia = sourceItems.map(item => toPlaylistItem(
+      const itemsWithMedia = sourceItems.map((item) => toPlaylistItem(
         item,
-        allMedias.find(media => media.sourceID === String(item.sourceID)),
+        allMedias.find((media) => media.sourceID === String(item.sourceID)),
       ));
       playlistItems.push(...itemsWithMedia);
     });
@@ -258,7 +258,7 @@ export class PlaylistsRepository {
     const userID = playlist.author.toString();
     const newItems = await this.createPlaylistItems(userID, items);
     const oldMedia = playlist.media;
-    const insertIndex = oldMedia.findIndex(item => `${item}` === after);
+    const insertIndex = oldMedia.findIndex((item) => `${item}` === after);
     playlist.media = [
       ...oldMedia.slice(0, insertIndex + 1),
       ...newItems,
@@ -287,9 +287,9 @@ export class PlaylistsRepository {
 
     // Create a plain array instead of a mongoose array because it crashes on splice()
     // otherwise.
-    const newMedia = [...playlist.media].filter(item => !itemIDs.includes(`${item}`));
+    const newMedia = [...playlist.media].filter((item) => !itemIDs.includes(`${item}`));
     // Reinsert items at their new position.
-    const insertIndex = newMedia.findIndex(item => `${item}` === afterID);
+    const insertIndex = newMedia.findIndex((item) => `${item}` === afterID);
     newMedia.splice(insertIndex + 1, 0, ...itemIDs);
     playlist.media = newMedia;
 
@@ -303,7 +303,7 @@ export class PlaylistsRepository {
     const playlist = await this.getPlaylist(playlistOrID);
 
     // Only remove items that are actually in this playlist.
-    const stringIDs = itemsOrIDs.map(item => String(item));
+    const stringIDs = itemsOrIDs.map((item) => String(item));
     const toRemove = [];
     const toKeep = [];
     playlist.media.forEach((itemID) => {

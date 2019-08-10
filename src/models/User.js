@@ -24,7 +24,7 @@ export default function userModel() {
         required: true,
         unique: true,
         index: true,
-        set: name => name.normalize('NFKC'),
+        set: (name) => name.normalize('NFKC'),
       },
       language: {
         type: String, min: 2, max: 2, default: 'en',

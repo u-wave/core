@@ -12,9 +12,7 @@ export default async function sendEmail(emailAddress, options) {
 
   const transporter = nodemailer.createTransport(options.mailTransport || smtpOptions);
 
-  const mailOptions = Object.assign({
-    to: emailAddress,
-  }, options.email);
+  const mailOptions = { to: emailAddress, ...options.email };
 
   await transporter.sendMail(mailOptions);
 }

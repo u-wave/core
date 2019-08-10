@@ -33,7 +33,7 @@ function serializeError(err) {
     }];
   }
   if (err.isJoi) {
-    return err.details.map(error => ({
+    return err.details.map((error) => ({
       status: 400,
       code: error.type,
       title: error.message,

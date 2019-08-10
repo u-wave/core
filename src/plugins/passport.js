@@ -39,16 +39,16 @@ function configurePassport(uw, options) {
     }, callbackify(socialLogin)));
   }
 
-  passport.use('jwt', new JWTStrategy(options.secret, user => uw.users.getUser(user.id)));
+  passport.use('jwt', new JWTStrategy(options.secret, (user) => uw.users.getUser(user.id)));
   passport.serializeUser(callbackify(serializeUser));
   passport.deserializeUser(callbackify(deserializeUser));
 
-  passport.supports = strategy => (
+  passport.supports = (strategy) => (
     passport._strategy(strategy) !== undefined // eslint-disable-line no-underscore-dangle
   );
   passport.strategies = () => (
     Object.keys(passport._strategies) // eslint-disable-line no-underscore-dangle
-      .filter(strategy => strategy !== 'session' && strategy !== 'jwt')
+      .filter((strategy) => strategy !== 'session' && strategy !== 'jwt')
   );
 
   return passport;

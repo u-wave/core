@@ -19,7 +19,7 @@ const getImportableSource = (req) => {
   return source;
 };
 
-const mergeImportParameters = req => ({
+const mergeImportParameters = (req) => ({
   ...req.query,
   ...req.body,
   ...req.params,
