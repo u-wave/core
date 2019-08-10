@@ -1,8 +1,11 @@
 import { groupBy, shuffle } from 'lodash';
 import escapeStringRegExp from 'escape-string-regexp';
+import createDebug from 'debug';
 import NotFoundError from '../errors/NotFoundError';
 import Page from '../Page';
 import routes from '../routes/playlists';
+
+const debug = createDebug('uwave:playlists');
 
 function isValidPlaylistItem(item) {
   return typeof item === 'object'
@@ -67,14 +70,24 @@ export class PlaylistsRepository {
     return playlist;
   }
 
-  async createPlaylist(user, { name }) {
+  async createPlaylist(userID, { name }) {
+    const { users } = this.uw;
     const Playlist = this.uw.model('Playlist');
-    const userID = typeof user === 'object' ? user.id : user;
+    const user = await users.getUser(userID);
 
     const playlist = await Playlist.create({
       name,
-      author: userID,
+      author: user._id,
     });
+
+    // If this is the user's first playlist, immediately activate it.
+    try {
+      // Throws if we don't have an active playlist yet.
+      await user.getActivePlaylist();
+    } catch (err) {
+      debug(`activating first playlist for ${user.id} ${user.username}`);
+      await user.setActivePlaylist(playlist);
+    }
 
     return playlist;
   }

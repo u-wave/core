@@ -1,4 +1,3 @@
-import createDebug from 'debug';
 import {
   HTTPError,
   PlaylistNotFoundError,
@@ -9,8 +8,6 @@ import getOffsetPagination from '../utils/getOffsetPagination';
 import toItemResponse from '../utils/toItemResponse';
 import toListResponse from '../utils/toListResponse';
 import toPaginatedResponse from '../utils/toPaginatedResponse';
-
-const debug = createDebug('uwave:http:playlists');
 
 export async function getPlaylists(req) {
   const { user } = req;
@@ -49,16 +46,14 @@ export async function createPlaylist(req) {
     shared,
   });
 
-  try {
-    await user.getActivePlaylist();
-  } catch (e) {
-    debug(`activating first playlist for ${user.id} ${user.username}`);
-    await user.setActivePlaylist(playlist);
-  }
+  const activeID = await user.getActivePlaylistID();
 
   return toItemResponse(
     serializePlaylist(playlist),
-    { url: req.fullUrl },
+    {
+      url: req.fullUrl,
+      meta: { active: activeID === playlist.id },
+    },
   );
 }
 
