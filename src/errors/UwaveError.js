@@ -2,7 +2,7 @@ export default class UwaveError extends Error {
   /**
    * Whether this error message should be shown to users.
    */
-  public = false;
+  expose = false;
 
   /**
    * Name.

@@ -2,7 +2,7 @@ import * as bcrypt from 'bcryptjs';
 import createDebug from 'debug';
 import escapeStringRegExp from 'escape-string-regexp';
 import Page from '../Page';
-import NotFoundError from '../errors/NotFoundError';
+import { UserNotFoundError } from '../errors';
 import PasswordError from '../errors/PasswordError';
 
 const debug = createDebug('uwave:users');
@@ -94,7 +94,7 @@ export class UsersRepository {
       email: email.toLowerCase(),
     }).populate('user').exec();
     if (!auth) {
-      throw new NotFoundError('No user was found with that email address.');
+      throw new UserNotFoundError({ email });
     }
 
     const correct = await bcrypt.compare(password, auth.hash);
@@ -218,7 +218,7 @@ export class UsersRepository {
     const Authentication = this.uw.model('Authentication');
 
     const user = await this.getUser(id);
-    if (!user) throw new NotFoundError('User not found.');
+    if (!user) throw new UserNotFoundError({ id });
 
     const hash = await encryptPassword(password);
 
@@ -230,13 +230,13 @@ export class UsersRepository {
     }, { hash });
 
     if (!auth) {
-      throw new NotFoundError('No user was found with that email address.');
+      throw new UserNotFoundError({ id: user.id });
     }
   }
 
   async updateUser(id, update = {}, opts = {}) {
     const user = await this.getUser(id);
-    if (!user) throw new NotFoundError('User not found.');
+    if (!user) throw new UserNotFoundError({ id });
 
     debug('update user', user.id, user.username, update);
 

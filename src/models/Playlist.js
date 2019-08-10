@@ -1,5 +1,5 @@
 import mongoose from 'mongoose';
-import NotFoundError from '../errors/NotFoundError';
+import { PlaylistItemNotFoundError } from '../errors';
 import Page from '../Page';
 
 const { Schema } = mongoose;
@@ -36,7 +36,7 @@ export default function playlistModel() {
 
       getItem(id) {
         if (!this.media.some(item => `${item}` === `${id}`)) {
-          throw new NotFoundError('Playlist item not found.');
+          throw new PlaylistItemNotFoundError({ id });
         }
         return uw.playlists.getPlaylistItem(id);
       }

@@ -1,8 +1,8 @@
+import { createServer } from 'http';
 import { expect } from 'chai';
 import ms from 'ms';
 import mongoose from 'mongoose';
 import uwave from '../src';
-import userModel from '../src/models/User';
 import usersPlugin from '../src/plugins/users';
 import bansPlugin from '../src/plugins/bans';
 import createUser from './utils/createUser';
@@ -11,13 +11,18 @@ import mongoConnected from './utils/mongoConnected';
 const DB_NAME = 'uw_test_bans';
 
 function createUwaveWithBansTest() {
+  const server = createServer();
   const uw = uwave({
     useDefaultPlugins: false,
-    mongo: mongoose.createConnection(`mongodb://localhost/${DB_NAME}`),
+    mongo: mongoose.createConnection(`mongodb://localhost/${DB_NAME}`, { useNewUrlParser: true }),
+    secret: Buffer.from(`secret_${DB_NAME}`),
+    server,
   });
-  uw.use(userModel());
   uw.use(usersPlugin());
   uw.use(bansPlugin());
+  uw.on('stop', () => {
+    server.close();
+  });
   return uw;
 }
 
