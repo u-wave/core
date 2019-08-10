@@ -114,7 +114,7 @@ export default class SocketServer {
   async initLostConnections() {
     const { User } = this.uw.models;
     const userIDs = await this.uw.redis.lrange('users', 0, -1);
-    const disconnectedIDs = userIDs.filter(userID => !this.connection(userID));
+    const disconnectedIDs = userIDs.filter((userID) => !this.connection(userID));
 
     const disconnectedUsers = await User.where('_id').in(disconnectedIDs);
     disconnectedUsers.forEach((user) => {
@@ -147,7 +147,7 @@ export default class SocketServer {
    * Get a LostConnection for a user, if one exists.
    */
   getLostConnection(user) {
-    return this.connections.find(connection => (
+    return this.connections.find((connection) => (
       connection instanceof LostConnection && connection.user.id === user.id
     ));
   }
@@ -525,7 +525,7 @@ export default class SocketServer {
    */
   connection(user) {
     const userID = typeof user === 'object' ? user.id : user;
-    return this.connections.find(connection => connection.user && connection.user.id === userID);
+    return this.connections.find((connection) => connection.user && connection.user.id === userID);
   }
 
   ping() {
@@ -589,7 +589,7 @@ export default class SocketServer {
   async recountGuestsInternal() {
     const { redis } = this.uw;
     const guests = this.connections
-      .filter(connection => connection instanceof GuestConnection)
+      .filter((connection) => connection instanceof GuestConnection)
       .length;
 
     const lastGuestCount = await this.getGuestCount();

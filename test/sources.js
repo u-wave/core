@@ -28,13 +28,13 @@ describe('Media Sources', () => {
       return [{ sourceID: query }];
     },
     async get(ids) {
-      return ids.map(sourceID => ({ sourceID }));
+      return ids.map((sourceID) => ({ sourceID }));
     },
   };
 
   const testSource = () => {
-    const search = async query => [{ sourceID: query }];
-    const get = async ids => ids.map(sourceID => ({ sourceID }));
+    const search = async (query) => [{ sourceID: query }];
+    const get = async (ids) => ids.map((sourceID) => ({ sourceID }));
     return {
       name: 'test-source',
       search,
@@ -75,7 +75,7 @@ describe('Media Sources', () => {
       async get(ids) {
         expect(ids).to.eql([id]);
         getCalled = true;
-        return ids.map(sourceID => ({ sourceID }));
+        return ids.map((sourceID) => ({ sourceID }));
       },
     });
 

@@ -5,7 +5,7 @@ import { UserNotFoundError } from '../errors';
 import routes from '../routes/waitlist';
 
 function isInWaitlist(waitlist, userID) {
-  return waitlist.some(waitingID => waitingID === userID);
+  return waitlist.some((waitingID) => waitingID === userID);
 }
 
 class Waitlist {
