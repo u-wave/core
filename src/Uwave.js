@@ -2,10 +2,12 @@ import EventEmitter from 'events';
 import mongoose from 'mongoose';
 import Redis from 'ioredis';
 import debug from 'debug';
-import { values, isPlainObject } from 'lodash';
+import { isPlainObject } from 'lodash';
 
+import HttpApi from './HttpApi';
+import SocketServer from './SocketServer';
 import Source from './Source';
-import Page from './Page';
+import i18n from './locale';
 
 import models from './models';
 import booth from './plugins/booth';
@@ -17,6 +19,8 @@ import bans from './plugins/bans';
 import history from './plugins/history';
 import acl from './plugins/acl';
 import waitlist from './plugins/waitlist';
+import passport from './plugins/passport';
+import errorHandler from './middleware/errorHandler';
 
 mongoose.Promise = Promise;
 const MongooseConnection = mongoose.Connection;
@@ -33,7 +37,9 @@ type UwaveOptions = {
 };
 
 export default class UWaveServer extends EventEmitter {
-  [kSources] = {};
+  [kSources] = new Map();
+
+  locale = i18n.cloneInstance();
 
   options = {
     useDefaultPlugins: true,
@@ -47,17 +53,33 @@ export default class UWaveServer extends EventEmitter {
   */
   constructor(options: UwaveOptions = {}) {
     super();
-    this.parseOptions(options);
+    this.#parseOptions(options);
 
     this.log = debug('uwave:core');
     this.mongoLog = debug('uwave:core:mongo');
     this.redisLog = debug('uwave:core:redis');
 
-    this.attachRedisEvents();
-    this.attachMongooseEvents();
+    this.#attachRedisEvents();
+    this.#attachMongooseEvents();
+
+    this.use(models());
+    this.use(passport({
+      secret: this.options.secret,
+      auth: this.options.auth || {},
+    }));
+
+    // TODO possibly auto-add to server
+    // TODO possibly create http server here
+    this.httpApi = new HttpApi(this, {
+      secret: this.options.secret,
+    });
+    this.socketServer = new SocketServer(this, {
+      secret: this.options.secret,
+      server: this.options.server,
+      port: this.options.port,
+    });
 
     if (this.options.useDefaultPlugins) {
-      this.use(models());
       this.use(booth());
       this.use(chat());
       this.use(motd());
@@ -69,18 +91,25 @@ export default class UWaveServer extends EventEmitter {
       this.use(waitlist());
     }
 
+    this.httpApi.use(errorHandler());
+
     process.nextTick(() => {
       this.emit('started');
     });
   }
 
-  parseOptions(options: UwaveOptions) {
+  #parseOptions = (options: UwaveOptions) => {
     if (typeof options.mongo === 'string' || isPlainObject(options.mongo)) {
-      this.mongo = mongoose.createConnection(options.mongo);
+      this.mongo = mongoose.createConnection({
+        useNewUrlParser: true,
+        ...options.mongo,
+      });
     } else if (options.mongo instanceof MongooseConnection) {
       this.mongo = options.mongo;
     } else {
-      this.mongo = mongoose.createConnection(DEFAULT_MONGO_URL);
+      this.mongo = mongoose.createConnection(DEFAULT_MONGO_URL, {
+        useNewUrlParser: true,
+      });
     }
 
     if (typeof options.redis === 'string') {
@@ -97,7 +126,7 @@ export default class UWaveServer extends EventEmitter {
     }
 
     Object.assign(this.options, options);
-  }
+  };
 
   use(plugin) {
     plugin(this);
@@ -108,52 +137,11 @@ export default class UWaveServer extends EventEmitter {
     return this.mongo.model(name);
   }
 
-  advance(opts = {}) {
-    this.log('advance', opts);
-    return this.booth.advance(opts);
-  }
-
-  getHistory(pagination = {}): Promise<Page> {
-    return this.history.getRoomHistory(pagination);
-  }
-
-  sendChat(user, message) {
-    return this.chat.send(user, message);
-  }
-
-  deleteChat(filter = {}, opts = {}) {
-    return this.chat.delete(filter, opts);
-  }
-
-  getMotd() {
-    return this.motd.get();
-  }
-
-  setMotd(text) {
-    return this.motd.set(text);
-  }
-
-  getUsers(filter = null, page = {}) {
-    return this.users.getUsers(filter, page);
-  }
-
-  getUser(id) {
-    return this.users.getUser(id);
-  }
-
-  createUser(opts) {
-    return this.users.createUser(opts);
-  }
-
-  updateUser(user, update, opts = {}) {
-    return this.users.updateUser(user, update, opts);
-  }
-
   /**
    * An array of registered sources.
    */
   get sources() {
-    return values(this[kSources]);
+    return [...this[kSources].values()];
   }
 
   /**
@@ -170,7 +158,7 @@ export default class UWaveServer extends EventEmitter {
    */
   source(sourcePlugin, opts = {}) {
     if (arguments.length === 1 && typeof sourcePlugin === 'string') { // eslint-disable-line prefer-rest-params
-      return this[kSources][sourcePlugin];
+      return this[kSources].get(sourcePlugin);
     }
 
     const sourceFactory = sourcePlugin.default || sourcePlugin;
@@ -188,12 +176,12 @@ export default class UWaveServer extends EventEmitter {
     }
     const newSource = new Source(this, sourceType, sourceDefinition);
 
-    this[kSources][sourceType] = newSource;
+    this[kSources].set(sourceType, newSource);
 
     return newSource;
   }
 
-  attachRedisEvents() {
+  #attachRedisEvents = () => {
     this.redis.on('error', (e) => {
       this.emit('redisError', e);
     });
@@ -208,9 +196,9 @@ export default class UWaveServer extends EventEmitter {
       this.redisLog('connected');
       this.emit('redisConnect');
     });
-  }
+  };
 
-  attachMongooseEvents() {
+  #attachMongooseEvents = () => {
     this.mongo.on('error', (e) => {
       this.mongoLog(e);
       this.emit('mongoError', e);
@@ -230,7 +218,7 @@ export default class UWaveServer extends EventEmitter {
       this.mongoLog('connected');
       this.emit('mongoConnect');
     });
-  }
+  };
 
   /**
    * Create a Redis subscription to the üWave channel.
@@ -241,7 +229,7 @@ export default class UWaveServer extends EventEmitter {
     const sub = this.redis.duplicate();
     sub.subscribe('uwave');
     this.on('stop', () => {
-      sub.end();
+      sub.quit();
     });
     return sub;
   }
@@ -263,6 +251,8 @@ export default class UWaveServer extends EventEmitter {
     this.emit('stop');
 
     this.log('stopping üWave...');
+
+    await this.socketServer.destroy();
 
     await Promise.all([
       this.redis.quit(),

@@ -1,18 +1,25 @@
+import { createServer } from 'http';
 import { expect } from 'chai';
 import mongoose from 'mongoose';
 import uwave from '../src';
 import Source from '../src/Source';
 
 describe('Media Sources', () => {
-  let server;
+  let uw;
   beforeEach(() => {
-    server = uwave({
-      mongo: mongoose.createConnection('mongodb://localhost:27017/uw_test_sources'),
+    const server = createServer();
+    uw = uwave({
+      mongo: mongoose.createConnection('mongodb://localhost:27017/uw_test_sources', { useNewUrlParser: true }),
       useDefaultPlugins: false,
+      secret: Buffer.from('secret_test_sources'),
+      server,
+    });
+    uw.on('stop', () => {
+      server.close();
     });
   });
   afterEach(async () => {
-    await server.stop();
+    await uw.stop();
   });
 
   const testSourceObject = {
@@ -21,13 +28,13 @@ describe('Media Sources', () => {
       return [{ sourceID: query }];
     },
     async get(ids) {
-      return ids.map(sourceID => ({ sourceID }));
+      return ids.map((sourceID) => ({ sourceID }));
     },
   };
 
   const testSource = () => {
-    const search = async query => [{ sourceID: query }];
-    const get = async ids => ids.map(sourceID => ({ sourceID }));
+    const search = async (query) => [{ sourceID: query }];
+    const get = async (ids) => ids.map((sourceID) => ({ sourceID }));
     return {
       name: 'test-source',
       search,
@@ -36,25 +43,25 @@ describe('Media Sources', () => {
   };
 
   it('should register sources from objects', () => {
-    server.source(testSourceObject);
-    expect(server.source('test-source')).to.be.instanceOf(Source);
+    uw.source(testSourceObject);
+    expect(uw.source('test-source')).to.be.instanceOf(Source);
   });
   it('should register sources from a factory function', () => {
-    server.source(testSource);
-    expect(server.source('test-source')).to.be.instanceOf(Source);
+    uw.source(testSource);
+    expect(uw.source('test-source')).to.be.instanceOf(Source);
   });
 
   it('should respond to search(query) API calls', () => {
-    server.source(testSource);
+    uw.source(testSource);
     const query = 'search-query';
-    return expect(server.source('test-source').search(null, query)).to.eventually.eql([
+    return expect(uw.source('test-source').search(null, query)).to.eventually.eql([
       { sourceType: 'test-source', sourceID: query },
     ]);
   });
 
   it('should respond to get(ids) API calls', () => {
-    server.source(testSource);
-    return expect(server.source('test-source').get(null, ['one', 'two'])).to.eventually.eql([
+    uw.source(testSource);
+    return expect(uw.source('test-source').get(null, ['one', 'two'])).to.eventually.eql([
       { sourceType: 'test-source', sourceID: 'one' },
       { sourceType: 'test-source', sourceID: 'two' },
     ]);
@@ -63,18 +70,18 @@ describe('Media Sources', () => {
   it('should relay getOne(id) API calls to get()', () => {
     const id = 'media-id';
     let getCalled = false;
-    server.source({
+    uw.source({
       name: 'test-source',
       async get(ids) {
         expect(ids).to.eql([id]);
         getCalled = true;
-        return ids.map(sourceID => ({ sourceID }));
+        return ids.map((sourceID) => ({ sourceID }));
       },
     });
 
     expect(getCalled).to.equal(false);
 
-    const promise = server.source('test-source').getOne(null, id);
+    const promise = uw.source('test-source').getOne(null, id);
 
     expect(getCalled).to.equal(true);
 

@@ -17,12 +17,12 @@ export default function historyModel() {
       artist: {
         type: String,
         index: true,
-        set: artist => artist.normalize('NFKC'),
+        set: (artist) => artist.normalize('NFKC'),
       },
       title: {
         type: String,
         index: true,
-        set: title => title.normalize('NFKC'),
+        set: (title) => title.normalize('NFKC'),
       },
       start: { type: Number, default: 0 },
       end: { type: Number, default: 0 },

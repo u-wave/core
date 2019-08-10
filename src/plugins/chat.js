@@ -1,3 +1,5 @@
+import routes from '../routes/chat';
+
 const defaultOptions = {
   maxLength: 300,
 };
@@ -75,5 +77,6 @@ export class Chat {
 export default function chat(opts = {}) {
   return (uw) => {
     uw.chat = new Chat(uw, opts);
+    uw.httpApi.use('/chat', routes());
   };
 }
