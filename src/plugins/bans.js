@@ -48,7 +48,7 @@ class Bans {
       });
     }
 
-    const total = await User.find().where(queryFilter).count();
+    const total = await User.find().where(queryFilter).countDocuments();
 
     const bannedUsers = await User.find()
       .where(queryFilter)

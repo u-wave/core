@@ -48,7 +48,7 @@ export class UsersRepository {
       query.where(queryFilter);
     }
 
-    const totalPromise = User.count();
+    const totalPromise = User.estimatedDocumentCount();
 
     const [
       users,
@@ -56,7 +56,7 @@ export class UsersRepository {
       total,
     ] = await Promise.all([
       query,
-      queryFilter ? User.find().where(queryFilter).count() : totalPromise,
+      queryFilter ? User.find().where(queryFilter).countDocuments() : totalPromise,
       totalPromise,
     ]);
 
