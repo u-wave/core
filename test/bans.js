@@ -47,9 +47,11 @@ describe('bans', () => {
       expect(await bans.isBanned(user.id)).to.equal(false);
     });
     it('returns true for banned users', async () => {
-      await user.update({
-        banned: { expiresAt: Date.now() + 1000 },
-      });
+      user.banned = {
+        duration: 1000,
+        expiresAt: Date.now() + 1000,
+      };
+      await user.save();
       expect(await bans.isBanned(user.id)).to.equal(true);
     });
   });

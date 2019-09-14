@@ -195,9 +195,9 @@ export class UsersRepository {
         user.save(),
         auth.save(),
       ]);
-      await user.update({
-        avatar: getDefaultAvatar(user),
-      });
+      // Two-stage saving to let mongodb decide the user ID before we generate an avatar URL.
+      user.avatar = getDefaultAvatar(user);
+      await user.save();
     } catch (e) {
       if (!auth.isNew) {
         await auth.remove();
