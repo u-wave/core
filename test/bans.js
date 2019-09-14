@@ -14,7 +14,7 @@ function createUwaveWithBansTest() {
   const server = createServer();
   const uw = uwave({
     useDefaultPlugins: false,
-    mongo: mongoose.createConnection(`mongodb://localhost/${DB_NAME}`, { useNewUrlParser: true }),
+    mongo: `mongodb://localhost/${DB_NAME}`,
     secret: Buffer.from(`secret_${DB_NAME}`),
     server,
   });

@@ -9,7 +9,7 @@ describe('Media Sources', () => {
   beforeEach(() => {
     const server = createServer();
     uw = uwave({
-      mongo: mongoose.createConnection('mongodb://localhost:27017/uw_test_sources', { useNewUrlParser: true }),
+      mongo: 'mongodb://localhost:27017/uw_test_sources',
       useDefaultPlugins: false,
       secret: Buffer.from('secret_test_sources'),
       server,

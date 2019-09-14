@@ -59,8 +59,8 @@ export default class UWaveServer extends EventEmitter {
     this.mongoLog = debug('uwave:core:mongo');
     this.redisLog = debug('uwave:core:redis');
 
-    this.#attachRedisEvents();
-    this.#attachMongooseEvents();
+    this.#configureRedis();
+    this.#configureMongoose();
 
     this.use(models());
     this.use(passport({
@@ -99,9 +99,17 @@ export default class UWaveServer extends EventEmitter {
   }
 
   #parseOptions = (options: UwaveOptions) => {
-    if (typeof options.mongo === 'string' || isPlainObject(options.mongo)) {
+    const defaultOptions = {
+      useNewUrlParser: true,
+      useCreateIndex: true,
+      useFindAndModify: false,
+    };
+
+    if (typeof options.mongo === 'string') {
+      this.mongo = mongoose.createConnection(options.mongo, defaultOptions);
+    } else if (isPlainObject(options.mongo)) {
       this.mongo = mongoose.createConnection({
-        useNewUrlParser: true,
+        ...defaultOptions,
         ...options.mongo,
       });
     } else if (options.mongo instanceof MongooseConnection) {
@@ -109,6 +117,8 @@ export default class UWaveServer extends EventEmitter {
     } else {
       this.mongo = mongoose.createConnection(DEFAULT_MONGO_URL, {
         useNewUrlParser: true,
+        useCreateIndex: true,
+        useFindAndModify: false,
       });
     }
 
@@ -181,7 +191,7 @@ export default class UWaveServer extends EventEmitter {
     return newSource;
   }
 
-  #attachRedisEvents = () => {
+  #configureRedis = () => {
     this.redis.on('error', (e) => {
       this.emit('redisError', e);
     });
@@ -198,7 +208,7 @@ export default class UWaveServer extends EventEmitter {
     });
   };
 
-  #attachMongooseEvents = () => {
+  #configureMongoose = () => {
     this.mongo.on('error', (e) => {
       this.mongoLog(e);
       this.emit('mongoError', e);
