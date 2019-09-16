@@ -1,6 +1,5 @@
 import { createServer } from 'http';
 import { expect } from 'chai';
-import mongoose from 'mongoose';
 import uwave from '../src';
 import Source from '../src/Source';
 

@@ -1,6 +1,5 @@
 import { expect } from 'chai';
 import { createServer } from 'http';
-import mongoose from 'mongoose';
 import delay from 'delay';
 import uwave from '../src';
 

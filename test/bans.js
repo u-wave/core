@@ -1,7 +1,6 @@
 import { createServer } from 'http';
 import { expect } from 'chai';
 import ms from 'ms';
-import mongoose from 'mongoose';
 import uwave from '../src';
 import usersPlugin from '../src/plugins/users';
 import bansPlugin from '../src/plugins/bans';
