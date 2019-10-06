@@ -3,7 +3,7 @@ import wrapMiddleware from '../utils/wrapMiddleware';
 
 export default function checkFields(types) {
   if (!joi.isSchema(types)) {
-    throw new TypeError('checkFields: types must be a joi schema')
+    throw new TypeError('checkFields: types must be a joi schema');
   }
 
   return wrapMiddleware(async (req) => {
