@@ -3,7 +3,7 @@ import joi from '@hapi/joi';
 const objectID = joi.string().length(24);
 const userName = joi.string()
   .min(3).max(32)
-  .regex(/^[^\s\n]+$/);
+  .pattern(/^[^\s\n]+$/);
 const userEmail = joi.string().email();
 const userPassword = joi.string().min(6);
 

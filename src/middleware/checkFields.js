@@ -3,7 +3,7 @@ import wrapMiddleware from '../utils/wrapMiddleware';
 
 export default function checkFields(types) {
   return wrapMiddleware(async (req) => {
-    await joi.validate(req, types, {
+    await types.validateAsync(req, {
       abortEarly: false,
       allowUnknown: true,
     });
