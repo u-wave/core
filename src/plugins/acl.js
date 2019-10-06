@@ -51,7 +51,7 @@ export class Acl {
   }
 
   async maybeAddDefaultRoles() {
-    const existingRoles = await this.AclRole.count();
+    const existingRoles = await this.AclRole.estimatedDocumentCount();
     debug('existing roles', existingRoles);
     if (existingRoles === 0) {
       debug('no roles found, adding defaults');

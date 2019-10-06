@@ -1,7 +1,6 @@
 import { createServer } from 'http';
 import { expect } from 'chai';
 import ms from 'ms';
-import mongoose from 'mongoose';
 import uwave from '../src';
 import usersPlugin from '../src/plugins/users';
 import bansPlugin from '../src/plugins/bans';
@@ -14,7 +13,7 @@ function createUwaveWithBansTest() {
   const server = createServer();
   const uw = uwave({
     useDefaultPlugins: false,
-    mongo: mongoose.createConnection(`mongodb://localhost/${DB_NAME}`, { useNewUrlParser: true }),
+    mongo: `mongodb://localhost/${DB_NAME}`,
     secret: Buffer.from(`secret_${DB_NAME}`),
     server,
   });
@@ -47,9 +46,11 @@ describe('bans', () => {
       expect(await bans.isBanned(user.id)).to.equal(false);
     });
     it('returns true for banned users', async () => {
-      await user.update({
-        banned: { expiresAt: Date.now() + 1000 },
-      });
+      user.banned = {
+        duration: 1000,
+        expiresAt: Date.now() + 1000,
+      };
+      await user.save();
       expect(await bans.isBanned(user.id)).to.equal(true);
     });
   });

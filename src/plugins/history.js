@@ -21,7 +21,7 @@ export class HistoryRepository {
       0, MAX_PAGE_SIZE,
     );
 
-    const total = await this.HistoryEntry.where(filter).count();
+    const total = await this.HistoryEntry.where(filter).countDocuments();
     const results = await this.HistoryEntry.where(filter)
       .sort({ playedAt: -1 })
       .skip(offset)

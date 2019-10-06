@@ -1,6 +1,5 @@
 import { createServer } from 'http';
 import { expect } from 'chai';
-import mongoose from 'mongoose';
 import uwave from '../src';
 import usersPlugin from '../src/plugins/users';
 import aclPlugin from '../src/plugins/acl';
@@ -13,7 +12,7 @@ function createUwaveWithAclTest() {
   const server = createServer();
   const uw = uwave({
     useDefaultPlugins: false,
-    mongo: mongoose.createConnection(`mongodb://localhost/${DB_NAME}`, { useNewUrlParser: true }),
+    mongo: `mongodb://localhost/${DB_NAME}`,
     secret: Buffer.from(`secret_${DB_NAME}`),
     server,
   });
