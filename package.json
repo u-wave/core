@@ -61,6 +61,7 @@
     "clarify": "^2.1.0",
     "concat-stream": "^2.0.0",
     "cors": "^2.8.5",
+    "cross-env": "^6.0.3",
     "delay": "^4.0.0",
     "eslint": "^6.0.0",
     "eslint-config-airbnb-base": "^14.0.0",
@@ -88,7 +89,7 @@
     "test:mocha": "mocha",
     "test:lint": "eslint --cache src test rollup.config.js",
     "test": "npm run test:mocha && npm run test:lint",
-    "start": "nodemon dev/u-wave-dev-server -- --watch",
+    "start": "cross-env DEBUG=uwave:* nodemon dev/u-wave-dev-server -- --watch",
     "build": "rollup -c",
     "watch": "rollup -c -w",
     "prepare": "npm run build"
