@@ -155,7 +155,7 @@ export class PlaylistsRepository {
       },
       { $project: { _id: 0, items: 1 } },
       { $unwind: '$items' },
-      { $replaceWith: '$items' },
+      { $replaceRoot: { newRoot: '$items' } },
     ];
 
     if (filter) {
