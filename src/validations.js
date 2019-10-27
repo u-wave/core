@@ -149,6 +149,12 @@ const playlistItem = joi.object({
 const playlistItemIDs = joi.array().items(objectID);
 const playlistItems = joi.array().items(playlistItem);
 
+export const getPlaylists = joi.object({
+  query: joi.object({
+    contains: objectID,
+  }),
+});
+
 export const createPlaylist = joi.object({
   body: joi.object({
     name: joi.string().required(),

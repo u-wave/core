@@ -60,6 +60,18 @@ export class PlaylistsRepository {
     return playlist;
   }
 
+  async getMedia(id) {
+    const Media = this.uw.model('Media');
+    if (id instanceof Media) {
+      return id;
+    }
+    const media = await Media.findById(id);
+    if (!media) {
+      throw new NotFoundError('Media not found.');
+    }
+    return media;
+  }
+
   async getUserPlaylist(user, id) {
     const Playlist = this.uw.model('Playlist');
     const userID = typeof user === 'object' ? user.id : user;
@@ -216,6 +228,38 @@ export class PlaylistsRepository {
         limit: pagination.limit,
       } : null,
     });
+  }
+
+  async getPlaylistsContainingMedia(mediaOrID, options = {}) {
+    const Playlist = this.uw.model('Playlist');
+    const media = await this.getMedia(mediaOrID);
+
+    const aggregate = [];
+    if (options.author) {
+      aggregate.push({ $match: { author: options.author } });
+    }
+
+    aggregate.push(
+      // populate media array
+      { $lookup: { from: 'playlistitems', localField: 'media', foreignField: '_id', as: 'media' } },
+      // check if any media entry contains the id
+      { $match: { 'media.media': media._id } },
+      // reduce data sent in `media` array—this is still needed to match the result of other `getPlaylists()` functions
+      { $addFields: { media: '$media.media' } },
+    );
+
+    if (options.fields) {
+      const fields = {};
+      options.fields.forEach((fieldName) => {
+        fields[fieldName] = 1;
+      });
+      aggregate.push({
+        $project: fields,
+      });
+    }
+
+    const playlists = await Playlist.aggregate(aggregate)
+    return playlists.map((raw) => Playlist.hydrate(raw));
   }
 
   /**
