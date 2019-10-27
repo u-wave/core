@@ -65,6 +65,8 @@ function start() {
 
   const uw = uwave({
     ...config,
+    redis: process.env.REDIS_URL,
+    mongo: process.env.MONGODB_URL,
     server,
     secret,
     auth: config.auth,
@@ -86,7 +88,7 @@ function start() {
     name: 'localhost',
     subtitle: 'Local dev server',
     url: `http://localhost:${port}`,
-    hub: 'http://localhost:6451',
+    hub: process.env.HUB_URL || 'http://localhost:6451',
   }));
 
   uw.source(ytSource, config.sources.youtube);
