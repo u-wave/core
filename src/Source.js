@@ -24,7 +24,7 @@ export default class Source {
    * aggregate items from different source types.
    */
   addSourceType(items) {
-    return items.map(item => ({
+    return items.map((item) => ({
       sourceType: this.type,
       ...item,
     }));
@@ -35,7 +35,7 @@ export default class Source {
    */
   getOne(user, id) {
     return this.get(user, [id])
-      .then(items => items[0]);
+      .then((items) => items[0]);
   }
 
   /**

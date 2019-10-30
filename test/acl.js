@@ -1,8 +1,6 @@
+import { createServer } from 'http';
 import { expect } from 'chai';
-import mongoose from 'mongoose';
 import uwave from '../src';
-import userModel from '../src/models/User';
-import aclRoleModel from '../src/models/AclRole';
 import usersPlugin from '../src/plugins/users';
 import aclPlugin from '../src/plugins/acl';
 import createUser from './utils/createUser';
@@ -11,14 +9,18 @@ import mongoConnected from './utils/mongoConnected';
 const DB_NAME = 'uw_test_acl';
 
 function createUwaveWithAclTest() {
+  const server = createServer();
   const uw = uwave({
     useDefaultPlugins: false,
-    mongo: mongoose.createConnection(`mongodb://localhost/${DB_NAME}`),
+    mongo: `mongodb://localhost/${DB_NAME}`,
+    secret: Buffer.from(`secret_${DB_NAME}`),
+    server,
   });
-  uw.use(userModel());
-  uw.use(aclRoleModel());
   uw.use(usersPlugin());
   uw.use(aclPlugin({ defaultRoles: false }));
+  uw.on('stop', () => {
+    server.close();
+  });
   return uw;
 }
 

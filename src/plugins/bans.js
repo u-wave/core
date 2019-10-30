@@ -48,7 +48,7 @@ class Bans {
       });
     }
 
-    const total = await User.find().where(queryFilter).count();
+    const total = await User.find().where(queryFilter).countDocuments();
 
     const bannedUsers = await User.find()
       .where(queryFilter)
@@ -121,7 +121,8 @@ class Bans {
       throw new Error(`User "${user.username}" is not banned.`);
     }
 
-    await user.update({ banned: null });
+    user.banned = null;
+    await user.save();
 
     this.uw.publish('user:unban', {
       userID: `${user.id}`,

@@ -1,0 +1,107 @@
+#!/usr/bin/env node
+
+require('trace');
+require('clarify');
+require('source-map-support');
+const { Buffer } = require('buffer');
+const path = require('path');
+const argv = require('minimist')(process.argv.slice(2));
+const concat = require('concat-stream');
+const explain = require('explain-error');
+const announce = require('u-wave-announce');
+const ytSource = require('u-wave-source-youtube');
+const scSource = require('u-wave-source-soundcloud');
+const recaptchaTestKeys = require('recaptcha-test-keys');
+const express = require('express');
+const mailDebug = require('debug')('uwave:mail');
+const debug = require('debug')('uwave:dev-server');
+const config = require('./dev-server-config.json');
+
+const testTransport = {
+  name: 'test',
+  version: '0.0.0',
+  send(mail, callback) {
+    mail.message.createReadStream().pipe(concat((message) => {
+      mailDebug(mail.message.getEnvelope().to, message.toString('utf8'));
+      callback(null, {
+        envelope: mail.message.getEnvelope(),
+        messageId: mail.message.messageId(),
+      });
+    }));
+  },
+};
+
+function loadDevModules() {
+  const corePath = path.join(__dirname, '../src');
+
+  require('@babel/register').default({
+    plugins: [require('@babel/plugin-transform-modules-commonjs').default],
+    only: [p => p.startsWith(corePath)],
+  });
+
+  return require('../src/index.js').default;
+}
+
+function loadProdModules() {
+  return require('..');
+}
+
+/**
+ * üWave API development server.
+ */
+function start() {
+  const port = argv.port || 6042;
+  const watch = argv.watch || false;
+
+  const uwave = watch ? loadDevModules() : loadProdModules();
+
+  const app = express();
+  const server = app.listen(port, () => {
+    console.log(`Now listening on ${port}`);
+  });
+
+  const apiUrl = '/api';
+  const secret = Buffer.from('none', 'utf8');
+
+  const uw = uwave({
+    ...config,
+    redis: process.env.REDIS_URL,
+    mongo: process.env.MONGODB_URL,
+    server,
+    secret,
+    auth: config.auth,
+    mailTransport: testTransport,
+    timeout: 10,
+  });
+
+  uw.on('mongoError', (err) => {
+    throw explain(err, 'Could not connect to MongoDB. Is it installed and running?');
+  });
+
+  uw.on('redisError', (err) => {
+    throw explain(err, 'Could not connect to the Redis server. Is it installed and running?');
+  });
+
+  uw.use(announce({
+    // Generate a random one in a real app!
+    seed: Buffer.from('8286a5e55c62d93a042b8c56c8face52c05354c288807d941751f0e9060c2ded', 'hex'),
+    name: 'localhost',
+    subtitle: 'Local dev server',
+    url: `http://localhost:${port}`,
+    hub: process.env.HUB_URL || 'http://localhost:6451',
+  }));
+
+  uw.source(ytSource, config.sources.youtube);
+  uw.source(scSource, config.sources.soundcloud);
+
+  app.set('json spaces', 2);
+  app.use(apiUrl, uw.httpApi);
+  app.use((error, req, res, next) => {
+    debug(error);
+    next(error);
+  });
+
+  return app;
+}
+
+start();

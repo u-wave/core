@@ -1,3 +1,5 @@
+import routes from '../routes/motd';
+
 class MOTD {
   constructor(uw) {
     this.uw = uw;
@@ -15,5 +17,6 @@ class MOTD {
 export default function motdPlugin() {
   return (uw) => {
     uw.motd = new MOTD(uw);
+    uw.httpApi.use('/motd', routes());
   };
 }

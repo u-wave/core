@@ -1,16 +1,21 @@
 import { expect } from 'chai';
-import mongoose from 'mongoose';
+import { createServer } from 'http';
 import delay from 'delay';
 import uwave from '../src';
 
 describe('üWave Core', () => {
   let uw;
+  let server;
   beforeEach(() => {
+    server = createServer();
     uw = uwave({
-      mongo: mongoose.createConnection('mongodb://localhost:27017/uw_test_server'),
+      mongo: 'mongodb://localhost:27017/uw_test_server',
+      secret: 'uw_test_secret',
+      server,
     });
   });
   afterEach(async () => {
+    server.close();
     await uw.stop();
   });
 
