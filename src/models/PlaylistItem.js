@@ -5,7 +5,12 @@ const { Types } = mongoose.Schema;
 
 export default function playlistItemModel() {
   const schema = new Schema({
-    media: { type: Types.ObjectId, ref: 'Media', required: true },
+    media: {
+      type: Types.ObjectId,
+      ref: 'Media',
+      required: true,
+      index: true,
+    },
     artist: {
       type: String,
       max: 128,
