@@ -103,6 +103,7 @@ export default class UWaveServer extends EventEmitter {
       useNewUrlParser: true,
       useCreateIndex: true,
       useFindAndModify: false,
+      useUnifiedTopology: true,
     };
 
     if (typeof options.mongo === 'string') {
