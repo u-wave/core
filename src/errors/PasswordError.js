@@ -1,7 +1,7 @@
 import UwaveError from './UwaveError';
 
 export default class PasswordError extends UwaveError {
-  public = true;
+  expose = true;
 
   name = 'PasswordError';
 

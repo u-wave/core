@@ -1,7 +1,7 @@
 import UwaveError from './UwaveError';
 
 export default class PermissionError extends UwaveError {
-  public = true;
+  expose = true;
 
   name = 'PermissionError';
 
