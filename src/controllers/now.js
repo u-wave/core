@@ -36,11 +36,6 @@ async function getGuestsCount(uw) {
   return toInt(guests);
 }
 
-async function isWaitlistLocked(uw) {
-  const lock = await uw.redis.get('waitlist:lock');
-  return Boolean(lock);
-}
-
 // eslint-disable-next-line import/prefer-default-export
 export async function getState(req) {
   const uw = req.uwave;
@@ -53,8 +48,8 @@ export async function getState(req) {
   const guests = getGuestsCount(uw);
   const roles = uw.acl.getAllRoles();
   const booth = getBoothData(uw);
-  const waitlist = uw.redis.lrange('waitlist', 0, -1);
-  const waitlistLocked = isWaitlistLocked(uw);
+  const waitlist = uw.waitlist.getUserIDs();
+  const waitlistLocked = uw.waitlist.isLocked();
   const activePlaylist = user ? user.getActivePlaylistID() : null;
   const playlists = user ? user.getPlaylists() : null;
   const firstActivePlaylistItem = activePlaylist ? getFirstItem(user, activePlaylist) : null;
