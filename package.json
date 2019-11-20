@@ -71,7 +71,7 @@
     "is-builtin-module": "^3.0.0",
     "minimist": "^1.2.0",
     "mocha": "^6.1.4",
-    "nodemon": "^1.19.1",
+    "nodemon": "^2.0.0",
     "recaptcha-test-keys": "^1.0.0",
     "rollup": "^1.19.4",
     "rollup-plugin-babel": "^4.3.2",
