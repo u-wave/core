@@ -168,8 +168,8 @@ export async function getVote(req) {
   }
 
   const [upvoted, downvoted] = await Promise.all([
-    uw.redis.sismember('booth:upvotes'),
-    uw.redis.sismember('booth:downvotes'),
+    uw.redis.sismember('booth:upvotes', user.id),
+    uw.redis.sismember('booth:downvotes', user.id),
   ]);
 
   let direction = 0;
@@ -194,7 +194,7 @@ export async function vote(req) {
     throw new HTTPError(412, 'Nobody is playing');
   }
   if (currentDJ === user.id) {
-    throw new HTTPError(412, 'Cannot vote for your own plays')
+    throw new HTTPError(412, 'Cannot vote for your own plays');
   }
   if (historyID && historyID !== currentHistoryID) {
     throw new HTTPError(412, 'Cannot vote for media that is not currently playing');
