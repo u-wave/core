@@ -26,6 +26,20 @@ export default function boothRoutes() {
       checkFields(validations.replaceBooth),
       route(controller.replaceBooth),
     )
+    // GET /booth/:historyID/vote - Get the current user's vote for the current play.
+    .get(
+      '/:historyID/vote',
+      protect(),
+      checkFields(validations.getVote),
+      route(controller.getVote),
+    )
+    // PUT /booth/:historyID/vote - Upvote or downvote the current play.
+    .put(
+      '/:historyID/vote',
+      protect(),
+      checkFields(validations.vote),
+      route(controller.vote),
+    )
     // POST /booth/favorite - Add the current play to your favorites.
     .post(
       '/favorite',

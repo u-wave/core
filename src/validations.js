@@ -94,6 +94,21 @@ export const replaceBooth = joi.object({
   }),
 });
 
+export const getVote = joi.object({
+  params: joi.object({
+    historyID: objectID.required(),
+  }),
+});
+
+export const vote = joi.object({
+  params: joi.object({
+    historyID: objectID.required(),
+  }),
+  body: joi.object({
+    direction: joi.number().valid(-1, 1).required(),
+  }),
+});
+
 export const favorite = joi.object({
   body: joi.object({
     playlistID: objectID.required(),

@@ -3,7 +3,7 @@ import tryJsonParse from 'try-json-parse';
 import WebSocket from 'ws';
 import ms from 'ms';
 import createDebug from 'debug';
-import { vote } from './controllers/booth';
+import { socketVote } from './controllers/booth';
 import { disconnectUser } from './controllers/users';
 import AuthRegistry from './AuthRegistry';
 import GuestConnection from './sockets/GuestConnection';
@@ -261,7 +261,7 @@ export default class SocketServer {
       this.uw.chat.send(user, message);
     },
     vote: (user, direction) => {
-      vote(this.uw, user.id, direction);
+      socketVote(this.uw, user.id, direction);
     },
     logout: (user, _, connection) => {
       this.replace(connection, this.createGuestConnection(connection.socket, null));
