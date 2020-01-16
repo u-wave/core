@@ -5,6 +5,7 @@ require('clarify');
 require('source-map-support');
 const { Buffer } = require('buffer');
 const path = require('path');
+const http = require('http');
 const argv = require('minimist')(process.argv.slice(2));
 const concat = require('concat-stream');
 const explain = require('explain-error');
@@ -56,9 +57,7 @@ function start() {
   const uwave = watch ? loadDevModules() : loadProdModules();
 
   const app = express();
-  const server = app.listen(port, () => {
-    console.log(`Now listening on ${port}`);
-  });
+  const server = http.createServer(app);
 
   const apiUrl = '/api';
   const secret = Buffer.from('none', 'utf8');
@@ -99,6 +98,10 @@ function start() {
   app.use((error, req, res, next) => {
     debug(error);
     next(error);
+  });
+
+  server.listen(port, () => {
+    console.log(`Now listening on ${port}`);
   });
 
   return app;
