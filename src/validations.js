@@ -1,10 +1,17 @@
 import joi from '@hapi/joi';
+import { InvalidEmailError } from './errors';
 
 const objectID = joi.string().length(24);
 const userName = joi.string()
   .min(3).max(32)
   .pattern(/^[^\s\n]+$/);
-const userEmail = joi.string().email();
+const userEmail = joi.string().email().error((errors) => {
+  const source = errors[0];
+  const error = new InvalidEmailError({ value: source.value });
+  error.path = source.path;
+  error.source = source;
+  return error;
+});
 const userPassword = joi.string().min(6);
 
 const newStylePagination = joi.object({

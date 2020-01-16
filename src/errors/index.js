@@ -3,6 +3,7 @@ import {
   InternalServerError,
   NotFound,
   TooManyRequests,
+  UnprocessableEntity,
 } from 'http-errors';
 import { t } from '../locale';
 
@@ -68,7 +69,7 @@ function createErrorClass(name, {
 
     code = code;
 
-    constructor(data) {
+    constructor(data = {}) {
       const i18nKey = getString(data);
       super(t(i18nKey, data));
 
@@ -92,6 +93,12 @@ export const NameChangeRateLimitError = createErrorClass('NameChangeRateLimitErr
   code: 'too-many-requests',
   string: 'errors.tooManyNameChanges',
   base: RateLimitError,
+});
+
+export const InvalidEmailError = createErrorClass('InvalidEmailError', {
+  code: 'invalid-email',
+  string: 'errors.invalidEmail',
+  base: UnprocessableEntity,
 });
 
 export const UserNotFoundError = createErrorClass('UserNotFoundError', {
