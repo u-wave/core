@@ -2,7 +2,6 @@ import props from 'p-props';
 import {
   CombinedError,
   HTTPError,
-  NotFoundError,
   PermissionError,
   HistoryEntryNotFoundError,
   PlaylistNotFoundError,
@@ -108,7 +107,7 @@ export async function replaceBooth(req) {
   let waitlist = await uw.redis.lrange('waitlist', 0, -1);
 
   if (!waitlist.length) {
-    throw new NotFoundError('Waitlist is empty.');
+    throw new HTTPError(404, 'Waitlist is empty.');
   }
 
   if (waitlist.includes(userID)) {
