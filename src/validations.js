@@ -1,13 +1,19 @@
 import joi from '@hapi/joi';
-import { InvalidEmailError } from './errors';
+import { InvalidUsernameError, InvalidEmailError } from './errors';
 
 const objectID = joi.string().length(24);
 const userName = joi.string()
   .min(3).max(32)
-  .pattern(/^[^\s\n]+$/);
+  .pattern(/^[^\s\n]+$/)
+  .error((errors) => {
+    const error = new InvalidUsernameError({ username: errors[0].value });
+    error.path = errors[0].path;
+    error.errors = errors;
+    return error;
+  });
 const userEmail = joi.string().email().error((errors) => {
   const source = errors[0];
-  const error = new InvalidEmailError({ value: source.value });
+  const error = new InvalidEmailError({ email: source.value });
   error.path = source.path;
   error.source = source;
   return error;

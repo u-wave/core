@@ -101,6 +101,12 @@ export const InvalidEmailError = createErrorClass('InvalidEmailError', {
   base: UnprocessableEntity,
 });
 
+export const InvalidUsernameError = createErrorClass('InvalidUsernameError', {
+  code: 'invalid-username',
+  string: 'errors.invalidUsername',
+  base: UnprocessableEntity,
+});
+
 export const UserNotFoundError = createErrorClass('UserNotFoundError', {
   code: 'user-not-found',
   string: 'errors.userNotFound',

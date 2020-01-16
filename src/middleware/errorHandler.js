@@ -63,11 +63,15 @@ function serializeError(err) {
     }];
   }
   if (err.expose) {
-    return [{
+    const apiError = {
       status: err.status || 400,
       code: err.code,
       title: err.message,
-    }];
+    };
+    if (err.path && err.path[0] === 'body') {
+      apiError.source = `#/${err.path.slice(1).join('/')}`;
+    }
+    return [apiError];
   }
   return [{
     status: 500,
