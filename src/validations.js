@@ -37,18 +37,20 @@ export const login = joi.object({
     session: joi.string().valid('token', 'cookie').default('token'),
   }),
   body: joi.object({
-    email: userEmail.required(),
-    // This is less strict than the password validation used in `register`,
-    // because we check this against the DB anyway, and an error message
-    // about mismatching passwords makes more sense when logging in than an
-    // error message about the password being too short.
+    // This is less strict than the email and password validation used in
+    // `register`, because we check this against the DB anyway, and an
+    // error message about a nonexistent account or mismatching passwords
+    // makes more sense when logging in than an error message about the
+    // email being incorrectly formatted or the password being too short.
+    email: joi.string().required(),
     password: joi.string().required(),
   }),
 });
 
 export const requestPasswordReset = joi.object({
   body: joi.object({
-    email: userEmail.required(),
+    // Checked against DB like in `login`.
+    email: joi.string().required(),
   }),
 });
 
