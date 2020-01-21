@@ -92,17 +92,22 @@ class Chat {
    */
   async send(user, message) {
     if (await this.isMuted(user)) {
-      return;
+      return null;
     }
 
     this.#chatID += 1;
 
+    const id = `${user.id}-${this.chatID}`;
     this.#uw.publish('chat:message', {
-      id: `${user.id}-${this.#chatID}`,
+      id,
       userID: user.id,
       message: this.truncate(message),
       timestamp: Date.now(),
     });
+
+    return {
+      id,
+    };
   }
 
   /**

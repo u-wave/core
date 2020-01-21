@@ -61,6 +61,26 @@ async function unmuteUser(req) {
 }
 
 /**
+ * @typedef {object} SendMessageBody
+ * @prop {string} message
+ */
+
+/**
+ * @type {import('../types').AuthenticatedController<{}, {}, SendMessageBody>}
+ */
+async function sendMessage(req) {
+  const { user } = req;
+  const { message } = req.body;
+  const { chat } = req.uwave;
+
+  const result = await chat.send(user, message);
+  return toItemResponse({
+    _id: result ? result.id : null,
+    message,
+  });
+}
+
+/**
  * @type {import('../types').AuthenticatedController}
  */
 async function deleteAll(req) {
@@ -110,6 +130,7 @@ async function deleteMessage(req) {
 
 exports.muteUser = muteUser;
 exports.unmuteUser = unmuteUser;
+exports.sendMessage = sendMessage;
 exports.deleteAll = deleteAll;
 exports.deleteByUser = deleteByUser;
 exports.deleteMessage = deleteMessage;
