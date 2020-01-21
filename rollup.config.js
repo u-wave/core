@@ -1,5 +1,5 @@
 import babel from 'rollup-plugin-babel';
-import nodeResolve from 'rollup-plugin-node-resolve';
+import nodeResolve from '@rollup/plugin-node-resolve';
 import esModuleInterop from 'rollup-plugin-es-module-interop';
 import isBuiltinModule from 'is-builtin-module';
 
