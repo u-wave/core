@@ -62,7 +62,7 @@
     "clarify": "^2.1.0",
     "concat-stream": "^2.0.0",
     "cors": "^2.8.5",
-    "cross-env": "^6.0.3",
+    "cross-env": "^7.0.0",
     "delay": "^4.3.0",
     "eslint": "^6.8.0",
     "eslint-config-airbnb-base": "^14.0.0",
