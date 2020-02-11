@@ -1,14 +1,11 @@
 const UwaveError = require('./UwaveError');
 
 class PermissionError extends UwaveError {
-  expose = true;
-
-  name = 'PermissionError';
-
-  code = 'NOT_ALLOWED';
-
   constructor(message, { requiredRole }) {
     super(message);
+    this.expose = true;
+    this.name = 'PermissionError';
+    this.code = 'NOT_ALLOWED';
     this.requiredRole = requiredRole;
   }
 }

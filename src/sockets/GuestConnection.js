@@ -7,8 +7,6 @@ const AuthRegistry = require('../AuthRegistry');
 const debug = createDebug('uwave:api:sockets:guest');
 
 class GuestConnection extends EventEmitter {
-  lastMessage = Date.now();
-
   constructor(uw, socket, req, options) {
     super();
     this.uw = uw;
@@ -28,6 +26,8 @@ class GuestConnection extends EventEmitter {
         this.send('error', error.message);
       });
     });
+
+    this.lastMessage = Date.now();
   }
 
   async attemptAuth(token) {

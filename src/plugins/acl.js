@@ -36,10 +36,9 @@ const getRoleName = (role) => (
 );
 
 class Acl {
-  superRole = '*';
-
   constructor(uw, opts) {
     this.uw = uw;
+    this.superRole = '*';
 
     if (opts.defaultRoles !== false) {
       this.maybeAddDefaultRoles();

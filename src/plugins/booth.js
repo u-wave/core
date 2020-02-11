@@ -5,7 +5,10 @@ const createDebug = require('debug');
 const routes = require('../routes/booth');
 
 class PlaylistIsEmptyError extends Error {
-  code = 'PLAYLIST_IS_EMPTY';
+  constructor (message) {
+    super(message);
+    this.code = 'PLAYLIST_IS_EMPTY';
+  }
 }
 
 const debug = createDebug('uwave:advance');
@@ -17,10 +20,9 @@ function cyclePlaylist(playlist) {
 }
 
 class Booth {
-  timeout = null;
-
   constructor(uw) {
     this.uw = uw;
+    this.timeout = null;
 
     uw.on('started', this.onStart.bind(this));
     uw.on('stop', this.onStop.bind(this));

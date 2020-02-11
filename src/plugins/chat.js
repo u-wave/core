@@ -5,8 +5,6 @@ const defaultOptions = {
 };
 
 class Chat {
-  chatID = Date.now();
-
   constructor(uw, options = {}) {
     this.uw = uw;
 
@@ -14,6 +12,8 @@ class Chat {
       ...defaultOptions,
       ...options,
     };
+
+    this.chatID = Date.now();
   }
 
   async mute(user, duration, opts = {}) {

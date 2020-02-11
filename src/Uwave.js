@@ -31,14 +31,6 @@ const DEFAULT_MONGO_URL = 'mongodb://localhost:27017/uwave';
 const DEFAULT_REDIS_URL = 'redis://localhost:6379';
 
 class UwaveServer extends EventEmitter {
-  [kSources] = new Map();
-
-  locale = i18n.cloneInstance();
-
-  options = {
-    useDefaultPlugins: true,
-  };
-
   /**
   * Registers middleware on a route
   *
@@ -47,14 +39,26 @@ class UwaveServer extends EventEmitter {
   */
   constructor(options = {}) {
     super();
-    this.#parseOptions(options);
+
+    /**
+     * @type {Map<string, Source>}
+     */
+    this[kSources] = new Map();
+
+    this.locale = i18n.cloneInstance();
+
+    this.options = {
+      useDefaultPlugins: true,
+    };
+
+    this._parseOptions(options);
 
     this.log = debug('uwave:core');
     this.mongoLog = debug('uwave:core:mongo');
     this.redisLog = debug('uwave:core:redis');
 
-    this.#configureRedis();
-    this.#configureMongoose();
+    this._configureRedis();
+    this._configureMongoose();
 
     this.use(models());
     this.use(passport({
@@ -92,7 +96,7 @@ class UwaveServer extends EventEmitter {
     });
   }
 
-  #parseOptions = (options) => {
+  _parseOptions(options) {
     const defaultOptions = {
       useNewUrlParser: true,
       useCreateIndex: true,
@@ -131,7 +135,7 @@ class UwaveServer extends EventEmitter {
     }
 
     Object.assign(this.options, options);
-  };
+  }
 
   use(plugin) {
     plugin(this);
@@ -186,7 +190,7 @@ class UwaveServer extends EventEmitter {
     return newSource;
   }
 
-  #configureRedis = () => {
+  _configureRedis() {
     this.redis.on('error', (e) => {
       this.emit('redisError', e);
     });
@@ -201,9 +205,9 @@ class UwaveServer extends EventEmitter {
       this.redisLog('connected');
       this.emit('redisConnect');
     });
-  };
+  }
 
-  #configureMongoose = () => {
+  _configureMongoose() {
     this.mongo.on('error', (e) => {
       this.mongoLog(e);
       this.emit('mongoError', e);
@@ -223,7 +227,7 @@ class UwaveServer extends EventEmitter {
       this.mongoLog('connected');
       this.emit('mongoConnect');
     });
-  };
+  }
 
   /**
    * Create a Redis subscription to the üWave channel.

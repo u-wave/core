@@ -8,7 +8,10 @@ const {
 const { t } = require('../locale');
 
 class EmailError extends InternalServerError {
-  name = 'EmailError';
+  constructor(message) {
+    super(message);
+    this.name = 'EmailError';
+  }
 }
 
 class APIError extends Error {
@@ -35,24 +38,32 @@ class CombinedError extends APIError {
 }
 
 class PasswordError extends APIError {
-  name = 'PasswordError';
+  constructor(message) {
+    super(message);
+    this.name = 'PasswordError';
+  }
 }
 
 class TokenError extends APIError {
-  name = 'TokenError';
+  constructor(message) {
+    super(message);
+    this.name = 'TokenError';
+  }
 }
 
 class HTTPError extends APIError {
-  name = 'HTTPError';
-
   constructor(status, message) {
     super(message);
+    this.name = 'HTTPError';
     this.status = status;
   }
 }
 
 class PermissionError extends Forbidden {
-  name = 'PermissionError';
+  constructor(message) {
+    super(message);
+    this.name = 'PermissionError';
+  }
 }
 
 function createErrorClass(name, {
@@ -65,14 +76,11 @@ function createErrorClass(name, {
     : string;
 
   return class extends base {
-    name = name;
-
-    code = code;
-
     constructor(data = {}) {
       const i18nKey = getString(data);
       super(t(i18nKey, data));
-
+      this.name = name;
+      this.code = code;
       this.i18nKey = i18nKey;
       this.data = data;
     }

@@ -13,16 +13,20 @@ class Waitlist {
     this.uw = uw;
   }
 
-  #getCurrentDJ = () => this.uw.redis.get('booth:currentDJ')
+  _getCurrentDJ() {
+    return this.uw.redis.get('booth:currentDJ');
+  }
 
-  #isBoothEmpty = async () => !(await this.uw.redis.get('booth:historyID'))
+  async _isBoothEmpty() {
+    return !(await this.uw.redis.get('booth:historyID'));
+  }
 
   /**
    * @param {string} userID
    * @return {Promise<boolean>}
    */
-  #isCurrentDJ = async (userID) => {
-    const dj = await this.#getCurrentDJ();
+  async _isCurrentDJ(userID) {
+    const dj = await this._getCurrentDJ();
     return dj !== null && dj === userID;
   }
 
@@ -30,7 +34,7 @@ class Waitlist {
    * @param {string} userID
    * @return {Promise<boolean>}
    */
-  #hasValidPlaylist = async (userID) => {
+  async _hasValidPlaylist(userID) {
     const { users } = this.uw;
     const user = await users.getUser(userID);
     const playlist = await user.getActivePlaylist();
@@ -46,7 +50,7 @@ class Waitlist {
   }
 
   // POST waitlist/ handler for joining the waitlist.
-  #doJoinWaitlist = async (user) => {
+  async _doJoinWaitlist(user) {
     await this.uw.redis.rpush('waitlist', user.id);
 
     const waitlist = await this.getUserIDs();
@@ -60,7 +64,7 @@ class Waitlist {
   }
 
   // POST waitlist/ handler for adding a (different) user to the waitlist.
-  #doAddToWaitlist = async (user, { moderator, waitlist, position }) => {
+  async _doAddToWaitlist(user, { moderator, waitlist, position }) {
     const clampedPosition = clamp(position, 0, waitlist.length);
 
     if (clampedPosition < waitlist.length) {
@@ -101,30 +105,30 @@ class Waitlist {
     if (isInWaitlist(waitlist, user.id)) {
       throw new PermissionError('You are already in the waitlist.');
     }
-    if (await this.#isCurrentDJ(user.id)) {
+    if (await this._isCurrentDJ(user.id)) {
       throw new PermissionError('You are already currently playing.');
     }
-    if (!(await this.#hasValidPlaylist(user))) {
+    if (!(await this._hasValidPlaylist(user))) {
       throw new Error('You don\'t have anything to play. Please add some songs to your '
         + 'playlist and try again.');
     }
 
     if (!moderator || user.id === moderator.id) {
-      waitlist = await this.#doJoinWaitlist(user);
+      waitlist = await this._doJoinWaitlist(user);
     } else {
       if (!(await moderator.can('waitlist.add'))) {
         throw new PermissionError('You cannot add someone else to the waitlist.', {
           requiredRole: 'waitlist.add',
         });
       }
-      waitlist = await this.#doAddToWaitlist(user, {
+      waitlist = await this._doAddToWaitlist(user, {
         moderator,
         waitlist,
         position: waitlist.length,
       });
     }
 
-    if (await this.#isBoothEmpty()) {
+    if (await this._isBoothEmpty()) {
       await this.uw.booth.advance();
     }
   }
@@ -142,10 +146,10 @@ class Waitlist {
     if (!isInWaitlist(waitlist, user.id)) {
       throw new PermissionError('That user is not in the waitlist.');
     }
-    if (await this.#isCurrentDJ(user.id)) {
+    if (await this._isCurrentDJ(user.id)) {
       throw new PermissionError('That user is currently playing.');
     }
-    if (!(await this.#hasValidPlaylist(user.id))) {
+    if (!(await this._hasValidPlaylist(user.id))) {
       throw new Error('That user does not have anything to play.');
     }
 
@@ -220,7 +224,7 @@ class Waitlist {
     });
   }
 
-  #lockWaitlist = async (lock, moderator) => {
+  async _lockWaitlist(lock, moderator) {
     if (lock) {
       await this.uw.redis.set('waitlist:lock', lock);
     } else {
@@ -240,11 +244,11 @@ class Waitlist {
   }
 
   lock({ moderator }) {
-    return this.#lockWaitlist(true, moderator);
+    return this._lockWaitlist(true, moderator);
   }
 
   unlock({ moderator }) {
-    return this.#lockWaitlist(false, moderator);
+    return this._lockWaitlist(false, moderator);
   }
 }
 

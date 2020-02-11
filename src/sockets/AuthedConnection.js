@@ -7,8 +7,6 @@ const tryJsonParse = require('try-json-parse');
 const debug = createDebug('uwave:api:sockets:authed');
 
 class AuthedConnection extends EventEmitter {
-  lastMessage = Date.now();
-
   constructor(uw, socket, user) {
     super();
     this.uw = uw;
@@ -21,6 +19,7 @@ class AuthedConnection extends EventEmitter {
     });
     this.events.on('message', this.onMessage.bind(this));
 
+    this.lastMessage = Date.now();
     this.sendWaiting();
   }
 

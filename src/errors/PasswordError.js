@@ -1,11 +1,12 @@
 const UwaveError = require('./UwaveError');
 
 class PasswordError extends UwaveError {
-  expose = true;
-
-  name = 'PasswordError';
-
-  code = 'INCORRECT_PASSWORD';
+  constructor(message) {
+    super(message);
+    this.expose = true;
+    this.name = 'PasswordError';
+    this.code = 'INCORRECT_PASSWORD';
+  }
 }
 
 module.exports = PasswordError;

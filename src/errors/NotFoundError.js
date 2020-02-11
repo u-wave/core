@@ -1,11 +1,12 @@
 const UwaveError = require('./UwaveError');
 
 class NotFoundError extends UwaveError {
-  expose = true;
-
-  name = 'NotFoundError';
-
-  code = 'NOT_FOUND';
+  constructor(message) {
+    super(message);
+    this.expose = true;
+    this.name = 'NotFoundError';
+    this.code = 'NOT_FOUND';
+  }
 }
 
 module.exports = NotFoundError;
