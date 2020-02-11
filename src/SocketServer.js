@@ -1,14 +1,14 @@
-import { debounce, isEmpty } from 'lodash';
-import tryJsonParse from 'try-json-parse';
-import WebSocket from 'ws';
-import ms from 'ms';
-import createDebug from 'debug';
-import { socketVote } from './controllers/booth';
-import { disconnectUser } from './controllers/users';
-import AuthRegistry from './AuthRegistry';
-import GuestConnection from './sockets/GuestConnection';
-import AuthedConnection from './sockets/AuthedConnection';
-import LostConnection from './sockets/LostConnection';
+const { debounce, isEmpty } = require('lodash');
+const tryJsonParse = require('try-json-parse');
+const WebSocket = require('ws');
+const ms = require('ms');
+const createDebug = require('debug');
+const { socketVote } = require('./controllers/booth');
+const { disconnectUser } = require('./controllers/users');
+const AuthRegistry = require('./AuthRegistry');
+const GuestConnection = require('./sockets/GuestConnection');
+const AuthedConnection = require('./sockets/AuthedConnection');
+const LostConnection = require('./sockets/LostConnection');
 
 const debug = createDebug('uwave:api:sockets');
 
@@ -20,7 +20,7 @@ options are used to attach the WebSocket server to the correct HTTP server.
 An example of how to attach the WebSocket server to an existing HTTP server
 using Express:
 
-    import { createSocketServer } from 'u-wave-http-api';
+    const { createSocketServer } = require('u-wave-http-api');
     const app = express();
     const server = app.listen(80);
 
@@ -31,7 +31,7 @@ using Express:
 
 Alternatively, you can provide a port for the socket server to listen on:
 
-    import { createSocketServer } from 'u-wave-http-api';
+    const { createSocketServer } = require('u-wave-http-api');
     const app = express();
 
     createSocketServer(uwave, {
@@ -41,7 +41,7 @@ Alternatively, you can provide a port for the socket server to listen on:
   `);
 }
 
-export default class SocketServer {
+class SocketServer {
   connections = [];
 
   options = {
@@ -155,7 +155,7 @@ export default class SocketServer {
   /**
    * Create a connection instance for an unauthenticated user.
    */
-  createGuestConnection(socket, req?) {
+  createGuestConnection(socket, req) {
     const connection = new GuestConnection(this.uw, socket, req, {
       secret: this.options.secret,
       authRegistry: this.authRegistry,
@@ -542,7 +542,7 @@ export default class SocketServer {
    * @param {string} command Command name.
    * @param {*} data Command data.
    */
-  broadcast(command: string, data: any) {
+  broadcast(command, data) {
     debug('broadcast', command, data);
 
     this.connections.forEach((connection) => {
@@ -558,7 +558,7 @@ export default class SocketServer {
    * @param {string} command Command name.
    * @param {*} data Command data.
    */
-  sendTo(user, command: string, data: any) {
+  sendTo(user, command, data) {
     const userID = typeof user === 'object' ? user.id : user;
 
     this.connections.forEach((connection) => {
@@ -599,3 +599,5 @@ export default class SocketServer {
     }
   }
 }
+
+module.exports = SocketServer;

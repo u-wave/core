@@ -1,13 +1,13 @@
-import ms from 'ms';
-import { promisify } from 'util';
-import RateLimiterBase from 'ratelimiter';
-import wrapMiddleware from '../utils/wrapMiddleware';
-import { RateLimitError } from '../errors';
+const ms = require('ms');
+const { promisify } = require('util');
+const RateLimiterBase = require('ratelimiter');
+const wrapMiddleware = require('../utils/wrapMiddleware');
+const { RateLimitError } = require('../errors');
 
 class RateLimiter extends RateLimiterBase {}
 RateLimiter.prototype.getAsync = promisify(RateLimiter.prototype.get);
 
-export default function rateLimit(prefix, opts) {
+function rateLimit(prefix, opts) {
   const RLError = opts.error || RateLimitError;
 
   return wrapMiddleware(async (req, res) => {
@@ -35,3 +35,5 @@ export default function rateLimit(prefix, opts) {
     });
   });
 }
+
+module.exports = rateLimit;

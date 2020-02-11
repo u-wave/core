@@ -1,6 +1,6 @@
-import toItemResponse from '../utils/toItemResponse';
+const toItemResponse = require('../utils/toItemResponse');
 
-export async function list(req) {
+async function list(req) {
   const { acl } = req.uwave;
 
   const roles = await acl.getAllRoles();
@@ -10,7 +10,7 @@ export async function list(req) {
   });
 }
 
-export async function createRole(req) {
+async function createRole(req) {
   const { name } = req.params;
   const { permissions } = req.body;
   const { acl } = req.uwave;
@@ -22,7 +22,7 @@ export async function createRole(req) {
   });
 }
 
-export async function deleteRole(req) {
+async function deleteRole(req) {
   const { name } = req.params;
   const { acl } = req.uwave;
 
@@ -32,3 +32,7 @@ export async function deleteRole(req) {
     url: req.fullUrl,
   });
 }
+
+exports.list = list;
+exports.createRole = createRole;
+exports.deleteRole = deleteRole;

@@ -1,26 +1,26 @@
-import EventEmitter from 'events';
-import mongoose from 'mongoose';
-import Redis from 'ioredis';
-import debug from 'debug';
-import { isPlainObject } from 'lodash';
+const EventEmitter = require('events');
+const mongoose = require('mongoose');
+const Redis = require('ioredis');
+const debug = require('debug');
+const { isPlainObject } = require('lodash');
 
-import HttpApi from './HttpApi';
-import SocketServer from './SocketServer';
-import Source from './Source';
-import i18n from './locale';
+const HttpApi = require('./HttpApi');
+const SocketServer = require('./SocketServer');
+const { Source } = require('./Source');
+const { i18n } = require('./locale');
 
-import models from './models';
-import booth from './plugins/booth';
-import chat from './plugins/chat';
-import motd from './plugins/motd';
-import playlists from './plugins/playlists';
-import users from './plugins/users';
-import bans from './plugins/bans';
-import history from './plugins/history';
-import acl from './plugins/acl';
-import waitlist from './plugins/waitlist';
-import passport from './plugins/passport';
-import errorHandler from './middleware/errorHandler';
+const models = require('./models');
+const booth = require('./plugins/booth');
+const chat = require('./plugins/chat');
+const motd = require('./plugins/motd');
+const playlists = require('./plugins/playlists');
+const users = require('./plugins/users');
+const bans = require('./plugins/bans');
+const history = require('./plugins/history');
+const acl = require('./plugins/acl');
+const waitlist = require('./plugins/waitlist');
+const passport = require('./plugins/passport');
+const errorHandler = require('./middleware/errorHandler');
 
 mongoose.Promise = Promise;
 const MongooseConnection = mongoose.Connection;
@@ -30,13 +30,7 @@ const kSources = Symbol('Media sources');
 const DEFAULT_MONGO_URL = 'mongodb://localhost:27017/uwave';
 const DEFAULT_REDIS_URL = 'redis://localhost:6379';
 
-type UwaveOptions = {
-  useDefaultPlugins: ?bool,
-  mongo: ?string|Object,
-  redis: ?string|Object|Redis
-};
-
-export default class UWaveServer extends EventEmitter {
+class UwaveServer extends EventEmitter {
   [kSources] = new Map();
 
   locale = i18n.cloneInstance();
@@ -51,7 +45,7 @@ export default class UWaveServer extends EventEmitter {
   * @constructor
   * @param {Object} options
   */
-  constructor(options: UwaveOptions = {}) {
+  constructor(options = {}) {
     super();
     this.#parseOptions(options);
 
@@ -98,7 +92,7 @@ export default class UWaveServer extends EventEmitter {
     });
   }
 
-  #parseOptions = (options: UwaveOptions) => {
+  #parseOptions = (options) => {
     const defaultOptions = {
       useNewUrlParser: true,
       useCreateIndex: true,
@@ -273,3 +267,5 @@ export default class UWaveServer extends EventEmitter {
     this.emit('stopped');
   }
 }
+
+module.exports = UwaveServer;

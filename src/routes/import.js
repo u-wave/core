@@ -1,9 +1,9 @@
-import router from 'router';
-import route from '../route';
-import protect from '../middleware/protect';
-import * as controller from '../controllers/import';
+const router = require('router');
+const route = require('../route');
+const protect = require('../middleware/protect');
+const controller = require('../controllers/import');
 
-export default function importRoutes() {
+function importRoutes() {
   return router()
     // * /import/:source/:action - Call an import source.
     .all(
@@ -18,3 +18,5 @@ export default function importRoutes() {
       route(controller.importAction),
     );
 }
+
+module.exports = importRoutes;

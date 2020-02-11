@@ -1,9 +1,9 @@
-import router from 'router';
-import route from '../route';
-import protect from '../middleware/protect';
-import * as controller from '../controllers/bans';
+const router = require('router');
+const route = require('../route');
+const protect = require('../middleware/protect');
+const controller = require('../controllers/bans');
 
-export default function banRoutes() {
+function banRoutes() {
   return router()
     .get(
       '/',
@@ -23,3 +23,5 @@ export default function banRoutes() {
       route(controller.removeBan),
     );
 }
+
+module.exports = banRoutes;

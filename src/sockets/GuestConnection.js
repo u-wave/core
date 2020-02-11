@@ -1,20 +1,15 @@
-import EventEmitter from 'events';
-import Ultron from 'ultron';
-import WebSocket from 'ws';
-import createDebug from 'debug';
-import AuthRegistry from '../AuthRegistry';
+const EventEmitter = require('events');
+const Ultron = require('ultron');
+const WebSocket = require('ws');
+const createDebug = require('debug');
+const AuthRegistry = require('../AuthRegistry');
 
 const debug = createDebug('uwave:api:sockets:guest');
 
-type ConnectionOptions = {
-  timeout: number,
-  authRegistry: AuthRegistry,
-};
-
-export default class GuestConnection extends EventEmitter {
+class GuestConnection extends EventEmitter {
   lastMessage = Date.now();
 
-  constructor(uw, socket: WebSocket, req?, options: ConnectionOptions) {
+  constructor(uw, socket, req, options) {
     super();
     this.uw = uw;
     this.socket = socket;
@@ -62,7 +57,7 @@ export default class GuestConnection extends EventEmitter {
     return this.uw.redis.exists(`http-api:disconnected:${user.id}`);
   }
 
-  send(command: string, data: any) {
+  send(command, data) {
     this.socket.send(JSON.stringify({ command, data }));
     this.lastMessage = Date.now();
   }
@@ -88,3 +83,5 @@ export default class GuestConnection extends EventEmitter {
     return 'Guest';
   }
 }
+
+module.exports = GuestConnection;

@@ -1,10 +1,10 @@
-import routes from '../routes/chat';
+const routes = require('../routes/chat');
 
 const defaultOptions = {
   maxLength: 300,
 };
 
-export class Chat {
+class Chat {
   chatID = Date.now();
 
   constructor(uw, options = {}) {
@@ -74,9 +74,12 @@ export class Chat {
   }
 }
 
-export default function chat(opts = {}) {
+function chat(opts = {}) {
   return (uw) => {
     uw.chat = new Chat(uw, opts);
     uw.httpApi.use('/chat', routes());
   };
 }
+
+module.exports = chat;
+module.exports.Chat = Chat;

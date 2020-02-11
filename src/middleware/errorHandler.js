@@ -1,9 +1,9 @@
-import createDebug from 'debug';
-import {
+const createDebug = require('debug');
+const {
   APIError,
   CombinedError,
   RateLimitError,
-} from '../errors';
+} = require('../errors');
 
 const debug = createDebug('uwave:http:error');
 
@@ -80,7 +80,7 @@ function serializeError(err) {
   }];
 }
 
-export default function errorHandler(options = {}) {
+function errorHandler(options = {}) {
   return (errors, req, res, next) => {
     if (errors) {
       const error = Array.isArray(errors)
@@ -102,3 +102,5 @@ export default function errorHandler(options = {}) {
     }
   };
 }
+
+module.exports = errorHandler;

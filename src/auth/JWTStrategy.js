@@ -1,7 +1,7 @@
-import { Strategy } from 'passport';
-import { promisify } from 'util';
-import jwt from 'jsonwebtoken';
-import { PermissionError } from '../errors';
+const { Strategy } = require('passport');
+const { promisify } = require('util');
+const jwt = require('jsonwebtoken');
+const { PermissionError } = require('../errors');
 
 const jwtVerify = promisify(jwt.verify);
 
@@ -23,7 +23,7 @@ function getHeaderToken(headers) {
   return null;
 }
 
-export default class JWTStrategy extends Strategy {
+class JWTStrategy extends Strategy {
   constructor(secret, getUser) {
     super();
     this.secret = secret;
@@ -67,3 +67,5 @@ export default class JWTStrategy extends Strategy {
     return this.success(user);
   }
 }
+
+module.exports = JWTStrategy;

@@ -1,5 +1,5 @@
-import joi from '@hapi/joi';
-import { InvalidUsernameError, InvalidEmailError } from './errors';
+const joi = require('@hapi/joi');
+const { InvalidUsernameError, InvalidEmailError } = require('./errors');
 
 const objectID = joi.string().length(24);
 const userName = joi.string()
@@ -37,7 +37,7 @@ const pagination = [
 
 // Validations for authentication routes:
 
-export const register = joi.object({
+exports.register = joi.object({
   body: joi.object({
     email: userEmail.required(),
     username: userName.required(),
@@ -45,7 +45,7 @@ export const register = joi.object({
   }),
 });
 
-export const login = joi.object({
+exports.login = joi.object({
   query: joi.object({
     session: joi.string().valid('token', 'cookie').default('token'),
   }),
@@ -60,14 +60,14 @@ export const login = joi.object({
   }),
 });
 
-export const requestPasswordReset = joi.object({
+exports.requestPasswordReset = joi.object({
   body: joi.object({
     // Checked against DB like in `login`.
     email: joi.string().required(),
   }),
 });
 
-export const passwordReset = joi.object({
+exports.passwordReset = joi.object({
   params: joi.object({
     reset: joi.string().required(),
   }),
@@ -78,7 +78,7 @@ export const passwordReset = joi.object({
 
 // Validations for ACL routes:
 
-export const createAclRole = joi.object({
+exports.createAclRole = joi.object({
   params: joi.object({
     name: joi.string().required(),
   }),
@@ -87,7 +87,7 @@ export const createAclRole = joi.object({
   }),
 });
 
-export const deleteAclRole = joi.object({
+exports.deleteAclRole = joi.object({
   params: joi.object({
     name: joi.string().required(),
   }),
@@ -95,7 +95,7 @@ export const deleteAclRole = joi.object({
 
 // Validations for booth routes:
 
-export const skipBooth = joi.object({
+exports.skipBooth = joi.object({
   body: joi.object({
     reason: joi.string().allow(''),
     userID: objectID,
@@ -103,19 +103,19 @@ export const skipBooth = joi.object({
   }).and('userID', 'reason'),
 });
 
-export const replaceBooth = joi.object({
+exports.replaceBooth = joi.object({
   body: joi.object({
     userID: objectID.required(),
   }),
 });
 
-export const getVote = joi.object({
+exports.getVote = joi.object({
   params: joi.object({
     historyID: objectID.required(),
   }),
 });
 
-export const vote = joi.object({
+exports.vote = joi.object({
   params: joi.object({
     historyID: objectID.required(),
   }),
@@ -124,26 +124,26 @@ export const vote = joi.object({
   }),
 });
 
-export const favorite = joi.object({
+exports.favorite = joi.object({
   body: joi.object({
     playlistID: objectID.required(),
     historyID: objectID.required(),
   }),
 });
 
-export const getRoomHistory = joi.object({
+exports.getRoomHistory = joi.object({
   query: pagination,
 });
 
 // Validations for chat routes:
 
-export const deleteChatByUser = joi.object({
+exports.deleteChatByUser = joi.object({
   params: joi.object({
     id: objectID.required(),
   }),
 });
 
-export const deleteChatMessage = joi.object({
+exports.deleteChatMessage = joi.object({
   params: joi.object({
     id: joi.string().required(),
   }),
@@ -151,7 +151,7 @@ export const deleteChatMessage = joi.object({
 
 // Validations for MOTD routes:
 
-export const setMotd = joi.object({
+exports.setMotd = joi.object({
   body: joi.object({
     motd: joi.string().required(),
   }),
@@ -179,21 +179,21 @@ const playlistItem = joi.object({
 const playlistItemIDs = joi.array().items(objectID);
 const playlistItems = joi.array().items(playlistItem);
 
-export const createPlaylist = joi.object({
+exports.createPlaylist = joi.object({
   body: joi.object({
     name: joi.string().required(),
   }),
 });
 
-export const getPlaylist = joi.object({
+exports.getPlaylist = joi.object({
   params: playlistParams,
 });
 
-export const deletePlaylist = joi.object({
+exports.deletePlaylist = joi.object({
   params: playlistParams,
 });
 
-export const updatePlaylist = joi.object({
+exports.updatePlaylist = joi.object({
   params: playlistParams,
   body: joi.object({
     name: joi.string(),
@@ -202,40 +202,40 @@ export const updatePlaylist = joi.object({
   }),
 });
 
-export const renamePlaylist = joi.object({
+exports.renamePlaylist = joi.object({
   params: playlistParams,
   body: joi.object({
     name: joi.string().required(),
   }),
 });
 
-export const sharePlaylist = joi.object({
+exports.sharePlaylist = joi.object({
   params: playlistParams,
   body: joi.object({
     shared: joi.bool().required(),
   }),
 });
 
-export const getPlaylistItems = joi.object({
+exports.getPlaylistItems = joi.object({
   params: playlistParams,
   query: pagination,
 });
 
-export const addPlaylistItems = joi.object({
+exports.addPlaylistItems = joi.object({
   params: playlistParams,
   body: joi.object({
     items: playlistItems.required(),
   }),
 });
 
-export const removePlaylistItems = joi.object({
+exports.removePlaylistItems = joi.object({
   params: playlistParams,
   body: joi.object({
     items: playlistItemIDs.required(),
   }),
 });
 
-export const movePlaylistItems = joi.object({
+exports.movePlaylistItems = joi.object({
   params: playlistParams,
   body: joi.object({
     items: playlistItemIDs.required(),
@@ -247,15 +247,15 @@ export const movePlaylistItems = joi.object({
   }).xor('after', 'at'),
 });
 
-export const shufflePlaylistItems = joi.object({
+exports.shufflePlaylistItems = joi.object({
   params: playlistParams,
 });
 
-export const getPlaylistItem = joi.object({
+exports.getPlaylistItem = joi.object({
   params: playlistItemParams,
 });
 
-export const updatePlaylistItem = joi.object({
+exports.updatePlaylistItem = joi.object({
   params: playlistItemParams,
   body: joi.object({
     artist: joi.string(),
@@ -265,7 +265,7 @@ export const updatePlaylistItem = joi.object({
   }),
 });
 
-export const removePlaylistItem = joi.object({
+exports.removePlaylistItem = joi.object({
   params: playlistItemParams,
 });
 
@@ -275,77 +275,77 @@ const userParams = joi.object({
   id: objectID.required(),
 });
 
-export const getUser = joi.object({
+exports.getUser = joi.object({
   params: userParams,
 });
 
-export const muteUser = joi.object({
+exports.muteUser = joi.object({
   params: userParams,
   body: joi.object({
     time: joi.number().min(0).required(),
   }),
 });
 
-export const unmuteUser = joi.object({
+exports.unmuteUser = joi.object({
   params: userParams,
 });
 
-export const addUserRole = joi.object({
+exports.addUserRole = joi.object({
   params: joi.object({
     id: objectID.required(),
     role: joi.string().required(),
   }),
 });
 
-export const removeUserRole = joi.object({
+exports.removeUserRole = joi.object({
   params: joi.object({
     id: objectID.required(),
     role: joi.string().required(),
   }),
 });
 
-export const setUserName = joi.object({
+exports.setUserName = joi.object({
   params: userParams,
   body: joi.object({
     username: userName,
   }),
 });
 
-export const setUserAvatar = joi.object({
+exports.setUserAvatar = joi.object({
   params: userParams,
   body: joi.object({
     avatar: joi.string(),
   }),
 });
 
-export const setUserStatus = joi.object({
+exports.setUserStatus = joi.object({
   params: userParams,
   body: joi.object({
     status: joi.number(),
   }),
 });
 
-export const getUserHistory = joi.object({
+exports.getUserHistory = joi.object({
   params: userParams,
   query: pagination,
 });
 
 // Validations for Waitlist routes:
 
-export const joinWaitlist = joi.object({
+exports.joinWaitlist = joi.object({
   body: joi.object({
     userID: objectID.required(),
   }),
 });
 
-export const moveWaitlist = joi.object({
+exports.moveWaitlist = joi.object({
   body: joi.object({
     userID: objectID.required(),
     position: joi.number().min(0).required(),
   }),
 });
 
-export const lockWaitlist = joi.object({
+exports.lockWaitlist = joi.object({
   body: joi.object({
     lock: joi.bool().required(),
   }),

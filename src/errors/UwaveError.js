@@ -1,4 +1,4 @@
-export default class UwaveError extends Error {
+class UwaveError extends Error {
   /**
    * Whether this error message should be shown to users.
    */
@@ -14,3 +14,5 @@ export default class UwaveError extends Error {
    */
   isUwaveError = true;
 }
+
+module.exports = UwaveError;

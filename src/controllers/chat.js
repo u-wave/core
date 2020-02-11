@@ -1,10 +1,10 @@
-import {
+const {
   UserNotFoundError,
   CannotSelfMuteError,
-} from '../errors';
-import toItemResponse from '../utils/toItemResponse';
+} = require('../errors');
+const toItemResponse = require('../utils/toItemResponse');
 
-export async function muteUser(req) {
+async function muteUser(req) {
   const { user: moderator } = req;
   const { id } = req.params;
   const duration = req.body.time;
@@ -22,7 +22,7 @@ export async function muteUser(req) {
   return toItemResponse({});
 }
 
-export async function unmuteUser(req) {
+async function unmuteUser(req) {
   const { user: moderator } = req;
   const { id } = req.params;
   const { users } = req.uwave;
@@ -39,7 +39,7 @@ export async function unmuteUser(req) {
   return toItemResponse({});
 }
 
-export function deleteAll(req) {
+function deleteAll(req) {
   const { user: moderator } = req;
   const { chat } = req.uwave;
 
@@ -48,7 +48,7 @@ export function deleteAll(req) {
   return toItemResponse({});
 }
 
-export function deleteByUser(req) {
+function deleteByUser(req) {
   const { user: moderator } = req;
   const { chat } = req.uwave;
   const { id } = req.params;
@@ -58,7 +58,7 @@ export function deleteByUser(req) {
   return toItemResponse({});
 }
 
-export function deleteMessage(req) {
+function deleteMessage(req) {
   const { user: moderator } = req;
   const { chat } = req.uwave;
   const { id } = req.params;
@@ -67,3 +67,9 @@ export function deleteMessage(req) {
 
   return toItemResponse({});
 }
+
+exports.muteUser = muteUser;
+exports.unmuteUser = unmuteUser;
+exports.deleteAll = deleteAll;
+exports.deleteByUser = deleteByUser;
+exports.deleteMessage = deleteMessage;

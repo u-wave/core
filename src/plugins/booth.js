@@ -1,8 +1,8 @@
-import props from 'p-props';
-import ms from 'ms';
-import RedLock from 'redlock';
-import createDebug from 'debug';
-import routes from '../routes/booth';
+const props = require('p-props');
+const ms = require('ms');
+const RedLock = require('redlock');
+const createDebug = require('debug');
+const routes = require('../routes/booth');
 
 class PlaylistIsEmptyError extends Error {
   code = 'PLAYLIST_IS_EMPTY';
@@ -16,8 +16,8 @@ function cyclePlaylist(playlist) {
   return playlist.save();
 }
 
-export class Booth {
-  timeout: ?number = null;
+class Booth {
+  timeout = null;
 
   constructor(uw) {
     this.uw = uw;
@@ -243,9 +243,12 @@ export class Booth {
   }
 }
 
-export default function booth() {
+function booth() {
   return (uw) => {
     uw.booth = new Booth(uw);
     uw.httpApi.use('/booth', routes());
   };
 }
+
+module.exports = booth;
+module.exports.Booth = Booth;

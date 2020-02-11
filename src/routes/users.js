@@ -1,13 +1,13 @@
-import router from 'router';
-import route from '../route';
-import * as validations from '../validations';
-import protect from '../middleware/protect';
-import checkFields from '../middleware/checkFields';
-import rateLimit from '../middleware/rateLimit';
-import * as controller from '../controllers/users';
-import { NameChangeRateLimitError } from '../errors';
+const router = require('router');
+const route = require('../route');
+const validations = require('../validations');
+const protect = require('../middleware/protect');
+const checkFields = require('../middleware/checkFields');
+const rateLimit = require('../middleware/rateLimit');
+const controller = require('../controllers/users');
+const { NameChangeRateLimitError } = require('../errors');
 
-export default function userRoutes() {
+function userRoutes() {
   return router()
     // GET /users/ - List user accounts.
     .get(
@@ -81,3 +81,5 @@ export default function userRoutes() {
       route(controller.getHistory),
     );
 }
+
+module.exports = userRoutes;

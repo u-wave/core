@@ -1,6 +1,6 @@
-import url from 'url';
-import qs from 'qs';
-import toListResponse from './toListResponse';
+const url = require('url');
+const qs = require('qs');
+const toListResponse = require('./toListResponse');
 
 function appendQuery(base, query) {
   const parsed = url.parse(base, true);
@@ -12,7 +12,7 @@ function appendQuery(base, query) {
   return `${url.format(parsed)}`;
 }
 
-export default function toPaginatedResponse(
+function toPaginatedResponse(
   page,
   { baseUrl = '', included = {} } = {},
 ) {
@@ -32,3 +32,5 @@ export default function toPaginatedResponse(
     },
   });
 }
+
+module.exports = toPaginatedResponse;

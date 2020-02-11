@@ -1,6 +1,6 @@
-import { clamp } from 'lodash';
-import escapeStringRegExp from 'escape-string-regexp';
-import Page from '../Page';
+const { clamp } = require('lodash');
+const escapeStringRegExp = require('escape-string-regexp');
+const Page = require('../Page');
 
 function isValidBan(user) {
   return !!(user.banned && user.banned.expiresAt > Date.now());
@@ -27,9 +27,10 @@ class Bans {
    * List banned users.
    *
    * @param {string} filter Optional filter to search for usernames.
-   * @param {*} pagination A pagination object.
+   * @param {object} pagination A pagination object.
+   * @return {Promise<Page>}
    */
-  async getBans(filter = null, pagination = {}): Page {
+  async getBans(filter = null, pagination = {}) {
     const User = this.uw.model('User');
 
     const offset = pagination.offset || 0;
@@ -131,8 +132,10 @@ class Bans {
   }
 }
 
-export default function bans() {
+function bans() {
   return (uw) => {
     uw.bans = new Bans(uw); // eslint-disable-line no-param-reassign
   };
 }
+
+module.exports = bans;

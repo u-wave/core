@@ -1,9 +1,9 @@
-import EventEmitter from 'events';
-import createDebug from 'debug';
+const EventEmitter = require('events');
+const createDebug = require('debug');
 
 const debug = createDebug('uwave:api:sockets:lost');
 
-export default class LostConnection extends EventEmitter {
+class LostConnection extends EventEmitter {
   constructor(uw, user, timeout = 30) {
     super();
     this.uw = uw;
@@ -42,7 +42,7 @@ export default class LostConnection extends EventEmitter {
     }, timeout * 1000);
   }
 
-  send(command: string, data: any) {
+  send(command, data) {
     debug('queueing', command, data);
 
     this.uw.redis.rpush(
@@ -64,3 +64,5 @@ export default class LostConnection extends EventEmitter {
     return `Lost { user: ${this.user.id} ${this.user.username} }`;
   }
 }
+
+module.exports = LostConnection;

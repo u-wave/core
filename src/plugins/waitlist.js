@@ -1,8 +1,8 @@
-import { clamp } from 'lodash';
-import NotFoundError from '../errors/NotFoundError';
-import PermissionError from '../errors/PermissionError';
-import { UserNotFoundError } from '../errors';
-import routes from '../routes/waitlist';
+const { clamp } = require('lodash');
+const NotFoundError = require('../errors/NotFoundError');
+const PermissionError = require('../errors/PermissionError');
+const { UserNotFoundError } = require('../errors');
+const routes = require('../routes/waitlist');
 
 function isInWaitlist(waitlist, userID) {
   return waitlist.some((waitingID) => waitingID === userID);
@@ -17,11 +17,19 @@ class Waitlist {
 
   #isBoothEmpty = async () => !(await this.uw.redis.get('booth:historyID'))
 
-  #isCurrentDJ = async (userID: string) => {
+  /**
+   * @param {string} userID
+   * @return {Promise<boolean>}
+   */
+  #isCurrentDJ = async (userID) => {
     const dj = await this.#getCurrentDJ();
     return dj !== null && dj === userID;
   }
 
+  /**
+   * @param {string} userID
+   * @return {Promise<boolean>}
+   */
   #hasValidPlaylist = async (userID) => {
     const { users } = this.uw;
     const user = await users.getUser(userID);
@@ -240,9 +248,11 @@ class Waitlist {
   }
 }
 
-export default function waitlistPlugin() {
+function waitlistPlugin() {
   return (uw) => {
     uw.waitlist = new Waitlist(uw); // eslint-disable-line no-param-reassign
     uw.httpApi.use('/waitlist', routes());
   };
 }
+
+module.exports = waitlistPlugin;

@@ -1,8 +1,8 @@
-import mongoose from 'mongoose';
+const mongoose = require('mongoose');
 
 const { Schema } = mongoose;
 
-export default function aclRoleModel() {
+function aclRoleModel() {
   const schema = new Schema({
     _id: String,
     roles: [{ type: String, ref: 'AclRole', index: true }],
@@ -16,3 +16,5 @@ export default function aclRoleModel() {
     uw.mongo.model('AclRole', schema);
   };
 }
+
+module.exports = aclRoleModel;
