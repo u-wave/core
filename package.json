@@ -10,7 +10,7 @@
     "Goz3rr <goz3rr@gmail.com>",
     "Renée Kooi <renee@kooi.me>"
   ],
-  "main": "src/Uwave.js",
+  "main": "src/index.js",
   "engines": {
     "node": ">= 10"
   },
