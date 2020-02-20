@@ -5,7 +5,7 @@ const createDebug = require('debug');
 const routes = require('../routes/booth');
 
 class PlaylistIsEmptyError extends Error {
-  constructor (message) {
+  constructor(message) {
     super(message);
     this.code = 'PLAYLIST_IS_EMPTY';
   }
