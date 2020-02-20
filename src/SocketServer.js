@@ -585,7 +585,7 @@ class SocketServer {
   /**
    * Update online guests count and broadcast an update if necessary.
    */
-  recountGuests() {
+  recountGuests() { // eslint-disable-line class-methods-use-this
     // assigned in constructor()
   }
 

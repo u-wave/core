@@ -1,12 +1,16 @@
 const EventEmitter = require('events');
 const Ultron = require('ultron');
-const WebSocket = require('ws');
 const createDebug = require('debug');
-const AuthRegistry = require('../AuthRegistry');
 
 const debug = createDebug('uwave:api:sockets:guest');
 
 class GuestConnection extends EventEmitter {
+  /**
+   * @param {import('../Uwave')} uw
+   * @param {import('ws')} socket
+   * @param {unknown} req
+   * @param {{ authRegistry: import('../AuthRegistry') }} options
+   */
   constructor(uw, socket, req, options) {
     super();
     this.uw = uw;
