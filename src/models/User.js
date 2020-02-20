@@ -1,7 +1,11 @@
 const mongoose = require('mongoose');
 const { slugify } = require('transliteration');
 
-const Page = require('../Page');
+/**
+ * @template Element
+ * @template Pagination
+ * @typedef {import('../Page')<Element, Pagination>} Page
+ */
 
 const { Schema } = mongoose;
 const { Types } = mongoose.Schema;
@@ -145,7 +149,7 @@ function userModel() {
       }
 
       /**
-       * @return {Promise<Page>}
+       * @return {Promise<Page<unknown, unknown>>}
        */
       getHistory(pagination = {}) {
         return uw.history.getUserHistory(this, pagination);

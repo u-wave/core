@@ -1,6 +1,11 @@
 const mongoose = require('mongoose');
 const { PlaylistItemNotFoundError } = require('../errors');
-const Page = require('../Page');
+
+/**
+ * @template Element
+ * @template Pagination
+ * @typedef {import('../Page')<Element, Pagination>} Page
+ */
 
 const { Schema } = mongoose;
 const { Types } = mongoose.Schema;
@@ -47,7 +52,7 @@ function playlistModel() {
         return uw.playlists.getPlaylistItem(this.media[index]);
       }
 
-      /** @return {Promise<Page>} */
+      /** @return {Promise<Page<unknown, unknown>>} */
       getItems(filter, page) {
         return uw.playlists.getPlaylistItems(this, filter, page);
       }

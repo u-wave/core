@@ -51,14 +51,14 @@ class UwaveServer extends EventEmitter {
       useDefaultPlugins: true,
     };
 
-    this._parseOptions(options);
+    this.parseOptions(options);
 
     this.log = debug('uwave:core');
     this.mongoLog = debug('uwave:core:mongo');
     this.redisLog = debug('uwave:core:redis');
 
-    this._configureRedis();
-    this._configureMongoose();
+    this.configureRedis();
+    this.configureMongoose();
 
     this.use(models());
     this.use(passport({
@@ -96,7 +96,7 @@ class UwaveServer extends EventEmitter {
     });
   }
 
-  _parseOptions(options) {
+  parseOptions(options) {
     const defaultOptions = {
       useNewUrlParser: true,
       useCreateIndex: true,
@@ -190,7 +190,7 @@ class UwaveServer extends EventEmitter {
     return newSource;
   }
 
-  _configureRedis() {
+  configureRedis() {
     this.redis.on('error', (e) => {
       this.emit('redisError', e);
     });
@@ -207,7 +207,7 @@ class UwaveServer extends EventEmitter {
     });
   }
 
-  _configureMongoose() {
+  configureMongoose() {
     this.mongo.on('error', (e) => {
       this.mongoLog(e);
       this.emit('mongoError', e);
