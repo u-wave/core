@@ -1,6 +1,6 @@
-import { clamp } from 'lodash';
-import escapeStringRegExp from 'escape-string-regexp';
-import Page from '../Page';
+const { clamp } = require('lodash');
+const escapeStringRegExp = require('escape-string-regexp');
+const Page = require('../Page');
 
 function isValidBan(user) {
   return !!(user.banned && user.banned.expiresAt > Date.now());
@@ -27,9 +27,10 @@ class Bans {
    * List banned users.
    *
    * @param {string} filter Optional filter to search for usernames.
-   * @param {*} pagination A pagination object.
+   * @param {object} pagination A pagination object.
+   * @return {Promise<Page>}
    */
-  async getBans(filter = null, pagination = {}): Page {
+  async getBans(filter = null, pagination = {}) {
     const User = this.uw.model('User');
 
     const offset = pagination.offset || 0;
@@ -48,7 +49,7 @@ class Bans {
       });
     }
 
-    const total = await User.find().where(queryFilter).count();
+    const total = await User.find().where(queryFilter).countDocuments();
 
     const bannedUsers = await User.find()
       .where(queryFilter)
@@ -121,7 +122,8 @@ class Bans {
       throw new Error(`User "${user.username}" is not banned.`);
     }
 
-    await user.update({ banned: null });
+    user.banned = null;
+    await user.save();
 
     this.uw.publish('user:unban', {
       userID: `${user.id}`,
@@ -130,8 +132,10 @@ class Bans {
   }
 }
 
-export default function bans() {
+function bans() {
   return (uw) => {
     uw.bans = new Bans(uw); // eslint-disable-line no-param-reassign
   };
 }
+
+module.exports = bans;

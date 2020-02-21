@@ -1,4 +1,4 @@
-export default class Page {
+class Page {
   constructor(results, opts = {}) {
     this.length = results.length;
 
@@ -30,3 +30,5 @@ export default class Page {
     return this.opts.next;
   }
 }
+
+module.exports = Page;

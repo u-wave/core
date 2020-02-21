@@ -1,7 +1,8 @@
-import { flatten } from 'lodash';
-import createDebug from 'debug';
-import eachSeries from 'p-each-series';
-import defaultRoles from '../config/defaultRoles';
+const { flatten } = require('lodash');
+const createDebug = require('debug');
+const eachSeries = require('p-each-series');
+const defaultRoles = require('../config/defaultRoles');
+const routes = require('../routes/acl');
 
 const debug = createDebug('uwave:acl');
 
@@ -30,15 +31,14 @@ async function getAllUserRoles(user) {
   return flatten(roles);
 }
 
-const getRoleName = role => (
+const getRoleName = (role) => (
   typeof role === 'string' ? role : role.id
 );
 
-export class Acl {
-  superRole = '*';
-
+class Acl {
   constructor(uw, opts) {
     this.uw = uw;
+    this.superRole = '*';
 
     if (opts.defaultRoles !== false) {
       this.maybeAddDefaultRoles();
@@ -50,29 +50,29 @@ export class Acl {
   }
 
   async maybeAddDefaultRoles() {
-    const existingRoles = await this.AclRole.count();
+    const existingRoles = await this.AclRole.estimatedDocumentCount();
     debug('existing roles', existingRoles);
     if (existingRoles === 0) {
       debug('no roles found, adding defaults');
       const roleNames = Object.keys(defaultRoles);
-      await eachSeries(roleNames, roleName => this.createRole(roleName, defaultRoles[roleName]));
+      await eachSeries(roleNames, (roleName) => this.createRole(roleName, defaultRoles[roleName]));
     }
   }
 
   async getAclRoles(names, options = {}) {
     const existingRoles = await this.AclRole.find({ _id: { $in: names } });
-    const newNames = names.filter(name => (
-      !existingRoles.some(role => role.id === name)
+    const newNames = names.filter((name) => (
+      !existingRoles.some((role) => role.id === name)
     ));
     if (options.create && newNames.length > 0) {
-      const newRoles = await this.AclRole.create(newNames.map(name => ({ _id: name })));
+      const newRoles = await this.AclRole.create(newNames.map((name) => ({ _id: name })));
       existingRoles.push(...newRoles);
     }
     return existingRoles;
   }
 
   getAclUser(user) {
-    return this.uw.getUser(user);
+    return this.uw.users.getUser(user);
   }
 
   async getAllRoles() {
@@ -108,27 +108,27 @@ export class Acl {
 
     this.uw.publish('acl:allow', {
       userID: aclUser.id,
-      roles: aclRoles.map(role => role.id),
+      roles: aclRoles.map((role) => role.id),
     });
   }
 
   async disallow(user, roleNames) {
     const aclRoles = await this.getAclRoles(roleNames);
     const aclUser = await this.getAclUser(user);
-    const shouldRemove = roleName => aclRoles.some(remove => remove.id === roleName);
-    aclUser.roles = aclUser.roles.filter(role => !shouldRemove(getRoleName(role)));
+    const shouldRemove = (roleName) => aclRoles.some((remove) => remove.id === roleName);
+    aclUser.roles = aclUser.roles.filter((role) => !shouldRemove(getRoleName(role)));
     await aclUser.save();
 
     this.uw.publish('acl:disallow', {
       userID: aclUser.id,
-      roles: aclRoles.map(role => role.id),
+      roles: aclRoles.map((role) => role.id),
     });
   }
 
   async getAllPermissions(user) {
     const aclUser = await this.getAclUser(user);
     const roles = await getAllUserRoles(aclUser);
-    return roles.map(role => role.id);
+    return roles.map((role) => role.id);
   }
 
   async isAllowed(user, permission) {
@@ -139,7 +139,7 @@ export class Acl {
 
     const aclUser = await this.getAclUser(user);
     const userRoles = await getAllUserRoles(aclUser);
-    const roleIds = userRoles.map(userRole => userRole.id);
+    const roleIds = userRoles.map((userRole) => userRole.id);
 
     debug('role ids', roleIds, 'check', aclUser, role.id, 'super', this.superRole);
 
@@ -147,8 +147,12 @@ export class Acl {
   }
 }
 
-export default function acl(opts = {}) {
+function acl(opts = {}) {
   return (uw) => {
     uw.acl = new Acl(uw, opts);
+    uw.httpApi.use('/acl', routes());
   };
 }
+
+module.exports = acl;
+module.exports.Acl = Acl;

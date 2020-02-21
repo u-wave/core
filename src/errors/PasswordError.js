@@ -1,9 +1,12 @@
-import UwaveError from './UwaveError';
+const UwaveError = require('./UwaveError');
 
-export default class PasswordError extends UwaveError {
-  public = true;
-
-  name = 'PasswordError';
-
-  code = 'INCORRECT_PASSWORD';
+class PasswordError extends UwaveError {
+  constructor(message) {
+    super(message);
+    this.expose = true;
+    this.name = 'PasswordError';
+    this.code = 'INCORRECT_PASSWORD';
+  }
 }
+
+module.exports = PasswordError;

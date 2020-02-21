@@ -1,10 +1,14 @@
-import props from 'p-props';
-import ms from 'ms';
-import RedLock from 'redlock';
-import createDebug from 'debug';
+const props = require('p-props');
+const ms = require('ms');
+const RedLock = require('redlock');
+const createDebug = require('debug');
+const routes = require('../routes/booth');
 
 class PlaylistIsEmptyError extends Error {
-  code = 'PLAYLIST_IS_EMPTY';
+  constructor(message) {
+    super(message);
+    this.code = 'PLAYLIST_IS_EMPTY';
+  }
 }
 
 const debug = createDebug('uwave:advance');
@@ -15,11 +19,10 @@ function cyclePlaylist(playlist) {
   return playlist.save();
 }
 
-export class Booth {
-  timeout: ?number = null;
-
+class Booth {
   constructor(uw) {
     this.uw = uw;
+    this.timeout = null;
 
     uw.on('started', this.onStart.bind(this));
     uw.on('stop', this.onStop.bind(this));
@@ -36,11 +39,11 @@ export class Booth {
       const endTime = Number(current.playedAt) + duration;
       if (endTime > Date.now()) {
         this.timeout = setTimeout(
-          () => this.uw.advance(),
+          () => this.advance(),
           endTime - Date.now(),
         );
       } else {
-        this.uw.advance();
+        this.advance();
       }
     }
   }
@@ -153,7 +156,7 @@ export class Booth {
   play(entry) {
     this.maybeStop();
     this.timeout = setTimeout(
-      () => this.uw.advance(),
+      () => this.advance(),
       (entry.media.end - entry.media.start) * ms('1 second'),
     );
     return entry;
@@ -242,8 +245,12 @@ export class Booth {
   }
 }
 
-export default function booth() {
+function booth() {
   return (uw) => {
     uw.booth = new Booth(uw);
+    uw.httpApi.use('/booth', routes());
   };
 }
+
+module.exports = booth;
+module.exports.Booth = Booth;

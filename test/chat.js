@@ -1,12 +1,14 @@
-import { expect } from 'chai';
-import sinon from 'sinon';
-
-import chatPlugin from '../src/plugins/chat';
+const { expect } = require('chai');
+const sinon = require('sinon');
+const chatPlugin = require('../src/plugins/chat');
 
 function createUwaveWithChatTest() {
   const uw = {
     redis: {
       exists: sinon.stub().returns(false),
+    },
+    httpApi: {
+      use: sinon.stub(),
     },
     publish: sinon.spy(),
   };

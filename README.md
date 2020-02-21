@@ -49,25 +49,6 @@ found on npm with the [u-wave-source keyword][].
 
 Stops the üWave server.
 
-## Contributing
-
-### Building
-
-The build step compiles the futuristic JavaScript that's used in this repository
-to code that can be used in engines today, using Babel. To compile the code,
-run:
-
-```bash
-npm run build
-```
-
-That's inconvenient if it has to be done manually each time you make a change.
-Instead, there's the `watch` command that will automatically recompile files:
-
-```bash
-npm run watch
-```
-
 ## License
 
 [MIT][]

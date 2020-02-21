@@ -1,23 +1,27 @@
-import { expect } from 'chai';
-import ms from 'ms';
-import mongoose from 'mongoose';
-import uwave from '../src';
-import userModel from '../src/models/User';
-import usersPlugin from '../src/plugins/users';
-import bansPlugin from '../src/plugins/bans';
-import createUser from './utils/createUser';
-import mongoConnected from './utils/mongoConnected';
+const { createServer } = require('http');
+const { expect } = require('chai');
+const ms = require('ms');
+const uwave = require('..');
+const usersPlugin = require('../src/plugins/users');
+const bansPlugin = require('../src/plugins/bans');
+const createUser = require('./utils/createUser');
+const mongoConnected = require('./utils/mongoConnected');
 
 const DB_NAME = 'uw_test_bans';
 
 function createUwaveWithBansTest() {
+  const server = createServer();
   const uw = uwave({
     useDefaultPlugins: false,
-    mongo: mongoose.createConnection(`mongodb://localhost/${DB_NAME}`),
+    mongo: `mongodb://localhost/${DB_NAME}`,
+    secret: Buffer.from(`secret_${DB_NAME}`),
+    server,
   });
-  uw.use(userModel());
   uw.use(usersPlugin());
   uw.use(bansPlugin());
+  uw.on('stop', () => {
+    server.close();
+  });
   return uw;
 }
 
@@ -42,9 +46,11 @@ describe('bans', () => {
       expect(await bans.isBanned(user.id)).to.equal(false);
     });
     it('returns true for banned users', async () => {
-      await user.update({
-        banned: { expiresAt: Date.now() + 1000 },
-      });
+      user.banned = {
+        duration: 1000,
+        expiresAt: Date.now() + 1000,
+      };
+      await user.save();
       expect(await bans.isBanned(user.id)).to.equal(true);
     });
   });

@@ -1,13 +1,17 @@
-import Uwave from './Uwave';
-import UwaveError from './errors/UwaveError';
-import NotFoundError from './errors/NotFoundError';
+const Uwave = require('./Uwave');
+const HttpApi = require('./HttpApi');
+const SocketServer = require('./SocketServer');
+const UwaveError = require('./errors/UwaveError');
+const NotFoundError = require('./errors/NotFoundError');
 
-export default function uwave(opts) {
+module.exports = function uwave(opts) {
   return new Uwave(opts);
-}
+};
 
-Object.assign(uwave, {
+Object.assign(module.exports, {
   Uwave,
   UwaveError,
   NotFoundError,
+  HttpApi,
+  SocketServer,
 });
