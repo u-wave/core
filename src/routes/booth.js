@@ -1,11 +1,11 @@
-import router from 'router';
-import route from '../route';
-import * as validations from '../validations';
-import protect from '../middleware/protect';
-import checkFields from '../middleware/checkFields';
-import * as controller from '../controllers/booth';
+const router = require('router');
+const route = require('../route');
+const validations = require('../validations');
+const protect = require('../middleware/protect');
+const checkFields = require('../middleware/checkFields');
+const controller = require('../controllers/booth');
 
-export default function boothRoutes() {
+function boothRoutes() {
   return router()
     // GET /booth/ - Get the current booth status.
     .get(
@@ -54,3 +54,5 @@ export default function boothRoutes() {
       route(controller.getHistory),
     );
 }
+
+module.exports = boothRoutes;

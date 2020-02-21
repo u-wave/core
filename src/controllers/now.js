@@ -1,6 +1,6 @@
-import props from 'p-props';
-import { getBoothData } from './booth';
-import { serializePlaylist } from '../utils/serialize';
+const props = require('p-props');
+const { getBoothData } = require('./booth');
+const { serializePlaylist } = require('../utils/serialize');
 
 async function getFirstItem(user, activePlaylist) {
   const id = await activePlaylist;
@@ -37,7 +37,7 @@ async function getGuestsCount(uw) {
 }
 
 // eslint-disable-next-line import/prefer-default-export
-export async function getState(req) {
+async function getState(req) {
   const uw = req.uwave;
   const { authRegistry } = req.uwaveHttp;
   const { passport } = uw;
@@ -80,3 +80,5 @@ export async function getState(req) {
 
   return state;
 }
+
+exports.getState = getState;

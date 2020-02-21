@@ -1,4 +1,4 @@
-export default function route(fn) {
+function route(fn) {
   return (req, res, next) => {
     Promise.resolve(fn(req, res))
       .then((json) => {
@@ -7,3 +7,5 @@ export default function route(fn) {
       .catch(next);
   };
 }
+
+module.exports = route;

@@ -1,11 +1,11 @@
-import { createServer } from 'http';
-import { expect } from 'chai';
-import ms from 'ms';
-import uwave from '../src';
-import usersPlugin from '../src/plugins/users';
-import bansPlugin from '../src/plugins/bans';
-import createUser from './utils/createUser';
-import mongoConnected from './utils/mongoConnected';
+const { createServer } = require('http');
+const { expect } = require('chai');
+const ms = require('ms');
+const uwave = require('..');
+const usersPlugin = require('../src/plugins/users');
+const bansPlugin = require('../src/plugins/bans');
+const createUser = require('./utils/createUser');
+const mongoConnected = require('./utils/mongoConnected');
 
 const DB_NAME = 'uw_test_bans';
 

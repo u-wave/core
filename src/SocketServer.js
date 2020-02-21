@@ -1,14 +1,14 @@
-import { debounce, isEmpty } from 'lodash';
-import tryJsonParse from 'try-json-parse';
-import WebSocket from 'ws';
-import ms from 'ms';
-import createDebug from 'debug';
-import { socketVote } from './controllers/booth';
-import { disconnectUser } from './controllers/users';
-import AuthRegistry from './AuthRegistry';
-import GuestConnection from './sockets/GuestConnection';
-import AuthedConnection from './sockets/AuthedConnection';
-import LostConnection from './sockets/LostConnection';
+const { debounce, isEmpty } = require('lodash');
+const tryJsonParse = require('try-json-parse');
+const WebSocket = require('ws');
+const ms = require('ms');
+const createDebug = require('debug');
+const { socketVote } = require('./controllers/booth');
+const { disconnectUser } = require('./controllers/users');
+const AuthRegistry = require('./AuthRegistry');
+const GuestConnection = require('./sockets/GuestConnection');
+const AuthedConnection = require('./sockets/AuthedConnection');
+const LostConnection = require('./sockets/LostConnection');
 
 const debug = createDebug('uwave:api:sockets');
 
@@ -20,7 +20,7 @@ options are used to attach the WebSocket server to the correct HTTP server.
 An example of how to attach the WebSocket server to an existing HTTP server
 using Express:
 
-    import { createSocketServer } from 'u-wave-http-api';
+    const { createSocketServer } = require('u-wave-http-api');
     const app = express();
     const server = app.listen(80);
 
@@ -31,7 +31,7 @@ using Express:
 
 Alternatively, you can provide a port for the socket server to listen on:
 
-    import { createSocketServer } from 'u-wave-http-api';
+    const { createSocketServer } = require('u-wave-http-api');
     const app = express();
 
     createSocketServer(uwave, {
@@ -41,20 +41,7 @@ Alternatively, you can provide a port for the socket server to listen on:
   `);
 }
 
-export default class SocketServer {
-  connections = [];
-
-  options = {
-    onError: (socket, err) => {
-      throw err;
-    },
-    timeout: 30,
-  };
-
-  pinger = setInterval(() => {
-    this.ping();
-  }, ms('10 seconds'));
-
+class SocketServer {
   /**
    * Create a socket server.
    *
@@ -78,10 +65,18 @@ export default class SocketServer {
         + 'keys, and is required for security reasons.');
     }
 
-
     this.uw = uw;
     this.sub = uw.subscription();
-    Object.assign(this.options, options);
+
+    this.connections = [];
+
+    this.options = {
+      onError: (socket, err) => {
+        throw err;
+      },
+      timeout: 30,
+      ...options,
+    };
 
     this.authRegistry = new AuthRegistry(uw.redis);
 
@@ -105,6 +100,253 @@ export default class SocketServer {
     });
 
     this.initLostConnections();
+
+    this.pinger = setInterval(() => {
+      this.ping();
+    }, ms('10 seconds'));
+
+    this.recountGuests = debounce(() => {
+      this.recountGuestsInternal().catch((error) => {
+        debug('counting guests failed:', error);
+      });
+    }, ms('2 seconds'));
+
+    /**
+     * Handlers for commands that come in from clients.
+     */
+    this.clientActions = {
+      sendChat: (user, message) => {
+        debug('sendChat', user, message);
+        this.uw.chat.send(user, message);
+      },
+      vote: (user, direction) => {
+        socketVote(this.uw, user.id, direction);
+      },
+      logout: (user, _, connection) => {
+        this.replace(connection, this.createGuestConnection(connection.socket, null));
+        if (!this.connection(user)) {
+          disconnectUser(this.uw, user);
+        }
+      },
+    };
+
+    /**
+     * Handlers for commands that come in from the server side.
+     */
+    this.serverActions = {
+      /**
+       * Broadcast the next track.
+       */
+      'advance:complete': (next) => {
+        if (next) {
+          this.broadcast('advance', {
+            historyID: next._id,
+            userID: next.user._id,
+            item: next.item._id,
+            media: next.media,
+            playedAt: new Date(next.playedAt).getTime(),
+          });
+        } else {
+          this.broadcast('advance', null);
+        }
+      },
+      /**
+       * Broadcast a skip notification.
+       */
+      'booth:skip': ({ moderatorID, userID, reason }) => {
+        this.broadcast('skip', { moderatorID, userID, reason });
+      },
+      /**
+       * Broadcast a chat message.
+       */
+      'chat:message': (message) => {
+        this.broadcast('chatMessage', message);
+      },
+      /**
+       * Delete chat messages. The delete filter can have an _id property to
+       * delete a specific message, a userID property to delete messages by a
+       * user, or be empty to delete all messages.
+       */
+      'chat:delete': ({ moderatorID, filter }) => {
+        if (filter.id) {
+          this.broadcast('chatDeleteByID', {
+            moderatorID,
+            _id: filter.id,
+          });
+        } else if (filter.userID) {
+          this.broadcast('chatDeleteByUser', {
+            moderatorID,
+            userID: filter.userID,
+          });
+        } else if (isEmpty(filter)) {
+          this.broadcast('chatDelete', { moderatorID });
+        }
+      },
+      /**
+       * Broadcast that a user was muted in chat.
+       */
+      'chat:mute': ({ moderatorID, userID, duration }) => {
+        this.broadcast('chatMute', {
+          userID,
+          moderatorID,
+          expiresAt: Date.now() + duration,
+        });
+      },
+      /**
+       * Broadcast that a user was unmuted in chat.
+       */
+      'chat:unmute': ({ moderatorID, userID }) => {
+        this.broadcast('chatUnmute', { userID, moderatorID });
+      },
+      /**
+       * Broadcast a vote for the current track.
+       */
+      'booth:vote': ({ userID, direction }) => {
+        this.broadcast('vote', {
+          _id: userID,
+          value: direction,
+        });
+      },
+      /**
+       * Broadcast a favorite for the current track.
+       */
+      'booth:favorite': ({ userID }) => {
+        this.broadcast('favorite', { userID });
+      },
+      /**
+       * Cycle a single user's playlist.
+       */
+      'playlist:cycle': ({ userID, playlistID }) => {
+        this.sendTo(userID, 'playlistCycle', { playlistID });
+      },
+      /**
+       * Broadcast that a user joined the waitlist.
+       */
+      'waitlist:join': ({ userID, waitlist }) => {
+        this.broadcast('waitlistJoin', { userID, waitlist });
+      },
+      /**
+       * Broadcast that a user left the waitlist.
+       */
+      'waitlist:leave': ({ userID, waitlist }) => {
+        this.broadcast('waitlistLeave', { userID, waitlist });
+      },
+      /**
+       * Broadcast that a user was added to the waitlist.
+       */
+      'waitlist:add': ({
+        userID, moderatorID, position, waitlist,
+      }) => {
+        this.broadcast('waitlistAdd', {
+          userID, moderatorID, position, waitlist,
+        });
+      },
+      /**
+       * Broadcast that a user was removed from the waitlist.
+       */
+      'waitlist:remove': ({ userID, moderatorID, waitlist }) => {
+        this.broadcast('waitlistRemove', { userID, moderatorID, waitlist });
+      },
+      /**
+       * Broadcast that a user was moved in the waitlist.
+       */
+      'waitlist:move': ({
+        userID, moderatorID, position, waitlist,
+      }) => {
+        this.broadcast('waitlistMove', {
+          userID, moderatorID, position, waitlist,
+        });
+      },
+      /**
+       * Broadcast a waitlist update.
+       */
+      'waitlist:update': (waitlist) => {
+        this.broadcast('waitlistUpdate', waitlist);
+      },
+      /**
+       * Broadcast that the waitlist was cleared.
+       */
+      'waitlist:clear': ({ moderatorID }) => {
+        this.broadcast('waitlistClear', { moderatorID });
+      },
+      /**
+       * Broadcast that the waitlist was locked.
+       */
+      'waitlist:lock': ({ moderatorID, locked }) => {
+        this.broadcast('waitlistLock', { moderatorID, locked });
+      },
+
+      'acl:allow': ({ userID, roles }) => {
+        this.broadcast('acl:allow', { userID, roles });
+      },
+      'acl:disallow': ({ userID, roles }) => {
+        this.broadcast('acl:disallow', { userID, roles });
+      },
+
+      'user:update': ({ userID, moderatorID, new: update }) => {
+        // TODO Remove this remnant of the old roles system
+        if ('role' in update) {
+          this.broadcast('roleChange', {
+            moderatorID,
+            userID,
+            role: update.role,
+          });
+        }
+        if ('username' in update) {
+          this.broadcast('nameChange', {
+            moderatorID,
+            userID,
+            username: update.username,
+          });
+        }
+      },
+      'user:join': async ({ userID }) => {
+        const { users, redis } = this.uw;
+        const user = await users.getUser(userID);
+        await redis.rpush('users', user.id);
+        this.broadcast('join', user.toJSON());
+      },
+      /**
+       * Broadcast that a user left the server.
+       */
+      'user:leave': ({ userID }) => {
+        this.broadcast('leave', userID);
+      },
+      /**
+       * Broadcast a ban event.
+       */
+      'user:ban': ({
+        moderatorID, userID, permanent, duration, expiresAt,
+      }) => {
+        this.broadcast('ban', {
+          moderatorID, userID, permanent, duration, expiresAt,
+        });
+
+        this.connections.forEach((connection) => {
+          if (connection instanceof AuthedConnection && connection.user.id === userID) {
+            connection.ban();
+          } else if (connection instanceof LostConnection && connection.user.id === userID) {
+            connection.close();
+          }
+        });
+      },
+      /**
+       * Broadcast an unban event.
+       */
+      'user:unban': ({ moderatorID, userID }) => {
+        this.broadcast('unban', { moderatorID, userID });
+      },
+      /**
+       * Force-close a connection.
+       */
+      'http-api:socket:close': (userID) => {
+        this.connections.forEach((connection) => {
+          if (connection.user && connection.user.id === userID) {
+            connection.close();
+          }
+        });
+      },
+    };
   }
 
   /**
@@ -155,7 +397,7 @@ export default class SocketServer {
   /**
    * Create a connection instance for an unauthenticated user.
    */
-  createGuestConnection(socket, req?) {
+  createGuestConnection(socket, req) {
     const connection = new GuestConnection(this.uw, socket, req, {
       secret: this.options.secret,
       authRegistry: this.authRegistry,
@@ -253,243 +495,6 @@ export default class SocketServer {
   }
 
   /**
-   * Handlers for commands that come in from clients.
-   */
-  clientActions = {
-    sendChat: (user, message) => {
-      debug('sendChat', user, message);
-      this.uw.chat.send(user, message);
-    },
-    vote: (user, direction) => {
-      socketVote(this.uw, user.id, direction);
-    },
-    logout: (user, _, connection) => {
-      this.replace(connection, this.createGuestConnection(connection.socket, null));
-      if (!this.connection(user)) {
-        disconnectUser(this.uw, user);
-      }
-    },
-  };
-
-  /**
-   * Handlers for commands that come in from the server side.
-   */
-  serverActions = {
-    /**
-     * Broadcast the next track.
-     */
-    'advance:complete': (next) => {
-      if (next) {
-        this.broadcast('advance', {
-          historyID: next._id,
-          userID: next.user._id,
-          item: next.item._id,
-          media: next.media,
-          playedAt: new Date(next.playedAt).getTime(),
-        });
-      } else {
-        this.broadcast('advance', null);
-      }
-    },
-    /**
-     * Broadcast a skip notification.
-     */
-    'booth:skip': ({ moderatorID, userID, reason }) => {
-      this.broadcast('skip', { moderatorID, userID, reason });
-    },
-    /**
-     * Broadcast a chat message.
-     */
-    'chat:message': (message) => {
-      this.broadcast('chatMessage', message);
-    },
-    /**
-     * Delete chat messages. The delete filter can have an _id property to
-     * delete a specific message, a userID property to delete messages by a
-     * user, or be empty to delete all messages.
-     */
-    'chat:delete': ({ moderatorID, filter }) => {
-      if (filter.id) {
-        this.broadcast('chatDeleteByID', {
-          moderatorID,
-          _id: filter.id,
-        });
-      } else if (filter.userID) {
-        this.broadcast('chatDeleteByUser', {
-          moderatorID,
-          userID: filter.userID,
-        });
-      } else if (isEmpty(filter)) {
-        this.broadcast('chatDelete', { moderatorID });
-      }
-    },
-    /**
-     * Broadcast that a user was muted in chat.
-     */
-    'chat:mute': ({ moderatorID, userID, duration }) => {
-      this.broadcast('chatMute', {
-        userID,
-        moderatorID,
-        expiresAt: Date.now() + duration,
-      });
-    },
-    /**
-     * Broadcast that a user was unmuted in chat.
-     */
-    'chat:unmute': ({ moderatorID, userID }) => {
-      this.broadcast('chatUnmute', { userID, moderatorID });
-    },
-    /**
-     * Broadcast a vote for the current track.
-     */
-    'booth:vote': ({ userID, direction }) => {
-      this.broadcast('vote', {
-        _id: userID,
-        value: direction,
-      });
-    },
-    /**
-     * Broadcast a favorite for the current track.
-     */
-    'booth:favorite': ({ userID }) => {
-      this.broadcast('favorite', { userID });
-    },
-    /**
-     * Cycle a single user's playlist.
-     */
-    'playlist:cycle': ({ userID, playlistID }) => {
-      this.sendTo(userID, 'playlistCycle', { playlistID });
-    },
-    /**
-     * Broadcast that a user joined the waitlist.
-     */
-    'waitlist:join': ({ userID, waitlist }) => {
-      this.broadcast('waitlistJoin', { userID, waitlist });
-    },
-    /**
-     * Broadcast that a user left the waitlist.
-     */
-    'waitlist:leave': ({ userID, waitlist }) => {
-      this.broadcast('waitlistLeave', { userID, waitlist });
-    },
-    /**
-     * Broadcast that a user was added to the waitlist.
-     */
-    'waitlist:add': ({
-      userID, moderatorID, position, waitlist,
-    }) => {
-      this.broadcast('waitlistAdd', {
-        userID, moderatorID, position, waitlist,
-      });
-    },
-    /**
-     * Broadcast that a user was removed from the waitlist.
-     */
-    'waitlist:remove': ({ userID, moderatorID, waitlist }) => {
-      this.broadcast('waitlistRemove', { userID, moderatorID, waitlist });
-    },
-    /**
-     * Broadcast that a user was moved in the waitlist.
-     */
-    'waitlist:move': ({
-      userID, moderatorID, position, waitlist,
-    }) => {
-      this.broadcast('waitlistMove', {
-        userID, moderatorID, position, waitlist,
-      });
-    },
-    /**
-     * Broadcast a waitlist update.
-     */
-    'waitlist:update': (waitlist) => {
-      this.broadcast('waitlistUpdate', waitlist);
-    },
-    /**
-     * Broadcast that the waitlist was cleared.
-     */
-    'waitlist:clear': ({ moderatorID }) => {
-      this.broadcast('waitlistClear', { moderatorID });
-    },
-    /**
-     * Broadcast that the waitlist was locked.
-     */
-    'waitlist:lock': ({ moderatorID, locked }) => {
-      this.broadcast('waitlistLock', { moderatorID, locked });
-    },
-
-    'acl:allow': ({ userID, roles }) => {
-      this.broadcast('acl:allow', { userID, roles });
-    },
-    'acl:disallow': ({ userID, roles }) => {
-      this.broadcast('acl:disallow', { userID, roles });
-    },
-
-    'user:update': ({ userID, moderatorID, new: update }) => {
-      // TODO Remove this remnant of the old roles system
-      if ('role' in update) {
-        this.broadcast('roleChange', {
-          moderatorID,
-          userID,
-          role: update.role,
-        });
-      }
-      if ('username' in update) {
-        this.broadcast('nameChange', {
-          moderatorID,
-          userID,
-          username: update.username,
-        });
-      }
-    },
-    'user:join': async ({ userID }) => {
-      const { users, redis } = this.uw;
-      const user = await users.getUser(userID);
-      await redis.rpush('users', user.id);
-      this.broadcast('join', user.toJSON());
-    },
-    /**
-     * Broadcast that a user left the server.
-     */
-    'user:leave': ({ userID }) => {
-      this.broadcast('leave', userID);
-    },
-    /**
-     * Broadcast a ban event.
-     */
-    'user:ban': ({
-      moderatorID, userID, permanent, duration, expiresAt,
-    }) => {
-      this.broadcast('ban', {
-        moderatorID, userID, permanent, duration, expiresAt,
-      });
-
-      this.connections.forEach((connection) => {
-        if (connection instanceof AuthedConnection && connection.user.id === userID) {
-          connection.ban();
-        } else if (connection instanceof LostConnection && connection.user.id === userID) {
-          connection.close();
-        }
-      });
-    },
-    /**
-     * Broadcast an unban event.
-     */
-    'user:unban': ({ moderatorID, userID }) => {
-      this.broadcast('unban', { moderatorID, userID });
-    },
-    /**
-     * Force-close a connection.
-     */
-    'http-api:socket:close': (userID) => {
-      this.connections.forEach((connection) => {
-        if (connection.user && connection.user.id === userID) {
-          connection.close();
-        }
-      });
-    },
-  };
-
-  /**
    * Handle command messages coming in from Redis.
    * Some commands are intended to broadcast immediately to all connected
    * clients, but others require special action.
@@ -542,7 +547,7 @@ export default class SocketServer {
    * @param {string} command Command name.
    * @param {*} data Command data.
    */
-  broadcast(command: string, data: any) {
+  broadcast(command, data) {
     debug('broadcast', command, data);
 
     this.connections.forEach((connection) => {
@@ -558,7 +563,7 @@ export default class SocketServer {
    * @param {string} command Command name.
    * @param {*} data Command data.
    */
-  sendTo(user, command: string, data: any) {
+  sendTo(user, command, data) {
     const userID = typeof user === 'object' ? user.id : user;
 
     this.connections.forEach((connection) => {
@@ -580,11 +585,9 @@ export default class SocketServer {
   /**
    * Update online guests count and broadcast an update if necessary.
    */
-  recountGuests = debounce(() => {
-    this.recountGuestsInternal().catch((error) => {
-      debug('counting guests failed:', error);
-    });
-  }, ms('2 seconds'));
+  recountGuests() { // eslint-disable-line class-methods-use-this
+    // assigned in constructor()
+  }
 
   async recountGuestsInternal() {
     const { redis } = this.uw;
@@ -599,3 +602,5 @@ export default class SocketServer {
     }
   }
 }
+
+module.exports = SocketServer;

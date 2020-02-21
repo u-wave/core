@@ -1,18 +1,18 @@
-import props from 'p-props';
-import {
+const props = require('p-props');
+const {
   CombinedError,
   HTTPError,
   PermissionError,
   HistoryEntryNotFoundError,
   PlaylistNotFoundError,
   CannotSelfFavoriteError,
-} from '../errors';
-import getOffsetPagination from '../utils/getOffsetPagination';
-import toItemResponse from '../utils/toItemResponse';
-import toListResponse from '../utils/toListResponse';
-import toPaginatedResponse from '../utils/toPaginatedResponse';
+} = require('../errors');
+const getOffsetPagination = require('../utils/getOffsetPagination');
+const toItemResponse = require('../utils/toItemResponse');
+const toListResponse = require('../utils/toListResponse');
+const toPaginatedResponse = require('../utils/toPaginatedResponse');
 
-export async function getBoothData(uw) {
+async function getBoothData(uw) {
   const { booth, redis } = uw;
 
   const historyEntry = await booth.getCurrentEntry();
@@ -38,7 +38,8 @@ export async function getBoothData(uw) {
     stats,
   };
 }
-export async function getBooth(req) {
+
+async function getBooth(req) {
   const uw = req.uwave;
 
   const data = await getBoothData(uw);
@@ -62,7 +63,7 @@ async function doSkip(uw, moderatorID, userID, reason, opts = {}) {
   });
 }
 
-export async function skipBooth(req) {
+async function skipBooth(req) {
   const { user } = req;
   const { userID, reason, remove } = req.body;
 
@@ -100,7 +101,7 @@ export async function skipBooth(req) {
   return toItemResponse({});
 }
 
-export async function replaceBooth(req) {
+async function replaceBooth(req) {
   const uw = req.uwave;
   const moderatorID = req.user.id;
   const { userID } = req.body;
@@ -138,7 +139,7 @@ async function addVote(uw, userID, direction) {
 }
 
 // Old way of voting: over the WebSocket
-export async function socketVote(uw, userID, direction) {
+async function socketVote(uw, userID, direction) {
   const currentDJ = await getCurrentDJ(uw);
   if (currentDJ !== null && currentDJ !== userID) {
     const historyID = await uw.redis.get('booth:historyID');
@@ -151,7 +152,7 @@ export async function socketVote(uw, userID, direction) {
   }
 }
 
-export async function getVote(req) {
+async function getVote(req) {
   const { uwave: uw, user } = req;
   const { historyID } = req.params;
 
@@ -180,7 +181,8 @@ export async function getVote(req) {
 
   return toItemResponse({ direction });
 }
-export async function vote(req) {
+
+async function vote(req) {
   const { uwave: uw, user } = req;
   const { historyID } = req.params;
   const { direction } = req.body;
@@ -208,7 +210,7 @@ export async function vote(req) {
   return toItemResponse({});
 }
 
-export async function favorite(req) {
+async function favorite(req) {
   const { user } = req;
   const { playlistID, historyID } = req.body;
   const uw = req.uwave;
@@ -255,7 +257,7 @@ export async function favorite(req) {
   });
 }
 
-export async function getHistory(req) {
+async function getHistory(req) {
   const pagination = getOffsetPagination(req.query, {
     defaultSize: 25,
     maxSize: 100,
@@ -272,3 +274,13 @@ export async function getHistory(req) {
     },
   });
 }
+
+exports.favorite = favorite;
+exports.getBooth = getBooth;
+exports.getBoothData = getBoothData;
+exports.getHistory = getHistory;
+exports.getVote = getVote;
+exports.replaceBooth = replaceBooth;
+exports.skipBooth = skipBooth;
+exports.socketVote = socketVote;
+exports.vote = vote;

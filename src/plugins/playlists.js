@@ -1,9 +1,9 @@
-import { groupBy, shuffle } from 'lodash';
-import escapeStringRegExp from 'escape-string-regexp';
-import createDebug from 'debug';
-import NotFoundError from '../errors/NotFoundError';
-import Page from '../Page';
-import routes from '../routes/playlists';
+const { groupBy, shuffle } = require('lodash');
+const escapeStringRegExp = require('escape-string-regexp');
+const createDebug = require('debug');
+const NotFoundError = require('../errors/NotFoundError');
+const Page = require('../Page');
+const routes = require('../routes/playlists');
 
 const debug = createDebug('uwave:playlists');
 
@@ -43,7 +43,7 @@ function toPlaylistItem(itemProps, media) {
   };
 }
 
-export class PlaylistsRepository {
+class PlaylistsRepository {
   constructor(uw) {
     this.uw = uw;
   }
@@ -243,9 +243,14 @@ export class PlaylistsRepository {
         sourceID: { $in: sourceItems.map((item) => item.sourceID) },
       });
 
+      const knownMediaIDs = new Set();
+      knownMedias.forEach((knownMedia) => {
+        knownMediaIDs.add(knownMedia.sourceID);
+      });
+
       const unknownMediaIDs = [];
       sourceItems.forEach((item) => {
-        if (!knownMedias.some((media) => media.sourceID === String(item.sourceID))) {
+        if (!knownMediaIDs.has(String(item.sourceID))) {
           unknownMediaIDs.push(item.sourceID);
         }
       });
@@ -341,9 +346,12 @@ export class PlaylistsRepository {
   }
 }
 
-export default function playlistsPlugin() {
+function playlistsPlugin() {
   return (uw) => {
     uw.playlists = new PlaylistsRepository(uw);
     uw.httpApi.use('/playlists', routes());
   };
 }
+
+module.exports = playlistsPlugin;
+module.exports.PlaylistsRepository = PlaylistsRepository;

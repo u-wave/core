@@ -1,9 +1,9 @@
-import {
+const {
   isPlainObject,
   cloneDeep,
-  get as getPath,
-  set as setPath,
-} from 'lodash';
+  get: getPath,
+  set: setPath,
+} = require('lodash');
 
 function extractIncluded(data, included) {
   const includedTypes = Object.keys(included);
@@ -48,7 +48,7 @@ function extractIncluded(data, included) {
   };
 }
 
-export default function toListResponse(list, {
+function toListResponse(list, {
   meta = {},
   included = {},
   url = null,
@@ -68,3 +68,5 @@ export default function toListResponse(list, {
     ...props,
   };
 }
+
+module.exports = toListResponse;

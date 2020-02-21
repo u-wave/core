@@ -1,9 +1,9 @@
-import mongoose from 'mongoose';
+const mongoose = require('mongoose');
 
 const { Schema } = mongoose;
 const { Types } = mongoose.Schema;
 
-export default function playlistItemModel() {
+function playlistItemModel() {
   const schema = new Schema({
     media: {
       type: Types.ObjectId,
@@ -36,3 +36,5 @@ export default function playlistItemModel() {
     uw.mongo.model('PlaylistItem', schema);
   };
 }
+
+module.exports = playlistItemModel;

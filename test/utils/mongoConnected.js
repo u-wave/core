@@ -1,4 +1,4 @@
-export default function isMongoConnected(mongo) {
+function isMongoConnected(mongo) {
   if (mongo.readyState === 1) {
     return Promise.resolve();
   }
@@ -6,3 +6,5 @@ export default function isMongoConnected(mongo) {
     mongo.once('open', resolve);
   });
 }
+
+module.exports = isMongoConnected;

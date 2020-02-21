@@ -1,7 +1,7 @@
 /**
  * Data holder for things that source plugins may require.
  */
-export class SourceContext {
+class SourceContext {
   constructor(uw, source, user) {
     this.uw = uw;
     this.source = source;
@@ -16,7 +16,7 @@ export class SourceContext {
  * This is legacy, media sources should use the methods provided by the
  * `playlists` plugin instead.
  */
-export class ImportContext extends SourceContext {
+class ImportContext extends SourceContext {
   /**
    * Create a playlist for the current user.
    *
@@ -41,7 +41,7 @@ export class ImportContext extends SourceContext {
 /**
  * Wrapper around source plugins with some more convenient aliases.
  */
-export default class Source {
+class Source {
   constructor(uw, sourceType, sourcePlugin) {
     this.uw = uw;
     this.type = sourceType;
@@ -114,3 +114,7 @@ export default class Source {
     return this.plugin.import(importContext, ...args);
   }
 }
+
+exports.SourceContext = SourceContext;
+exports.ImportContext = ImportContext;
+exports.Source = Source;

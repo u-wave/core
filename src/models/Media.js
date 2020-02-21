@@ -1,8 +1,8 @@
-import mongoose from 'mongoose';
+const mongoose = require('mongoose');
 
 const { Schema } = mongoose;
 
-export default function mediaModel() {
+function mediaModel() {
   const schema = new Schema({
     sourceID: {
       type: String, max: 128, required: true, index: true,
@@ -34,3 +34,5 @@ export default function mediaModel() {
     uw.mongo.model('Media', schema);
   };
 }
+
+module.exports = mediaModel;

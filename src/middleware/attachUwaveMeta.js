@@ -1,4 +1,4 @@
-export default function attachUwaveMeta(httpApi, uw) {
+function attachUwaveMeta(httpApi, uw) {
   return (req, res, next) => {
     if (!req.uwave) {
       req.uwaveHttp = httpApi;
@@ -10,3 +10,5 @@ export default function attachUwaveMeta(httpApi, uw) {
     next();
   };
 }
+
+module.exports = attachUwaveMeta;

@@ -1,14 +1,13 @@
-import UwaveError from './UwaveError';
+const UwaveError = require('./UwaveError');
 
-export default class PermissionError extends UwaveError {
-  expose = true;
-
-  name = 'PermissionError';
-
-  code = 'NOT_ALLOWED';
-
+class PermissionError extends UwaveError {
   constructor(message, { requiredRole }) {
     super(message);
+    this.expose = true;
+    this.name = 'PermissionError';
+    this.code = 'NOT_ALLOWED';
     this.requiredRole = requiredRole;
   }
 }
+
+module.exports = PermissionError;
