@@ -1,11 +1,11 @@
-import { PassThrough } from 'stream';
-import { URL } from 'url';
-import pump from 'pump';
-import isStream from 'is-stream';
-import imageType from 'image-type';
-import props from 'p-props';
-import DefaultStore from 'fs-blob-store';
-import PermissionError from '../errors/PermissionError';
+const { PassThrough } = require('stream');
+const { URL } = require('url');
+const pump = require('pump');
+const isStream = require('is-stream');
+const imageType = require('image-type');
+const props = require('p-props');
+const DefaultStore = require('fs-blob-store');
+const PermissionError = require('../errors/PermissionError');
 
 function toImageStream(input) {
   const output = new PassThrough();
@@ -237,7 +237,7 @@ class Avatars {
   }
 }
 
-export default function avatarsPlugin(options = {}) {
+module.exports = function avatarsPlugin(options = {}) {
   return (uw) => {
     uw.avatars = new Avatars(uw, options); // eslint-disable-line no-param-reassign
   };
