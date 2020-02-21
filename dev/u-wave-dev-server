@@ -64,7 +64,7 @@ function start() {
     throw explain(err, 'Could not connect to the Redis server. Is it installed and running?');
   });
 
-  if (false) uw.use(announce({
+  uw.use(announce({
     // Generate a random one in a real app!
     seed: Buffer.from('8286a5e55c62d93a042b8c56c8face52c05354c288807d941751f0e9060c2ded', 'hex'),
     name: 'localhost',
