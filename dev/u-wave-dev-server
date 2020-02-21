@@ -36,7 +36,6 @@ const testTransport = {
  */
 function start() {
   const port = argv.port || 6042;
-  const watch = argv.watch || false;
 
   const uwave = require('..');
 
