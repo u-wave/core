@@ -92,6 +92,7 @@ async function login(options, req, res) {
 
 async function socialLoginCallback(options, service, req, res) {
   const { user } = req;
+  const { locale } = req.uwave;
 
   if (await user.isBanned()) {
     throw new PermissionError('You have been banned.');
@@ -130,10 +131,10 @@ async function socialLoginCallback(options, service, req, res) {
     <html>
       <head>
         <meta charset="utf-8">
-        <title>Success</title>
+        <title>${locale.t('authentication.successTitle')}</title>
       </head>
       <body style="background: #151515; color: #fff; font: 12pt 'Open Sans', sans-serif">
-        You can now close this window.
+        ${locale.t('authentication.closeThisWindow')}
         <script>${script}</script>
       </body>
     </html>
