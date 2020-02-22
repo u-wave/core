@@ -5,6 +5,7 @@ const jwt = require('jsonwebtoken');
 const randomString = require('random-string');
 const fetch = require('node-fetch');
 const ms = require('ms');
+const htmlescape = require('htmlescape');
 const {
   HTTPError,
   PermissionError,
@@ -103,8 +104,8 @@ async function socialLoginCallback(options, service, req, res) {
       if (opener) {
         opener.postMessage({
           pending: true,
-          socialAvatar: ${JSON.stringify(user.avatar)},
-          type: ${JSON.stringify(service)}
+          socialAvatar: ${htmlescape(user.avatar)},
+          type: ${htmlescape(service)}
         }, '*');
       }
       window.close();
