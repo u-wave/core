@@ -1,8 +1,8 @@
-import router from 'router';
-import route from '../route';
-import * as controller from '../controllers/server';
+const router = require('router');
+const route = require('../route');
+const controller = require('../controllers/server');
 
-export default function serverRoutes() {
+function serverRoutes() {
   return router()
     // GET /server/time - Show the current server time.
     .get(
@@ -10,3 +10,5 @@ export default function serverRoutes() {
       route(controller.getServerTime),
     );
 }
+
+module.exports = serverRoutes;

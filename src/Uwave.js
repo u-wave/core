@@ -1,26 +1,26 @@
-import EventEmitter from 'events';
-import mongoose from 'mongoose';
-import Redis from 'ioredis';
-import debug from 'debug';
-import { isPlainObject } from 'lodash';
+const EventEmitter = require('events');
+const mongoose = require('mongoose');
+const Redis = require('ioredis');
+const debug = require('debug');
+const { isPlainObject } = require('lodash');
 
-import HttpApi from './HttpApi';
-import SocketServer from './SocketServer';
-import Source from './Source';
-import i18n from './locale';
+const HttpApi = require('./HttpApi');
+const SocketServer = require('./SocketServer');
+const { Source } = require('./Source');
+const { i18n } = require('./locale');
 
-import models from './models';
-import booth from './plugins/booth';
-import chat from './plugins/chat';
-import motd from './plugins/motd';
-import playlists from './plugins/playlists';
-import users from './plugins/users';
-import bans from './plugins/bans';
-import history from './plugins/history';
-import acl from './plugins/acl';
-import waitlist from './plugins/waitlist';
-import passport from './plugins/passport';
-import errorHandler from './middleware/errorHandler';
+const models = require('./models');
+const booth = require('./plugins/booth');
+const chat = require('./plugins/chat');
+const motd = require('./plugins/motd');
+const playlists = require('./plugins/playlists');
+const users = require('./plugins/users');
+const bans = require('./plugins/bans');
+const history = require('./plugins/history');
+const acl = require('./plugins/acl');
+const waitlist = require('./plugins/waitlist');
+const passport = require('./plugins/passport');
+const errorHandler = require('./middleware/errorHandler');
 
 mongoose.Promise = Promise;
 const MongooseConnection = mongoose.Connection;
@@ -30,37 +30,35 @@ const kSources = Symbol('Media sources');
 const DEFAULT_MONGO_URL = 'mongodb://localhost:27017/uwave';
 const DEFAULT_REDIS_URL = 'redis://localhost:6379';
 
-type UwaveOptions = {
-  useDefaultPlugins: ?bool,
-  mongo: ?string|Object,
-  redis: ?string|Object|Redis
-};
-
-export default class UWaveServer extends EventEmitter {
-  [kSources] = new Map();
-
-  locale = i18n.cloneInstance();
-
-  options = {
-    useDefaultPlugins: true,
-  };
-
+class UwaveServer extends EventEmitter {
   /**
   * Registers middleware on a route
   *
   * @constructor
   * @param {Object} options
   */
-  constructor(options: UwaveOptions = {}) {
+  constructor(options = {}) {
     super();
-    this.#parseOptions(options);
+
+    /**
+     * @type {Map<string, Source>}
+     */
+    this[kSources] = new Map();
+
+    this.locale = i18n.cloneInstance();
+
+    this.options = {
+      useDefaultPlugins: true,
+    };
+
+    this.parseOptions(options);
 
     this.log = debug('uwave:core');
     this.mongoLog = debug('uwave:core:mongo');
     this.redisLog = debug('uwave:core:redis');
 
-    this.#attachRedisEvents();
-    this.#attachMongooseEvents();
+    this.configureRedis();
+    this.configureMongoose();
 
     this.use(models());
     this.use(passport({
@@ -98,10 +96,19 @@ export default class UWaveServer extends EventEmitter {
     });
   }
 
-  #parseOptions = (options: UwaveOptions) => {
-    if (typeof options.mongo === 'string' || isPlainObject(options.mongo)) {
+  parseOptions(options) {
+    const defaultOptions = {
+      useNewUrlParser: true,
+      useCreateIndex: true,
+      useFindAndModify: false,
+      useUnifiedTopology: true,
+    };
+
+    if (typeof options.mongo === 'string') {
+      this.mongo = mongoose.createConnection(options.mongo, defaultOptions);
+    } else if (isPlainObject(options.mongo)) {
       this.mongo = mongoose.createConnection({
-        useNewUrlParser: true,
+        ...defaultOptions,
         ...options.mongo,
       });
     } else if (options.mongo instanceof MongooseConnection) {
@@ -109,6 +116,8 @@ export default class UWaveServer extends EventEmitter {
     } else {
       this.mongo = mongoose.createConnection(DEFAULT_MONGO_URL, {
         useNewUrlParser: true,
+        useCreateIndex: true,
+        useFindAndModify: false,
       });
     }
 
@@ -126,7 +135,7 @@ export default class UWaveServer extends EventEmitter {
     }
 
     Object.assign(this.options, options);
-  };
+  }
 
   use(plugin) {
     plugin(this);
@@ -181,7 +190,7 @@ export default class UWaveServer extends EventEmitter {
     return newSource;
   }
 
-  #attachRedisEvents = () => {
+  configureRedis() {
     this.redis.on('error', (e) => {
       this.emit('redisError', e);
     });
@@ -196,9 +205,9 @@ export default class UWaveServer extends EventEmitter {
       this.redisLog('connected');
       this.emit('redisConnect');
     });
-  };
+  }
 
-  #attachMongooseEvents = () => {
+  configureMongoose() {
     this.mongo.on('error', (e) => {
       this.mongoLog(e);
       this.emit('mongoError', e);
@@ -218,7 +227,7 @@ export default class UWaveServer extends EventEmitter {
       this.mongoLog('connected');
       this.emit('mongoConnect');
     });
-  };
+  }
 
   /**
    * Create a Redis subscription to the üWave channel.
@@ -262,3 +271,5 @@ export default class UWaveServer extends EventEmitter {
     this.emit('stopped');
   }
 }
+
+module.exports = UwaveServer;

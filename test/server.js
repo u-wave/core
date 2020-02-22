@@ -1,8 +1,7 @@
-import { expect } from 'chai';
-import { createServer } from 'http';
-import mongoose from 'mongoose';
-import delay from 'delay';
-import uwave from '../src';
+const { expect } = require('chai');
+const { createServer } = require('http');
+const delay = require('delay');
+const uwave = require('..');
 
 describe('üWave Core', () => {
   let uw;
@@ -10,7 +9,7 @@ describe('üWave Core', () => {
   beforeEach(() => {
     server = createServer();
     uw = uwave({
-      mongo: mongoose.createConnection('mongodb://localhost:27017/uw_test_server', { useNewUrlParser: true }),
+      mongo: 'mongodb://localhost:27017/uw_test_server',
       secret: 'uw_test_secret',
       server,
     });

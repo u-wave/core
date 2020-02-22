@@ -1,20 +1,20 @@
-import { URLSearchParams } from 'url';
-import cookie from 'cookie';
-import createDebug from 'debug';
-import jwt from 'jsonwebtoken';
-import randomString from 'random-string';
-import fetch from 'node-fetch';
-import ms from 'ms';
-import {
+const { URLSearchParams } = require('url');
+const cookie = require('cookie');
+const createDebug = require('debug');
+const jwt = require('jsonwebtoken');
+const randomString = require('random-string');
+const fetch = require('node-fetch');
+const ms = require('ms');
+const {
   HTTPError,
   PermissionError,
   TokenError,
   UserNotFoundError,
-} from '../errors';
-import sendEmail from '../email';
-import beautifyDuplicateKeyError from '../utils/beautifyDuplicateKeyError';
-import toItemResponse from '../utils/toItemResponse';
-import toListResponse from '../utils/toListResponse';
+} = require('../errors');
+const sendEmail = require('../email');
+const beautifyDuplicateKeyError = require('../utils/beautifyDuplicateKeyError');
+const toItemResponse = require('../utils/toItemResponse');
+const toListResponse = require('../utils/toListResponse');
 
 const debug = createDebug('uwave:http:auth');
 
@@ -22,13 +22,13 @@ function seconds(str) {
   return Math.floor(ms(str) / 1000);
 }
 
-export function getCurrentUser(req) {
+function getCurrentUser(req) {
   return toItemResponse(req.user || {}, {
     url: req.fullUrl,
   });
 }
 
-export function getAuthStrategies(req) {
+function getAuthStrategies(req) {
   const { passport } = req.uwave;
 
   const strategies = passport.strategies();
@@ -39,7 +39,7 @@ export function getAuthStrategies(req) {
   );
 }
 
-export async function refreshSession(res, api, user, options) {
+async function refreshSession(res, api, user, options) {
   const token = await jwt.sign(
     { id: user.id },
     options.secret,
@@ -66,7 +66,7 @@ export async function refreshSession(res, api, user, options) {
  * The login controller is called once a user has logged in successfully using Passport;
  * we only have to assign the JWT.
  */
-export async function login(options, req, res) {
+async function login(options, req, res) {
   const { user } = req;
   const { session } = req.query;
 
@@ -89,7 +89,7 @@ export async function login(options, req, res) {
   });
 }
 
-export async function socialLoginCallback(options, service, req, res) {
+async function socialLoginCallback(options, service, req, res) {
   const { user } = req;
 
   if (await user.isBanned()) {
@@ -139,7 +139,7 @@ export async function socialLoginCallback(options, service, req, res) {
   `);
 }
 
-export async function socialLoginFinish(options, service, req, res) {
+async function socialLoginFinish(options, service, req, res) {
   const { user } = req;
   const sessionType = req.query.session === 'cookie' ? 'cookie' : 'token';
 
@@ -166,7 +166,7 @@ export async function socialLoginFinish(options, service, req, res) {
   });
 }
 
-export async function getSocketToken(req) {
+async function getSocketToken(req) {
   const { user } = req;
   const { authRegistry } = req.uwaveHttp;
 
@@ -210,7 +210,7 @@ async function verifyCaptcha(responseString, options) {
   return null;
 }
 
-export async function register(options, req) {
+async function register(options, req) {
   const { users } = req.uwave;
   const {
     grecaptcha, email, username, password,
@@ -235,7 +235,7 @@ export async function register(options, req) {
   }
 }
 
-export async function reset(options, req) {
+async function reset(options, req) {
   const uw = req.uwave;
   const { Authentication } = uw.models;
   const { email } = req.body;
@@ -266,7 +266,7 @@ export async function reset(options, req) {
   return toItemResponse({});
 }
 
-export async function changePassword(req) {
+async function changePassword(req) {
   const { users, redis } = req.uwave;
   const { reset: resetToken } = req.params;
   const { password } = req.body;
@@ -293,7 +293,7 @@ export async function changePassword(req) {
   });
 }
 
-export async function logout(options, req, res) {
+async function logout(options, req, res) {
   const { user, cookies } = req;
   const { cookieSecure, cookiePath } = options;
   const uw = req.uwave;
@@ -315,6 +315,19 @@ export async function logout(options, req, res) {
   return toItemResponse({});
 }
 
-export async function removeSession() {
+async function removeSession() {
   throw new Error('Unimplemented');
 }
+
+exports.changePassword = changePassword;
+exports.getAuthStrategies = getAuthStrategies;
+exports.getCurrentUser = getCurrentUser;
+exports.getSocketToken = getSocketToken;
+exports.login = login;
+exports.logout = logout;
+exports.refreshSession = refreshSession;
+exports.register = register;
+exports.removeSession = removeSession;
+exports.reset = reset;
+exports.socialLoginCallback = socialLoginCallback;
+exports.socialLoginFinish = socialLoginFinish;

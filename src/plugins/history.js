@@ -1,11 +1,11 @@
-import { clamp } from 'lodash';
+const { clamp } = require('lodash');
 
-import Page from '../Page';
+const Page = require('../Page');
 
 const DEFAULT_PAGE_SIZE = 50;
 const MAX_PAGE_SIZE = 100;
 
-export class HistoryRepository {
+class HistoryRepository {
   constructor(uw) {
     this.uw = uw;
   }
@@ -21,7 +21,7 @@ export class HistoryRepository {
       0, MAX_PAGE_SIZE,
     );
 
-    const total = await this.HistoryEntry.where(filter).count();
+    const total = await this.HistoryEntry.where(filter).countDocuments();
     const results = await this.HistoryEntry.where(filter)
       .sort({ playedAt: -1 })
       .skip(offset)
@@ -50,8 +50,11 @@ export class HistoryRepository {
   }
 }
 
-export default function history() {
+function history() {
   return (uw) => {
     uw.history = new HistoryRepository(uw);
   };
 }
+
+module.exports = history;
+module.exports.HistoryRepository = HistoryRepository;

@@ -1,11 +1,11 @@
-import router from 'router';
-import route from '../route';
-import * as validations from '../validations';
-import protect from '../middleware/protect';
-import checkFields from '../middleware/checkFields';
-import * as controller from '../controllers/authenticate';
+const router = require('router');
+const route = require('../route');
+const validations = require('../validations');
+const protect = require('../middleware/protect');
+const checkFields = require('../middleware/checkFields');
+const controller = require('../controllers/authenticate');
 
-export default function authenticateRoutes(api, options) {
+function authenticateRoutes(api, options) {
   const { passport } = api.uw;
 
   const auth = router()
@@ -85,3 +85,5 @@ export default function authenticateRoutes(api, options) {
 
   return auth;
 }
+
+module.exports = authenticateRoutes;

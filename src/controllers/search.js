@@ -1,11 +1,11 @@
-import props from 'p-props';
-import createDebug from 'debug';
-import { SourceNotFoundError } from '../errors';
-import toListResponse from '../utils/toListResponse';
+const props = require('p-props');
+const createDebug = require('debug');
+const { SourceNotFoundError } = require('../errors');
+const toListResponse = require('../utils/toListResponse');
 
 const log = createDebug('uwave:http:search');
 
-export function searchAll(req) {
+function searchAll(req) {
   const { user } = req;
   const { query } = req.query;
   const uw = req.uwave;
@@ -23,7 +23,7 @@ export function searchAll(req) {
   return props(promises);
 }
 
-export async function search(req) {
+async function search(req) {
   const { user } = req;
   const { source: sourceName } = req.params;
   const { query } = req.query;
@@ -40,3 +40,6 @@ export async function search(req) {
     url: req.fullUrl,
   });
 }
+
+exports.search = search;
+exports.searchAll = searchAll;

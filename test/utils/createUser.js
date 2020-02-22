@@ -1,7 +1,7 @@
-import mongoose from 'mongoose';
+const mongoose = require('mongoose');
 
 let i = Date.now();
-export default function createUser(uw) {
+function createUser(uw) {
   const User = uw.model && uw.model('User');
   const props = {
     _id: new mongoose.Types.ObjectId(),
@@ -14,3 +14,5 @@ export default function createUser(uw) {
   }
   return props;
 }
+
+module.exports = createUser;

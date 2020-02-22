@@ -1,9 +1,9 @@
-import * as bcrypt from 'bcryptjs';
-import createDebug from 'debug';
-import escapeStringRegExp from 'escape-string-regexp';
-import Page from '../Page';
-import { UserNotFoundError } from '../errors';
-import PasswordError from '../errors/PasswordError';
+const bcrypt = require('bcryptjs');
+const createDebug = require('debug');
+const escapeStringRegExp = require('escape-string-regexp');
+const Page = require('../Page');
+const { UserNotFoundError } = require('../errors');
+const PasswordError = require('../errors/PasswordError');
 
 const debug = createDebug('uwave:users');
 
@@ -15,7 +15,7 @@ function getDefaultAvatar(user) {
   return `https://sigil.u-wave.net/${user.id}`;
 }
 
-export class UsersRepository {
+class UsersRepository {
   constructor(uw) {
     this.uw = uw;
   }
@@ -48,7 +48,7 @@ export class UsersRepository {
       query.where(queryFilter);
     }
 
-    const totalPromise = User.count();
+    const totalPromise = User.estimatedDocumentCount();
 
     const [
       users,
@@ -56,7 +56,7 @@ export class UsersRepository {
       total,
     ] = await Promise.all([
       query,
-      queryFilter ? User.find().where(queryFilter).count() : totalPromise,
+      queryFilter ? User.find().where(queryFilter).countDocuments() : totalPromise,
       totalPromise,
     ]);
 
@@ -196,9 +196,9 @@ export class UsersRepository {
         user.save(),
         auth.save(),
       ]);
-      await user.update({
-        avatar: getDefaultAvatar(user),
-      });
+      // Two-stage saving to let mongodb decide the user ID before we generate an avatar URL.
+      user.avatar = getDefaultAvatar(user);
+      await user.save();
     } catch (e) {
       if (!auth.isNew) {
         await auth.remove();
@@ -268,8 +268,11 @@ export class UsersRepository {
   }
 }
 
-export default function usersPlugin() {
+function usersPlugin() {
   return (uw) => {
     uw.users = new UsersRepository(uw);
   };
 }
+
+module.exports = usersPlugin;
+module.exports.UsersRepository = UsersRepository;

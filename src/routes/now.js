@@ -1,8 +1,8 @@
-import router from 'router';
-import route from '../route';
-import * as controller from '../controllers/now';
+const router = require('router');
+const route = require('../route');
+const controller = require('../controllers/now');
 
-export default function nowRoute() {
+function nowRoute() {
   return router()
     // GET /now/ - Get a combined view of the current state.
     .get(
@@ -10,3 +10,5 @@ export default function nowRoute() {
       route(controller.getState),
     );
 }
+
+module.exports = nowRoute;

@@ -1,7 +1,7 @@
-import toItemResponse from '../utils/toItemResponse';
-import toListResponse from '../utils/toListResponse';
+const toItemResponse = require('../utils/toItemResponse');
+const toListResponse = require('../utils/toListResponse');
 
-export async function getWaitlist(req) {
+async function getWaitlist(req) {
   const { waitlist } = req.uwave;
 
   const list = await waitlist.getUserIDs();
@@ -11,7 +11,7 @@ export async function getWaitlist(req) {
 
 // POST waitlist/ entry point: used both for joining the waitlist,  and for
 // adding someone else to the waitlist.
-export async function addToWaitlist(req) {
+async function addToWaitlist(req) {
   const { user: moderator } = req;
   const { userID } = req.body;
   const { waitlist } = req.uwave;
@@ -23,7 +23,7 @@ export async function addToWaitlist(req) {
   return toListResponse(updated, { url: req.fullUrl });
 }
 
-export async function moveWaitlist(req) {
+async function moveWaitlist(req) {
   const { user: moderator } = req;
   const { userID, position } = req.body;
   const { waitlist } = req.uwave;
@@ -35,7 +35,7 @@ export async function moveWaitlist(req) {
   return toListResponse(updated, { url: req.fullUrl });
 }
 
-export async function removeFromWaitlist(req) {
+async function removeFromWaitlist(req) {
   const { user: moderator } = req;
   const { id: userID } = req.params;
   const { waitlist } = req.uwave;
@@ -47,7 +47,7 @@ export async function removeFromWaitlist(req) {
   return toListResponse(updated, { url: req.fullUrl });
 }
 
-export async function clearWaitlist(req) {
+async function clearWaitlist(req) {
   const { user: moderator } = req;
   const { waitlist } = req.uwave;
 
@@ -58,7 +58,7 @@ export async function clearWaitlist(req) {
   return toListResponse(updated, { url: req.fullUrl });
 }
 
-export async function lockWaitlist(req) {
+async function lockWaitlist(req) {
   const { user: moderator } = req;
   const { lock } = req.body;
   const { waitlist } = req.uwave;
@@ -71,3 +71,10 @@ export async function lockWaitlist(req) {
 
   return toItemResponse({ locked: lock }, { url: req.fullUrl });
 }
+
+exports.getWaitlist = getWaitlist;
+exports.addToWaitlist = addToWaitlist;
+exports.moveWaitlist = moveWaitlist;
+exports.removeFromWaitlist = removeFromWaitlist;
+exports.clearWaitlist = clearWaitlist;
+exports.lockWaitlist = lockWaitlist;

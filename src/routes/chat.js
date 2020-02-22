@@ -1,11 +1,11 @@
-import router from 'router';
-import route from '../route';
-import * as validations from '../validations';
-import protect from '../middleware/protect';
-import checkFields from '../middleware/checkFields';
-import * as controller from '../controllers/chat';
+const router = require('router');
+const route = require('../route');
+const validations = require('../validations');
+const protect = require('../middleware/protect');
+const checkFields = require('../middleware/checkFields');
+const controller = require('../controllers/chat');
 
-export default function chatRoutes() {
+function chatRoutes() {
   return router()
     // DELETE /chat/ - Clear the chat (delete all messages).
     .delete(
@@ -28,3 +28,5 @@ export default function chatRoutes() {
       route(controller.deleteMessage),
     );
 }
+
+module.exports = chatRoutes;

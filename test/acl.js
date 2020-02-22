@@ -1,11 +1,10 @@
-import { createServer } from 'http';
-import { expect } from 'chai';
-import mongoose from 'mongoose';
-import uwave from '../src';
-import usersPlugin from '../src/plugins/users';
-import aclPlugin from '../src/plugins/acl';
-import createUser from './utils/createUser';
-import mongoConnected from './utils/mongoConnected';
+const { createServer } = require('http');
+const { expect } = require('chai');
+const uwave = require('..');
+const usersPlugin = require('../src/plugins/users');
+const aclPlugin = require('../src/plugins/acl');
+const createUser = require('./utils/createUser');
+const mongoConnected = require('./utils/mongoConnected');
 
 const DB_NAME = 'uw_test_acl';
 
@@ -13,7 +12,7 @@ function createUwaveWithAclTest() {
   const server = createServer();
   const uw = uwave({
     useDefaultPlugins: false,
-    mongo: mongoose.createConnection(`mongodb://localhost/${DB_NAME}`, { useNewUrlParser: true }),
+    mongo: `mongodb://localhost/${DB_NAME}`,
     secret: Buffer.from(`secret_${DB_NAME}`),
     server,
   });

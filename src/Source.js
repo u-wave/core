@@ -1,10 +1,47 @@
-import SourceContext from './sources/SourceContext';
-import ImportContext from './sources/ImportContext';
+/**
+ * Data holder for things that source plugins may require.
+ */
+class SourceContext {
+  constructor(uw, source, user) {
+    this.uw = uw;
+    this.source = source;
+    this.user = user;
+  }
+}
+
+/**
+ * Wrapper around playlist functions for use with import plugins. Intended to be
+ * temporary until more data manipulation stuff is moved into core from api-v1.
+ *
+ * This is legacy, media sources should use the methods provided by the
+ * `playlists` plugin instead.
+ */
+class ImportContext extends SourceContext {
+  /**
+   * Create a playlist for the current user.
+   *
+   * @param {String} name Playlist name.
+   * @param {Object|Array} itemOrItems Playlist items.
+   * @return Playlist model.
+   */
+  async createPlaylist(name, itemOrItems) {
+    const playlist = await this.uw.playlists.createPlaylist(this.user, { name });
+
+    const rawItems = Array.isArray(itemOrItems) ? itemOrItems : [itemOrItems];
+    const items = this.source.addSourceType(rawItems);
+
+    if (items.length > 0) {
+      await playlist.addItems(items);
+    }
+
+    return playlist;
+  }
+}
 
 /**
  * Wrapper around source plugins with some more convenient aliases.
  */
-export default class Source {
+class Source {
   constructor(uw, sourceType, sourcePlugin) {
     this.uw = uw;
     this.type = sourceType;
@@ -77,3 +114,7 @@ export default class Source {
     return this.plugin.import(importContext, ...args);
   }
 }
+
+exports.SourceContext = SourceContext;
+exports.ImportContext = ImportContext;
+exports.Source = Source;

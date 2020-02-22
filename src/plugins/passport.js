@@ -1,8 +1,8 @@
-import { Passport } from 'passport';
-import { Strategy as LocalStrategy } from 'passport-local';
-import { Strategy as GoogleStrategy } from 'passport-google-oauth20';
-import { callbackify } from 'util';
-import JWTStrategy from '../auth/JWTStrategy';
+const { Passport } = require('passport');
+const { Strategy: LocalStrategy } = require('passport-local');
+const { Strategy: GoogleStrategy } = require('passport-google-oauth20');
+const { callbackify } = require('util');
+const JWTStrategy = require('../auth/JWTStrategy');
 
 function configurePassport(uw, options) {
   const passport = new Passport();
@@ -61,6 +61,10 @@ function configurePassport(uw, options) {
   return passport;
 }
 
-export default (options = {}) => (uw) => {
-  uw.passport = configurePassport(uw, options);
-};
+function passportPlugin(options = {}) {
+  return (uw) => {
+    uw.passport = configurePassport(uw, options);
+  };
+}
+
+module.exports = passportPlugin;

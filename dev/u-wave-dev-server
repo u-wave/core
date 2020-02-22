@@ -2,9 +2,8 @@
 
 require('trace');
 require('clarify');
-require('source-map-support');
 const { Buffer } = require('buffer');
-const path = require('path');
+const http = require('http');
 const argv = require('minimist')(process.argv.slice(2));
 const concat = require('concat-stream');
 const explain = require('explain-error');
@@ -31,40 +30,24 @@ const testTransport = {
   },
 };
 
-function loadDevModules() {
-  const corePath = path.join(__dirname, '../src');
-
-  require('@babel/register').default({
-    plugins: [require('@babel/plugin-transform-modules-commonjs').default],
-    only: [p => p.startsWith(corePath)],
-  });
-
-  return require('../src/index.js').default;
-}
-
-function loadProdModules() {
-  return require('..');
-}
-
 /**
  * üWave API development server.
  */
 function start() {
   const port = argv.port || 6042;
-  const watch = argv.watch || false;
 
-  const uwave = watch ? loadDevModules() : loadProdModules();
+  const uwave = require('..');
 
   const app = express();
-  const server = app.listen(port, () => {
-    console.log(`Now listening on ${port}`);
-  });
+  const server = http.createServer(app);
 
   const apiUrl = '/api';
   const secret = Buffer.from('none', 'utf8');
 
   const uw = uwave({
     ...config,
+    redis: process.env.REDIS_URL,
+    mongo: process.env.MONGODB_URL,
     server,
     secret,
     auth: config.auth,
@@ -86,7 +69,7 @@ function start() {
     name: 'localhost',
     subtitle: 'Local dev server',
     url: `http://localhost:${port}`,
-    hub: 'http://localhost:6451',
+    hub: process.env.HUB_URL || 'http://localhost:6451',
   }));
 
   uw.source(ytSource, config.sources.youtube);
@@ -97,6 +80,10 @@ function start() {
   app.use((error, req, res, next) => {
     debug(error);
     next(error);
+  });
+
+  server.listen(port, () => {
+    console.log(`Now listening on ${port}`);
   });
 
   return app;

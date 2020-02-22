@@ -1,8 +1,8 @@
-import { flatten } from 'lodash';
-import createDebug from 'debug';
-import eachSeries from 'p-each-series';
-import defaultRoles from '../config/defaultRoles';
-import routes from '../routes/acl';
+const { flatten } = require('lodash');
+const createDebug = require('debug');
+const eachSeries = require('p-each-series');
+const defaultRoles = require('../config/defaultRoles');
+const routes = require('../routes/acl');
 
 const debug = createDebug('uwave:acl');
 
@@ -35,11 +35,10 @@ const getRoleName = (role) => (
   typeof role === 'string' ? role : role.id
 );
 
-export class Acl {
-  superRole = '*';
-
+class Acl {
   constructor(uw, opts) {
     this.uw = uw;
+    this.superRole = '*';
 
     if (opts.defaultRoles !== false) {
       this.maybeAddDefaultRoles();
@@ -51,7 +50,7 @@ export class Acl {
   }
 
   async maybeAddDefaultRoles() {
-    const existingRoles = await this.AclRole.count();
+    const existingRoles = await this.AclRole.estimatedDocumentCount();
     debug('existing roles', existingRoles);
     if (existingRoles === 0) {
       debug('no roles found, adding defaults');
@@ -148,9 +147,12 @@ export class Acl {
   }
 }
 
-export default function acl(opts = {}) {
+function acl(opts = {}) {
   return (uw) => {
     uw.acl = new Acl(uw, opts);
     uw.httpApi.use('/acl', routes());
   };
 }
+
+module.exports = acl;
+module.exports.Acl = Acl;
