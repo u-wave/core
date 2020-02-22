@@ -7,28 +7,28 @@ const JWTStrategy = require('../auth/JWTStrategy');
 function configurePassport(uw, options) {
   const passport = new Passport();
 
-  async function localLogin(email, password) {
+  function localLogin(email, password) {
     return uw.users.login({ type: 'local', email, password });
   }
 
-  async function socialLogin(accessToken, refreshToken, profile) {
+  function socialLogin(accessToken, refreshToken, profile) {
     return uw.users.login({
       type: profile.provider,
       profile,
     });
   }
 
-  async function googleLogin(accessToken, refreshToken, profile) {
+  function googleLogin(accessToken, refreshToken, profile) {
     return socialLogin(accessToken, refreshToken, {
       id: profile.id,
       photos: profile.photos,
     });
   }
 
-  async function serializeUser(user) {
-    return user.id;
+  function serializeUser(user) {
+    return Promise.resolve(user.id);
   }
-  async function deserializeUser(id) {
+  function deserializeUser(id) {
     return uw.users.getUser(id);
   }
 
