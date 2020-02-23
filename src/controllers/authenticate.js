@@ -91,35 +91,37 @@ async function login(options, req, res) {
 }
 
 async function socialLoginCallback(options, service, req, res) {
-  const { user } = req;
+  const { pendingUser: user } = req;
   const { locale } = req.uwave;
+
+  if (!user) {
+    throw new PermissionError('Must have a pending user account.');
+  }
 
   if (await user.isBanned()) {
     throw new PermissionError('You have been banned.');
   }
 
-  let script = '';
+  let activationData = { pending: false };
   if (user.pendingActivation) {
-    script = `
-      var opener = window.opener;
-      if (opener) {
-        opener.postMessage({
-          pending: true,
-          socialAvatar: ${htmlescape(user.avatar)},
-          type: ${htmlescape(service)}
-        }, '*');
-      }
-      window.close();
-    `;
-  } else {
-    script = `
-      var opener = window.opener;
-      if (opener) {
-        opener.postMessage({ pending: false }, '*');
-      }
-      window.close();
-    `;
+    activationData = {
+      pending: true,
+      id: user.id,
+      avatars: {
+        sigil: `https://sigil.u-wave.net/${user.id}`,
+        [service]: user.avatar,
+      },
+      type: service,
+    };
   }
+
+  const script = `
+    var opener = window.opener;
+    if (opener) {
+      opener.postMessage(${htmlescape(activationData)}, '*');
+    }
+    window.close();
+  `;
 
   await refreshSession(res, req.uwaveHttp, user, {
     ...options,

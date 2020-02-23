@@ -131,7 +131,7 @@ class UsersRepository {
       await auth.populate('user').execPopulate();
     } else {
       const user = new User({
-        username: username.replace(/\s/g, ''),
+        username: username ? username.replace(/\s/g, '') : `${type}.${id}`,
         avatar,
         roles: ['user'],
         pendingActivation: type,

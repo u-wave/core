@@ -20,6 +20,7 @@ function configurePassport(uw, options) {
 
   function googleLogin(accessToken, refreshToken, profile) {
     return socialLogin(accessToken, refreshToken, {
+      provider: 'google',
       id: profile.id,
       photos: profile.photos,
     });
