@@ -90,17 +90,32 @@ async function login(options, req, res) {
   });
 }
 
+async function getSocialAvatar(uw, user, service) {
+  const Authentication = uw.model('Authentication');
+
+  const auth = await Authentication.findOne({
+    user,
+    type: service,
+  });
+  if (auth && auth.avatar) {
+    return auth.avatar;
+  }
+  return null;
+}
+
 async function socialLoginCallback(options, service, req, res) {
-  const { pendingUser: user } = req;
+  const { user } = req;
   const { locale } = req.uwave;
 
-  if (!user) {
+  if (!user.pendingActivation) {
     throw new PermissionError('Must have a pending user account.');
   }
 
   if (await user.isBanned()) {
     throw new PermissionError('You have been banned.');
   }
+
+  const socialAvatar = await getSocialAvatar(req.uwave, user, service);
 
   let activationData = { pending: false };
   if (user.pendingActivation) {
@@ -109,10 +124,12 @@ async function socialLoginCallback(options, service, req, res) {
       id: user.id,
       avatars: {
         sigil: `https://sigil.u-wave.net/${user.id}`,
-        [service]: user.avatar,
       },
       type: service,
     };
+    if (socialAvatar) {
+      activationData.avatars[service] =  socialAvatar;
+    }
   }
 
   const script = `
@@ -144,16 +161,30 @@ async function socialLoginCallback(options, service, req, res) {
 }
 
 async function socialLoginFinish(options, service, req, res) {
-  const { user } = req;
+  const { pendingUser: user } = req;
   const sessionType = req.query.session === 'cookie' ? 'cookie' : 'token';
+
+  if (!user) {
+    throw new PermissionError('Must have a pending user account.');
+  }
 
   if (await user.isBanned()) {
     throw new PermissionError('You have been banned.');
   }
 
-  const { username } = req.body;
+  const { username, avatar } = req.body;
+
+  // TODO Use the avatars plugin for this stuff later.
+  let avatarUrl;
+  if (avatar !== 'sigil') {
+    avatarUrl = await getSocialAvatar(req.uwave, user, service);
+  }
+  if (!avatarUrl) {
+    avatarUrl = `https://sigil.u-wave.net/${user.id}`;
+  }
 
   user.username = username;
+  user.avatar = avatarUrl;
   user.pendingActivation = undefined;
   await user.save();
 
