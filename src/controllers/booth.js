@@ -1,4 +1,3 @@
-const props = require('p-props');
 const {
   CombinedError,
   HTTPError,
@@ -23,11 +22,7 @@ async function getBoothData(uw) {
 
   await historyEntry.populate('media.media').execPopulate();
 
-  const stats = await props({
-    upvotes: redis.smembers('booth:upvotes'),
-    downvotes: redis.smembers('booth:downvotes'),
-    favorites: redis.smembers('booth:favorites'),
-  });
+  const stats = await booth.getCurrentVoteStats();
 
   return {
     historyID: historyEntry.id,
