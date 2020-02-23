@@ -148,14 +148,16 @@ class PlaylistsRepository {
       { $match: { _id: playlist._id } },
       { $limit: 1 },
       // find the items
+      { $project: { _id: 0, media: 1 } },
+      { $unwind: '$media' },
       {
         $lookup: {
-          from: 'playlistitems', localField: 'media', foreignField: '_id', as: 'items',
+          from: 'playlistitems', localField: 'media', foreignField: '_id', as: 'item',
         },
       },
-      { $project: { _id: 0, items: 1 } },
-      { $unwind: '$items' },
-      { $replaceRoot: { newRoot: '$items' } },
+      // return only the items
+      { $unwind: '$item' }, // just one each
+      { $replaceRoot: { newRoot: '$item' } },
     ];
 
     if (filter) {
