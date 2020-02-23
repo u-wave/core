@@ -107,18 +107,14 @@ async function socialLoginCallback(options, service, req, res) {
   const { user } = req;
   const { locale } = req.uwave;
 
-  if (!user.pendingActivation) {
-    throw new PermissionError('Must have a pending user account.');
-  }
-
   if (await user.isBanned()) {
     throw new PermissionError('You have been banned.');
   }
 
-  const socialAvatar = await getSocialAvatar(req.uwave, user, service);
-
   let activationData = { pending: false };
   if (user.pendingActivation) {
+    const socialAvatar = await getSocialAvatar(req.uwave, user, service);
+
     activationData = {
       pending: true,
       id: user.id,
