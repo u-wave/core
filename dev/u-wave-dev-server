@@ -1,7 +1,5 @@
 #!/usr/bin/env node
 
-require('trace');
-require('clarify');
 const { Buffer } = require('buffer');
 const http = require('http');
 const argv = require('minimist')(process.argv.slice(2));
