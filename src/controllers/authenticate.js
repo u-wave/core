@@ -128,7 +128,7 @@ async function socialLoginCallback(options, service, req, res) {
       type: service,
     };
     if (socialAvatar) {
-      activationData.avatars[service] =  socialAvatar;
+      activationData.avatars[service] = socialAvatar;
     }
   }
 
