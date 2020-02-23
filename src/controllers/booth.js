@@ -12,7 +12,7 @@ const toListResponse = require('../utils/toListResponse');
 const toPaginatedResponse = require('../utils/toPaginatedResponse');
 
 async function getBoothData(uw) {
-  const { booth, redis } = uw;
+  const { booth } = uw;
 
   const historyEntry = await booth.getCurrentEntry();
 

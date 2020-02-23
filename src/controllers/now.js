@@ -61,7 +61,9 @@ async function getState(req) {
     booth,
     waitlist,
     waitlistLocked,
-    activePlaylist: activePlaylist ? activePlaylist.then((p) => p ? p.id : null) : null,
+    activePlaylist: activePlaylist
+      ? activePlaylist.then((p) => (p ? p.id : null))
+      : null,
     firstActivePlaylistItem,
     playlists,
     socketToken,
