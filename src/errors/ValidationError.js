@@ -1,17 +1,17 @@
-import UwaveError from './UwaveError';
+const UwaveError = require('./UwaveError');
 
-export default class ValidationError extends UwaveError {
-  public = true;
-
-  name = 'ValidationError';
-
-  code = 'SCHEMA_VALIDATION_FAILED';
-
+class ValidationError extends UwaveError {
   constructor(errors, ajv) {
     const message = ajv ? ajv.errorsText(errors) : 'Validation failed';
     super(message);
+
+    this.public = true;
+    this.name = 'ValidationError';
+    this.code = 'SCHEMA_VALIDATION_FAILED';
 
     this.errors = errors;
     this.ajv = ajv;
   }
 }
+
+module.exports = ValidationError;
