@@ -1,12 +1,11 @@
-import router from 'router';
+const router = require('router');
+const route = require('../route');
+const validations = require('../validations');
+const protect = require('../middleware/protect');
+const checkFields = require('../middleware/checkFields');
+const controller = require('../controllers/motd');
 
-import route from '../route';
-import * as validations from '../validations';
-import protect from '../middleware/protect';
-import checkFields from '../middleware/checkFields';
-import * as controller from '../controllers/motd';
-
-export default function motdRoutes() {
+function motdRoutes() {
   return router()
     // GET /motd/ - Get the message of the day.
     .get(
@@ -21,3 +20,5 @@ export default function motdRoutes() {
       route(controller.setMotd),
     );
 }
+
+module.exports = motdRoutes;

@@ -1,12 +1,12 @@
-import aclRoleModel from './AclRole';
-import authenticationModel from './Authentication';
-import historyModel from './History';
-import mediaModel from './Media';
-import playlistModel from './Playlist';
-import playlistItemModel from './PlaylistItem';
-import userModel from './User';
+const aclRoleModel = require('./AclRole');
+const authenticationModel = require('./Authentication');
+const historyModel = require('./History');
+const mediaModel = require('./Media');
+const playlistModel = require('./Playlist');
+const playlistItemModel = require('./PlaylistItem');
+const userModel = require('./User');
 
-export default function models() {
+function models() {
   return (uw) => {
     uw.use(aclRoleModel());
     uw.use(authenticationModel());
@@ -27,3 +27,5 @@ export default function models() {
     };
   };
 }
+
+module.exports = models;

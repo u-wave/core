@@ -1,4 +1,4 @@
-export default function toItemResponse(item, {
+function toItemResponse(item, {
   url = '',
   meta = {},
 } = {}) {
@@ -8,3 +8,5 @@ export default function toItemResponse(item, {
     data: item,
   };
 }
+
+module.exports = toItemResponse;

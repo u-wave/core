@@ -1,16 +1,20 @@
-import {
+const {
   Forbidden,
   InternalServerError,
   NotFound,
   TooManyRequests,
-} from 'http-errors';
-import { t } from '../locale';
+  UnprocessableEntity,
+} = require('http-errors');
+const { t } = require('../locale');
 
-export class EmailError extends InternalServerError {
-  name = 'EmailError';
+class EmailError extends InternalServerError {
+  constructor(message) {
+    super(message);
+    this.name = 'EmailError';
+  }
 }
 
-export class APIError extends Error {
+class APIError extends Error {
   constructor(message) {
     super();
     Error.captureStackTrace(this);
@@ -26,44 +30,43 @@ export class APIError extends Error {
   }
 }
 
-export class CombinedError extends APIError {
+class CombinedError extends APIError {
   constructor(errors) {
     super('Multiple errors');
     this.errors = errors;
   }
 }
 
-export class PasswordError extends APIError {
-  name = 'PasswordError';
+class PasswordError extends APIError {
+  constructor(message) {
+    super(message);
+    this.name = 'PasswordError';
+  }
 }
 
-export class TokenError extends APIError {
-  name = 'TokenError';
+class TokenError extends APIError {
+  constructor(message) {
+    super(message);
+    this.name = 'TokenError';
+  }
 }
 
-export class HTTPError extends APIError {
-  name = 'HTTPError';
-
+class HTTPError extends APIError {
   constructor(status, message) {
     super(message);
+    this.name = 'HTTPError';
     this.status = status;
   }
 }
 
-export class NotFoundError extends HTTPError {
-  name = 'NotFoundError';
-
+class PermissionError extends Forbidden {
   constructor(message) {
-    super(404, message);
+    super(message);
+    this.name = 'PermissionError';
   }
 }
 
-export class PermissionError extends Forbidden {
-  name = 'PermissionError';
-}
-
 function createErrorClass(name, {
-  status = 500,
   code = 'unknown-error',
   string,
   base = HTTPError,
@@ -73,89 +76,109 @@ function createErrorClass(name, {
     : string;
 
   return class extends base {
-    name = name;
-
-    code = code;
-
-    constructor(data) {
-      super(status, t(getString(data), data));
-
-      this.string = getString(data);
+    constructor(data = {}) {
+      const i18nKey = getString(data);
+      super(t(i18nKey, data));
+      this.name = name;
+      this.code = code;
+      this.i18nKey = i18nKey;
       this.data = data;
     }
 
     getMessage(translate = t) {
-      return translate(this.string);
+      return translate(this.i18nKey);
     }
   };
 }
 
-export const RateLimitError = createErrorClass('RateLimitError', {
-  status: 429,
+const RateLimitError = createErrorClass('RateLimitError', {
   code: 'too-many-requests',
   string: 'errors.tooManyRequests',
   base: TooManyRequests,
 });
 
-export const NameChangeRateLimitError = createErrorClass('NameChangeRateLimitError', {
-  status: 429,
+const NameChangeRateLimitError = createErrorClass('NameChangeRateLimitError', {
   code: 'too-many-requests',
   string: 'errors.tooManyNameChanges',
   base: RateLimitError,
 });
 
-export const UserNotFoundError = createErrorClass('UserNotFoundError', {
-  status: 404,
+const InvalidEmailError = createErrorClass('InvalidEmailError', {
+  code: 'invalid-email',
+  string: 'errors.invalidEmail',
+  base: UnprocessableEntity,
+});
+
+const InvalidUsernameError = createErrorClass('InvalidUsernameError', {
+  code: 'invalid-username',
+  string: 'errors.invalidUsername',
+  base: UnprocessableEntity,
+});
+
+const UserNotFoundError = createErrorClass('UserNotFoundError', {
   code: 'user-not-found',
   string: 'errors.userNotFound',
   base: NotFound,
 });
 
-export const PlaylistNotFoundError = createErrorClass('PlaylistNotFoundError', {
-  status: 404,
+const PlaylistNotFoundError = createErrorClass('PlaylistNotFoundError', {
   code: 'playlist-not-found',
   string: 'errors.playlistNotFound',
   base: NotFound,
 });
 
-export const PlaylistItemNotFoundError = createErrorClass('PlaylistItemNotFoundError', {
-  status: 404,
+const PlaylistItemNotFoundError = createErrorClass('PlaylistItemNotFoundError', {
   code: 'playlist-item-not-found',
   string: 'errors.playlistItemNotFound',
   base: NotFound,
 });
 
-export const HistoryEntryNotFoundError = createErrorClass('HistoryEntryNotFoundError', {
-  status: 404,
+const HistoryEntryNotFoundError = createErrorClass('HistoryEntryNotFoundError', {
   code: 'history-entry-not-found',
   string: 'errors.historyEntryNotFound',
   base: NotFound,
 });
 
-export const CannotSelfFavoriteError = createErrorClass('CannotSelfFavoriteError', {
-  status: 403,
+const CannotSelfFavoriteError = createErrorClass('CannotSelfFavoriteError', {
   code: 'no-self-favorite',
   string: 'errors.noSelfFavorite',
   base: Forbidden,
 });
 
-export const CannotSelfMuteError = createErrorClass('CannotSelfMuteError', {
-  status: 403,
+const CannotSelfMuteError = createErrorClass('CannotSelfMuteError', {
   code: 'no-self-mute',
   string: ({ unmute }) => (unmute ? 'errors.noSelfUnmute' : 'errors.noSelfMute'),
   base: Forbidden,
 });
 
-export const SourceNotFoundError = createErrorClass('SourceNotFoundError', {
-  status: 404,
+const SourceNotFoundError = createErrorClass('SourceNotFoundError', {
   code: 'source-not-found',
   string: 'errors.sourceNotFound',
   base: NotFound,
 });
 
-export const SourceNoImportError = createErrorClass('SourceNoImportError', {
-  status: 404,
+const SourceNoImportError = createErrorClass('SourceNoImportError', {
   code: 'source-no-import',
   string: 'errors.sourceNoImport',
   base: NotFound,
 });
+
+exports.EmailError = EmailError;
+exports.APIError = APIError;
+exports.CombinedError = CombinedError;
+exports.PasswordError = PasswordError;
+exports.TokenError = TokenError;
+exports.HTTPError = HTTPError;
+exports.PermissionError = PermissionError;
+exports.RateLimitError = RateLimitError;
+exports.NameChangeRateLimitError = NameChangeRateLimitError;
+exports.InvalidEmailError = InvalidEmailError;
+exports.InvalidUsernameError = InvalidUsernameError;
+exports.UserNotFoundError = UserNotFoundError;
+exports.PlaylistNotFoundError = PlaylistNotFoundError;
+exports.PlaylistItemNotFoundError = PlaylistItemNotFoundError;
+exports.HistoryEntryNotFoundError = HistoryEntryNotFoundError;
+exports.CannotSelfFavoriteError = CannotSelfFavoriteError;
+exports.CannotSelfMuteError = CannotSelfMuteError;
+exports.SourceNotFoundError = SourceNotFoundError;
+exports.SourceNoImportError = SourceNoImportError;

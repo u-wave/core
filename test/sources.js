@@ -1,7 +1,7 @@
-import { createServer } from 'http';
-import { expect } from 'chai';
-import uwave from '../src';
-import Source from '../src/Source';
+const { createServer } = require('http');
+const { expect } = require('chai');
+const uwave = require('..');
+const { Source } = require('../src/Source');
 
 describe('Media Sources', () => {
   let uw;

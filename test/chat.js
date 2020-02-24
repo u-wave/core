@@ -1,7 +1,6 @@
-import { expect } from 'chai';
-import sinon from 'sinon';
-
-import chatPlugin from '../src/plugins/chat';
+const { expect } = require('chai');
+const sinon = require('sinon');
+const chatPlugin = require('../src/plugins/chat');
 
 function createUwaveWithChatTest() {
   const uw = {

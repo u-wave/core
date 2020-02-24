@@ -1,4 +1,4 @@
-import routes from '../routes/motd';
+const routes = require('../routes/motd');
 
 class MOTD {
   constructor(uw) {
@@ -14,9 +14,11 @@ class MOTD {
   }
 }
 
-export default function motdPlugin() {
+function motdPlugin() {
   return (uw) => {
     uw.motd = new MOTD(uw);
     uw.httpApi.use('/motd', routes());
   };
 }
+
+module.exports = motdPlugin;

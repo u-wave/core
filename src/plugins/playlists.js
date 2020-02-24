@@ -1,9 +1,9 @@
-import { groupBy, shuffle } from 'lodash';
-import escapeStringRegExp from 'escape-string-regexp';
-import createDebug from 'debug';
-import NotFoundError from '../errors/NotFoundError';
-import Page from '../Page';
-import routes from '../routes/playlists';
+const { groupBy, shuffle } = require('lodash');
+const escapeStringRegExp = require('escape-string-regexp');
+const createDebug = require('debug');
+const NotFoundError = require('../errors/NotFoundError');
+const Page = require('../Page');
+const routes = require('../routes/playlists');
 
 const debug = createDebug('uwave:playlists');
 
@@ -43,7 +43,7 @@ function toPlaylistItem(itemProps, media) {
   };
 }
 
-export class PlaylistsRepository {
+class PlaylistsRepository {
   constructor(uw) {
     this.uw = uw;
   }
@@ -119,27 +119,6 @@ export class PlaylistsRepository {
     return {};
   }
 
-  async getPlaylistItemIDsFiltered(playlist, filter) {
-    const PlaylistItem = this.uw.model('PlaylistItem');
-    const rx = new RegExp(escapeStringRegExp(filter), 'i');
-    const matches = await PlaylistItem.where({
-      _id: { $in: playlist.media },
-      $or: [{ artist: rx }, { title: rx }],
-    }).select('_id');
-
-    const allItemIDs = matches.map((item) => item.id);
-
-    // We want this sorted by the original playlist item order, so we can
-    // just walk through the original playlist and only keep the items that we
-    // need.
-    return playlist.media.filter((id) => allItemIDs.indexOf(`${id}`) !== -1);
-  }
-
-  // eslint-disable-next-line class-methods-use-this
-  async getPlaylistItemIDsUnfiltered(playlist) {
-    return playlist.media;
-  }
-
   async getPlaylistItem(itemID) {
     const PlaylistItem = this.uw.model('PlaylistItem');
 
@@ -162,29 +141,71 @@ export class PlaylistsRepository {
   }
 
   async getPlaylistItems(playlistOrID, filter = null, pagination = null) {
-    const PlaylistItem = this.uw.model('PlaylistItem');
     const playlist = await this.getPlaylist(playlistOrID);
-    const filteredItemIDs = filter
-      ? await this.getPlaylistItemIDsFiltered(playlist, filter)
-      : await this.getPlaylistItemIDsUnfiltered(playlist);
 
-    let itemIDs = filteredItemIDs;
-    if (pagination) {
-      const start = pagination.offset;
-      const end = start + pagination.limit;
-      itemIDs = itemIDs.slice(start, end);
+    const aggregate = [
+      // find the playlist
+      { $match: { _id: playlist._id } },
+      { $limit: 1 },
+      // find the items
+      { $project: { _id: 0, media: 1 } },
+      { $unwind: '$media' },
+      {
+        $lookup: {
+          from: 'playlistitems', localField: 'media', foreignField: '_id', as: 'item',
+        },
+      },
+      // return only the items
+      { $unwind: '$item' }, // just one each
+      { $replaceRoot: { newRoot: '$item' } },
+    ];
+
+    if (filter) {
+      const rx = new RegExp(escapeStringRegExp(filter), 'i');
+      aggregate.push({
+        $match: {
+          $or: [{ artist: rx }, { title: rx }],
+        },
+      });
     }
-    const items = itemIDs.length > 0
-      ? await PlaylistItem.find()
-        .where('_id').in(itemIDs)
-        .populate('media')
-      : [];
 
-    const results = itemIDs.map((itemID) => items.find((item) => `${item.id}` === `${itemID}`));
+    const aggregateCount = [
+      { $count: 'filtered' },
+    ];
+    const aggregateItems = [];
 
-    return new Page(results, {
+    if (pagination) {
+      aggregateItems.push(
+        { $skip: pagination.offset },
+        { $limit: pagination.limit },
+      );
+    }
+
+    // look up the media items after this is all filtered down
+    aggregateItems.push(
+      {
+        $lookup: {
+          from: 'media', localField: 'media', foreignField: '_id', as: 'media',
+        },
+      },
+      { $unwind: '$media' }, // is always 1 item, is there a better way than $unwind?
+    );
+
+    aggregate.push({
+      $facet: {
+        count: aggregateCount,
+        items: aggregateItems,
+      },
+    });
+
+    const [{ count, items }] = await this.uw.model('Playlist').aggregate(aggregate);
+
+    // `items` is the same shape as a PlaylistItem instance!
+
+    return new Page(items, {
       pageSize: pagination ? pagination.limit : null,
-      filtered: filteredItemIDs.length,
+      // `count` can be the empty array if the playlist has no items
+      filtered: count.length === 1 ? count[0].filtered : playlist.media.length,
       total: playlist.media.length,
 
       current: pagination,
@@ -224,9 +245,14 @@ export class PlaylistsRepository {
         sourceID: { $in: sourceItems.map((item) => item.sourceID) },
       });
 
+      const knownMediaIDs = new Set();
+      knownMedias.forEach((knownMedia) => {
+        knownMediaIDs.add(knownMedia.sourceID);
+      });
+
       const unknownMediaIDs = [];
       sourceItems.forEach((item) => {
-        if (!knownMedias.some((media) => media.sourceID === String(item.sourceID))) {
+        if (!knownMediaIDs.has(String(item.sourceID))) {
           unknownMediaIDs.push(item.sourceID);
         }
       });
@@ -322,9 +348,12 @@ export class PlaylistsRepository {
   }
 }
 
-export default function playlistsPlugin() {
+function playlistsPlugin() {
   return (uw) => {
     uw.playlists = new PlaylistsRepository(uw);
     uw.httpApi.use('/playlists', routes());
   };
 }
+
+module.exports = playlistsPlugin;
+module.exports.PlaylistsRepository = PlaylistsRepository;

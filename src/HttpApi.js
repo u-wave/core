@@ -1,23 +1,23 @@
-import Router from 'router';
-import bodyParser from 'body-parser';
-import cookieParser from 'cookie-parser';
-import url from 'url';
+const Router = require('router');
+const bodyParser = require('body-parser');
+const cookieParser = require('cookie-parser');
+const url = require('url');
 
 // routes
-import authenticate from './routes/authenticate';
-import bans from './routes/bans';
-import search from './routes/search';
-import users from './routes/users';
-import now from './routes/now';
-import imports from './routes/import';
+const authenticate = require('./routes/authenticate');
+const bans = require('./routes/bans');
+const search = require('./routes/search');
+const users = require('./routes/users');
+const now = require('./routes/now');
+const imports = require('./routes/import');
 
 // middleware
-import addFullUrl from './middleware/addFullUrl';
-import attachUwaveMeta from './middleware/attachUwaveMeta';
-import rateLimit from './middleware/rateLimit';
+const addFullUrl = require('./middleware/addFullUrl');
+const attachUwaveMeta = require('./middleware/attachUwaveMeta');
+const rateLimit = require('./middleware/rateLimit');
 
 // utils
-import AuthRegistry from './AuthRegistry';
+const AuthRegistry = require('./AuthRegistry');
 
 function defaultCreatePasswordResetEmail({ token, requestUrl }) {
   const parsed = url.parse(requestUrl);
@@ -38,7 +38,7 @@ function defaultCreatePasswordResetEmail({ token, requestUrl }) {
   };
 }
 
-export default class UwaveHttpApi extends Router {
+class UwaveHttpApi extends Router {
   constructor(uw, options = {}) {
     if (!uw || !('mongo' in uw)) {
       throw new TypeError('Expected a u-wave-core instance in the first parameter. If you are '
@@ -105,3 +105,5 @@ export default class UwaveHttpApi extends Router {
     return attachUwaveMeta(this, this.uw);
   }
 }
+
+module.exports = UwaveHttpApi;

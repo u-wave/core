@@ -1,15 +1,13 @@
-import EventEmitter from 'events';
-import Ultron from 'ultron';
-import WebSocket from 'ws';
-import createDebug from 'debug';
-import tryJsonParse from 'try-json-parse';
+const EventEmitter = require('events');
+const Ultron = require('ultron');
+const WebSocket = require('ws');
+const createDebug = require('debug');
+const tryJsonParse = require('try-json-parse');
 
 const debug = createDebug('uwave:api:sockets:authed');
 
-export default class AuthedConnection extends EventEmitter {
-  lastMessage = Date.now();
-
-  constructor(uw, socket: WebSocket, user) {
+class AuthedConnection extends EventEmitter {
+  constructor(uw, socket, user) {
     super();
     this.uw = uw;
     this.socket = socket;
@@ -21,6 +19,7 @@ export default class AuthedConnection extends EventEmitter {
     });
     this.events.on('message', this.onMessage.bind(this));
 
+    this.lastMessage = Date.now();
     this.sendWaiting();
   }
 
@@ -50,14 +49,14 @@ export default class AuthedConnection extends EventEmitter {
     await this.uw.redis.del(this.key, this.messagesKey);
   }
 
-  onMessage(raw: string) {
+  onMessage(raw) {
     const { command, data } = tryJsonParse(raw) || {};
     if (command) {
       this.emit('command', command, data);
     }
   }
 
-  send(command: string, data: any) {
+  send(command, data) {
     this.socket.send(JSON.stringify({ command, data }));
     this.lastMessage = Date.now();
   }
@@ -89,3 +88,5 @@ export default class AuthedConnection extends EventEmitter {
     return `Authed { user: ${this.user.id} ${this.user.username} }`;
   }
 }
+
+module.exports = AuthedConnection;

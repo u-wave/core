@@ -1,7 +1,7 @@
-import { expect } from 'chai';
-import { createServer } from 'http';
-import delay from 'delay';
-import uwave from '../src';
+const { expect } = require('chai');
+const { createServer } = require('http');
+const delay = require('delay');
+const uwave = require('..');
 
 describe('üWave Core', () => {
   let uw;

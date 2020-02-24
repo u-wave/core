@@ -1,6 +1,6 @@
-import nodemailer from 'nodemailer';
+const nodemailer = require('nodemailer');
 
-export default async function sendEmail(emailAddress, options) {
+async function sendEmail(emailAddress, options) {
   const smtpOptions = {
     host: 'localhost',
     port: 25,
@@ -16,3 +16,5 @@ export default async function sendEmail(emailAddress, options) {
 
   await transporter.sendMail(mailOptions);
 }
+
+module.exports = sendEmail;

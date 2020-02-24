@@ -1,11 +1,11 @@
-import router from 'router';
-import route from '../route';
-import * as validations from '../validations';
-import protect from '../middleware/protect';
-import checkFields from '../middleware/checkFields';
-import * as controller from '../controllers/booth';
+const router = require('router');
+const route = require('../route');
+const validations = require('../validations');
+const protect = require('../middleware/protect');
+const checkFields = require('../middleware/checkFields');
+const controller = require('../controllers/booth');
 
-export default function boothRoutes() {
+function boothRoutes() {
   return router()
     // GET /booth/ - Get the current booth status.
     .get(
@@ -26,6 +26,20 @@ export default function boothRoutes() {
       checkFields(validations.replaceBooth),
       route(controller.replaceBooth),
     )
+    // GET /booth/:historyID/vote - Get the current user's vote for the current play.
+    .get(
+      '/:historyID/vote',
+      protect(),
+      checkFields(validations.getVote),
+      route(controller.getVote),
+    )
+    // PUT /booth/:historyID/vote - Upvote or downvote the current play.
+    .put(
+      '/:historyID/vote',
+      protect(),
+      checkFields(validations.vote),
+      route(controller.vote),
+    )
     // POST /booth/favorite - Add the current play to your favorites.
     .post(
       '/favorite',
@@ -40,3 +54,5 @@ export default function boothRoutes() {
       route(controller.getHistory),
     );
 }
+
+module.exports = boothRoutes;

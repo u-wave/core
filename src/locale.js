@@ -1,7 +1,7 @@
-import fs from 'fs';
-import path from 'path';
-import i18next from 'i18next';
-import YAML from 'yaml';
+const fs = require('fs');
+const path = require('path');
+const i18next = require('i18next');
+const YAML = require('yaml');
 
 const source = fs.readFileSync(path.join(__dirname, '../locale/en.yaml'), 'utf8');
 const en = YAML.parse(source);
@@ -18,5 +18,5 @@ i18n.init({
 
 i18n.addResourceBundle('en', 'uwave', en.uwave);
 
-export const t = i18n.getFixedT('en', 'uwave');
-export default i18n;
+exports.t = i18n.getFixedT('en', 'uwave');
+exports.i18n = i18n;

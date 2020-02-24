@@ -1,7 +1,7 @@
-import { PermissionError } from '../errors';
-import wrapMiddleware from '../utils/wrapMiddleware';
+const { PermissionError } = require('../errors');
+const wrapMiddleware = require('../utils/wrapMiddleware');
 
-export default function requireActiveConnection() {
+function requireActiveConnection() {
   async function isConnected(uwave, user) {
     const onlineIDs = await uwave.redis.lrange('users', 0, -1);
     return onlineIDs.indexOf(user.id) !== -1;
@@ -14,3 +14,5 @@ export default function requireActiveConnection() {
     }
   });
 }
+
+module.exports = requireActiveConnection;
