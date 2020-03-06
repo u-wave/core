@@ -15,7 +15,7 @@
     "node": ">= 10"
   },
   "dependencies": {
-    "@hapi/joi": "^16.1.8",
+    "@hapi/joi": "^17.1.0",
     "bcryptjs": "^2.4.3",
     "body-parser": "^1.19.0",
     "cookie": "^0.4.0",
