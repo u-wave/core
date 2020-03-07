@@ -1,4 +1,3 @@
-const props = require('p-props');
 const ms = require('ms');
 const RedLock = require('redlock');
 const createDebug = require('debug');
@@ -62,12 +61,27 @@ class Booth {
     return History.findById(historyID);
   }
 
+  async getCurrentVoteStats() {
+    const { redis } = this.uw;
+
+    const results = await redis.pipeline()
+      .smembers('booth:upvotes')
+      .smembers('booth:downvotes')
+      .smembers('booth:favorites')
+      .exec();
+
+    // TODO what if there is an error?
+    const voteStats = {
+      upvotes: results[0][1],
+      downvotes: results[1][1],
+      favorites: results[2][1],
+    };
+
+    return voteStats;
+  }
+
   async saveStats(entry) {
-    const stats = await props({
-      upvotes: this.uw.redis.smembers('booth:upvotes'),
-      downvotes: this.uw.redis.smembers('booth:downvotes'),
-      favorites: this.uw.redis.smembers('booth:favorites'),
-    });
+    const stats = await this.getCurrentVoteStats();
 
     Object.assign(entry, stats);
     return entry.save();
