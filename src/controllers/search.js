@@ -56,14 +56,14 @@ async function search(req) {
   searchResults.forEach((result) => {
     const media = mediaBySourceID.get(result.sourceID);
     if (media) {
-      result.playlists = playlistsByMediaID.get(media._id.toString());
+      result.inPlaylists = playlistsByMediaID.get(media._id.toString());
     }
   });
 
   return toListResponse(searchResults, {
     url: req.fullUrl,
     included: {
-      playlists: ['playlists'],
+      playlists: ['inPlaylists'],
     },
   });
 }
