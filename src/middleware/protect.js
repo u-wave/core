@@ -1,7 +1,7 @@
-import { PermissionError } from '../errors';
-import wrapMiddleware from '../utils/wrapMiddleware';
+const { PermissionError } = require('../errors');
+const wrapMiddleware = require('../utils/wrapMiddleware');
 
-export default function protect(role) {
+function protect(role) {
   return wrapMiddleware(async (req) => {
     if (!req.user) {
       throw new PermissionError('You must be logged in to do this');
@@ -11,3 +11,5 @@ export default function protect(role) {
     }
   });
 }
+
+module.exports = protect;

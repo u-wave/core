@@ -1,9 +1,9 @@
-import { groupBy, shuffle } from 'lodash';
-import escapeStringRegExp from 'escape-string-regexp';
-import createDebug from 'debug';
-import NotFoundError from '../errors/NotFoundError';
-import Page from '../Page';
-import routes from '../routes/playlists';
+const { groupBy, shuffle } = require('lodash');
+const escapeStringRegExp = require('escape-string-regexp');
+const createDebug = require('debug');
+const NotFoundError = require('../errors/NotFoundError');
+const Page = require('../Page');
+const routes = require('../routes/playlists');
 
 const debug = createDebug('uwave:playlists');
 
@@ -43,7 +43,7 @@ function toPlaylistItem(itemProps, media) {
   };
 }
 
-export class PlaylistsRepository {
+class PlaylistsRepository {
   constructor(uw) {
     this.uw = uw;
   }
@@ -160,14 +160,16 @@ export class PlaylistsRepository {
       { $match: { _id: playlist._id } },
       { $limit: 1 },
       // find the items
+      { $project: { _id: 0, media: 1 } },
+      { $unwind: '$media' },
       {
         $lookup: {
-          from: 'playlistitems', localField: 'media', foreignField: '_id', as: 'items',
+          from: 'playlistitems', localField: 'media', foreignField: '_id', as: 'item',
         },
       },
-      { $project: { _id: 0, items: 1 } },
-      { $unwind: '$items' },
-      { $replaceRoot: { newRoot: '$items' } },
+      // return only the items
+      { $unwind: '$item' }, // just one each
+      { $replaceRoot: { newRoot: '$item' } },
     ];
 
     if (filter) {
@@ -211,7 +213,6 @@ export class PlaylistsRepository {
     const [{ count, items }] = await this.uw.model('Playlist').aggregate(aggregate);
 
     // `items` is the same shape as a PlaylistItem instance!
-
     return new Page(items, {
       pageSize: pagination ? pagination.limit : null,
       // `count` can be the empty array if the playlist has no items
@@ -287,9 +288,14 @@ export class PlaylistsRepository {
         sourceID: { $in: sourceItems.map((item) => item.sourceID) },
       });
 
+      const knownMediaIDs = new Set();
+      knownMedias.forEach((knownMedia) => {
+        knownMediaIDs.add(knownMedia.sourceID);
+      });
+
       const unknownMediaIDs = [];
       sourceItems.forEach((item) => {
-        if (!knownMedias.some((media) => media.sourceID === String(item.sourceID))) {
+        if (!knownMediaIDs.has(String(item.sourceID))) {
           unknownMediaIDs.push(item.sourceID);
         }
       });
@@ -385,9 +391,12 @@ export class PlaylistsRepository {
   }
 }
 
-export default function playlistsPlugin() {
+function playlistsPlugin() {
   return (uw) => {
     uw.playlists = new PlaylistsRepository(uw);
     uw.httpApi.use('/playlists', routes());
   };
 }
+
+module.exports = playlistsPlugin;
+module.exports.PlaylistsRepository = PlaylistsRepository;

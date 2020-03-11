@@ -1,19 +1,18 @@
-import props from 'p-props';
-import {
+const props = require('p-props');
+const {
   CombinedError,
   HTTPError,
-  NotFoundError,
   PermissionError,
   HistoryEntryNotFoundError,
   PlaylistNotFoundError,
   CannotSelfFavoriteError,
-} from '../errors';
-import getOffsetPagination from '../utils/getOffsetPagination';
-import toItemResponse from '../utils/toItemResponse';
-import toListResponse from '../utils/toListResponse';
-import toPaginatedResponse from '../utils/toPaginatedResponse';
+} = require('../errors');
+const getOffsetPagination = require('../utils/getOffsetPagination');
+const toItemResponse = require('../utils/toItemResponse');
+const toListResponse = require('../utils/toListResponse');
+const toPaginatedResponse = require('../utils/toPaginatedResponse');
 
-export async function getBoothData(uw) {
+async function getBoothData(uw) {
   const { booth, redis } = uw;
 
   const historyEntry = await booth.getCurrentEntry();
@@ -39,7 +38,8 @@ export async function getBoothData(uw) {
     stats,
   };
 }
-export async function getBooth(req) {
+
+async function getBooth(req) {
   const uw = req.uwave;
 
   const data = await getBoothData(uw);
@@ -63,7 +63,7 @@ async function doSkip(uw, moderatorID, userID, reason, opts = {}) {
   });
 }
 
-export async function skipBooth(req) {
+async function skipBooth(req) {
   const { user } = req;
   const { userID, reason, remove } = req.body;
 
@@ -101,14 +101,14 @@ export async function skipBooth(req) {
   return toItemResponse({});
 }
 
-export async function replaceBooth(req) {
+async function replaceBooth(req) {
   const uw = req.uwave;
   const moderatorID = req.user.id;
   const { userID } = req.body;
   let waitlist = await uw.redis.lrange('waitlist', 0, -1);
 
   if (!waitlist.length) {
-    throw new NotFoundError('Waitlist is empty.');
+    throw new HTTPError(404, 'Waitlist is empty.');
   }
 
   if (waitlist.includes(userID)) {
@@ -128,39 +128,89 @@ export async function replaceBooth(req) {
 }
 
 async function addVote(uw, userID, direction) {
-  await Promise.all([
-    uw.redis.srem('booth:upvotes', userID),
-    uw.redis.srem('booth:downvotes', userID),
-  ]);
-  await uw.redis.sadd(
-    direction > 0 ? 'booth:upvotes' : 'booth:downvotes',
-    userID,
-  );
+  await uw.redis.multi()
+    .srem('booth:upvotes', userID)
+    .srem('booth:downvotes', userID)
+    .sadd(direction > 0 ? 'booth:upvotes' : 'booth:downvotes', userID)
+    .exec();
   uw.publish('booth:vote', {
     userID, direction,
   });
 }
 
-export async function vote(uw, userID, direction) {
-  const currentDJ = await uw.redis.get('booth:currentDJ');
+// Old way of voting: over the WebSocket
+async function socketVote(uw, userID, direction) {
+  const currentDJ = await getCurrentDJ(uw);
   if (currentDJ !== null && currentDJ !== userID) {
     const historyID = await uw.redis.get('booth:historyID');
     if (historyID === null) return;
     if (direction > 0) {
-      const upvoted = await uw.redis.sismember('booth:upvotes', userID);
-      if (!upvoted) {
-        await addVote(uw, userID, 1);
-      }
+      await addVote(uw, userID, 1);
     } else {
-      const downvoted = await uw.redis.sismember('booth:downvotes', userID);
-      if (!downvoted) {
-        await addVote(uw, userID, -1);
-      }
+      await addVote(uw, userID, -1);
     }
   }
 }
 
-export async function favorite(req) {
+async function getVote(req) {
+  const { uwave: uw, user } = req;
+  const { historyID } = req.params;
+
+  const [currentDJ, currentHistoryID] = await Promise.all([
+    getCurrentDJ(uw),
+    uw.redis.get('booth:historyID'),
+  ]);
+  if (currentDJ === null || currentHistoryID === null) {
+    throw new HTTPError(412, 'Nobody is playing');
+  }
+  if (historyID && historyID !== currentHistoryID) {
+    throw new HTTPError(412, 'Cannot get vote for media that is not currently playing');
+  }
+
+  const [upvoted, downvoted] = await Promise.all([
+    uw.redis.sismember('booth:upvotes', user.id),
+    uw.redis.sismember('booth:downvotes', user.id),
+  ]);
+
+  let direction = 0;
+  if (upvoted) {
+    direction = 1;
+  } else if (downvoted) {
+    direction = -1;
+  }
+
+  return toItemResponse({ direction });
+}
+
+async function vote(req) {
+  const { uwave: uw, user } = req;
+  const { historyID } = req.params;
+  const { direction } = req.body;
+
+  const [currentDJ, currentHistoryID] = await Promise.all([
+    getCurrentDJ(uw),
+    uw.redis.get('booth:historyID'),
+  ]);
+  if (currentDJ === null || currentHistoryID === null) {
+    throw new HTTPError(412, 'Nobody is playing');
+  }
+  if (currentDJ === user.id) {
+    throw new HTTPError(412, 'Cannot vote for your own plays');
+  }
+  if (historyID && historyID !== currentHistoryID) {
+    throw new HTTPError(412, 'Cannot vote for media that is not currently playing');
+  }
+
+  if (direction > 0) {
+    await addVote(uw, user.id, 1);
+  } else {
+    await addVote(uw, user.id, -1);
+  }
+
+  return toItemResponse({});
+}
+
+async function favorite(req) {
   const { user } = req;
   const { playlistID, historyID } = req.body;
   const uw = req.uwave;
@@ -207,7 +257,7 @@ export async function favorite(req) {
   });
 }
 
-export async function getHistory(req) {
+async function getHistory(req) {
   const pagination = getOffsetPagination(req.query, {
     defaultSize: 25,
     maxSize: 100,
@@ -224,3 +274,13 @@ export async function getHistory(req) {
     },
   });
 }
+
+exports.favorite = favorite;
+exports.getBooth = getBooth;
+exports.getBoothData = getBoothData;
+exports.getHistory = getHistory;
+exports.getVote = getVote;
+exports.replaceBooth = replaceBooth;
+exports.skipBooth = skipBooth;
+exports.socketVote = socketVote;
+exports.vote = vote;

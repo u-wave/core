@@ -1,4 +1,4 @@
-import { HTTPError } from '../errors';
+const { HTTPError } = require('../errors');
 
 const MONGO_DUPLICATE_KEY_ERROR = 11000;
 const MONGO_DUPLICATE_KEY_ERROR2 = 11001;
@@ -15,7 +15,7 @@ function isDuplicateKeyError(error) {
  * @return More useful error if a MongoDB duplicate key error was given,
  *    otherwise the given error, unchanged.
  */
-export default function beautifyDuplicateKeyError(error) {
+function beautifyDuplicateKeyError(error) {
   if (isDuplicateKeyError(error)) {
     if (error.message.indexOf('username') !== -1) {
       return new HTTPError(400, 'That username is in use.');
@@ -26,3 +26,5 @@ export default function beautifyDuplicateKeyError(error) {
   }
   return error;
 }
+
+module.exports = beautifyDuplicateKeyError;

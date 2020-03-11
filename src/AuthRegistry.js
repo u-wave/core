@@ -1,9 +1,9 @@
-import crypto from 'crypto';
-import { promisify } from 'util';
+const crypto = require('crypto');
+const { promisify } = require('util');
 
 const randomBytes = promisify(crypto.randomBytes);
 
-export default class AuthRegistry {
+class AuthRegistry {
   constructor(redis) {
     this.redis = redis;
   }
@@ -27,3 +27,5 @@ export default class AuthRegistry {
     return userID;
   }
 }
+
+module.exports = AuthRegistry;

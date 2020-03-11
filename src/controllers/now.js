@@ -1,6 +1,6 @@
-import props from 'p-props';
-import { getBoothData } from './booth';
-import { serializePlaylist } from '../utils/serialize';
+const props = require('p-props');
+const { getBoothData } = require('./booth');
+const { serializePlaylist } = require('../utils/serialize');
 
 async function getFirstItem(user, activePlaylist) {
   const id = await activePlaylist;
@@ -36,13 +36,8 @@ async function getGuestsCount(uw) {
   return toInt(guests);
 }
 
-async function isWaitlistLocked(uw) {
-  const lock = await uw.redis.get('waitlist:lock');
-  return Boolean(lock);
-}
-
 // eslint-disable-next-line import/prefer-default-export
-export async function getState(req) {
+async function getState(req) {
   const uw = req.uwave;
   const { authRegistry } = req.uwaveHttp;
   const { passport } = uw;
@@ -53,8 +48,8 @@ export async function getState(req) {
   const guests = getGuestsCount(uw);
   const roles = uw.acl.getAllRoles();
   const booth = getBoothData(uw);
-  const waitlist = uw.redis.lrange('waitlist', 0, -1);
-  const waitlistLocked = isWaitlistLocked(uw);
+  const waitlist = uw.waitlist.getUserIDs();
+  const waitlistLocked = uw.waitlist.isLocked();
   const activePlaylist = user ? user.getActivePlaylistID() : null;
   const playlists = user ? user.getPlaylists() : null;
   const firstActivePlaylistItem = activePlaylist ? getFirstItem(user, activePlaylist) : null;
@@ -85,3 +80,5 @@ export async function getState(req) {
 
   return state;
 }
+
+exports.getState = getState;

@@ -1,11 +1,11 @@
-import mongoose from 'mongoose';
+const mongoose = require('mongoose');
 
 const { Schema } = mongoose;
 const { Types } = mongoose.Schema;
 
 const listOfUsers = [{ type: Types.ObjectId, ref: 'User' }];
 
-export default function historyModel() {
+function historyModel() {
   const schema = new Schema({
     user: {
       type: Types.ObjectId, ref: 'User', required: true, index: true,
@@ -40,3 +40,5 @@ export default function historyModel() {
     uw.mongo.model('History', schema);
   };
 }
+
+module.exports = historyModel;

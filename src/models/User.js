@@ -1,12 +1,16 @@
-import mongoose from 'mongoose';
-import { slugify } from 'transliteration';
+const mongoose = require('mongoose');
+const { slugify } = require('transliteration');
 
-import Page from '../Page';
+/**
+ * @template Element
+ * @template Pagination
+ * @typedef {import('../Page')<Element, Pagination>} Page
+ */
 
 const { Schema } = mongoose;
 const { Types } = mongoose.Schema;
 
-export default function userModel() {
+function userModel() {
   return (uw) => {
     const bannedSchema = new Schema({
       moderator: { type: Types.ObjectId, ref: 'User', index: true },
@@ -60,70 +64,122 @@ export default function userModel() {
     });
 
     userSchema.loadClass(class User {
-      getPermissions(): Promise<Array<string>> {
+      /**
+       * @return {Promise<string[]>}
+       */
+      getPermissions() {
         return uw.acl.getAllPermissions(this);
       }
 
-      can(permission: string): Promise<boolean> {
+      /**
+       * @param {string} permission
+       * @return {Promise<boolean>}
+       */
+      can(permission) {
         return uw.acl.isAllowed(this, permission);
       }
 
-      allow(permissions: Array<string>): Promise {
+      /**
+       * @param {string[]} permissions
+       * @return {Promise<unknown>}
+       */
+      allow(permissions) {
         return uw.acl.allow(this, permissions);
       }
 
-      disallow(permissions: Array<string>): Promise {
+      /**
+       * @param {string[]} permissions
+       * @return {Promise<unknown>}
+       */
+      disallow(permissions) {
         return uw.acl.disallow(this, permissions);
       }
 
-      updatePassword(password: string): Promise {
+      /**
+       * @param {string} password
+       * @return {Promise<unknown>}
+       */
+      updatePassword(password) {
         return uw.users.updatePassword(this, password);
       }
 
-      getPlaylists(): Promise<Array> {
+      /**
+       * @return {Promise<unknown[]>}
+       */
+      getPlaylists() {
         return uw.playlists.getUserPlaylists(this);
       }
 
-      getPlaylist(id): Promise {
+      /**
+       * @return {Promise<unknown>}
+       */
+      getPlaylist(id) {
         return uw.playlists.getUserPlaylist(this, id);
       }
 
-      getActivePlaylistID(): Promise<string> {
+      /**
+       * @return {Promise<string>}
+       */
+      getActivePlaylistID() {
         return uw.redis.get(`playlist:${this.id}`);
       }
 
-      async getActivePlaylist(): Promise {
+      /**
+       * @return {Promise<unknown>}
+       */
+      async getActivePlaylist() {
         const playlistID = await this.getActivePlaylistID();
         return uw.playlists.getPlaylist(playlistID);
       }
 
-      async setActivePlaylist(id): Promise {
+      /**
+       * @return {Promise<unknown>}
+       */
+      async setActivePlaylist(id) {
         const playlist = await this.getPlaylist(id);
         await uw.redis.set(`playlist:${this.id}`, playlist.id);
         return this;
       }
 
-      createPlaylist(props): Promise {
+      /**
+       * @return {Promise<unknown>}
+       */
+      createPlaylist(props) {
         return uw.playlists.createPlaylist(this, props);
       }
 
-      getHistory(pagination = {}): Promise<Page> {
+      /**
+       * @return {Promise<Page<unknown, unknown>>}
+       */
+      getHistory(pagination = {}) {
         return uw.history.getUserHistory(this, pagination);
       }
 
-      async mute(...args): Promise {
+      /**
+       * @return {Promise<unknown>}
+       */
+      async mute(...args) {
         return uw.chat.mute(this, ...args);
       }
 
-      async unmute(...args): Promise {
+      /**
+       * @return {Promise<unknown>}
+       */
+      async unmute(...args) {
         return uw.chat.unmute(this, ...args);
       }
 
-      async isMuted(): Promise<boolean> {
+      /**
+       * @return {Promise<boolean>}
+       */
+      async isMuted() {
         return uw.chat.isMuted(this);
       }
 
-      isBanned(): Promise<boolean> {
+      /**
+       * @return {Promise<boolean>}
+       */
+      isBanned() {
         return uw.bans.isBanned(this);
       }
     });
@@ -131,3 +187,5 @@ export default function userModel() {
     uw.mongo.model('User', userSchema);
   };
 }
+
+module.exports = userModel;

@@ -1,11 +1,16 @@
-import mongoose from 'mongoose';
-import { PlaylistItemNotFoundError } from '../errors';
-import Page from '../Page';
+const mongoose = require('mongoose');
+const { PlaylistItemNotFoundError } = require('../errors');
+
+/**
+ * @template Element
+ * @template Pagination
+ * @typedef {import('../Page')<Element, Pagination>} Page
+ */
 
 const { Schema } = mongoose;
 const { Types } = mongoose.Schema;
 
-export default function playlistModel() {
+function playlistModel() {
   return (uw) => {
     const schema = new Schema({
       name: {
@@ -30,7 +35,8 @@ export default function playlistModel() {
     });
 
     schema.loadClass(class Playlist {
-      get size(): number {
+      /** @type {number} */
+      get size() {
         return this.media.length;
       }
 
@@ -41,36 +47,44 @@ export default function playlistModel() {
         return uw.playlists.getPlaylistItem(id);
       }
 
-      getItemAt(index): Promise {
+      /** @return {Promise<unknown>} */
+      getItemAt(index) {
         return uw.playlists.getPlaylistItem(this.media[index]);
       }
 
-      getItems(filter, page): Promise<Page> {
+      /** @return {Promise<Page<unknown, unknown>>} */
+      getItems(filter, page) {
         return uw.playlists.getPlaylistItems(this, filter, page);
       }
 
-      addItems(items, opts = {}): Promise {
+      /** @return {Promise<unknown>} */
+      addItems(items, opts = {}) {
         return uw.playlists.addPlaylistItems(this, items, opts);
       }
 
-      async updateItem(id, patch = {}): Promise {
+      /** @return {Promise<unknown>} */
+      async updateItem(id, patch = {}) {
         const item = await this.getItem(id);
         return uw.playlists.updatePlaylistItem(item, patch);
       }
 
-      shuffle(): Promise {
+      /** @return {Promise<unknown>} */
+      shuffle() {
         return uw.playlists.shufflePlaylist(this);
       }
 
+      /** @return {Promise<unknown>} */
       moveItems(ids, afterID) {
         return uw.playlists.movePlaylistItems(this, ids, afterID);
       }
 
-      removeItem(id): Promise {
+      /** @return {Promise<unknown>} */
+      removeItem(id) {
         return this.removeItems([id]);
       }
 
-      removeItems(ids): Promise {
+      /** @return {Promise<unknown>} */
+      removeItems(ids) {
         return uw.playlists.removePlaylistItems(this, ids);
       }
     });
@@ -78,3 +92,5 @@ export default function playlistModel() {
     uw.mongo.model('Playlist', schema);
   };
 }
+
+module.exports = playlistModel;

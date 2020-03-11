@@ -1,9 +1,9 @@
-import router from 'router';
-import route from '../route';
-import protect from '../middleware/protect';
-import * as controller from '../controllers/search';
+const router = require('router');
+const route = require('../route');
+const protect = require('../middleware/protect');
+const controller = require('../controllers/search');
 
-export default function searchRoutes() {
+function searchRoutes() {
   return router()
     .use(protect())
     // GET /search/ - Search for media across all sources.
@@ -17,3 +17,5 @@ export default function searchRoutes() {
       route(controller.search),
     );
 }
+
+module.exports = searchRoutes;

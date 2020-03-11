@@ -1,11 +1,11 @@
-import router from 'router';
-import route from '../route';
-import * as validations from '../validations';
-import protect from '../middleware/protect';
-import checkFields from '../middleware/checkFields';
-import * as controller from '../controllers/acl';
+const router = require('router');
+const route = require('../route');
+const validations = require('../validations');
+const protect = require('../middleware/protect');
+const checkFields = require('../middleware/checkFields');
+const controller = require('../controllers/acl');
 
-export default function serverRoutes() {
+function serverRoutes() {
   return router()
     // GET /roles - List available roles.
     .get(
@@ -27,3 +27,5 @@ export default function serverRoutes() {
       route(controller.deleteRole),
     );
 }
+
+module.exports = serverRoutes;

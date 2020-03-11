@@ -6,7 +6,7 @@ const parseNumber = (str, defaultN) => {
   return defaultN;
 };
 
-export default function getOffsetPagination(
+function getOffsetPagination(
   query,
   { defaultSize = 100, maxSize = 100 } = {},
 ) {
@@ -24,3 +24,5 @@ export default function getOffsetPagination(
     limit,
   };
 }
+
+module.exports = getOffsetPagination;

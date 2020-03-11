@@ -1,9 +1,9 @@
-import * as bcrypt from 'bcryptjs';
-import createDebug from 'debug';
-import escapeStringRegExp from 'escape-string-regexp';
-import Page from '../Page';
-import { UserNotFoundError } from '../errors';
-import PasswordError from '../errors/PasswordError';
+const bcrypt = require('bcryptjs');
+const createDebug = require('debug');
+const escapeStringRegExp = require('escape-string-regexp');
+const Page = require('../Page');
+const { UserNotFoundError } = require('../errors');
+const PasswordError = require('../errors/PasswordError');
 
 const debug = createDebug('uwave:users');
 
@@ -15,7 +15,7 @@ function getDefaultAvatar(user) {
   return `https://sigil.u-wave.net/${user.id}`;
 }
 
-export class UsersRepository {
+class UsersRepository {
   constructor(uw) {
     this.uw = uw;
   }
@@ -267,8 +267,11 @@ export class UsersRepository {
   }
 }
 
-export default function usersPlugin() {
+function usersPlugin() {
   return (uw) => {
     uw.users = new UsersRepository(uw);
   };
 }
+
+module.exports = usersPlugin;
+module.exports.UsersRepository = UsersRepository;

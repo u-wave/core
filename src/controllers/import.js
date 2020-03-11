@@ -1,8 +1,8 @@
-import {
+const {
   SourceNotFoundError,
   SourceNoImportError,
   APIError,
-} from '../errors';
+} = require('../errors');
 
 const getImportableSource = (req) => {
   const uw = req.uwave;
@@ -25,8 +25,7 @@ const mergeImportParameters = (req) => ({
   ...req.params,
 });
 
-// eslint-disable-next-line import/prefer-default-export
-export async function importAction(req) {
+async function importAction(req) {
   const source = getImportableSource(req);
 
   const opts = mergeImportParameters(req);
@@ -39,3 +38,5 @@ export async function importAction(req) {
     throw APIError.wrap(err);
   }
 }
+
+exports.importAction = importAction;

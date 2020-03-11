@@ -1,12 +1,12 @@
-import router from 'router';
-import route from '../route';
-import * as validations from '../validations';
-import protect from '../middleware/protect';
-import requireActiveConnection from '../middleware/requireActiveConnection';
-import checkFields from '../middleware/checkFields';
-import * as controller from '../controllers/waitlist';
+const router = require('router');
+const route = require('../route');
+const validations = require('../validations');
+const protect = require('../middleware/protect');
+const requireActiveConnection = require('../middleware/requireActiveConnection');
+const checkFields = require('../middleware/checkFields');
+const controller = require('../controllers/waitlist');
 
-export default function waitlistRoutes() {
+function waitlistRoutes() {
   return router()
     // GET /waitlist/ - List users in the waitlist.
     .get(
@@ -48,3 +48,5 @@ export default function waitlistRoutes() {
       route(controller.lockWaitlist),
     );
 }
+
+module.exports = waitlistRoutes;

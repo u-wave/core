@@ -1,11 +1,11 @@
-import router from 'router';
-import route from '../route';
-import * as validations from '../validations';
-import protect from '../middleware/protect';
-import checkFields from '../middleware/checkFields';
-import * as controller from '../controllers/playlists';
+const router = require('router');
+const route = require('../route');
+const validations = require('../validations');
+const protect = require('../middleware/protect');
+const checkFields = require('../middleware/checkFields');
+const controller = require('../controllers/playlists');
 
-export default function playlistRoutes() {
+function playlistRoutes() {
   return router()
     .use(protect())
 
@@ -109,3 +109,5 @@ export default function playlistRoutes() {
       route(controller.removePlaylistItem),
     );
 }
+
+module.exports = playlistRoutes;

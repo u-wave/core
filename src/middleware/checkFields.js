@@ -1,7 +1,7 @@
-import joi from '@hapi/joi';
-import wrapMiddleware from '../utils/wrapMiddleware';
+const joi = require('@hapi/joi');
+const wrapMiddleware = require('../utils/wrapMiddleware');
 
-export default function checkFields(types) {
+function checkFields(types) {
   if (!joi.isSchema(types)) {
     throw new TypeError('checkFields: types must be a joi schema');
   }
@@ -13,3 +13,5 @@ export default function checkFields(types) {
     });
   });
 }
+
+module.exports = checkFields;

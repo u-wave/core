@@ -1,15 +1,15 @@
-import {
+const {
   HTTPError,
   PlaylistNotFoundError,
   PlaylistItemNotFoundError,
-} from '../errors';
-import { serializePlaylist } from '../utils/serialize';
-import getOffsetPagination from '../utils/getOffsetPagination';
-import toItemResponse from '../utils/toItemResponse';
-import toListResponse from '../utils/toListResponse';
-import toPaginatedResponse from '../utils/toPaginatedResponse';
+} = require('../errors');
+const { serializePlaylist } = require('../utils/serialize');
+const getOffsetPagination = require('../utils/getOffsetPagination');
+const toItemResponse = require('../utils/toItemResponse');
+const toListResponse = require('../utils/toListResponse');
+const toPaginatedResponse = require('../utils/toPaginatedResponse');
 
-export async function getPlaylists(req) {
+async function getPlaylists(req) {
   const { user } = req;
   const uw = req.uwave;
   const { contains } = req.query;
@@ -27,7 +27,7 @@ export async function getPlaylists(req) {
   );
 }
 
-export async function getPlaylist(req) {
+async function getPlaylist(req) {
   const { user } = req;
   const { id } = req.params;
 
@@ -43,7 +43,7 @@ export async function getPlaylist(req) {
   );
 }
 
-export async function createPlaylist(req) {
+async function createPlaylist(req) {
   const { user } = req;
   const { name, description, shared } = req.body;
 
@@ -64,7 +64,7 @@ export async function createPlaylist(req) {
   );
 }
 
-export async function deletePlaylist(req) {
+async function deletePlaylist(req) {
   const { user } = req;
   const { id } = req.params;
   const { playlists } = req.uwave;
@@ -80,7 +80,7 @@ export async function deletePlaylist(req) {
 }
 
 const patchableKeys = ['name', 'shared', 'description'];
-export async function updatePlaylist(req) {
+async function updatePlaylist(req) {
   const { user } = req;
   const { id } = req.params;
   const patch = req.body;
@@ -106,7 +106,7 @@ export async function updatePlaylist(req) {
   );
 }
 
-export async function renamePlaylist(req) {
+async function renamePlaylist(req) {
   const { user } = req;
   const { id } = req.params;
   const { name } = req.body;
@@ -125,7 +125,7 @@ export async function renamePlaylist(req) {
   );
 }
 
-export async function sharePlaylist(req) {
+async function sharePlaylist(req) {
   const { user } = req;
   const { id } = req.params;
   const { shared } = req.body;
@@ -144,7 +144,7 @@ export async function sharePlaylist(req) {
   );
 }
 
-export async function activatePlaylist(req) {
+async function activatePlaylist(req) {
   const { user } = req;
   const { id } = req.params;
 
@@ -158,7 +158,7 @@ export async function activatePlaylist(req) {
   return toItemResponse({});
 }
 
-export async function getPlaylistItems(req) {
+async function getPlaylistItems(req) {
   const { user } = req;
   const { id } = req.params;
   const filter = req.query.filter || null;
@@ -179,7 +179,7 @@ export async function getPlaylistItems(req) {
   });
 }
 
-export async function addPlaylistItems(req) {
+async function addPlaylistItems(req) {
   const { user } = req;
   const { id } = req.params;
   const { at, after, items } = req.body;
@@ -215,7 +215,7 @@ export async function addPlaylistItems(req) {
   });
 }
 
-export async function removePlaylistItems(req) {
+async function removePlaylistItems(req) {
   const { user } = req;
   const { id } = req.params;
   const items = req.query.items || req.body.items;
@@ -238,7 +238,7 @@ export async function removePlaylistItems(req) {
   });
 }
 
-export async function movePlaylistItems(req) {
+async function movePlaylistItems(req) {
   const { user } = req;
   const { id } = req.params;
   const { at, after, items } = req.body;
@@ -265,7 +265,7 @@ export async function movePlaylistItems(req) {
   return toItemResponse(result, { url: req.fullUrl });
 }
 
-export async function shufflePlaylistItems(req) {
+async function shufflePlaylistItems(req) {
   const { user } = req;
   const { id } = req.params;
 
@@ -279,7 +279,7 @@ export async function shufflePlaylistItems(req) {
   return toItemResponse({});
 }
 
-export async function getPlaylistItem(req) {
+async function getPlaylistItem(req) {
   const { user } = req;
   const { id, itemID } = req.params;
 
@@ -296,7 +296,7 @@ export async function getPlaylistItem(req) {
   return toItemResponse(item, { url: req.fullUrl });
 }
 
-export async function updatePlaylistItem(req) {
+async function updatePlaylistItem(req) {
   const { user } = req;
   const { id, itemID } = req.params;
   const {
@@ -320,7 +320,7 @@ export async function updatePlaylistItem(req) {
   return toItemResponse(item, { url: req.fullUrl });
 }
 
-export async function removePlaylistItem(req) {
+async function removePlaylistItem(req) {
   const { user } = req;
   const { id, itemID } = req.params;
 
@@ -333,3 +333,20 @@ export async function removePlaylistItem(req) {
 
   return toItemResponse(result, { url: req.fullUrl });
 }
+
+exports.getPlaylists = getPlaylists;
+exports.getPlaylist = getPlaylist;
+exports.createPlaylist = createPlaylist;
+exports.deletePlaylist = deletePlaylist;
+exports.updatePlaylist = updatePlaylist;
+exports.renamePlaylist = renamePlaylist;
+exports.sharePlaylist = sharePlaylist;
+exports.activatePlaylist = activatePlaylist;
+exports.getPlaylistItems = getPlaylistItems;
+exports.addPlaylistItems = addPlaylistItems;
+exports.removePlaylistItems = removePlaylistItems;
+exports.movePlaylistItems = movePlaylistItems;
+exports.shufflePlaylistItems = shufflePlaylistItems;
+exports.getPlaylistItem = getPlaylistItem;
+exports.updatePlaylistItem = updatePlaylistItem;
+exports.removePlaylistItem = removePlaylistItem;

@@ -1,9 +1,9 @@
-import { UserNotFoundError } from '../errors';
-import getOffsetPagination from '../utils/getOffsetPagination';
-import toItemResponse from '../utils/toItemResponse';
-import toPaginatedResponse from '../utils/toPaginatedResponse';
+const { UserNotFoundError } = require('../errors');
+const getOffsetPagination = require('../utils/getOffsetPagination');
+const toItemResponse = require('../utils/toItemResponse');
+const toPaginatedResponse = require('../utils/toPaginatedResponse');
 
-export async function getBans(req) {
+async function getBans(req) {
   const { bans } = req.uwave;
   const { filter } = req.query;
   const pagination = getOffsetPagination(req.query);
@@ -18,7 +18,7 @@ export async function getBans(req) {
   });
 }
 
-export async function addBan(req) {
+async function addBan(req) {
   const { user: moderator } = req;
   const { users, bans } = req.uwave;
   const {
@@ -45,7 +45,7 @@ export async function addBan(req) {
   });
 }
 
-export async function removeBan(req) {
+async function removeBan(req) {
   const { user: moderator } = req;
   const { bans } = req.uwave;
   const { userID } = req.params;
@@ -56,3 +56,7 @@ export async function removeBan(req) {
     url: req.fullUrl,
   });
 }
+
+exports.getBans = getBans;
+exports.addBan = addBan;
+exports.removeBan = removeBan;
