@@ -1,7 +1,7 @@
 const { groupBy, shuffle } = require('lodash');
 const escapeStringRegExp = require('escape-string-regexp');
 const createDebug = require('debug');
-const { ObjectId } = require('mongoose');
+const { ObjectID } = require('mongoose').mongo;
 const NotFoundError = require('../errors/NotFoundError');
 const Page = require('../Page');
 const routes = require('../routes/playlists');
@@ -235,8 +235,8 @@ class PlaylistsRepository {
   /**
    * Get playlists containing a particular Media.
    *
-   * @param {Media|ObjectId|string} mediaOrID
-   * @param {{ author?: ObjectId }} options
+   * @param {Media|ObjectID|string} mediaOrID
+   * @param {{ author?: ObjectID }} options
    * @return {Promise<Playlist[]>}
    */
   async getPlaylistsContainingMedia(mediaOrID, options = {}) {
@@ -278,12 +278,12 @@ class PlaylistsRepository {
 
   /**
    * Get playlists that contain any of the given medias. If multiple medias are in a single
-   * playlist, that playlist will be returned multiple times, keyed on the media's unique ObjectId.
+   * playlist, that playlist will be returned multiple times, keyed on the media's unique ObjectID.
    *
-   * @param {Media[]|string[]|ObjectId[]} mediasOrIDs
-   * @param {{ author?: ObjectId }} options
+   * @param {Media[]|string[]|ObjectID[]} mediasOrIDs
+   * @param {{ author?: ObjectID }} options
    * @return {Promise<Map<string, Playlist[]>>}
-   *   A map of stringified `Media` `ObjectId`s to the Playlist objects that contain them.
+   *   A map of stringified `Media` `ObjectID`s to the Playlist objects that contain them.
    */
   async getPlaylistsContainingAnyMedia(mediasOrIDs, options = {}) {
     const Media = this.uw.model('Media');
@@ -294,9 +294,9 @@ class PlaylistsRepository {
     }
     const mediaIds = mediasOrIDs.map((media) => {
       if (typeof media === 'string') {
-        return new ObjectId(media);
+        return new ObjectID(media);
       }
-      if (media instanceof ObjectId) {
+      if (media instanceof ObjectID) {
         return media;
       }
       if (media instanceof Media) {
