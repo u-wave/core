@@ -104,10 +104,16 @@ class UwaveHttpApi extends Router {
     }
 
     if (options.recaptcha && !options.recaptcha.secret) {
-      throw new TypeError('ReCaptcha validation is enabled, but "options.recaptcha.secret" is '
-        + 'not set. Please set "options.recaptcha.secret" to your ReCaptcha '
-        + 'secret, or disable ReCaptcha validation by setting "options.recaptcha" '
+      throw new TypeError('hCaptcha validation is enabled, but "options.recaptcha.secret" is '
+        + 'not set. Please set "options.recaptcha.secret" to your hCaptcha '
+        + 'secret, or disable hCaptcha validation by setting "options.recaptcha" '
         + 'to "false".');
+    }
+    if (options.recaptcha && options.recaptcha.secret &&
+        !options.recaptcha.secret.startsWith('0x')) {
+      throw new Error('hCaptcha validation is enabled, but "options.recaptcha.secret" does not '
+        + 'look like an hCaptcha secret key. Please use the secret listed on '
+        + 'https://dashboard.hcaptcha.com/welcome.');
     }
 
     if (options.onError != null && typeof options.onError !== 'function') {

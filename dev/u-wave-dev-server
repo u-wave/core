@@ -8,7 +8,7 @@ const explain = require('explain-error');
 const announce = require('u-wave-announce');
 const ytSource = require('u-wave-source-youtube');
 const scSource = require('u-wave-source-soundcloud');
-const recaptchaTestKeys = require('recaptcha-test-keys');
+const hcaptchaTestKeys = require('hcaptcha-test-keys');
 const debug = require('debug')('uwave:dev-server');
 const dotenv = require('dotenv');
 
