@@ -109,8 +109,8 @@ class UwaveHttpApi extends Router {
         + 'secret, or disable hCaptcha validation by setting "options.recaptcha" '
         + 'to "false".');
     }
-    if (options.recaptcha && options.recaptcha.secret &&
-        !options.recaptcha.secret.startsWith('0x')) {
+    if (options.recaptcha && options.recaptcha.secret
+        && !options.recaptcha.secret.startsWith('0x')) {
       throw new Error('hCaptcha validation is enabled, but "options.recaptcha.secret" does not '
         + 'look like an hCaptcha secret key. Please use the secret listed on '
         + 'https://dashboard.hcaptcha.com/welcome.');
