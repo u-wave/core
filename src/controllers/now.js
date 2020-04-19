@@ -1,19 +1,15 @@
-const props = require('p-props');
 const { getBoothData } = require('./booth');
 const { serializePlaylist } = require('../utils/serialize');
 
 async function getFirstItem(user, activePlaylist) {
-  const id = await activePlaylist;
-  if (id) {
-    try {
-      const playlist = await user.getPlaylist(id);
-      if (playlist) {
-        const item = await playlist.getItemAt(0);
-        return item;
-      }
-    } catch (e) {
-      // Nothing
+  try {
+    const playlist = await activePlaylist;
+    if (playlist) {
+      const item = await playlist.getItemAt(0);
+      return item;
     }
+  } catch (e) {
+    // Nothing
   }
   return null;
 }
@@ -36,7 +32,6 @@ async function getGuestsCount(uw) {
   return toInt(guests);
 }
 
-// eslint-disable-next-line import/prefer-default-export
 async function getState(req) {
   const uw = req.uwave;
   const { authRegistry } = req.uwaveHttp;
@@ -50,14 +45,14 @@ async function getState(req) {
   const booth = getBoothData(uw);
   const waitlist = uw.waitlist.getUserIDs();
   const waitlistLocked = uw.waitlist.isLocked();
-  const activePlaylist = user ? user.getActivePlaylistID() : null;
+  const activePlaylist = user ? user.getActivePlaylist() : null;
   const playlists = user ? user.getPlaylists() : null;
   const firstActivePlaylistItem = activePlaylist ? getFirstItem(user, activePlaylist) : null;
   const socketToken = user ? authRegistry.createAuthToken(user) : null;
   const authStrategies = passport.strategies();
   const time = Date.now();
 
-  const state = await props({
+  const stateShape = {
     motd,
     user,
     users,
@@ -66,13 +61,23 @@ async function getState(req) {
     booth,
     waitlist,
     waitlistLocked,
-    activePlaylist,
+    activePlaylist: activePlaylist
+      ? activePlaylist.then((p) => (p ? p.id : null))
+      : null,
     firstActivePlaylistItem,
     playlists,
     socketToken,
     authStrategies,
     time,
-  });
+  };
+
+  const stateKeys = Object.keys(stateShape);
+  const stateValues = await Promise.all(Object.values(stateShape));
+
+  const state = {};
+  for (let i = 0; i < stateKeys.length; i += 1) {
+    state[stateKeys[i]] = stateValues[i];
+  }
 
   if (state.playlists) {
     state.playlists = state.playlists.map(serializePlaylist);

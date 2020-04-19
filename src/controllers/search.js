@@ -1,26 +1,30 @@
-const props = require('p-props');
 const createDebug = require('debug');
 const { SourceNotFoundError } = require('../errors');
 const toListResponse = require('../utils/toListResponse');
 
-const log = createDebug('uwave:http:search');
+const debug = createDebug('uwave:http:search');
 
-function searchAll(req) {
+async function searchAll(req) {
   const { user } = req;
   const { query } = req.query;
   const uw = req.uwave;
-  const promises = {};
+  const sourceNames = uw.sources.map((source) => source.type);
+  const searches = uw.sources.map((source) => (
+    source.search(user, query).catch((error) => {
+      debug(error);
+      // Default to empty search on failure, for now.
+      return [];
+    })
+  ));
 
-  uw.sources.forEach((source) => {
-    promises[source.type] = source.search(user, query)
-      .catch((error) => {
-        log(error.message);
-        // Default to empty search on failure, for now.
-        return [];
-      });
+  const searchResults = await Promise.all(searches);
+
+  const combinedResults = {};
+  sourceNames.forEach((name, index) => {
+    combinedResults[name] = searchResults[index];
   });
 
-  return props(promises);
+  return combinedResults;
 }
 
 async function search(req) {
