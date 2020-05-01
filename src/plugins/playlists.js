@@ -1,6 +1,7 @@
 const { groupBy, shuffle } = require('lodash');
 const escapeStringRegExp = require('escape-string-regexp');
 const createDebug = require('debug');
+const { ObjectID } = require('mongoose').mongo;
 const NotFoundError = require('../errors/NotFoundError');
 const Page = require('../Page');
 const routes = require('../routes/playlists');
@@ -58,6 +59,18 @@ class PlaylistsRepository {
       throw new NotFoundError('Playlist not found.');
     }
     return playlist;
+  }
+
+  async getMedia(id) {
+    const Media = this.uw.model('Media');
+    if (id instanceof Media) {
+      return id;
+    }
+    const media = await Media.findById(id);
+    if (!media) {
+      throw new NotFoundError('Media not found.');
+    }
+    return media;
   }
 
   async getUserPlaylist(user, id) {
@@ -201,7 +214,6 @@ class PlaylistsRepository {
     const [{ count, items }] = await this.uw.model('Playlist').aggregate(aggregate);
 
     // `items` is the same shape as a PlaylistItem instance!
-
     return new Page(items, {
       pageSize: pagination ? pagination.limit : null,
       // `count` can be the empty array if the playlist has no items
@@ -218,6 +230,136 @@ class PlaylistsRepository {
         limit: pagination.limit,
       } : null,
     });
+  }
+
+  /**
+   * Get playlists containing a particular Media.
+   *
+   * @param {Media|ObjectID|string} mediaOrID
+   * @param {{ author?: ObjectID }} options
+   * @return {Promise<Playlist[]>}
+   */
+  async getPlaylistsContainingMedia(mediaOrID, options = {}) {
+    const Playlist = this.uw.model('Playlist');
+    const media = await this.getMedia(mediaOrID);
+
+    const aggregate = [];
+    if (options.author) {
+      aggregate.push({ $match: { author: options.author } });
+    }
+
+    aggregate.push(
+      // populate media array
+      {
+        $lookup: {
+          from: 'playlistitems', localField: 'media', foreignField: '_id', as: 'media',
+        },
+      },
+      // check if any media entry contains the id
+      { $match: { 'media.media': media._id } },
+      // reduce data sent in `media` array—this is still needed to match the result of other
+      // `getPlaylists()` functions
+      { $addFields: { media: '$media.media' } },
+    );
+
+    if (options.fields) {
+      const fields = {};
+      options.fields.forEach((fieldName) => {
+        fields[fieldName] = 1;
+      });
+      aggregate.push({
+        $project: fields,
+      });
+    }
+
+    const playlists = await Playlist.aggregate(aggregate);
+    return playlists.map((raw) => Playlist.hydrate(raw));
+  }
+
+  /**
+   * Get playlists that contain any of the given medias. If multiple medias are in a single
+   * playlist, that playlist will be returned multiple times, keyed on the media's unique ObjectID.
+   *
+   * @param {Media[]|string[]|ObjectID[]} mediasOrIDs
+   * @param {{ author?: ObjectID }} options
+   * @return {Promise<Map<string, Playlist[]>>}
+   *   A map of stringified `Media` `ObjectID`s to the Playlist objects that contain them.
+   */
+  async getPlaylistsContainingAnyMedia(mediasOrIDs, options = {}) {
+    const Media = this.uw.model('Media');
+    const Playlist = this.uw.model('Playlist');
+
+    if (!Array.isArray(mediasOrIDs)) {
+      throw new TypeError('playlists.getPlaylistsContainingAnyMedia: mediasOrIDs must be an array');
+    }
+    const mediaIds = mediasOrIDs.map((media) => {
+      if (typeof media === 'string') {
+        return new ObjectID(media);
+      }
+      if (media instanceof ObjectID) {
+        return media;
+      }
+      if (media instanceof Media) {
+        return media._id;
+      }
+      throw new TypeError('playlists.getPlaylistsContainingAnyMedia: mediasOrIDs must contain strings, ObjectIds, or Media instances');
+    });
+
+    const aggregate = [];
+
+    if (options.author) {
+      aggregate.push({ $match: { author: options.author } });
+    }
+
+    aggregate.push(
+      // Store the `size` so we can remove the `.media` property later.
+      { $addFields: { size: { $size: '$media' } } },
+      // Store the playlist data on a property so lookup data does not pollute it.
+      { $replaceRoot: { newRoot: { playlist: '$$ROOT' } } },
+      // Find playlist items that:
+      {
+        $lookup: {
+          from: 'playlistitems',
+          let: { itemID: '$playlist.media' },
+          pipeline: [
+            {
+              $match: {
+                $expr: {
+                  $and: [
+                    // Are in any of the matching playlists;
+                    { $in: ['$_id', '$$itemID'] },
+                    // Have a `.media` property that was listed.
+                    { $in: ['$media', mediaIds] },
+                  ],
+                },
+              },
+            },
+            // Only return what we need
+            { $project: { media: 1 } },
+          ],
+          as: 'foundMedia',
+        },
+      },
+      // Remove unnecessary data.
+      { $project: { 'playlist.media': 0 } },
+      // Output {playlist, foundMedia} pairs.
+      { $unwind: '$foundMedia' },
+    );
+
+    const pairs = await Playlist.aggregate(aggregate);
+
+    const playlistsByMediaID = new Map();
+    pairs.forEach(({ playlist, foundMedia }) => {
+      const stringID = foundMedia.media.toString();
+      const playlists = playlistsByMediaID.get(stringID);
+      if (playlists) {
+        playlists.push(playlist);
+      } else {
+        playlistsByMediaID.set(stringID, [playlist]);
+      }
+    });
+
+    return playlistsByMediaID;
   }
 
   /**

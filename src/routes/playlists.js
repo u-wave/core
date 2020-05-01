@@ -12,6 +12,7 @@ function playlistRoutes() {
     // GET /playlists/ - List playlists.
     .get(
       '/',
+      checkFields(validations.getPlaylists),
       route(controller.getPlaylists),
     )
     // POST /playlists/ - Create a new playlist.
