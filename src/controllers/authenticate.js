@@ -106,6 +106,7 @@ async function getSocialAvatar(uw, user, service) {
 async function socialLoginCallback(options, service, req, res) {
   const { user } = req;
   const { locale } = req.uwave;
+  const { origin } = options;
 
   if (await user.isBanned()) {
     throw new PermissionError('You have been banned.');
@@ -131,7 +132,7 @@ async function socialLoginCallback(options, service, req, res) {
   const script = `
     var opener = window.opener;
     if (opener) {
-      opener.postMessage(${htmlescape(activationData)}, '*');
+      opener.postMessage(${htmlescape(activationData)}, ${htmlescape(origin)});
     }
     window.close();
   `;

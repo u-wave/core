@@ -1,5 +1,6 @@
 {
   "port": 6041,
+  "origin": "http://localhost:6041/",
   "sources": {
     "youtube": {
       "key": "AIzaSyAlDfeXOvAM1bIYm4kCtAiXOVdeKutdx8I"
