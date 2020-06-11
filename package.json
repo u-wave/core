@@ -58,7 +58,7 @@
     "explain-error": "^1.0.4",
     "express": "^4.17.1",
     "minimist": "^1.2.0",
-    "mocha": "^7.0.0",
+    "mocha": "^8.0.1",
     "nodemon": "^2.0.2",
     "recaptcha-test-keys": "^1.0.0",
     "sinon": "^9.0.0",
