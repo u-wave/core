@@ -19,7 +19,14 @@ function extractIncluded(data, included) {
     {},
   );
 
-  const had = {};
+  const had = new Set();
+
+  function include(type, item) {
+    if (!had.has(type + item._id)) {
+      includeds[type].push(item);
+      had.add(type + item._id);
+    }
+  }
 
   const resultData = [];
   data.forEach((initialItem) => {
@@ -31,10 +38,12 @@ function extractIncluded(data, included) {
           if (item === initialItem) {
             item = cloneDeep(item);
           }
-          setPath(item, path, includedItem._id);
-          if (!had[type + includedItem._id]) {
-            includeds[type].push(includedItem);
-            had[type + includedItem._id] = true;
+          if (Array.isArray(includedItem)) {
+            setPath(item, path, includedItem.map((i) => i._id));
+            includedItem.forEach((i) => include(type, i));
+          } else {
+            setPath(item, path, includedItem._id);
+            include(type, includedItem);
           }
         }
       });

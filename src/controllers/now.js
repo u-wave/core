@@ -1,19 +1,16 @@
-const props = require('p-props');
+const debug = require('debug')('uwave:http-api:now');
 const { getBoothData } = require('./booth');
 const { serializePlaylist } = require('../utils/serialize');
 
 async function getFirstItem(user, activePlaylist) {
-  const id = await activePlaylist;
-  if (id) {
-    try {
-      const playlist = await user.getPlaylist(id);
-      if (playlist) {
-        const item = await playlist.getItemAt(0);
-        return item;
-      }
-    } catch (e) {
-      // Nothing
+  try {
+    const playlist = await activePlaylist;
+    if (playlist) {
+      const item = await playlist.getItemAt(0);
+      return item;
     }
+  } catch (e) {
+    // Nothing
   }
   return null;
 }
@@ -36,7 +33,6 @@ async function getGuestsCount(uw) {
   return toInt(guests);
 }
 
-// eslint-disable-next-line import/prefer-default-export
 async function getState(req) {
   const uw = req.uwave;
   const { authRegistry } = req.uwaveHttp;
@@ -50,14 +46,30 @@ async function getState(req) {
   const booth = getBoothData(uw);
   const waitlist = uw.waitlist.getUserIDs();
   const waitlistLocked = uw.waitlist.isLocked();
-  const activePlaylist = user ? user.getActivePlaylistID() : null;
+  let activePlaylist = user ? user.getActivePlaylist() : null;
   const playlists = user ? user.getPlaylists() : null;
   const firstActivePlaylistItem = activePlaylist ? getFirstItem(user, activePlaylist) : null;
   const socketToken = user ? authRegistry.createAuthToken(user) : null;
   const authStrategies = passport.strategies();
   const time = Date.now();
 
-  const state = await props({
+  if (activePlaylist != null) {
+    activePlaylist = activePlaylist
+      .then((playlist) => (playlist ? playlist.id : null))
+      .catch((err) => {
+        // If the playlist was not found, our database is inconsistent. A deleted or nonexistent
+        // playlist should never be listed as the active playlist. Most likely this is not the
+        // user's fault, so we should not error out on `/api/now`. Instead, pretend they don't have
+        // an active playlist at all. Clients can then let them select a new playlist to activate.
+        if (err.code === 'NOT_FOUND') {
+          debug('The active playlist does not exist', err);
+          return null;
+        }
+        throw err;
+      });
+  }
+
+  const stateShape = {
     motd,
     user,
     users,
@@ -72,7 +84,15 @@ async function getState(req) {
     socketToken,
     authStrategies,
     time,
-  });
+  };
+
+  const stateKeys = Object.keys(stateShape);
+  const stateValues = await Promise.all(Object.values(stateShape));
+
+  const state = {};
+  for (let i = 0; i < stateKeys.length; i += 1) {
+    state[stateKeys[i]] = stateValues[i];
+  }
 
   if (state.playlists) {
     state.playlists = state.playlists.map(serializePlaylist);

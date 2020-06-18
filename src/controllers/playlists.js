@@ -11,8 +11,15 @@ const toPaginatedResponse = require('../utils/toPaginatedResponse');
 
 async function getPlaylists(req) {
   const { user } = req;
+  const uw = req.uwave;
+  const { contains } = req.query;
 
-  const playlists = await user.getPlaylists();
+  let playlists;
+  if (contains) {
+    playlists = await uw.playlists.getPlaylistsContainingMedia(contains, { author: user._id });
+  } else {
+    playlists = await uw.playlists.getUserPlaylists(user);
+  }
 
   return toListResponse(
     playlists.map(serializePlaylist),
