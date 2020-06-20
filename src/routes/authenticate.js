@@ -60,23 +60,19 @@ function authenticateRoutes(api, options) {
     .delete(
       '/session/:id',
       route(controller.removeSession),
+    )
+    // GET /auth/service/google - Initiate a social login using Google.
+    .get(
+      '/service/google',
+      passport.authenticate('google'),
+      route(controller.login.bind(null, options)),
+    )
+    // GET /auth/service/google/callback - Finish a social login using Google.
+    .get(
+      '/service/google/callback',
+      passport.authenticate('google'),
+      route(controller.socialLoginCallback.bind(null, options)),
     );
-
-  if (passport.supports('google')) {
-    auth
-      // GET /auth/service/google - Initiate a social login using Google.
-      .get(
-        '/service/google',
-        passport.authenticate('google'),
-        route(controller.login.bind(null, options)),
-      )
-      // GET /auth/service/google/callback - Finish a social login using Google.
-      .get(
-        '/service/google/callback',
-        passport.authenticate('google'),
-        route(controller.socialLoginCallback.bind(null, options)),
-      );
-  }
 
   return auth;
 }
