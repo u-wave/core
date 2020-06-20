@@ -54,12 +54,12 @@ class PassportPlugin extends Passport {
   }
 
   supports(strategy) {
-    return this._strategy(strategy) !== undefined // eslint-disable-line no-underscore-dangle
+    return this._strategy(strategy) !== undefined; // eslint-disable-line no-underscore-dangle
   }
 
   strategies() {
     return Object.keys(this._strategies) // eslint-disable-line no-underscore-dangle
-      .filter((strategy) => strategy !== 'session' && strategy !== 'jwt')
+      .filter((strategy) => strategy !== 'session' && strategy !== 'jwt');
   }
 }
 
