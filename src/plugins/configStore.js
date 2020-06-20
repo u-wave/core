@@ -66,7 +66,8 @@ class ConfigStore {
    * Add a config group.
    *
    * @param {string} key - The name of the config group.
-   * @param {import('json-schema').JSONSchema7} schema - The JSON schema that the settings must follow.
+   * @param {import('json-schema').JSONSchema7} schema - The JSON schema that the settings must
+   *     follow.
    * @public
    */
   register(key, schema) {
@@ -77,7 +78,8 @@ class ConfigStore {
    * Get the current settings for a config group.
    *
    * @param {string} key
-   * @returns {Promise<undefined | object>} - `undefined` if the config group named `key` does not exist. An object containing current settings otherwise.
+   * @returns {Promise<undefined | object>} - `undefined` if the config group named `key` does not
+   *     exist. An object containing current settings otherwise.
    * @public
    */
   async get(key) {
