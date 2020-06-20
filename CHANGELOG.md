@@ -4,6 +4,24 @@ All notable changes to this project will be documented in this file.
 
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## Unreleased
+
+The `u-wave-http-api` package has been merged into `u-wave-core`. This package now contains both the library and the HTTP and WebSocket API for üWave servers.
+
+Features:
+ * **Breaking:** Merge `u-wave-http-api`. (#333)
+ * Automatically activate a user's first playlist. (#219)
+ * Implement votes using HTTP requests. (#361)
+   * Older client versions can still use WebSocket votes.
+ * Find playlists containing a particular media. (#374)
+
+Internal:
+ * Add `uw.models` property for easier mongoose model access. (#283)
+ * **Breaking:** Small changes to DB option handling. (#264)
+ * **Breaking:** Raise supported Node.js version to 10+. (#342)
+ * Make `getPlaylistItems` faster with a single query. (#351, #370)
+ * Remove use of `p-props`. (#371)
+
 ## 0.4.1 / 17 Jul 2018
 
 Bugfixes:
