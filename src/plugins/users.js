@@ -129,11 +129,16 @@ class UsersRepository {
     let auth = await Authentication.findOne({ type, id });
     if (auth) {
       await auth.populate('user').execPopulate();
+
+      if (avatar && auth.avatar !== avatar) {
+        auth.avatar = avatar;
+        await auth.save();
+      }
     } else {
       const user = new User({
-        username: username.replace(/\s/g, ''),
-        avatar,
+        username: username ? username.replace(/\s/g, '') : `${type}.${id}`,
         roles: ['user'],
+        pendingActivation: type,
       });
       await user.validate();
 
@@ -141,6 +146,7 @@ class UsersRepository {
         type,
         user,
         id,
+        avatar,
         // HACK, providing a fake email so we can use `unique: true` on emails
         email: `${id}@${type}.sociallogin`,
       });

@@ -14,6 +14,7 @@ function authenticationModel() {
     hash: { type: String },
     // Social login
     id: { type: String },
+    avatar: { type: String, required: false },
   }, {
     timestamps: true,
     minimize: false,
