@@ -10,12 +10,6 @@ function serverRoutes() {
       '/time',
       route(controller.getServerTime),
     )
-    // GET /server/config/schema - Show the schema describing server configuration.
-    .get(
-      '/config/schema',
-      protect('admin'),
-      route(controller.getConfigSchema),
-    )
     // GET /server/config
     .get(
       '/config',
