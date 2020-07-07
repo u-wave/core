@@ -2,7 +2,53 @@ const { Passport } = require('passport');
 const { Strategy: LocalStrategy } = require('passport-local');
 const { Strategy: GoogleStrategy } = require('passport-google-oauth20');
 const { callbackify } = require('util');
+const debug = require('debug')('uwave:passport');
 const JWTStrategy = require('../auth/JWTStrategy');
+
+const AUTH_SETTINGS_KEY = 'u-wave:socialAuth';
+
+const schema = {
+  type: 'object',
+  title: 'Social Login',
+  description: 'Settings for third party login integrations like Google.',
+  properties: {
+    google: {
+      type: 'object',
+      title: 'Google Authentication',
+      description: 'Settings for the Google authentication integration.',
+      properties: {
+        enabled: {
+          type: 'boolean',
+          title: 'Enabled',
+          default: false,
+        },
+        clientID: {
+          type: 'string',
+          title: 'Client ID',
+          description: 'The OAuth2 Client ID.',
+        },
+        clientSecret: {
+          type: 'string',
+          title: 'Client Secret',
+          description: 'The secret key.',
+        },
+        callbackURL: {
+          type: 'string',
+          format: 'uri-reference',
+          title: 'Callback URL',
+          description: 'The URL that Google will redirect to once a signin is complete. This URL should contain the code that finalizes the login on the üWave end.',
+        },
+      },
+      required: ['enabled'],
+      // When enabled, clientID and clientSecret are required.
+      dependencies: {
+        enabled: ['clientID', 'clientSecret'],
+      },
+      default: {},
+    },
+  },
+  required: ['google'],
+};
 
 function configurePassport(uw, options) {
   const passport = new Passport();
@@ -31,14 +77,6 @@ function configurePassport(uw, options) {
     session: false,
   }, callbackify(localLogin)));
 
-  if (options.auth && options.auth.google) {
-    passport.use('google', new GoogleStrategy({
-      callbackURL: '/auth/service/google/callback',
-      ...options.auth.google,
-      scope: ['profile'],
-    }, callbackify(socialLogin)));
-  }
-
   passport.use('jwt', new JWTStrategy(options.secret, (user) => uw.users.getUser(user.id)));
   passport.serializeUser(callbackify(serializeUser));
   passport.deserializeUser(callbackify(deserializeUser));
@@ -50,6 +88,30 @@ function configurePassport(uw, options) {
     Object.keys(passport._strategies) // eslint-disable-line no-underscore-dangle
       .filter((strategy) => strategy !== 'session' && strategy !== 'jwt')
   );
+
+  function applyAuthStrategies(settings) {
+    passport.unuse('google');
+
+    if (settings && settings.google) {
+      passport.use('google', new GoogleStrategy({
+        callbackURL: '/auth/service/google/callback',
+        ...settings.google,
+        scope: ['profile'],
+      }, callbackify(socialLogin)));
+    }
+  }
+
+  uw.config.register(AUTH_SETTINGS_KEY, schema);
+  uw.config.on('set', (key, settings) => {
+    if (key === AUTH_SETTINGS_KEY) {
+      applyAuthStrategies(settings);
+    }
+  });
+  uw.config.get(AUTH_SETTINGS_KEY)
+    .then(applyAuthStrategies)
+    .catch((err) => {
+      debug('social auth setup error', err);
+    });
 
   return passport;
 }

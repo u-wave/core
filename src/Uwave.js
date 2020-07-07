@@ -62,6 +62,8 @@ class UwaveServer extends EventEmitter {
     this.configureMongoose();
 
     this.use(models());
+    this.use(configStore());
+
     this.use(passport({
       secret: this.options.secret,
       auth: this.options.auth || {},
@@ -79,7 +81,6 @@ class UwaveServer extends EventEmitter {
     });
 
     if (this.options.useDefaultPlugins) {
-      this.use(configStore());
       this.use(booth());
       this.use(chat());
       this.use(motd());
