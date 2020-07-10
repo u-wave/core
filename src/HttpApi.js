@@ -5,7 +5,6 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const cookieParser = require('cookie-parser');
 const http = require('http');
-const url = require('url');
 const debug = require('debug')('uwave:http-api');
 
 // routes
@@ -27,12 +26,9 @@ const errorHandler = require('./middleware/errorHandler');
 const AuthRegistry = require('./AuthRegistry');
 
 function defaultCreatePasswordResetEmail({ token, requestUrl }) {
-  const parsed = url.parse(requestUrl);
+  const parsed = new URL(requestUrl);
   const { hostname } = parsed;
-  const webroot = url.format({
-    ...parsed,
-    pathname: '',
-  });
+  const resetLink = new URL(`/reset/${token}`, parsed);
   return {
     from: `noreply@${hostname}`,
     subject: 'üWave Password Reset Request',
@@ -40,7 +36,7 @@ function defaultCreatePasswordResetEmail({ token, requestUrl }) {
       Hello,
 
       To reset your password, please visit:
-      ${webroot}/reset/${token}
+      ${resetLink}
     `,
   };
 }
