@@ -132,7 +132,14 @@ exports.favorite = joi.object({
 });
 
 exports.getRoomHistory = joi.object({
-  query: pagination,
+  query: joi.alternatives().match('all').try(
+    joi.object({
+      filter: joi.object({
+        media: objectID,
+      }),
+    }),
+    joi.alternatives().try(...pagination),
+  ),
 });
 
 // Validations for chat routes:
