@@ -5,10 +5,6 @@ Core library for üWave, the collaborative listening platform.
 [Getting Started](#getting-started) - [API](#api) - [Building](#contributing) -
 [License](#license)
 
-> Note: üWave is still under development. Particularly the `u-wave-core` and
-> `u-wave-api-v1` modules will change a lot before the "official" 1.0.0 release.
-> Make sure to always upgrade both of them at the same time.
-
 ## Getting Started
 
 üWave consists of three parts: the core library, the HTTP API, and the web

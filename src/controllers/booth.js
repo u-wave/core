@@ -253,13 +253,18 @@ async function favorite(req) {
 }
 
 async function getHistory(req) {
+  const filter = {};
   const pagination = getOffsetPagination(req.query, {
     defaultSize: 25,
     maxSize: 100,
   });
   const { history } = req.uwave;
 
-  const roomHistory = await history.getRoomHistory(pagination);
+  if (req.query.filter && req.query.filter.media) {
+    filter['media.media'] = req.query.filter.media;
+  }
+
+  const roomHistory = await history.getHistory(filter, pagination);
 
   return toPaginatedResponse(roomHistory, {
     baseUrl: req.fullUrl,

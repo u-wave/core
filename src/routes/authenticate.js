@@ -72,6 +72,23 @@ function authenticateRoutes(api, options) {
       '/service/google/callback',
       passport.authenticate('google'),
       route(controller.socialLoginCallback.bind(null, options)),
+    )
+    // GET /auth/service/google - Initiate a social login using Google.
+    .get(
+      '/service/google',
+      passport.authenticate('google'),
+      route(controller.login.bind(null, options, 'google')),
+    )
+    // GET /auth/service/google/callback - Receive social login data from Google.
+    .get(
+      '/service/google/callback',
+      passport.authenticate('google'),
+      route(controller.socialLoginCallback.bind(null, options, 'google')),
+    )
+    // POST /auth/service/google/finish - Finish creating an account with Google.
+    .post(
+      '/service/google/finish',
+      route(controller.socialLoginFinish.bind(null, options, 'google')),
     );
 
   return auth;

@@ -5,6 +5,7 @@ const jwt = require('jsonwebtoken');
 const randomString = require('random-string');
 const fetch = require('node-fetch');
 const ms = require('ms');
+const htmlescape = require('htmlescape');
 const {
   HTTPError,
   PermissionError,
@@ -89,12 +90,52 @@ async function login(options, req, res) {
   });
 }
 
-async function socialLoginCallback(options, req, res) {
+async function getSocialAvatar(uw, user, service) {
+  const Authentication = uw.model('Authentication');
+
+  const auth = await Authentication.findOne({
+    user,
+    type: service,
+  });
+  if (auth && auth.avatar) {
+    return auth.avatar;
+  }
+  return null;
+}
+
+async function socialLoginCallback(options, service, req, res) {
   const { user } = req;
+  const { locale } = req.uwave;
+  const { origin } = options;
 
   if (await user.isBanned()) {
     throw new PermissionError('You have been banned.');
   }
+
+  let activationData = { pending: false };
+  if (user.pendingActivation) {
+    const socialAvatar = await getSocialAvatar(req.uwave, user, service);
+
+    activationData = {
+      pending: true,
+      id: user.id,
+      avatars: {
+        sigil: `https://sigil.u-wave.net/${user.id}`,
+      },
+      type: service,
+    };
+    if (socialAvatar) {
+      activationData.avatars[service] = socialAvatar;
+    }
+  }
+
+  const script = `
+    var opener = window.opener;
+    if (opener) {
+      opener.postMessage(${htmlescape(activationData)}, ${htmlescape(origin)});
+    }
+    window.close();
+  `;
 
   await refreshSession(res, req.uwaveHttp, user, {
     ...options,
@@ -106,14 +147,55 @@ async function socialLoginCallback(options, req, res) {
     <html>
       <head>
         <meta charset="utf-8">
-        <title>Success</title>
+        <title>${locale.t('authentication.successTitle')}</title>
       </head>
-      <body>
-        You can now close this window.
-        <script>close()</script>
+      <body style="background: #151515; color: #fff; font: 12pt 'Open Sans', sans-serif">
+        ${locale.t('authentication.closeThisWindow')}
+        <script>${script}</script>
       </body>
     </html>
   `);
+}
+
+async function socialLoginFinish(options, service, req, res) {
+  const { pendingUser: user } = req;
+  const sessionType = req.query.session === 'cookie' ? 'cookie' : 'token';
+
+  if (!user) {
+    throw new PermissionError('Must have a pending user account.');
+  }
+
+  if (await user.isBanned()) {
+    throw new PermissionError('You have been banned.');
+  }
+
+  const { username, avatar } = req.body;
+
+  // TODO Use the avatars plugin for this stuff later.
+  let avatarUrl;
+  if (avatar !== 'sigil') {
+    avatarUrl = await getSocialAvatar(req.uwave, user, service);
+  }
+  if (!avatarUrl) {
+    avatarUrl = `https://sigil.u-wave.net/${user.id}`;
+  }
+
+  user.username = username;
+  user.avatar = avatarUrl;
+  user.pendingActivation = undefined;
+  await user.save();
+
+  const { token, socketToken } = await refreshSession(res, req.uwaveHttp, user, {
+    ...options,
+    session: sessionType,
+  });
+
+  return toItemResponse(user, {
+    meta: {
+      jwt: sessionType === 'token' ? token : 'cookie',
+      socketToken,
+    },
+  });
 }
 
 async function getSocketToken(req) {
@@ -280,3 +362,4 @@ exports.register = register;
 exports.removeSession = removeSession;
 exports.reset = reset;
 exports.socialLoginCallback = socialLoginCallback;
+exports.socialLoginFinish = socialLoginFinish;

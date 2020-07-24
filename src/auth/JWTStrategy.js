@@ -60,6 +60,11 @@ class JWTStrategy extends Strategy {
       return this.pass();
     }
 
+    if (user.pendingActivation) {
+      req.pendingUser = user;
+      return this.pass();
+    }
+
     if (await user.isBanned()) {
       throw new PermissionError('You have been banned');
     }
