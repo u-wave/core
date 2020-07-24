@@ -118,7 +118,7 @@ class PassportPlugin extends Passport {
   applyAuthStrategies(settings) {
     this.unuse('google');
 
-    if (settings && settings.google) {
+    if (settings && settings.google && settings.google.enabled) {
       this.use('google', new GoogleStrategy({
         callbackURL: '/auth/service/google/callback',
         ...settings.google,
