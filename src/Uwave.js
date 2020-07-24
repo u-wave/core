@@ -14,6 +14,7 @@ const { i18n } = require('./locale');
 
 const models = require('./models');
 const configStore = require('./plugins/configStore');
+const assets = require('./plugins/assets');
 const booth = require('./plugins/booth');
 const chat = require('./plugins/chat');
 const motd = require('./plugins/motd');
@@ -168,6 +169,7 @@ class UwaveServer extends EventEmitter {
     boot.use(models);
     boot.use(migrations);
     boot.use(configStore);
+    boot.use(assets);
 
     boot.use(passport, {
       secret: this.options.secret,
