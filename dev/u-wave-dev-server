@@ -12,7 +12,9 @@ const recaptchaTestKeys = require('recaptcha-test-keys');
 const express = require('express');
 const mailDebug = require('debug')('uwave:mail');
 const debug = require('debug')('uwave:dev-server');
-const config = require('./dev-server-config.json');
+const dotenv = require('dotenv');
+
+dotenv.config();
 
 const testTransport = {
   name: 'test',
@@ -43,12 +45,12 @@ function start() {
   const secret = Buffer.from('none', 'utf8');
 
   const uw = uwave({
-    ...config,
+    port: process.env.PORT || 6041,
     redis: process.env.REDIS_URL,
     mongo: process.env.MONGODB_URL,
     server,
     secret,
-    auth: config.auth,
+    // auth: config.auth,
     mailTransport: testTransport,
     timeout: 10,
   });
@@ -61,17 +63,27 @@ function start() {
     throw explain(err, 'Could not connect to the Redis server. Is it installed and running?');
   });
 
-  uw.use(announce({
-    // Generate a random one in a real app!
-    seed: Buffer.from('8286a5e55c62d93a042b8c56c8face52c05354c288807d941751f0e9060c2ded', 'hex'),
-    name: 'localhost',
-    subtitle: 'Local dev server',
-    url: `http://localhost:${port}`,
-    hub: process.env.HUB_URL || 'http://localhost:6451',
-  }));
+  if (process.env.HUB_URL) {
+    uw.use(announce({
+      // Generate a random one in a real app!
+      seed: Buffer.from('8286a5e55c62d93a042b8c56c8face52c05354c288807d941751f0e9060c2ded', 'hex'),
+      name: 'localhost',
+      subtitle: 'Local dev server',
+      url: `http://localhost:${port}`,
+      hub: process.env.HUB_URL,
+    }));
+  }
 
-  uw.source(ytSource, config.sources.youtube);
-  uw.source(scSource, config.sources.soundcloud);
+  if (process.env.YOUTUBE_API_KEY) {
+    uw.source(ytSource,  {
+      key: process.env.YOUTUBE_API_KEY,
+    });
+  }
+  if (process.env.SOUNDCLOUD_API_KEY) {
+    uw.source(scSource, {
+      key: process.env.SOUNDCLOUD_API_KEY,
+    });
+  }
 
   app.set('json spaces', 2);
   app.use(apiUrl, uw.httpApi);
