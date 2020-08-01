@@ -1,7 +1,6 @@
 #!/usr/bin/env node
 
 const { Buffer } = require('buffer');
-const http = require('http');
 const argv = require('minimist')(process.argv.slice(2));
 const concat = require('concat-stream');
 const explain = require('explain-error');
@@ -9,8 +8,6 @@ const announce = require('u-wave-announce');
 const ytSource = require('u-wave-source-youtube');
 const scSource = require('u-wave-source-soundcloud');
 const recaptchaTestKeys = require('recaptcha-test-keys');
-const express = require('express');
-const mailDebug = require('debug')('uwave:mail');
 const debug = require('debug')('uwave:dev-server');
 const dotenv = require('dotenv');
 
@@ -21,7 +18,7 @@ const testTransport = {
   version: '0.0.0',
   send(mail, callback) {
     mail.message.createReadStream().pipe(concat((message) => {
-      mailDebug(mail.message.getEnvelope().to, message.toString('utf8'));
+      debug(mail.message.getEnvelope().to, message.toString('utf8'));
       callback(null, {
         envelope: mail.message.getEnvelope(),
         messageId: mail.message.messageId(),
