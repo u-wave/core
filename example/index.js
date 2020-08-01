@@ -1,50 +1,38 @@
-const express = require('express');
 const { Buffer } = require('buffer');
 const uwave = require('u-wave-core');
-const { createHttpApi, createSocketServer } = require('u-wave-http-api');
 const createWebClient = require('u-wave-web/middleware').default;
 const youTubeSource = require('u-wave-source-youtube');
 const soundCloudSource = require('u-wave-source-soundcloud');
+const dotenv = require('dotenv');
+
+dotenv.config();
 
 const port = process.env.PORT || 80;
+const secret = Buffer.from(process.env.SECRET, 'hex');
 
-const config = require('./config.json');
-
-const uw = uwave(config);
+const uw = uwave({
+  secret,
+});
 
 // Register your Media Sources. The API keys are configured in the config.json
 // file.
-uw.source(youTubeSource, config.youtube);
-uw.source(soundCloudSource, config.soundcloud);
-
-const secret = Buffer.from(config.secret);
-
-const httpApi = createHttpApi(uw, {
-  secret,
+uw.source(youTubeSource, {
+  key: process.env.YOUTUBE_API_KEY,
+});
+uw.source(soundCloudSource, {
+  key: process.env.SOUNDCLOUD_API_KEY,
 });
 
-const webClient = createWebClient(uw, {
+const webClient = createWebClient(null, {
   apiBase: '/api',
 });
 
-const app = express();
-const server = app.listen(port);
-
-app.use('/api', httpApi);
-
-createSocketServer(uw, {
-  // This needs an HTTP server to attach the WebSocket server to.
-  server,
-  secret,
-});
-
-app.use(webClient);
+uw.express.use(webClient);
 
 uw.on('started', () => {
   console.log(`üWave server running on http://localhost:${port}/`);
 });
 
-process.on('exit', () => {
+process.on('beforeExit', () => {
   uw.stop();
-  server.close();
 });

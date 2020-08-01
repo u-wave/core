@@ -1,0 +1,99 @@
+#!/usr/bin/env node
+
+const explain = require('explain-error');
+const envSchema = require('env-schema');
+const ytSource = require('u-wave-source-youtube');
+const scSource = require('u-wave-source-soundcloud');
+const uwave = require('..');
+const pkg = require('../package.json');
+
+if (process.argv.includes('-h') || process.argv.includes('--help')) {
+  console.log('u-wave-core');
+  console.log('Version', pkg.version);
+  console.log();
+  console.log('Environment Variables:');
+  console.log('  SECRET');
+  console.log('    A secret key used for encrypting passwords. Must be a 64-character hexadecimal string (= 256 bits).');
+  console.log('  PORT');
+  console.log('    Port to listen on. Defaults to 6042.');
+  console.log('  REDIS_URL');
+  console.log('    URL of the Redis instance to connect to. Defaults to redis://localhost:6379/.');
+  console.log('  MONGODB_URL');
+  console.log('    URL of the MongoDB database to use. Defaults to mongodb://localhost:27017/uwave.');
+  console.log();
+  process.exit(0);
+}
+
+const config = envSchema({
+  schema: {
+    type: 'object',
+    required: ['SECRET'],
+    properties: {
+      PORT: {
+        type: 'number',
+        default: 6042,
+      },
+      REDIS_URL: {
+        type: 'string',
+        format: 'uri',
+        default: 'redis://localhost:6379',
+      },
+      MONGODB_URL: {
+        type: 'string',
+        format: 'uri',
+        default: 'mongodb://localhost:27017/uwave',
+      },
+      SECRET: {
+        type: 'string',
+        regex: '^[0-9a-fA-F]+$',
+        min: 64,
+        max: 64,
+      },
+      YOUTUBE_API_KEY: {
+        type: 'string',
+      },
+      SOUNDCLOUD_API_KEY: {
+        type: 'string',
+      },
+    },
+  },
+});
+
+const port = argv.port || config.PORT;
+
+const secret = Buffer.from(config.SECRET, 'hex');
+
+const uw = uwave({
+  port,
+  redis: config.REDIS_URL,
+  mongo: config.MONGODB_URL,
+  secret,
+});
+
+uw.express.set('json spaces', 2);
+
+uw.on('mongoError', (err) => {
+  throw explain(err, 'Could not connect to MongoDB. Is it installed and running?');
+});
+
+uw.on('redisError', (err) => {
+  throw explain(err, 'Could not connect to the Redis server. Is it installed and running?');
+});
+
+if (config.YOUTUBE_API_KEY) {
+  uw.source(ytSource,  {
+    key: config.YOUTUBE_API_KEY,
+  });
+}
+if (config.SOUNDCLOUD_API_KEY) {
+  uw.source(scSource, {
+    key: config.SOUNDCLOUD_API_KEY,
+  });
+}
+
+uw.listen(port).then(() => {
+  console.log(`Now listening on ${port}`);
+}, (error) => {
+  console.error(error.stack);
+  process.exit(1);
+});
