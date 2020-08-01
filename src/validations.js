@@ -132,7 +132,14 @@ exports.favorite = joi.object({
 });
 
 exports.getRoomHistory = joi.object({
-  query: pagination,
+  query: joi.alternatives().match('all').try(
+    joi.object({
+      filter: joi.object({
+        media: objectID,
+      }),
+    }),
+    joi.alternatives().try(...pagination),
+  ),
 });
 
 // Validations for chat routes:
@@ -178,6 +185,12 @@ const playlistItem = joi.object({
 });
 const playlistItemIDs = joi.array().items(objectID);
 const playlistItems = joi.array().items(playlistItem);
+
+exports.getPlaylists = joi.object({
+  query: joi.object({
+    contains: objectID,
+  }),
+});
 
 exports.createPlaylist = joi.object({
   body: joi.object({

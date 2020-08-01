@@ -1,4 +1,7 @@
 uwave:
+  authentication:
+    successTitle: Success
+    closeThisWindow: You can now close this window.
   errors:
     tooManyRequests: 'Rate limit exceeded, retry in {{retryAfter}}.'
     invalidEmail: The email address is not formatted correctly.

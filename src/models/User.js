@@ -53,6 +53,7 @@ function userModel() {
       lastSeenAt: { type: Date, default: Date.now },
       exiled: { type: Boolean, default: false },
       banned: bannedSchema,
+      pendingActivation: { type: String, required: false },
     }, {
       timestamps: true,
       minimize: false,

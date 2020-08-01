@@ -116,11 +116,7 @@ class UwaveServer extends EventEmitter {
     } else if (options.mongo instanceof MongooseConnection) {
       this.mongo = options.mongo;
     } else {
-      this.mongo = mongoose.createConnection(DEFAULT_MONGO_URL, {
-        useNewUrlParser: true,
-        useCreateIndex: true,
-        useFindAndModify: false,
-      });
+      this.mongo = mongoose.createConnection(DEFAULT_MONGO_URL, defaultOptions);
     }
 
     if (typeof options.redis === 'string') {

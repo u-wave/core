@@ -4,59 +4,68 @@ const { Strategy: GoogleStrategy } = require('passport-google-oauth20');
 const { callbackify } = require('util');
 const JWTStrategy = require('../auth/JWTStrategy');
 
-function configurePassport(uw, options) {
-  const passport = new Passport();
+class PassportPlugin extends Passport {
+  constructor(uw, options) {
+    super();
 
-  async function localLogin(email, password) {
-    return uw.users.login({ type: 'local', email, password });
+    function localLogin(email, password) {
+      return uw.users.login({ type: 'local', email, password });
+    }
+
+    function socialLogin(accessToken, refreshToken, profile) {
+      return uw.users.login({
+        type: profile.provider,
+        profile,
+      });
+    }
+
+    function googleLogin(accessToken, refreshToken, profile) {
+      return socialLogin(accessToken, refreshToken, {
+        provider: 'google',
+        id: profile.id,
+        photos: profile.photos,
+      });
+    }
+
+    function serializeUser(user) {
+      return Promise.resolve(user.id);
+    }
+    function deserializeUser(id) {
+      return uw.users.getUser(id);
+    }
+
+    this.use('local', new LocalStrategy({
+      usernameField: 'email',
+      passwordField: 'password',
+      session: false,
+    }, callbackify(localLogin)));
+
+    if (options.auth && options.auth.google) {
+      this.use('google', new GoogleStrategy({
+        callbackURL: '/auth/service/google/callback',
+        ...options.auth.google,
+        scope: ['profile'],
+      }, callbackify(googleLogin)));
+    }
+
+    this.use('jwt', new JWTStrategy(options.secret, (user) => uw.users.getUser(user.id)));
+    this.serializeUser(callbackify(serializeUser));
+    this.deserializeUser(callbackify(deserializeUser));
   }
 
-  async function socialLogin(accessToken, refreshToken, profile) {
-    return uw.users.login({
-      type: profile.provider,
-      profile,
-    });
+  supports(strategy) {
+    return this._strategy(strategy) !== undefined; // eslint-disable-line no-underscore-dangle
   }
 
-  async function serializeUser(user) {
-    return user.id;
+  strategies() {
+    return Object.keys(this._strategies) // eslint-disable-line no-underscore-dangle
+      .filter((strategy) => strategy !== 'session' && strategy !== 'jwt');
   }
-  async function deserializeUser(id) {
-    return uw.users.getUser(id);
-  }
-
-  passport.use('local', new LocalStrategy({
-    usernameField: 'email',
-    passwordField: 'password',
-    session: false,
-  }, callbackify(localLogin)));
-
-  if (options.auth && options.auth.google) {
-    passport.use('google', new GoogleStrategy({
-      callbackURL: '/auth/service/google/callback',
-      ...options.auth.google,
-      scope: ['profile'],
-    }, callbackify(socialLogin)));
-  }
-
-  passport.use('jwt', new JWTStrategy(options.secret, (user) => uw.users.getUser(user.id)));
-  passport.serializeUser(callbackify(serializeUser));
-  passport.deserializeUser(callbackify(deserializeUser));
-
-  passport.supports = (strategy) => (
-    passport._strategy(strategy) !== undefined // eslint-disable-line no-underscore-dangle
-  );
-  passport.strategies = () => (
-    Object.keys(passport._strategies) // eslint-disable-line no-underscore-dangle
-      .filter((strategy) => strategy !== 'session' && strategy !== 'jwt')
-  );
-
-  return passport;
 }
 
 function passportPlugin(options = {}) {
   return (uw) => {
-    uw.passport = configurePassport(uw, options);
+    uw.passport = new PassportPlugin(uw, options);
   };
 }
 
