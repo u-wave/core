@@ -71,7 +71,7 @@
   },
   "scripts": {
     "test:mocha": "mocha",
-    "test:lint": "eslint --cache src test",
+    "test:lint": "eslint --cache .",
     "test": "npm run test:mocha && npm run test:lint",
     "start": "cross-env DEBUG=uwave:* nodemon dev/u-wave-dev-server"
   }
