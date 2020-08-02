@@ -1,7 +1,6 @@
 #!/usr/bin/env node
 
 const { Buffer } = require('buffer');
-const http = require('http');
 const argv = require('minimist')(process.argv.slice(2));
 const concat = require('concat-stream');
 const explain = require('explain-error');
@@ -9,8 +8,6 @@ const announce = require('u-wave-announce');
 const ytSource = require('u-wave-source-youtube');
 const scSource = require('u-wave-source-soundcloud');
 const recaptchaTestKeys = require('recaptcha-test-keys');
-const express = require('express');
-const mailDebug = require('debug')('uwave:mail');
 const debug = require('debug')('uwave:dev-server');
 const dotenv = require('dotenv');
 
@@ -21,7 +18,7 @@ const testTransport = {
   version: '0.0.0',
   send(mail, callback) {
     mail.message.createReadStream().pipe(concat((message) => {
-      mailDebug(mail.message.getEnvelope().to, message.toString('utf8'));
+      debug(mail.message.getEnvelope().to, message.toString('utf8'));
       callback(null, {
         envelope: mail.message.getEnvelope(),
         messageId: mail.message.messageId(),
@@ -33,27 +30,23 @@ const testTransport = {
 /**
  * üWave API development server.
  */
-function start() {
-  const port = argv.port || 6042;
+async function start() {
+  const port = argv.port || process.env.PORT || 6042;
 
   const uwave = require('..');
 
-  const app = express();
-  const server = http.createServer(app);
-
-  const apiUrl = '/api';
   const secret = Buffer.from('none', 'utf8');
 
   const uw = uwave({
-    port: process.env.PORT || 6041,
+    port,
     redis: process.env.REDIS_URL,
     mongo: process.env.MONGODB_URL,
-    server,
     secret,
-    // auth: config.auth,
     mailTransport: testTransport,
     timeout: 10,
   });
+
+  uw.express.set('json spaces', 2);
 
   uw.on('mongoError', (err) => {
     throw explain(err, 'Could not connect to MongoDB. Is it installed and running?');
@@ -85,18 +78,11 @@ function start() {
     });
   }
 
-  app.set('json spaces', 2);
-  app.use(apiUrl, uw.httpApi);
-  app.use((error, req, res, next) => {
-    debug(error);
-    next(error);
-  });
-
-  server.listen(port, () => {
-    console.log(`Now listening on ${port}`);
-  });
-
-  return app;
+  await uw.listen(port);
+  console.log(`Now listening on ${port}`);
 }
 
-start();
+start().catch((error) => {
+  console.error(error.stack);
+  process.exit(1);
+});

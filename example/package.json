@@ -3,8 +3,7 @@
   "name": "u-wave-example",
   "dependencies": {
     "express": "4.x",
-    "u-wave-core": "^0.4.1",
-    "u-wave-http-api": "^0.5.0",
+    "u-wave-core": "u-wave/core#default",
     "u-wave-source-soundcloud": "^1.0.0",
     "u-wave-source-youtube": "^1.0.0",
     "u-wave-web": "^1.11.3"

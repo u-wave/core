@@ -3,6 +3,9 @@ const mongoose = require('mongoose');
 const Redis = require('ioredis');
 const debug = require('debug');
 const { isPlainObject } = require('lodash');
+const { promisify } = require('util');
+const express = require('express');
+const http = require('http');
 
 const HttpApi = require('./HttpApi');
 const SocketServer = require('./SocketServer');
@@ -32,8 +35,6 @@ const DEFAULT_REDIS_URL = 'redis://localhost:6379';
 
 class UwaveServer extends EventEmitter {
   /**
-  * Registers middleware on a route
-  *
   * @constructor
   * @param {Object} options
   */
@@ -60,6 +61,9 @@ class UwaveServer extends EventEmitter {
     this.configureRedis();
     this.configureMongoose();
 
+    this.express = express();
+    this.server = http.createServer(this.express);
+
     this.use(models());
     this.use(passport({
       secret: this.options.secret,
@@ -73,8 +77,7 @@ class UwaveServer extends EventEmitter {
     });
     this.socketServer = new SocketServer(this, {
       secret: this.options.secret,
-      server: this.options.server,
-      port: this.options.port,
+      server: this.server,
     });
 
     if (this.options.useDefaultPlugins) {
@@ -90,6 +93,15 @@ class UwaveServer extends EventEmitter {
     }
 
     this.httpApi.use(errorHandler());
+
+    this.express.use('/api', this.httpApi);
+    // An older name
+    this.express.use('/v1', this.httpApi);
+
+    this.express.use((error, req, res, next) => {
+      debug(error);
+      next(error);
+    });
 
     process.nextTick(() => {
       this.emit('started');
@@ -265,6 +277,11 @@ class UwaveServer extends EventEmitter {
     ]);
 
     this.emit('stopped');
+  }
+
+  listen() {
+    const listen = promisify(this.server.listen);
+    return listen.call(this.server, this.options.port);
   }
 }
 
