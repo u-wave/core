@@ -1,5 +1,4 @@
-const { createServer } = require('http');
-const { expect } = require('chai');
+const assert = require('assert');
 const uwave = require('..');
 const usersPlugin = require('../src/plugins/users');
 const aclPlugin = require('../src/plugins/acl');
@@ -9,18 +8,13 @@ const mongoConnected = require('./utils/mongoConnected');
 const DB_NAME = 'uw_test_acl';
 
 function createUwaveWithAclTest() {
-  const server = createServer();
   const uw = uwave({
     useDefaultPlugins: false,
     mongo: `mongodb://localhost/${DB_NAME}`,
     secret: Buffer.from(`secret_${DB_NAME}`),
-    server,
   });
   uw.use(usersPlugin());
   uw.use(aclPlugin({ defaultRoles: false }));
-  uw.on('stop', () => {
-    server.close();
-  });
   return uw;
 }
 
@@ -41,18 +35,18 @@ describe('acl', () => {
   });
 
   it('can check if a user is not allowed to do something', async () => {
-    expect(await acl.isAllowed(user, 'test.role')).to.equal(false);
+    assert.strictEqual(await acl.isAllowed(user, 'test.role'), false);
   });
 
   it('disallows nonexistent roles by default', async () => {
-    expect(await acl.isAllowed(user, 'something.that.is.not.allowed')).to.equal(false);
+    assert.strictEqual(await acl.isAllowed(user, 'something.that.is.not.allowed'), false);
   });
 
   it('can allow users to do things', async () => {
-    expect(await acl.isAllowed(user, 'test.role')).to.equal(false);
+    assert.strictEqual(await acl.isAllowed(user, 'test.role'), false);
 
     await acl.allow(user, ['test.role']);
-    expect(await acl.isAllowed(user, 'test.role')).to.equal(true);
+    assert.strictEqual(await acl.isAllowed(user, 'test.role'), true);
   });
 
   it('can create new roles, grouping existing roles', async () => {
@@ -67,15 +61,15 @@ describe('acl', () => {
     ]);
 
     await acl.allow(user, ['group.of.roles']);
-    expect(await acl.isAllowed(user, 'universe.create')).to.equal(true);
+    assert.strictEqual(await acl.isAllowed(user, 'universe.create'), true);
   });
 
   it('can remove permissions from users', async () => {
     await acl.allow(user, ['test.role']);
-    expect(await acl.isAllowed(user, 'test.role')).to.equal(true);
+    assert.strictEqual(await acl.isAllowed(user, 'test.role'), true);
 
     await acl.disallow(user, ['test.role']);
-    expect(await acl.isAllowed(user, 'test.role')).to.equal(false);
+    assert.strictEqual(await acl.isAllowed(user, 'test.role'), false);
   });
 
   it('provides convenience methods on the User model class', async () => {
@@ -86,15 +80,15 @@ describe('acl', () => {
 
     await user.allow(['moderate.waitlist']);
 
-    expect(await user.can('waitlist.add')).to.equal(true);
-    expect(await user.can('waitlist.remove')).to.equal(true);
-    expect(await user.can('waitlist.clear')).to.equal(false);
+    assert.strictEqual(await user.can('waitlist.add'), true);
+    assert.strictEqual(await user.can('waitlist.remove'), true);
+    assert.strictEqual(await user.can('waitlist.clear'), false);
   });
 
   it('can delete roles', async () => {
     await acl.createRole('test.role', []);
-    expect(Object.keys(await acl.getAllRoles())).to.deep.equal(['test.role']);
+    assert.deepStrictEqual(Object.keys(await acl.getAllRoles()), ['test.role']);
     await acl.deleteRole('test.role');
-    expect(Object.keys(await acl.getAllRoles())).to.deep.equal([]);
+    assert.deepStrictEqual(Object.keys(await acl.getAllRoles()), []);
   });
 });
