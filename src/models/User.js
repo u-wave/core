@@ -105,6 +105,14 @@ function userModel() {
       }
 
       /**
+       * @param {string} avatar
+       * @return {Promise<unknown>}
+       */
+      setAvatar(avatar) {
+        return uw.users.updateUser(this, { avatar });
+      }
+
+      /**
        * @return {Promise<unknown[]>}
        */
       getPlaylists() {

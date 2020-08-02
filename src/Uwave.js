@@ -15,6 +15,7 @@ const chat = require('./plugins/chat');
 const motd = require('./plugins/motd');
 const playlists = require('./plugins/playlists');
 const users = require('./plugins/users');
+const avatars = require('./plugins/avatars');
 const bans = require('./plugins/bans');
 const history = require('./plugins/history');
 const acl = require('./plugins/acl');
@@ -83,6 +84,7 @@ class UwaveServer extends EventEmitter {
       this.use(motd());
       this.use(playlists());
       this.use(users());
+      this.use(avatars());
       this.use(bans());
       this.use(history());
       this.use(acl());
