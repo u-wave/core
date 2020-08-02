@@ -1,9 +1,10 @@
 const assert = require('assert');
 const uwave = require('..');
+const { once } = require('events');
 const usersPlugin = require('../src/plugins/users');
 const aclPlugin = require('../src/plugins/acl');
 const createUser = require('./utils/createUser');
-const mongoConnected = require('./utils/mongoConnected');
+const deleteDatabase = require('./utils/deleteDatabase');
 
 const DB_NAME = 'uw_test_acl';
 
@@ -24,14 +25,14 @@ describe('acl', () => {
   let acl;
   beforeEach(async () => {
     uw = await createUwaveWithAclTest();
+    await uw.ready;
     acl = uw.acl; // eslint-disable-line prefer-destructuring
     await acl.createRole('test.role', []);
     user = createUser(uw);
   });
   afterEach(async () => {
-    await mongoConnected(uw.mongo);
-    await uw.mongo.dropDatabase();
     await uw.stop();
+    await deleteDatabase(uw.options.mongo);
   });
 
   it('can check if a user is not allowed to do something', async () => {

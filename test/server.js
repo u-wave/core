@@ -4,11 +4,12 @@ const uwave = require('..');
 
 describe('üWave Core', () => {
   let uw;
-  beforeEach(() => {
+  beforeEach(async () => {
     uw = uwave({
       mongo: 'mongodb://localhost:27017/uw_test_server',
       secret: 'uw_test_secret',
     });
+    await uw.ready;
   });
   afterEach(async () => {
     await uw.stop();

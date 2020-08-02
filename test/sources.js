@@ -1,21 +1,16 @@
-const { createServer } = require('http');
 const assert = require('assert');
 const uwave = require('..');
 const { Source } = require('../src/Source');
 
 describe('Media Sources', () => {
   let uw;
-  beforeEach(() => {
-    const server = createServer();
+  beforeEach(async () => {
     uw = uwave({
       mongo: 'mongodb://localhost:27017/uw_test_sources',
       useDefaultPlugins: false,
       secret: Buffer.from('secret_test_sources'),
-      server,
     });
-    uw.on('stop', () => {
-      server.close();
-    });
+    await uw.ready;
   });
   afterEach(async () => {
     await uw.stop();

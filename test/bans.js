@@ -4,7 +4,7 @@ const uwave = require('..');
 const usersPlugin = require('../src/plugins/users');
 const bansPlugin = require('../src/plugins/bans');
 const createUser = require('./utils/createUser');
-const mongoConnected = require('./utils/mongoConnected');
+const deleteDatabase = require('./utils/deleteDatabase');
 
 const DB_NAME = 'uw_test_bans';
 
@@ -25,14 +25,14 @@ describe('bans', () => {
   let bans;
   beforeEach(async () => {
     uw = await createUwaveWithBansTest();
+    await uw.ready;
     bans = uw.bans; // eslint-disable-line prefer-destructuring
     user = createUser(uw);
     await user.save();
   });
   afterEach(async () => {
-    await mongoConnected(uw.mongo);
-    await uw.mongo.dropDatabase();
     await uw.stop();
+    await deleteDatabase(uw.options.mongo);
   });
 
   describe('isBanned(user)', () => {
