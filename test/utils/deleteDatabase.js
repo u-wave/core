@@ -10,6 +10,8 @@ module.exports = async function deleteDatabase(url) {
   };
 
   const mongo = mongoose.createConnection(url, defaultOptions);
+
+  /* eslint-disable no-await-in-loop */
   for (let i = 0; i < 10; i += 1) {
     try {
       await mongo.dropDatabase();
@@ -18,5 +20,7 @@ module.exports = async function deleteDatabase(url) {
       await delay(100);
     }
   }
+  /* eslint-enable no-await-in-loop */
+
   await mongo.close();
-}
+};

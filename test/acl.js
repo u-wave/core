@@ -1,6 +1,5 @@
 const assert = require('assert');
 const uwave = require('..');
-const { once } = require('events');
 const usersPlugin = require('../src/plugins/users');
 const aclPlugin = require('../src/plugins/acl');
 const createUser = require('./utils/createUser');

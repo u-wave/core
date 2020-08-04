@@ -1,6 +1,7 @@
 const assert = require('assert');
 const uwave = require('..');
 const { Source } = require('../src/Source');
+const deleteDatabase = require('./utils/deleteDatabase');
 
 describe('Media Sources', () => {
   let uw;
@@ -10,10 +11,11 @@ describe('Media Sources', () => {
       useDefaultPlugins: false,
       secret: Buffer.from('secret_test_sources'),
     });
-    await uw.ready;
+    await uw.socketServer.ready;
   });
   afterEach(async () => {
     await uw.stop();
+    await deleteDatabase(uw.options.mongo);
   });
 
   const testSourceObject = {

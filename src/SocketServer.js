@@ -101,7 +101,7 @@ class SocketServer {
       this.onSocketConnected(socket, req);
     });
 
-    this.initLostConnections();
+    this.ready = this.initLostConnections();
 
     this.pinger = setInterval(() => {
       this.ping();
