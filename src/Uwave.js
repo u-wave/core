@@ -238,20 +238,6 @@ class UwaveServer extends EventEmitter {
   }
 
   /**
-   * Create a Redis subscription to the üWave channel.
-   *
-   * @return {IORedis} Redis instance, subscribed to the üWave channel.
-   */
-  subscription() {
-    const sub = this.redis.duplicate();
-    sub.subscribe('uwave');
-    this.on('stop', () => {
-      sub.quit();
-    });
-    return sub;
-  }
-
-  /**
    * Publish an event to the üWave channel.
    */
   publish(command, data) {

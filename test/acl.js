@@ -25,7 +25,6 @@ describe('acl', () => {
   let acl;
   beforeEach(async () => {
     uw = await createUwaveWithAclTest();
-    await uw.ready;
     acl = uw.acl; // eslint-disable-line prefer-destructuring
     await acl.createRole('test.role', []);
     user = createUser(uw);
