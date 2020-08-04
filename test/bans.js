@@ -1,27 +1,21 @@
-const { createServer } = require('http');
-const { expect } = require('chai');
+const assert = require('assert');
 const ms = require('ms');
 const uwave = require('..');
 const usersPlugin = require('../src/plugins/users');
 const bansPlugin = require('../src/plugins/bans');
 const createUser = require('./utils/createUser');
-const mongoConnected = require('./utils/mongoConnected');
+const deleteDatabase = require('./utils/deleteDatabase');
 
 const DB_NAME = 'uw_test_bans';
 
 function createUwaveWithBansTest() {
-  const server = createServer();
   const uw = uwave({
     useDefaultPlugins: false,
     mongo: `mongodb://localhost/${DB_NAME}`,
     secret: Buffer.from(`secret_${DB_NAME}`),
-    server,
   });
   uw.use(usersPlugin());
   uw.use(bansPlugin());
-  uw.on('stop', () => {
-    server.close();
-  });
   return uw;
 }
 
@@ -31,19 +25,19 @@ describe('bans', () => {
   let bans;
   beforeEach(async () => {
     uw = await createUwaveWithBansTest();
+    await uw.ready;
     bans = uw.bans; // eslint-disable-line prefer-destructuring
     user = createUser(uw);
     await user.save();
   });
   afterEach(async () => {
-    await mongoConnected(uw.mongo);
-    await uw.mongo.dropDatabase();
     await uw.stop();
+    await deleteDatabase(uw.options.mongo);
   });
 
   describe('isBanned(user)', () => {
     it('returns false for unbanned users', async () => {
-      expect(await bans.isBanned(user.id)).to.equal(false);
+      assert.strictEqual(await bans.isBanned(user.id), false);
     });
     it('returns true for banned users', async () => {
       user.banned = {
@@ -51,7 +45,7 @@ describe('bans', () => {
         expiresAt: Date.now() + 1000,
       };
       await user.save();
-      expect(await bans.isBanned(user.id)).to.equal(true);
+      assert.strictEqual(await bans.isBanned(user.id), true);
     });
   });
 
@@ -59,15 +53,15 @@ describe('bans', () => {
     it('can ban and unban a user', async () => {
       const moderator = createUser(uw);
       await moderator.save();
-      expect(await bans.isBanned(user.id)).to.equal(false);
+      assert.strictEqual(await bans.isBanned(user.id), false);
       await bans.ban(user, {
         moderator,
         duration: ms('10 hours'),
       });
-      expect(await bans.isBanned(user.id)).to.equal(true);
+      assert.strictEqual(await bans.isBanned(user.id), true);
 
       await bans.unban(user, { moderator });
-      expect(await bans.isBanned(user.id)).to.equal(false);
+      assert.strictEqual(await bans.isBanned(user.id), false);
     });
   });
 });

@@ -1,4 +1,3 @@
-const { expect } = require('chai');
 const sinon = require('sinon');
 const chatPlugin = require('../src/plugins/chat');
 
@@ -27,7 +26,7 @@ describe('Chat', () => {
 
   it('can broadcast chat messages', async () => {
     await uw.chat.send({ id: 1 }, 'Message text');
-    expect(uw.publish).to.have.been.calledWithMatch('chat:message', {
+    sinon.assert.calledWithMatch(uw.publish, 'chat:message', {
       userID: 1,
       message: 'Message text',
     });
@@ -41,10 +40,10 @@ describe('Chat', () => {
     await uw.chat.send({ id: 1 }, 'Message text');
     await uw.chat.send({ id: 2 }, 'Message text');
 
-    expect(uw.publish).to.have.been.calledWithMatch('chat:message', {
+    sinon.assert.calledWithMatch(uw.publish, 'chat:message', {
       userID: 1,
     });
-    expect(uw.publish).to.not.have.been.calledWithMatch('chat:message', {
+    sinon.assert.neverCalledWithMatch(uw.publish, 'chat:message', {
       userID: 2,
     });
   });

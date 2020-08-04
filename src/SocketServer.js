@@ -66,7 +66,7 @@ class SocketServer {
     }
 
     this.uw = uw;
-    this.sub = uw.subscription();
+    this.redisSubscription = uw.redis.duplicate();
 
     this.connections = [];
 
@@ -86,8 +86,10 @@ class SocketServer {
       clientTracking: false,
     });
 
-    this.sub.on('ready', () => this.sub.subscribe('v1'));
-    this.sub.on('message', (channel, command) => {
+    this.redisSubscription.on('ready', () => {
+      this.redisSubscription.subscribe('uwave', 'v1');
+    });
+    this.redisSubscription.on('message', (channel, command) => {
       this.onServerMessage(channel, command)
         .catch((e) => { throw e; });
     });
@@ -99,7 +101,7 @@ class SocketServer {
       this.onSocketConnected(socket, req);
     });
 
-    this.initLostConnections();
+    this.ready = this.initLostConnections();
 
     this.pinger = setInterval(() => {
       this.ping();
@@ -518,8 +520,7 @@ class SocketServer {
   async destroy() {
     clearInterval(this.pinger);
     this.wss.close();
-    this.sub.removeAllListeners();
-    this.sub.unsubscribe('v1', 'uwave');
+    this.redisSubscription.quit();
   }
 
   /**
