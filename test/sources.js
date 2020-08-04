@@ -1,24 +1,21 @@
-const { createServer } = require('http');
-const { expect } = require('chai');
+const assert = require('assert');
 const uwave = require('..');
 const { Source } = require('../src/Source');
+const deleteDatabase = require('./utils/deleteDatabase');
 
 describe('Media Sources', () => {
   let uw;
-  beforeEach(() => {
-    const server = createServer();
+  beforeEach(async () => {
     uw = uwave({
       mongo: 'mongodb://localhost:27017/uw_test_sources',
       useDefaultPlugins: false,
       secret: Buffer.from('secret_test_sources'),
-      server,
     });
-    uw.on('stop', () => {
-      server.close();
-    });
+    await uw.socketServer.ready;
   });
   afterEach(async () => {
     await uw.stop();
+    await deleteDatabase(uw.options.mongo);
   });
 
   const testSourceObject = {
@@ -43,47 +40,50 @@ describe('Media Sources', () => {
 
   it('should register sources from objects', () => {
     uw.source(testSourceObject);
-    expect(uw.source('test-source')).to.be.instanceOf(Source);
+    assert(uw.source('test-source') instanceof Source);
   });
   it('should register sources from a factory function', () => {
     uw.source(testSource);
-    expect(uw.source('test-source')).to.be.instanceOf(Source);
+    assert(uw.source('test-source') instanceof Source);
   });
 
-  it('should respond to search(query) API calls', () => {
+  it('should respond to search(query) API calls', async () => {
     uw.source(testSource);
     const query = 'search-query';
-    return expect(uw.source('test-source').search(null, query)).to.eventually.eql([
+    const results = await uw.source('test-source').search(null, query);
+    assert.deepStrictEqual(results, [
       { sourceType: 'test-source', sourceID: query },
     ]);
   });
 
-  it('should respond to get(ids) API calls', () => {
+  it('should respond to get(ids) API calls', async () => {
     uw.source(testSource);
-    return expect(uw.source('test-source').get(null, ['one', 'two'])).to.eventually.eql([
+    const results = await uw.source('test-source').get(null, ['one', 'two']);
+    assert.deepStrictEqual(results, [
       { sourceType: 'test-source', sourceID: 'one' },
       { sourceType: 'test-source', sourceID: 'two' },
     ]);
   });
 
-  it('should relay getOne(id) API calls to get()', () => {
+  it('should relay getOne(id) API calls to get()', async () => {
     const id = 'media-id';
     let getCalled = false;
     uw.source({
       name: 'test-source',
       async get(ids) {
-        expect(ids).to.eql([id]);
+        assert.deepStrictEqual(ids, [id]);
         getCalled = true;
         return ids.map((sourceID) => ({ sourceID }));
       },
     });
 
-    expect(getCalled).to.equal(false);
+    assert.strictEqual(getCalled, false);
 
     const promise = uw.source('test-source').getOne(null, id);
 
-    expect(getCalled).to.equal(true);
+    assert.strictEqual(getCalled, true);
 
-    return expect(promise).to.eventually.eql({ sourceType: 'test-source', sourceID: id });
+    const results = await promise;
+    assert.deepStrictEqual(results, { sourceType: 'test-source', sourceID: id });
   });
 });

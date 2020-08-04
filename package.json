@@ -11,6 +11,9 @@
     "Renée Kooi <renee@kooi.me>"
   ],
   "main": "src/index.js",
+  "bin": {
+    "u-wave-core": "bin/u-wave-core"
+  },
   "engines": {
     "node": ">= 10"
   },
@@ -22,18 +25,22 @@
     "cookie": "^0.4.0",
     "cookie-parser": "^1.4.4",
     "debug": "^4.1.1",
+    "env-schema": "^1.1.0",
     "escape-string-regexp": "^4.0.0",
+    "explain-error": "^1.0.4",
+    "express": "^4.17.1",
     "htmlescape": "^1.1.1",
     "http-errors": "^1.7.3",
     "i18next": "^19.0.3",
     "ioredis": "^4.14.1",
     "jsonwebtoken": "^8.5.1",
     "lodash": "^4.17.15",
+    "make-promises-safe": "^5.1.0",
+    "minimist": "^1.2.5",
     "mongoose": "^5.8.9",
     "ms": "^2.1.2",
     "node-fetch": "^2.6.0",
     "nodemailer": "^6.4.2",
-    "p-each-series": "^2.1.0",
     "passport": "^0.4.1",
     "passport-google-oauth20": "^2.0.0",
     "passport-local": "^1.0.0",
@@ -44,13 +51,13 @@
     "router": "^1.3.3",
     "transliteration": "^2.1.11",
     "try-json-parse": "^1.0.0",
+    "u-wave-source-soundcloud": "^2.0.0",
+    "u-wave-source-youtube": "^1.3.0",
     "ultron": "^1.1.1",
     "ws": "^7.2.1",
     "yaml": "^1.7.2"
   },
   "devDependencies": {
-    "chai": "^4.2.0",
-    "chai-as-promised": "^7.1.1",
     "concat-stream": "^2.0.0",
     "cross-env": "^7.0.0",
     "delay": "^4.3.0",
@@ -58,21 +65,15 @@
     "eslint": "^7.2.0",
     "eslint-config-airbnb-base": "^14.2.0",
     "eslint-plugin-import": "^2.20.0",
-    "explain-error": "^1.0.4",
-    "express": "^4.17.1",
-    "minimist": "^1.2.0",
     "mocha": "^8.0.1",
     "nodemon": "^2.0.2",
     "recaptcha-test-keys": "^1.0.0",
     "sinon": "^9.0.0",
-    "sinon-chai": "^3.4.0",
-    "u-wave-announce": "^0.3.0",
-    "u-wave-source-soundcloud": "^1.3.1",
-    "u-wave-source-youtube": "^1.3.0"
+    "u-wave-announce": "^0.3.0"
   },
   "scripts": {
     "test:mocha": "mocha",
-    "test:lint": "eslint --cache src test",
+    "test:lint": "eslint --cache .",
     "test": "npm run test:mocha && npm run test:lint",
     "start": "cross-env DEBUG=uwave:* nodemon dev/u-wave-dev-server"
   }

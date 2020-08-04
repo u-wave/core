@@ -1,6 +1,5 @@
 const { flatten } = require('lodash');
 const createDebug = require('debug');
-const eachSeries = require('p-each-series');
 const defaultRoles = require('../config/defaultRoles');
 const routes = require('../routes/acl');
 
@@ -54,8 +53,10 @@ class Acl {
     debug('existing roles', existingRoles);
     if (existingRoles === 0) {
       debug('no roles found, adding defaults');
-      const roleNames = Object.keys(defaultRoles);
-      await eachSeries(roleNames, (roleName) => this.createRole(roleName, defaultRoles[roleName]));
+      for (const [roleName, permissions] of Object.entries(defaultRoles)) {
+        // eslint-disable-next-line no-await-in-loop
+        await this.createRole(roleName, permissions);
+      }
     }
   }
 
