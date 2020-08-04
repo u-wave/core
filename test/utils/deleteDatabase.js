@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const delay = require('delay');
 
 module.exports = async function deleteDatabase(url) {
   const defaultOptions = {
@@ -9,6 +10,13 @@ module.exports = async function deleteDatabase(url) {
   };
 
   const mongo = mongoose.createConnection(url, defaultOptions);
-  await mongo.dropDatabase();
+  for (let i = 0; i < 10; i += 1) {
+    try {
+      await mongo.dropDatabase();
+      break;
+    } catch (error) {
+      await delay(100);
+    }
+  }
   await mongo.close();
 }

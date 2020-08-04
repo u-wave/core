@@ -520,8 +520,7 @@ class SocketServer {
   async destroy() {
     clearInterval(this.pinger);
     this.wss.close();
-    this.redisSubscription.removeAllListeners();
-    this.redisSubscription.unsubscribe('v1', 'uwave');
+    this.redisSubscription.quit();
   }
 
   /**
