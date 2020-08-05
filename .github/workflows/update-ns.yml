@@ -2,7 +2,7 @@ name: Publish Updated Config Schemas
 
 on:
   push:
-    branches: [feature/config-store]
+    branches: [default]
   # Maybe should do it on release instead?
   # release:
   #   types: [published]
