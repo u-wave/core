@@ -1,5 +1,6 @@
 const router = require('router');
 const route = require('../route');
+const protect = require('../middleware/protect');
 const controller = require('../controllers/server');
 
 function serverRoutes() {
@@ -8,6 +9,24 @@ function serverRoutes() {
     .get(
       '/time',
       route(controller.getServerTime),
+    )
+    // GET /server/config
+    .get(
+      '/config',
+      protect('admin'),
+      route(controller.getAllConfig),
+    )
+    // GET /server/config/:key
+    .get(
+      '/config/:key',
+      protect('admin'),
+      route(controller.getConfig),
+    )
+    // PUT /server/config/:key
+    .get(
+      '/config/:key',
+      protect('admin'),
+      route(controller.updateConfig),
     );
 }
 

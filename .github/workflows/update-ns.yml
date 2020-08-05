@@ -1,0 +1,19 @@
+name: Publish Updated Config Schemas
+
+on:
+  push:
+    branches: [default]
+  # Maybe should do it on release instead?
+  # release:
+  #   types: [published]
+
+jobs:
+  dispatch:
+    name: Dispatch
+    runs-on: ubuntu-latest
+    steps:
+      - uses: peter-evans/repository-dispatch@v1
+        with:
+          repository: u-wave/federation
+          token: ${{secrets.SCHEMA_ACCESS_TOKEN}}
+          event-type: update-config-schemas

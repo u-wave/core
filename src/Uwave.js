@@ -13,6 +13,7 @@ const { Source } = require('./Source');
 const { i18n } = require('./locale');
 
 const models = require('./models');
+const configStore = require('./plugins/configStore');
 const booth = require('./plugins/booth');
 const chat = require('./plugins/chat');
 const motd = require('./plugins/motd');
@@ -65,9 +66,10 @@ class UwaveServer extends EventEmitter {
     this.server = http.createServer(this.express);
 
     this.use(models());
+    this.use(configStore());
+
     this.use(passport({
       secret: this.options.secret,
-      auth: this.options.auth || {},
     }));
 
     // TODO possibly auto-add to server

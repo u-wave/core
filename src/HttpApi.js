@@ -7,6 +7,7 @@ const url = require('url');
 const authenticate = require('./routes/authenticate');
 const bans = require('./routes/bans');
 const search = require('./routes/search');
+const server = require('./routes/server');
 const users = require('./routes/users');
 const now = require('./routes/now');
 const imports = require('./routes/import');
@@ -88,6 +89,7 @@ class UwaveHttpApi extends Router {
       .use('/import', imports(this))
       .use('/now', now(this))
       .use('/search', search(this))
+      .use('/server', server())
       .use('/users', users(this));
 
     return router;
