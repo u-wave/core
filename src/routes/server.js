@@ -23,7 +23,7 @@ function serverRoutes() {
       route(controller.getConfig),
     )
     // PUT /server/config/:key
-    .get(
+    .put(
       '/config/:key',
       protect('admin'),
       route(controller.updateConfig),
