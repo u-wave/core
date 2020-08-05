@@ -112,7 +112,7 @@ class ConfigStore {
 
     await this.save(key, settings);
 
-    this.emit(key, settings, user);
+    this.emit('set', key, settings, user);
   }
 
   /**

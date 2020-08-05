@@ -5,8 +5,6 @@ const { callbackify } = require('util');
 const debug = require('debug')('uwave:passport');
 const JWTStrategy = require('../auth/JWTStrategy');
 
-const AUTH_SETTINGS_KEY = 'u-wave:socialAuth';
-
 const schema = require('../schemas/socialAuth.json');
 
 class PassportPlugin extends Passport {
@@ -39,7 +37,7 @@ class PassportPlugin extends Passport {
 
     uw.config.register(schema['uw:key'], schema);
     uw.config.on('set', (key, settings) => {
-      if (key === AUTH_SETTINGS_KEY) {
+      if (key === schema['uw:key']) {
         this.applyAuthStrategies(settings);
       }
     });
@@ -75,9 +73,11 @@ class PassportPlugin extends Passport {
   }
 
   applyAuthStrategies(settings) {
+    debug('reapplying settings');
     this.unuse('google');
 
     if (settings && settings.google && settings.google.enabled) {
+      debug('enable google');
       this.use('google', new GoogleStrategy({
         callbackURL: '/auth/service/google/callback',
         ...settings.google,
