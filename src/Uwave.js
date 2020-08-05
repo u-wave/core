@@ -70,7 +70,6 @@ class UwaveServer extends EventEmitter {
 
     this.use(passport({
       secret: this.options.secret,
-      auth: this.options.auth || {},
     }));
 
     // TODO possibly auto-add to server
