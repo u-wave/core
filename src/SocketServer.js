@@ -86,8 +86,8 @@ class SocketServer {
       clientTracking: false,
     });
 
-    this.redisSubscription.on('ready', () => {
-      this.redisSubscription.subscribe('uwave', 'v1');
+    this.redisSubscription.subscribe('uwave', 'v1').catch((error) => {
+      debug(error);
     });
     this.redisSubscription.on('message', (channel, command) => {
       this.onServerMessage(channel, command)
@@ -503,6 +503,8 @@ class SocketServer {
    */
   async onServerMessage(channel, rawCommand) {
     const { command, data } = tryJsonParse(rawCommand) || {};
+
+    debug(channel, command, data);
 
     if (channel === 'v1') {
       this.broadcast(command, data);
