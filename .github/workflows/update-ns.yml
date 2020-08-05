@@ -14,5 +14,6 @@ jobs:
     steps:
       - uses: peter-evans/repository-dispatch@v1
         with:
+          repository: u-wave/federation
           token: ${{secrets.SCHEMA_ACCESS_TOKEN}}
           event-type: update-config-schemas
