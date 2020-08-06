@@ -72,8 +72,6 @@ class UwaveServer extends EventEmitter {
       secret: this.options.secret,
     }));
 
-    // TODO possibly auto-add to server
-    // TODO possibly create http server here
     this.httpApi = new HttpApi(this, {
       secret: this.options.secret,
     });
