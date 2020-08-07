@@ -453,12 +453,16 @@ class PlaylistsRepository {
   async movePlaylistItems(playlistOrID, itemIDs, { afterID }) {
     const playlist = await this.getPlaylist(playlistOrID);
 
-    // Create a plain array instead of a mongoose array because it crashes on splice()
-    // otherwise.
-    const newMedia = [...playlist.media].filter((item) => !itemIDs.includes(`${item}`));
+    // Use a plain array instead of a mongoose array because we need `splice()`.
+    const itemsInPlaylist = [...playlist.media];
+    const itemIDsInPlaylist = new Set(itemsInPlaylist.map((item) => `${item}`));
+    // Only attempt to move items that are actually in the playlist.
+    const itemIDsToInsert = itemIDs.filter((id) => itemIDsInPlaylist.has(`${id}`));
+
+    const newMedia = itemsInPlaylist.filter((item) => !itemIDsToInsert.includes(`${item}`));
     // Reinsert items at their new position.
     const insertIndex = newMedia.findIndex((item) => `${item}` === afterID);
-    newMedia.splice(insertIndex + 1, 0, ...itemIDs);
+    newMedia.splice(insertIndex + 1, 0, ...itemIDsToInsert);
     playlist.media = newMedia;
 
     await playlist.save();

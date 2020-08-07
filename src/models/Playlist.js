@@ -26,7 +26,12 @@ function playlistModel() {
       },
       shared: { type: Boolean, default: false },
       nsfw: { type: Boolean, default: false },
-      media: [{ type: Types.ObjectId, ref: 'PlaylistItem', index: true }],
+      media: [{
+        type: Types.ObjectId,
+        ref: 'PlaylistItem',
+        required: true,
+        index: true,
+      }],
     }, {
       collection: 'playlists',
       timestamps: true,
