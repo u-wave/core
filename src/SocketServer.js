@@ -44,7 +44,7 @@ Alternatively, you can provide a port for the socket server to listen on:
 class SocketServer {
   static async plugin(uw, options = {}) {
     uw.socketServer = new SocketServer(uw, {
-      secret: uw.options.secret,
+      secret: options.secret,
       server: uw.server,
     });
 
