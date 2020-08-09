@@ -83,15 +83,15 @@ class UwaveServer extends EventEmitter {
     });
 
     if (this.options.useDefaultPlugins) {
-      this.use(booth);
+      this.use(acl);
       this.use(chat);
       this.use(motd);
       this.use(playlists);
       this.use(users);
       this.use(bans);
       this.use(history);
-      this.use(acl);
       this.use(waitlist);
+      this.use(booth);
     }
   }
 
