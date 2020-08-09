@@ -44,13 +44,13 @@ function defaultCreatePasswordResetEmail({ token, requestUrl }) {
 }
 
 class UwaveHttpApi extends Router {
-  static async plugin(uw) {
+  static async plugin(uw, options) {
     debug('setup');
     uw.express = express();
     uw.server = http.createServer(uw.express);
 
     uw.httpApi = new UwaveHttpApi(uw, {
-      secret: uw.options.secret,
+      secret: options.secret,
     });
 
     uw.express.use('/api', uw.httpApi);

@@ -75,7 +75,9 @@ class UwaveServer extends EventEmitter {
     });
 
     // Initial API setup
-    this.use(HttpApi.plugin);
+    this.use(HttpApi.plugin, {
+      secret: this.options.secret,
+    });
     this.use(SocketServer.plugin, {
       secret: this.options.secret,
     });
