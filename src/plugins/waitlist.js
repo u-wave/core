@@ -328,13 +328,11 @@ class Waitlist {
 }
 
 /**
- * @return {(uw: Uwave) => void}
+ * @return {Promise<void>}
  */
-function waitlistPlugin() {
-  return (uw) => {
-    uw.waitlist = new Waitlist(uw); // eslint-disable-line no-param-reassign
-    uw.httpApi.use('/waitlist', routes());
-  };
+async function waitlistPlugin(uw) {
+  uw.waitlist = new Waitlist(uw); // eslint-disable-line no-param-reassign
+  uw.httpApi.use('/waitlist', routes());
 }
 
 module.exports = waitlistPlugin;

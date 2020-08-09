@@ -47,7 +47,9 @@ async function start() {
     timeout: 10,
   });
 
-  uw.express.set('json spaces', 2);
+  uw.use(async (uw) => {
+    uw.express.set('json spaces', 2);
+  });
 
   uw.on('mongoError', (err) => {
     throw explain(err, 'Could not connect to MongoDB. Is it installed and running?');
@@ -58,26 +60,30 @@ async function start() {
   });
 
   if (process.env.HUB_URL) {
-    uw.use(announce({
-      // Generate a random one in a real app!
-      seed: Buffer.from('8286a5e55c62d93a042b8c56c8face52c05354c288807d941751f0e9060c2ded', 'hex'),
-      name: 'localhost',
-      subtitle: 'Local dev server',
-      url: `http://localhost:${port}`,
-      hub: process.env.HUB_URL,
-    }));
+    uw.use(async () => {
+      announce({
+        // Generate a random one in a real app!
+        seed: Buffer.from('8286a5e55c62d93a042b8c56c8face52c05354c288807d941751f0e9060c2ded', 'hex'),
+        name: 'localhost',
+        subtitle: 'Local dev server',
+        url: `http://localhost:${port}`,
+        hub: process.env.HUB_URL,
+      })(uw);
+    });
   }
 
-  if (process.env.YOUTUBE_API_KEY) {
-    uw.source(ytSource,  {
-      key: process.env.YOUTUBE_API_KEY,
-    });
-  }
-  if (process.env.SOUNDCLOUD_API_KEY) {
-    uw.source(scSource, {
-      key: process.env.SOUNDCLOUD_API_KEY,
-    });
-  }
+  uw.use(async (uw) => {
+    if (process.env.YOUTUBE_API_KEY) {
+      uw.source(ytSource,  {
+        key: process.env.YOUTUBE_API_KEY,
+      });
+    }
+    if (process.env.SOUNDCLOUD_API_KEY) {
+      uw.source(scSource, {
+        key: process.env.SOUNDCLOUD_API_KEY,
+      });
+    }
+  });
 
   await uw.listen(port);
   console.log(`Now listening on ${port}`);

@@ -6,25 +6,23 @@ const playlistModel = require('./Playlist');
 const playlistItemModel = require('./PlaylistItem');
 const userModel = require('./User');
 
-function models() {
-  return (uw) => {
-    uw.use(aclRoleModel());
-    uw.use(authenticationModel());
-    uw.use(historyModel());
-    uw.use(mediaModel());
-    uw.use(playlistModel());
-    uw.use(playlistItemModel());
-    uw.use(userModel());
+async function models(uw) {
+  aclRoleModel()(uw);
+  authenticationModel()(uw);
+  historyModel()(uw);
+  mediaModel()(uw);
+  playlistModel()(uw);
+  playlistItemModel()(uw);
+  userModel()(uw);
 
-    uw.models = {
-      AclRole: uw.model('AclRole'),
-      Authentication: uw.model('Authentication'),
-      HistoryEntry: uw.model('History'),
-      Media: uw.model('Media'),
-      Playlist: uw.model('Playlist'),
-      PlaylistItem: uw.model('PlaylistItem'),
-      User: uw.model('User'),
-    };
+  uw.models = {
+    AclRole: uw.model('AclRole'),
+    Authentication: uw.model('Authentication'),
+    HistoryEntry: uw.model('History'),
+    Media: uw.model('Media'),
+    Playlist: uw.model('Playlist'),
+    PlaylistItem: uw.model('PlaylistItem'),
+    User: uw.model('User'),
   };
 }
 

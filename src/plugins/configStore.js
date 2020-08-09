@@ -154,16 +154,14 @@ class ConfigStore {
   }
 }
 
-function configStorePlugin() {
-  return (uw) => {
-    uw.config = new ConfigStore(uw.mongo);
-    uw.config.on('set', (key, value, user) => {
-      uw.publish('configStore:update', {
-        key,
-        user: user ? user.id : null,
-      });
+async function configStorePlugin(uw) {
+  uw.config = new ConfigStore(uw.mongo);
+  uw.config.on('set', (key, value, user) => {
+    uw.publish('configStore:update', {
+      key,
+      user: user ? user.id : null,
     });
-  };
+  });
 }
 
 module.exports = configStorePlugin;

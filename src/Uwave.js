@@ -6,6 +6,7 @@ const { isPlainObject } = require('lodash');
 const { promisify } = require('util');
 const express = require('express');
 const http = require('http');
+const avvio = require('avvio');
 
 const HttpApi = require('./HttpApi');
 const SocketServer = require('./SocketServer');
@@ -42,6 +43,8 @@ class UwaveServer extends EventEmitter {
   constructor(options = {}) {
     super();
 
+    avvio(this);
+
     /**
      * @type {Map<string, Source>}
      */
@@ -62,49 +65,64 @@ class UwaveServer extends EventEmitter {
     this.configureRedis();
     this.configureMongoose();
 
-    this.express = express();
-    this.server = http.createServer(this.express);
+    this.onClose(() => Promise.all([
+      this.redis.quit(),
+      this.mongo.close(),
+    ]));
 
-    this.use(models());
-    this.use(configStore());
+    this.use(models);
+    this.use(configStore);
 
-    this.use(passport({
-      secret: this.options.secret,
-    }));
-
-    this.httpApi = new HttpApi(this, {
+    this.use(passport, {
       secret: this.options.secret,
     });
-    this.socketServer = new SocketServer(this, {
-      secret: this.options.secret,
-      server: this.server,
+
+    // Initial API setup
+    this.use(async (uw) => {
+      uw.express = express();
+      uw.server = http.createServer(uw.express);
+
+      uw.httpApi = new HttpApi(uw, {
+        secret: uw.options.secret,
+      });
+
+      uw.socketServer = new SocketServer(uw, {
+        secret: uw.options.secret,
+        server: uw.server,
+      });
+
+      uw.after(async () => {
+        await uw.socketServer.initLostConnections();
+      });
+
+      uw.onClose(async () => {
+        await uw.socketServer.destroy();
+      });
     });
 
     if (this.options.useDefaultPlugins) {
-      this.use(booth());
-      this.use(chat());
-      this.use(motd());
-      this.use(playlists());
-      this.use(users());
-      this.use(bans());
-      this.use(history());
-      this.use(acl());
-      this.use(waitlist());
+      this.use(booth);
+      this.use(chat);
+      this.use(motd);
+      this.use(playlists);
+      this.use(users);
+      this.use(bans);
+      this.use(history);
+      this.use(acl);
+      this.use(waitlist);
     }
 
-    this.httpApi.use(errorHandler());
+    this.use(async (uw) => {
+      uw.httpApi.use(errorHandler());
 
-    this.express.use('/api', this.httpApi);
-    // An older name
-    this.express.use('/v1', this.httpApi);
+      uw.express.use('/api', uw.httpApi);
+      // An older name
+      uw.express.use('/v1', uw.httpApi);
 
-    this.express.use((error, req, res, next) => {
-      debug(error);
-      next(error);
-    });
-
-    process.nextTick(() => {
-      this.emit('started');
+      uw.express.use((error, req, res, next) => {
+        debug(error);
+        next(error);
+      });
     });
   }
 
@@ -143,11 +161,6 @@ class UwaveServer extends EventEmitter {
     }
 
     Object.assign(this.options, options);
-  }
-
-  use(plugin) {
-    plugin(this);
-    return this;
   }
 
   model(name) {
@@ -247,27 +260,11 @@ class UwaveServer extends EventEmitter {
     return this;
   }
 
-  /**
-   * Stop this üWave instance.
-   */
-  async stop() {
-    this.emit('stop');
+  async listen() {
+    await this.ready();
 
-    this.log('stopping üWave...');
-
-    await this.socketServer.destroy();
-
-    await Promise.all([
-      this.redis.quit(),
-      this.mongo.close(),
-    ]);
-
-    this.emit('stopped');
-  }
-
-  listen() {
     const listen = promisify(this.server.listen);
-    return listen.call(this.server, this.options.port);
+    await listen.call(this.server, this.options.port);
   }
 }
 

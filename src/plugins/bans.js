@@ -132,10 +132,8 @@ class Bans {
   }
 }
 
-function bans() {
-  return (uw) => {
-    uw.bans = new Bans(uw); // eslint-disable-line no-param-reassign
-  };
+async function bans(uw) {
+  uw.bans = new Bans(uw); // eslint-disable-line no-param-reassign
 }
 
 module.exports = bans;

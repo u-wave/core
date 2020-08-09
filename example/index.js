@@ -14,25 +14,29 @@ const uw = uwave({
   secret,
 });
 
-// Register your Media Sources. The API keys are configured in the config.json
-// file.
-uw.source(youTubeSource, {
-  key: process.env.YOUTUBE_API_KEY,
-});
-uw.source(soundCloudSource, {
-  key: process.env.SOUNDCLOUD_API_KEY,
-});
-
-const webClient = createWebClient(null, {
-  apiBase: '/api',
+uw.use(() => {
+  // Register your Media Sources. The API keys are configured in the config.json
+  // file.
+  uw.source(youTubeSource, {
+    key: process.env.YOUTUBE_API_KEY,
+  });
+  uw.source(soundCloudSource, {
+    key: process.env.SOUNDCLOUD_API_KEY,
+  });
 });
 
-uw.express.use(webClient);
+uw.use(() => {
+  const webClient = createWebClient(null, {
+    apiBase: '/api',
+  });
 
-uw.on('started', () => {
+  uw.express.use(webClient);
+});
+
+uw.ready().then(() => {
   console.log(`üWave server running on http://localhost:${port}/`);
 });
 
 process.on('beforeExit', () => {
-  uw.stop();
+  uw.close();
 });

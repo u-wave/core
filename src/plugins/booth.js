@@ -22,9 +22,6 @@ class Booth {
   constructor(uw) {
     this.uw = uw;
     this.timeout = null;
-
-    uw.on('started', this.onStart.bind(this));
-    uw.on('stop', this.onStop.bind(this));
   }
 
   async onStart() {
@@ -259,12 +256,19 @@ class Booth {
   }
 }
 
-function booth() {
-  return (uw) => {
-    uw.booth = new Booth(uw);
-    uw.httpApi.use('/booth', routes());
-  };
+async function boothPlugin(uw) {
+  uw.booth = new Booth(uw);
+  uw.httpApi.use('/booth', routes());
+
+  uw.after(async (err) => {
+    if (!err) {
+      await uw.booth.onStart();
+    }
+  });
+  uw.onClose(() => {
+    uw.booth.onStop();
+  });
 }
 
-module.exports = booth;
+module.exports = boothPlugin;
 module.exports.Booth = Booth;

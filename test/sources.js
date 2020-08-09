@@ -11,10 +11,10 @@ describe('Media Sources', () => {
       useDefaultPlugins: false,
       secret: Buffer.from('secret_test_sources'),
     });
-    await uw.socketServer.ready;
+    await uw.ready();
   });
   afterEach(async () => {
-    await uw.stop();
+    await uw.close();
     await deleteDatabase(uw.options.mongo);
   });
 

@@ -9,10 +9,10 @@ describe('üWave Core', () => {
       mongo: 'mongodb://localhost:27017/uw_test_server',
       secret: 'uw_test_secret',
     });
-    await uw.ready;
+    await uw.ready();
   });
   afterEach(async () => {
-    await uw.stop();
+    await uw.close();
   });
 
   it('can create a üWave instance', async () => {

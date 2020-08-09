@@ -494,11 +494,9 @@ class PlaylistsRepository {
   }
 }
 
-function playlistsPlugin() {
-  return (uw) => {
-    uw.playlists = new PlaylistsRepository(uw);
-    uw.httpApi.use('/playlists', routes());
-  };
+async function playlistsPlugin(uw) {
+  uw.playlists = new PlaylistsRepository(uw);
+  uw.httpApi.use('/playlists', routes());
 }
 
 module.exports = playlistsPlugin;

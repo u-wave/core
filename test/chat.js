@@ -1,7 +1,7 @@
 const sinon = require('sinon');
 const chatPlugin = require('../src/plugins/chat');
 
-function createUwaveWithChatTest() {
+async function createUwaveWithChatTest() {
   const uw = {
     redis: {
       exists: sinon.stub().returns(false),
@@ -12,7 +12,7 @@ function createUwaveWithChatTest() {
     publish: sinon.spy(),
   };
 
-  chatPlugin()(uw);
+  await chatPlugin(uw);
 
   return uw;
 }
@@ -20,8 +20,8 @@ function createUwaveWithChatTest() {
 describe('Chat', () => {
   let uw;
 
-  beforeEach(() => {
-    uw = createUwaveWithChatTest();
+  beforeEach(async () => {
+    uw = await createUwaveWithChatTest();
   });
 
   it('can broadcast chat messages', async () => {

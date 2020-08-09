@@ -14,11 +14,9 @@ class MOTD {
   }
 }
 
-function motdPlugin() {
-  return (uw) => {
-    uw.motd = new MOTD(uw);
-    uw.httpApi.use('/motd', routes());
-  };
+async function motdPlugin(uw) {
+  uw.motd = new MOTD(uw);
+  uw.httpApi.use('/motd', routes());
 }
 
 module.exports = motdPlugin;

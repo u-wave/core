@@ -7,14 +7,15 @@ const deleteDatabase = require('./utils/deleteDatabase');
 
 const DB_NAME = 'uw_test_acl';
 
-function createUwaveWithAclTest() {
+async function createUwaveWithAclTest() {
   const uw = uwave({
     useDefaultPlugins: false,
     mongo: `mongodb://localhost/${DB_NAME}`,
     secret: Buffer.from(`secret_${DB_NAME}`),
   });
-  uw.use(usersPlugin());
-  uw.use(aclPlugin({ defaultRoles: false }));
+  uw.use(usersPlugin);
+  uw.use(aclPlugin, { defaultRoles: false });
+  await uw.ready();
   return uw;
 }
 
@@ -29,7 +30,7 @@ describe('acl', () => {
     user = createUser(uw);
   });
   afterEach(async () => {
-    await uw.stop();
+    await uw.close();
     await deleteDatabase(uw.options.mongo);
   });
 

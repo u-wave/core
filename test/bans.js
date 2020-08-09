@@ -8,14 +8,15 @@ const deleteDatabase = require('./utils/deleteDatabase');
 
 const DB_NAME = 'uw_test_bans';
 
-function createUwaveWithBansTest() {
+async function createUwaveWithBansTest() {
   const uw = uwave({
     useDefaultPlugins: false,
     mongo: `mongodb://localhost/${DB_NAME}`,
     secret: Buffer.from(`secret_${DB_NAME}`),
   });
-  uw.use(usersPlugin());
-  uw.use(bansPlugin());
+  uw.use(usersPlugin);
+  uw.use(bansPlugin);
+  await uw.ready();
   return uw;
 }
 
@@ -25,13 +26,12 @@ describe('bans', () => {
   let bans;
   beforeEach(async () => {
     uw = await createUwaveWithBansTest();
-    await uw.ready;
     bans = uw.bans; // eslint-disable-line prefer-destructuring
     user = createUser(uw);
     await user.save();
   });
   afterEach(async () => {
-    await uw.stop();
+    await uw.close();
     await deleteDatabase(uw.options.mongo);
   });
 

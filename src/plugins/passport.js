@@ -87,10 +87,9 @@ class PassportPlugin extends Passport {
   }
 }
 
-function passportPlugin(options = {}) {
-  return (uw) => {
-    uw.passport = new PassportPlugin(uw, options);
-  };
+async function passportPlugin(uw, options = {}) {
+  debug('setup');
+  uw.passport = new PassportPlugin(uw, options);
 }
 
 module.exports = passportPlugin;
