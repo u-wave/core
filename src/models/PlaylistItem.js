@@ -3,7 +3,7 @@ const mongoose = require('mongoose');
 const { Schema } = mongoose;
 const { Types } = mongoose.Schema;
 
-function playlistItemModel() {
+async function playlistItemModel(uw) {
   const schema = new Schema({
     media: {
       type: Types.ObjectId,
@@ -32,9 +32,7 @@ function playlistItemModel() {
     minimize: false,
   });
 
-  return (uw) => {
-    uw.mongo.model('PlaylistItem', schema);
-  };
+  uw.mongo.model('PlaylistItem', schema);
 }
 
 module.exports = playlistItemModel;

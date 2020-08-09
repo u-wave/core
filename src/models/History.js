@@ -5,7 +5,7 @@ const { Types } = mongoose.Schema;
 
 const listOfUsers = [{ type: Types.ObjectId, ref: 'User' }];
 
-function historyModel() {
+async function historyModel(uw) {
   const schema = new Schema({
     user: {
       type: Types.ObjectId, ref: 'User', required: true, index: true,
@@ -36,9 +36,7 @@ function historyModel() {
     minimize: false,
   });
 
-  return (uw) => {
-    uw.mongo.model('History', schema);
-  };
+  uw.mongo.model('History', schema);
 }
 
 module.exports = historyModel;

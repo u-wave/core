@@ -10,7 +10,7 @@ const { PlaylistItemNotFoundError } = require('../errors');
 const { Schema } = mongoose;
 const { Types } = mongoose.Schema;
 
-function playlistModel(uw) {
+async function playlistModel(uw) {
   const schema = new Schema({
     name: {
       type: String,
