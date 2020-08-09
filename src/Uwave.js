@@ -4,8 +4,6 @@ const Redis = require('ioredis');
 const debug = require('debug');
 const { isPlainObject } = require('lodash');
 const { promisify } = require('util');
-const express = require('express');
-const http = require('http');
 const avvio = require('avvio');
 
 const HttpApi = require('./HttpApi');
@@ -25,7 +23,6 @@ const history = require('./plugins/history');
 const acl = require('./plugins/acl');
 const waitlist = require('./plugins/waitlist');
 const passport = require('./plugins/passport');
-const errorHandler = require('./middleware/errorHandler');
 
 mongoose.Promise = Promise;
 const MongooseConnection = mongoose.Connection;
@@ -78,27 +75,8 @@ class UwaveServer extends EventEmitter {
     });
 
     // Initial API setup
-    this.use(async (uw) => {
-      uw.express = express();
-      uw.server = http.createServer(uw.express);
-
-      uw.httpApi = new HttpApi(uw, {
-        secret: uw.options.secret,
-      });
-
-      uw.socketServer = new SocketServer(uw, {
-        secret: uw.options.secret,
-        server: uw.server,
-      });
-
-      uw.after(async () => {
-        await uw.socketServer.initLostConnections();
-      });
-
-      uw.onClose(async () => {
-        await uw.socketServer.destroy();
-      });
-    });
+    this.use(HttpApi.plugin);
+    this.use(SocketServer.plugin);
 
     if (this.options.useDefaultPlugins) {
       this.use(booth);
@@ -111,19 +89,6 @@ class UwaveServer extends EventEmitter {
       this.use(acl);
       this.use(waitlist);
     }
-
-    this.use(async (uw) => {
-      uw.httpApi.use(errorHandler());
-
-      uw.express.use('/api', uw.httpApi);
-      // An older name
-      uw.express.use('/v1', uw.httpApi);
-
-      uw.express.use((error, req, res, next) => {
-        debug(error);
-        next(error);
-      });
-    });
   }
 
   parseOptions(options) {

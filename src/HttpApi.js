@@ -1,7 +1,10 @@
 const Router = require('router');
+const express = require('express');
 const bodyParser = require('body-parser');
 const cookieParser = require('cookie-parser');
+const http = require('http');
 const url = require('url');
+const debug = require('debug')('uwave:http-api');
 
 // routes
 const authenticate = require('./routes/authenticate');
@@ -16,6 +19,7 @@ const imports = require('./routes/import');
 const addFullUrl = require('./middleware/addFullUrl');
 const attachUwaveMeta = require('./middleware/attachUwaveMeta');
 const rateLimit = require('./middleware/rateLimit');
+const errorHandler = require('./middleware/errorHandler');
 
 // utils
 const AuthRegistry = require('./AuthRegistry');
@@ -40,6 +44,30 @@ function defaultCreatePasswordResetEmail({ token, requestUrl }) {
 }
 
 class UwaveHttpApi extends Router {
+  static async plugin(uw) {
+    debug('setup');
+    uw.express = express();
+    uw.server = http.createServer(uw.express);
+
+    uw.httpApi = new UwaveHttpApi(uw, {
+      secret: uw.options.secret,
+    });
+
+    uw.express.use('/api', uw.httpApi);
+    // An older name
+    uw.express.use('/v1', uw.httpApi);
+
+    // Set up error handlers after all the plugins have registered their routes.
+    uw.after(async () => {
+      debug('after');
+      uw.httpApi.use(errorHandler());
+      uw.express.use((error, req, res, next) => {
+        debug(error);
+        next(error);
+      });
+    });
+  }
+
   constructor(uw, options = {}) {
     if (!uw || !('mongo' in uw)) {
       throw new TypeError('Expected a u-wave-core instance in the first parameter. If you are '
