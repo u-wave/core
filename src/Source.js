@@ -31,7 +31,7 @@ class ImportContext extends SourceContext {
     const items = this.source.addSourceType(rawItems);
 
     if (items.length > 0) {
-      await playlist.addItems(items);
+      await this.uw.playlists.addPlaylistItems(playlist, items);
     }
 
     return playlist;

@@ -109,7 +109,7 @@ class Booth {
     if (playlist.size === 0) {
       throw new PlaylistIsEmptyError();
     }
-    const playlistItem = await playlist.getItemAt(0);
+    const playlistItem = await this.uw.playlists.getPlaylistItem(playlist.media[0]);
 
     await playlistItem.populate('media').execPopulate();
 

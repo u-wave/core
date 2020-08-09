@@ -11,7 +11,7 @@ async function models(uw) {
   authenticationModel()(uw);
   historyModel()(uw);
   mediaModel()(uw);
-  playlistModel()(uw);
+  playlistModel(uw);
   playlistItemModel()(uw);
   userModel()(uw);
 

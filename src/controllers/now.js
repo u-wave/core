@@ -2,11 +2,11 @@ const debug = require('debug')('uwave:http-api:now');
 const { getBoothData } = require('./booth');
 const { serializePlaylist } = require('../utils/serialize');
 
-async function getFirstItem(user, activePlaylist) {
+async function getFirstItem(uw, activePlaylist) {
   try {
     const playlist = await activePlaylist;
-    if (playlist) {
-      const item = await playlist.getItemAt(0);
+    if (playlist && playlist.size > 0) {
+      const item = await uw.playlists.getPlaylistItem(playlist.media[0]);
       return item;
     }
   } catch (e) {
@@ -48,7 +48,7 @@ async function getState(req) {
   const waitlistLocked = uw.waitlist.isLocked();
   let activePlaylist = user ? user.getActivePlaylist() : null;
   const playlists = user ? user.getPlaylists() : null;
-  const firstActivePlaylistItem = activePlaylist ? getFirstItem(user, activePlaylist) : null;
+  const firstActivePlaylistItem = activePlaylist ? getFirstItem(uw, activePlaylist) : null;
   const socketToken = user ? authRegistry.createAuthToken(user) : null;
   const authStrategies = passport.strategies();
   const time = Date.now();
