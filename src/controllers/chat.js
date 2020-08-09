@@ -8,7 +8,7 @@ async function muteUser(req) {
   const { user: moderator } = req;
   const { id } = req.params;
   const duration = req.body.time;
-  const { users } = req.uwave;
+  const { chat, users } = req.uwave;
 
   if (moderator.id === id) {
     throw new CannotSelfMuteError({ unmute: false });
@@ -17,7 +17,7 @@ async function muteUser(req) {
   const user = await users.getUser(id);
   if (!user) throw new UserNotFoundError({ id });
 
-  await user.mute(duration, { moderator });
+  await chat.mute(user, duration, { moderator });
 
   return toItemResponse({});
 }
@@ -25,7 +25,7 @@ async function muteUser(req) {
 async function unmuteUser(req) {
   const { user: moderator } = req;
   const { id } = req.params;
-  const { users } = req.uwave;
+  const { chat, users } = req.uwave;
 
   if (moderator.id === id) {
     throw new CannotSelfMuteError({ unmute: true });
@@ -34,7 +34,7 @@ async function unmuteUser(req) {
   const user = await users.getUser(id);
   if (!user) throw new UserNotFoundError({ id });
 
-  await user.unmute({ moderator });
+  await chat.unmute(user, { moderator });
 
   return toItemResponse({});
 }

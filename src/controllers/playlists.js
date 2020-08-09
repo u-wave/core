@@ -29,9 +29,10 @@ async function getPlaylists(req) {
 
 async function getPlaylist(req) {
   const { user } = req;
+  const { playlists } = req.uwave;
   const { id } = req.params;
 
-  const playlist = await user.getPlaylist(id);
+  const playlist = await playlists.getUserPlaylist(user, id);
 
   if (!playlist) {
     throw new PlaylistNotFoundError({ id });
@@ -46,8 +47,9 @@ async function getPlaylist(req) {
 async function createPlaylist(req) {
   const { user } = req;
   const { name, description, shared } = req.body;
+  const { playlists } = req.uwave;
 
-  const playlist = await user.createPlaylist({
+  const playlist = await playlists.createPlaylist(user, {
     name,
     description,
     shared,
@@ -69,7 +71,7 @@ async function deletePlaylist(req) {
   const { id } = req.params;
   const { playlists } = req.uwave;
 
-  const playlist = await user.getPlaylist(id);
+  const playlist = await playlists.getUserPlaylist(user, id);
   if (!playlist) {
     throw new PlaylistNotFoundError({ id });
   }
@@ -93,7 +95,7 @@ async function updatePlaylist(req) {
     }
   });
 
-  const playlist = await user.getPlaylist(id);
+  const playlist = await playlists.getUserPlaylist(user, id);
   if (!playlist) {
     throw new PlaylistNotFoundError({ id });
   }
@@ -112,7 +114,7 @@ async function renamePlaylist(req) {
   const { name } = req.body;
   const { playlists } = req.uwave;
 
-  const playlist = await user.getPlaylist(id);
+  const playlist = await playlists.getUserPlaylist(user, id);
   if (!playlist) {
     throw new PlaylistNotFoundError({ id });
   }
@@ -131,7 +133,7 @@ async function sharePlaylist(req) {
   const { shared } = req.body;
   const { playlists } = req.uwave;
 
-  const playlist = await user.getPlaylist(id);
+  const playlist = await playlists.getUserPlaylist(user, id);
   if (!playlist) {
     throw new PlaylistNotFoundError({ id });
   }
@@ -146,9 +148,10 @@ async function sharePlaylist(req) {
 
 async function activatePlaylist(req) {
   const { user } = req;
+  const { playlists } = req.uwave;
   const { id } = req.params;
 
-  const playlist = await user.getPlaylist(id);
+  const playlist = await playlists.getUserPlaylist(user, id);
   if (!playlist) {
     throw new PlaylistNotFoundError({ id });
   }
@@ -223,6 +226,7 @@ async function addPlaylistItems(req) {
 
 async function removePlaylistItems(req) {
   const { user } = req;
+  const { playlists } = req.uwave;
   const { id } = req.params;
   const items = req.query.items || req.body.items;
 
@@ -230,7 +234,7 @@ async function removePlaylistItems(req) {
     throw new HTTPError(422, 'Expected "items" to be an array');
   }
 
-  const playlist = await user.getPlaylist(id);
+  const playlist = await playlists.getUserPlaylist(user, id);
   if (!playlist) {
     throw new PlaylistNotFoundError({ id });
   }
@@ -254,7 +258,7 @@ async function movePlaylistItems(req) {
     throw new HTTPError(422, 'Expected "items" to be an array');
   }
 
-  const playlist = await user.getPlaylist(id);
+  const playlist = await playlists.getUserPlaylist(user, id);
   if (!playlist) {
     throw new PlaylistNotFoundError({ id });
   }
@@ -281,12 +285,12 @@ async function shufflePlaylistItems(req) {
   const { playlists } = req.uwave;
   const { id } = req.params;
 
-  const playlist = await user.getPlaylist(id);
+  const playlist = await playlists.getUserPlaylist(user, id);
   if (!playlist) {
     throw new PlaylistNotFoundError({ id });
   }
 
-  await uw.playlists.shufflePlaylist(playlist);
+  await playlists.shufflePlaylist(playlist);
 
   return toItemResponse({});
 }
@@ -296,7 +300,7 @@ async function getPlaylistItem(req) {
   const { playlists } = req.uwave;
   const { id, itemID } = req.params;
 
-  const playlist = await user.getPlaylist(id);
+  const playlist = await playlists.getUserPlaylist(user, id);
   if (!playlist) {
     throw new PlaylistNotFoundError({ id });
   }
@@ -324,7 +328,7 @@ async function updatePlaylistItem(req) {
     end,
   };
 
-  const playlist = await user.getPlaylist(id);
+  const playlist = await playlists.getUserPlaylist(user, id);
   if (!playlist) {
     throw new PlaylistNotFoundError({ id });
   }
@@ -340,7 +344,7 @@ async function removePlaylistItem(req) {
   const { playlists } = req.uwave;
   const { id, itemID } = req.params;
 
-  const playlist = await user.getPlaylist(id);
+  const playlist = await playlists.getUserPlaylist(user, id);
   if (!playlist) {
     throw new PlaylistNotFoundError('Playlist not found.');
   }

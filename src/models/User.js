@@ -65,59 +65,6 @@ async function userModel(uw) {
 
   userSchema.loadClass(class User {
     /**
-     * @return {Promise<string[]>}
-     */
-    getPermissions() {
-      return uw.acl.getAllPermissions(this);
-    }
-
-    /**
-     * @param {string} permission
-     * @return {Promise<boolean>}
-     */
-    can(permission) {
-      return uw.acl.isAllowed(this, permission);
-    }
-
-    /**
-     * @param {string[]} permissions
-     * @return {Promise<unknown>}
-     */
-    allow(permissions) {
-      return uw.acl.allow(this, permissions);
-    }
-
-    /**
-     * @param {string[]} permissions
-     * @return {Promise<unknown>}
-     */
-    disallow(permissions) {
-      return uw.acl.disallow(this, permissions);
-    }
-
-    /**
-     * @param {string} password
-     * @return {Promise<unknown>}
-     */
-    updatePassword(password) {
-      return uw.users.updatePassword(this, password);
-    }
-
-    /**
-     * @return {Promise<unknown[]>}
-     */
-    getPlaylists() {
-      return uw.playlists.getUserPlaylists(this);
-    }
-
-    /**
-     * @return {Promise<unknown>}
-     */
-    getPlaylist(id) {
-      return uw.playlists.getUserPlaylist(this, id);
-    }
-
-    /**
      * @return {Promise<string>}
      */
     getActivePlaylistID() {
@@ -135,52 +82,13 @@ async function userModel(uw) {
     /**
      * @return {Promise<unknown>}
      */
-    async setActivePlaylist(id) {
-      const playlist = await this.getPlaylist(id);
-      await uw.redis.set(`playlist:${this.id}`, playlist.id);
+    async setActivePlaylist(playlistOrId) {
+      let id = playlistOrId;
+      if (playlistOrId.id) {
+        id = playlistOrId.id;
+      }
+      await uw.redis.set(`playlist:${this.id}`, id);
       return this;
-    }
-
-    /**
-     * @return {Promise<unknown>}
-     */
-    createPlaylist(props) {
-      return uw.playlists.createPlaylist(this, props);
-    }
-
-    /**
-     * @return {Promise<Page<unknown, unknown>>}
-     */
-    getHistory(pagination = {}) {
-      return uw.history.getUserHistory(this, pagination);
-    }
-
-    /**
-     * @return {Promise<unknown>}
-     */
-    async mute(...args) {
-      return uw.chat.mute(this, ...args);
-    }
-
-    /**
-     * @return {Promise<unknown>}
-     */
-    async unmute(...args) {
-      return uw.chat.unmute(this, ...args);
-    }
-
-    /**
-     * @return {Promise<boolean>}
-     */
-    async isMuted() {
-      return uw.chat.isMuted(this);
-    }
-
-    /**
-     * @return {Promise<boolean>}
-     */
-    isBanned() {
-      return uw.bans.isBanned(this);
     }
   });
 

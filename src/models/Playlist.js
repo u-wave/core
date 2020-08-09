@@ -1,5 +1,4 @@
 const mongoose = require('mongoose');
-const { PlaylistItemNotFoundError } = require('../errors');
 
 /**
  * @template Element

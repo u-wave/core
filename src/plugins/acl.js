@@ -35,7 +35,7 @@ const getRoleName = (role) => (
 );
 
 class Acl {
-  constructor(uw, opts) {
+  constructor(uw) {
     this.uw = uw;
     this.superRole = '*';
   }
@@ -145,7 +145,7 @@ class Acl {
 }
 
 async function acl(uw, opts = {}) {
-  uw.acl = new Acl(uw, opts);
+  uw.acl = new Acl(uw);
   uw.httpApi.use('/acl', routes());
 
   if (opts.defaultRoles !== false) {

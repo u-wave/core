@@ -72,19 +72,6 @@ describe('acl', () => {
     assert.strictEqual(await acl.isAllowed(user, 'test.role'), false);
   });
 
-  it('provides convenience methods on the User model class', async () => {
-    await acl.createRole('waitlist.add', []);
-    await acl.createRole('waitlist.remove', []);
-    await acl.createRole('waitlist.clear', []);
-    await acl.createRole('moderate.waitlist', ['waitlist.add', 'waitlist.remove']);
-
-    await user.allow(['moderate.waitlist']);
-
-    assert.strictEqual(await user.can('waitlist.add'), true);
-    assert.strictEqual(await user.can('waitlist.remove'), true);
-    assert.strictEqual(await user.can('waitlist.clear'), false);
-  });
-
   it('can delete roles', async () => {
     await acl.createRole('test.role', []);
     assert.deepStrictEqual(Object.keys(await acl.getAllRoles()), ['test.role']);

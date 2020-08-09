@@ -47,7 +47,7 @@ async function getState(req) {
   const waitlist = uw.waitlist.getUserIDs();
   const waitlistLocked = uw.waitlist.isLocked();
   let activePlaylist = user ? user.getActivePlaylist() : null;
-  const playlists = user ? user.getPlaylists() : null;
+  const playlists = user ? uw.playlists.getUserPlaylists(user) : null;
   const firstActivePlaylistItem = activePlaylist ? getFirstItem(uw, activePlaylist) : null;
   const socketToken = user ? authRegistry.createAuthToken(user) : null;
   const authStrategies = passport.strategies();
