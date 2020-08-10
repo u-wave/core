@@ -25,6 +25,7 @@ const history = require('./plugins/history');
 const acl = require('./plugins/acl');
 const waitlist = require('./plugins/waitlist');
 const passport = require('./plugins/passport');
+const migrations = require('./plugins/migrations');
 
 mongoose.Promise = Promise;
 const MongooseConnection = mongoose.Connection;
@@ -70,6 +71,7 @@ class UwaveServer extends EventEmitter {
     ]));
 
     this.use(models);
+    this.use(migrations);
     this.use(configStore);
 
     this.use(passport, {
