@@ -61,6 +61,7 @@ async function doSkip(uw, moderatorID, userID, reason, opts = {}) {
 async function skipBooth(req) {
   const { user } = req;
   const { userID, reason, remove } = req.body;
+  const { acl } = req.uwave;
 
   const skippingSelf = (!userID && !reason)
     || userID === user.id;
@@ -78,7 +79,7 @@ async function skipBooth(req) {
   }
 
   const errors = [];
-  if (!await user.can('booth.skip.other')) {
+  if (!await acl.isAllowed(user, 'booth.skip.other')) {
     errors.push(new PermissionError('You need to be a moderator to do this'));
   }
   if (typeof userID !== 'string') {
@@ -221,7 +222,7 @@ async function favorite(req) {
     throw new CannotSelfFavoriteError();
   }
 
-  const playlist = await user.getPlaylist(playlistID);
+  const playlist = await uw.playlists.getUserPlaylist(user, playlistID);
   if (!playlist) {
     throw new PlaylistNotFoundError({ id: playlistID });
   }

@@ -135,12 +135,12 @@ class Waitlist {
    * @return {Promise<void>}
    */
   async addUser(userID, { moderator } = {}) {
-    const { users } = this.uw;
+    const { acl, users } = this.uw;
 
     const user = await users.getUser(userID);
     if (!user) throw new UserNotFoundError({ id: userID });
 
-    const canForceJoin = await user.can('waitlist.join.locked');
+    const canForceJoin = await acl.isAllowed(user, 'waitlist.join.locked');
     if (!canForceJoin && await this.isLocked()) {
       throw new PermissionError('The waitlist is locked. Only staff can join.', {
         requiredRole: 'waitlist.join.locked',
@@ -162,7 +162,7 @@ class Waitlist {
     if (!moderator || user.id === moderator.id) {
       waitlist = await this.doJoinWaitlist(user);
     } else {
-      if (!(await moderator.can('waitlist.add'))) {
+      if (!(await acl.isAllowed(moderator, 'waitlist.add'))) {
         throw new PermissionError('You cannot add someone else to the waitlist.', {
           requiredRole: 'waitlist.add',
         });
@@ -236,11 +236,11 @@ class Waitlist {
    * @return {Promise<void>}
    */
   async removeUser(userID, { moderator } = {}) {
-    const { users } = this.uw;
+    const { acl, users } = this.uw;
     const user = await users.getUser(userID);
 
     const isRemoving = moderator && user.id !== moderator.id;
-    if (isRemoving && !(await moderator.can('waitlist.remove'))) {
+    if (isRemoving && !(await acl.isAllowed(moderator, 'waitlist.remove'))) {
       throw new PermissionError('You need to be a moderator to do this.', {
         requiredRole: 'waitlist.remove',
       });
@@ -328,13 +328,11 @@ class Waitlist {
 }
 
 /**
- * @return {(uw: Uwave) => void}
+ * @return {Promise<void>}
  */
-function waitlistPlugin() {
-  return (uw) => {
-    uw.waitlist = new Waitlist(uw); // eslint-disable-line no-param-reassign
-    uw.httpApi.use('/waitlist', routes());
-  };
+async function waitlistPlugin(uw) {
+  uw.waitlist = new Waitlist(uw); // eslint-disable-line no-param-reassign
+  uw.httpApi.use('/waitlist', routes());
 }
 
 module.exports = waitlistPlugin;

@@ -35,13 +35,9 @@ const getRoleName = (role) => (
 );
 
 class Acl {
-  constructor(uw, opts) {
+  constructor(uw) {
     this.uw = uw;
     this.superRole = '*';
-
-    if (opts.defaultRoles !== false) {
-      this.maybeAddDefaultRoles();
-    }
   }
 
   get AclRole() {
@@ -148,11 +144,15 @@ class Acl {
   }
 }
 
-function acl(opts = {}) {
-  return (uw) => {
-    uw.acl = new Acl(uw, opts);
-    uw.httpApi.use('/acl', routes());
-  };
+async function acl(uw, opts = {}) {
+  uw.acl = new Acl(uw);
+  uw.httpApi.use('/acl', routes());
+
+  if (opts.defaultRoles !== false) {
+    uw.after(() => {
+      uw.acl.maybeAddDefaultRoles();
+    });
+  }
 }
 
 module.exports = acl;

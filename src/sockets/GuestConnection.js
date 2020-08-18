@@ -35,7 +35,7 @@ class GuestConnection extends EventEmitter {
   }
 
   async attemptAuth(token) {
-    const { users } = this.uw;
+    const { bans, users } = this.uw;
     const { authRegistry } = this.options;
 
     const userID = await authRegistry.getTokenUser(token);
@@ -50,7 +50,7 @@ class GuestConnection extends EventEmitter {
     // Users who are banned can still join as guests, but cannot log in. So we
     // ignore their socket login attempts, and just keep their connections
     // around as guest connections.
-    if (await userModel.isBanned()) {
+    if (await bans.isBanned(userModel)) {
       throw new Error('You have been banned');
     }
 

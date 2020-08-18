@@ -273,10 +273,8 @@ class UsersRepository {
   }
 }
 
-function usersPlugin() {
-  return (uw) => {
-    uw.users = new UsersRepository(uw);
-  };
+async function usersPlugin(uw) {
+  uw.users = new UsersRepository(uw);
 }
 
 module.exports = usersPlugin;

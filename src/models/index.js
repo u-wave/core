@@ -6,16 +6,16 @@ const playlistModel = require('./Playlist');
 const playlistItemModel = require('./PlaylistItem');
 const userModel = require('./User');
 
-function models() {
-  return (uw) => {
-    uw.use(aclRoleModel());
-    uw.use(authenticationModel());
-    uw.use(historyModel());
-    uw.use(mediaModel());
-    uw.use(playlistModel());
-    uw.use(playlistItemModel());
-    uw.use(userModel());
+async function models(uw) {
+  uw.use(aclRoleModel);
+  uw.use(authenticationModel);
+  uw.use(historyModel);
+  uw.use(mediaModel);
+  uw.use(playlistModel);
+  uw.use(playlistItemModel);
+  uw.use(userModel);
 
+  uw.use(async () => {
     uw.models = {
       AclRole: uw.model('AclRole'),
       Authentication: uw.model('Authentication'),
@@ -25,7 +25,7 @@ function models() {
       PlaylistItem: uw.model('PlaylistItem'),
       User: uw.model('User'),
     };
-  };
+  });
 }
 
 module.exports = models;

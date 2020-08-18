@@ -50,10 +50,8 @@ class HistoryRepository {
   }
 }
 
-function history() {
-  return (uw) => {
-    uw.history = new HistoryRepository(uw);
-  };
+async function history(uw) {
+  uw.history = new HistoryRepository(uw);
 }
 
 module.exports = history;

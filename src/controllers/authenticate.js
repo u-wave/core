@@ -70,10 +70,11 @@ async function refreshSession(res, api, user, options) {
 async function login(options, req, res) {
   const { user } = req;
   const { session } = req.query;
+  const { bans } = req.uwave;
 
   const sessionType = session === 'cookie' ? 'cookie' : 'token';
 
-  if (await user.isBanned()) {
+  if (await bans.isBanned(user)) {
     throw new PermissionError('You have been banned.');
   }
 
@@ -105,10 +106,10 @@ async function getSocialAvatar(uw, user, service) {
 
 async function socialLoginCallback(options, service, req, res) {
   const { user } = req;
-  const { locale } = req.uwave;
+  const { bans, locale } = req.uwave;
   const { origin } = options;
 
-  if (await user.isBanned()) {
+  if (await bans.isBanned(user)) {
     throw new PermissionError('You have been banned.');
   }
 
@@ -160,12 +161,13 @@ async function socialLoginCallback(options, service, req, res) {
 async function socialLoginFinish(options, service, req, res) {
   const { pendingUser: user } = req;
   const sessionType = req.query.session === 'cookie' ? 'cookie' : 'token';
+  const { bans } = req.uwave;
 
   if (!user) {
     throw new PermissionError('Must have a pending user account.');
   }
 
-  if (await user.isBanned()) {
+  if (await bans.isBanned(user)) {
     throw new PermissionError('You have been banned.');
   }
 

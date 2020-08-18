@@ -3,7 +3,7 @@ const mongoose = require('mongoose');
 const { Schema } = mongoose;
 const { Types } = mongoose.Schema;
 
-function authenticationModel() {
+async function authenticationModel(uw) {
   const schema = new Schema({
     user: { type: Types.ObjectId, ref: 'User', index: true },
     type: { type: String, required: true, default: 'local' },
@@ -20,9 +20,7 @@ function authenticationModel() {
     minimize: false,
   });
 
-  return (uw) => {
-    uw.mongo.model('Authentication', schema);
-  };
+  uw.mongo.model('Authentication', schema);
 }
 
 module.exports = authenticationModel;

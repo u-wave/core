@@ -74,11 +74,9 @@ class Chat {
   }
 }
 
-function chat(opts = {}) {
-  return (uw) => {
-    uw.chat = new Chat(uw, opts);
-    uw.httpApi.use('/chat', routes());
-  };
+async function chat(uw, opts = {}) {
+  uw.chat = new Chat(uw, opts);
+  uw.httpApi.use('/chat', routes());
 }
 
 module.exports = chat;

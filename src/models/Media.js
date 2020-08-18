@@ -2,7 +2,7 @@ const mongoose = require('mongoose');
 
 const { Schema } = mongoose;
 
-function mediaModel() {
+async function mediaModel(uw) {
   const schema = new Schema({
     sourceID: {
       type: String, max: 128, required: true, index: true,
@@ -30,9 +30,7 @@ function mediaModel() {
     minimize: false,
   });
 
-  return (uw) => {
-    uw.mongo.model('Media', schema);
-  };
+  uw.mongo.model('Media', schema);
 }
 
 module.exports = mediaModel;

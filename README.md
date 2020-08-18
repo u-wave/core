@@ -41,7 +41,7 @@ found on npm with the [u-wave-source keyword][].
  * `options` - Options to pass to the source plugin. Only used if
    a source plugin factory was passed to `sourcePlugin`.
 
-### uw.stop(): Promise
+### uw.close(): Promise
 
 Stops the üWave server.
 

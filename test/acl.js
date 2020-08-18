@@ -7,14 +7,15 @@ const deleteDatabase = require('./utils/deleteDatabase');
 
 const DB_NAME = 'uw_test_acl';
 
-function createUwaveWithAclTest() {
+async function createUwaveWithAclTest() {
   const uw = uwave({
     useDefaultPlugins: false,
     mongo: `mongodb://localhost/${DB_NAME}`,
     secret: Buffer.from(`secret_${DB_NAME}`),
   });
-  uw.use(usersPlugin());
-  uw.use(aclPlugin({ defaultRoles: false }));
+  uw.use(usersPlugin);
+  uw.use(aclPlugin, { defaultRoles: false });
+  await uw.ready();
   return uw;
 }
 
@@ -29,7 +30,7 @@ describe('acl', () => {
     user = createUser(uw);
   });
   afterEach(async () => {
-    await uw.stop();
+    await uw.close();
     await deleteDatabase(uw.options.mongo);
   });
 
@@ -69,19 +70,6 @@ describe('acl', () => {
 
     await acl.disallow(user, ['test.role']);
     assert.strictEqual(await acl.isAllowed(user, 'test.role'), false);
-  });
-
-  it('provides convenience methods on the User model class', async () => {
-    await acl.createRole('waitlist.add', []);
-    await acl.createRole('waitlist.remove', []);
-    await acl.createRole('waitlist.clear', []);
-    await acl.createRole('moderate.waitlist', ['waitlist.add', 'waitlist.remove']);
-
-    await user.allow(['moderate.waitlist']);
-
-    assert.strictEqual(await user.can('waitlist.add'), true);
-    assert.strictEqual(await user.can('waitlist.remove'), true);
-    assert.strictEqual(await user.can('waitlist.clear'), false);
   });
 
   it('can delete roles', async () => {

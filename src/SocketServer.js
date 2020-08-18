@@ -42,6 +42,21 @@ Alternatively, you can provide a port for the socket server to listen on:
 }
 
 class SocketServer {
+  static async plugin(uw, options = {}) {
+    uw.socketServer = new SocketServer(uw, {
+      secret: options.secret,
+      server: uw.server,
+    });
+
+    uw.after(async () => {
+      await uw.socketServer.initLostConnections();
+    });
+
+    uw.onClose(async () => {
+      await uw.socketServer.destroy();
+    });
+  }
+
   /**
    * Create a socket server.
    *
@@ -100,8 +115,6 @@ class SocketServer {
     this.wss.on('connection', (socket, req) => {
       this.onSocketConnected(socket, req);
     });
-
-    this.ready = this.initLostConnections();
 
     this.pinger = setInterval(() => {
       this.ping();

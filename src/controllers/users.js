@@ -47,7 +47,7 @@ async function getUser(req) {
 }
 
 async function getUserRoles(req) {
-  const { users } = req.uwave;
+  const { acl, users } = req.uwave;
   const { id } = req.params;
 
   const user = await users.getUser(id);
@@ -55,7 +55,7 @@ async function getUserRoles(req) {
     throw new UserNotFoundError({ id });
   }
 
-  const roles = await user.getPermissions();
+  const roles = await acl.getAllPermissions(user);
 
   return toListResponse(roles, {
     url: req.fullUrl,
@@ -65,9 +65,9 @@ async function getUserRoles(req) {
 async function addUserRole(req) {
   const { user: moderator } = req;
   const { id, role } = req.params;
-  const { users } = req.uwave;
+  const { acl, users } = req.uwave;
 
-  const selfHasRole = await moderator.can(role);
+  const selfHasRole = await acl.isAllowed(moderator, role);
   if (!selfHasRole) {
     throw new PermissionError('You cannot assign roles you do not have');
   }
@@ -77,7 +77,7 @@ async function addUserRole(req) {
     throw new UserNotFoundError({ id });
   }
 
-  await user.allow([role]);
+  await acl.allow(user, [role]);
 
   return toItemResponse({}, {
     url: req.fullUrl,
@@ -87,9 +87,9 @@ async function addUserRole(req) {
 async function removeUserRole(req) {
   const { user: moderator } = req;
   const { id, role } = req.params;
-  const { users } = req.uwave;
+  const { acl, users } = req.uwave;
 
-  const selfHasRole = await moderator.can(role);
+  const selfHasRole = await acl.isAllowed(moderator, role);
   if (!selfHasRole) {
     throw new PermissionError('You cannot remove roles you do not have');
   }
@@ -99,7 +99,7 @@ async function removeUserRole(req) {
     throw new UserNotFoundError({ id });
   }
 
-  await user.disallow([role]);
+  await acl.disallow(user, [role]);
 
   return toItemResponse({}, {
     url: req.fullUrl,
@@ -151,14 +151,14 @@ async function getHistory(req) {
     defaultSize: 25,
     maxSize: 100,
   });
-  const { users } = req.uwave;
+  const uw = req.uwave;
 
-  const user = await users.getUser(id);
+  const user = await uw.users.getUser(id);
   if (!user) {
     throw new UserNotFoundError({ id });
   }
 
-  const history = await user.getHistory(pagination);
+  const history = await uw.history.getUserHistory(user, pagination);
 
   return toPaginatedResponse(history, {
     baseUrl: req.fullUrl,

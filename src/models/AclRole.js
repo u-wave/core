@@ -2,7 +2,7 @@ const mongoose = require('mongoose');
 
 const { Schema } = mongoose;
 
-function aclRoleModel() {
+async function aclRoleModel(uw) {
   const schema = new Schema({
     _id: String,
     roles: [{ type: String, ref: 'AclRole', index: true }],
@@ -12,9 +12,7 @@ function aclRoleModel() {
     minimize: true,
   });
 
-  return (uw) => {
-    uw.mongo.model('AclRole', schema);
-  };
+  uw.mongo.model('AclRole', schema);
 }
 
 module.exports = aclRoleModel;

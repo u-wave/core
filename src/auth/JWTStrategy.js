@@ -37,6 +37,8 @@ class JWTStrategy extends Strategy {
   }
 
   async authenticateP(req) {
+    const { bans } = req.uwave;
+
     const token = getQueryToken(req.query)
       || getHeaderToken(req.headers)
       || getCookieToken(req.cookies);
@@ -65,7 +67,7 @@ class JWTStrategy extends Strategy {
       return this.pass();
     }
 
-    if (await user.isBanned()) {
+    if (await bans.isBanned(user)) {
       throw new PermissionError('You have been banned');
     }
 
