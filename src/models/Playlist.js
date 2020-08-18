@@ -37,7 +37,7 @@ async function playlistModel(uw) {
     minimize: false,
   });
 
-  schema.virtual('size').get(function () {
+  schema.virtual('size').get(function size() {
     return this.media.length;
   });
 
