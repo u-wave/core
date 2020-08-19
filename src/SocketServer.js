@@ -1,5 +1,5 @@
 const { debounce, isEmpty } = require('lodash');
-const tryJsonParse = require('try-json-parse');
+const sjson = require('secure-json-parse');
 const WebSocket = require('ws');
 const ms = require('ms');
 const createDebug = require('debug');
@@ -515,7 +515,7 @@ class SocketServer {
    * clients, but others require special action.
    */
   async onServerMessage(channel, rawCommand) {
-    const { command, data } = tryJsonParse(rawCommand) || {};
+    const { command, data } = sjson.safeParse(rawCommand) || {};
 
     debug(channel, command, data);
 
