@@ -2,7 +2,7 @@ const EventEmitter = require('events');
 const Ultron = require('ultron');
 const WebSocket = require('ws');
 const createDebug = require('debug');
-const tryJsonParse = require('try-json-parse');
+const sjson = require('secure-json-parse');
 
 const debug = createDebug('uwave:api:sockets:authed');
 
@@ -43,14 +43,14 @@ class AuthedConnection extends EventEmitter {
       debug('no queued messages', this.user.id, this.user.username);
     }
     messages.forEach((message) => {
-      const { command, data } = JSON.parse(message);
+      const { command, data } = sjson.parse(message);
       this.send(command, data);
     });
     await this.uw.redis.del(this.key, this.messagesKey);
   }
 
   onMessage(raw) {
-    const { command, data } = tryJsonParse(raw) || {};
+    const { command, data } = sjson.safeParse(raw) || {};
     if (command) {
       this.emit('command', command, data);
     }
