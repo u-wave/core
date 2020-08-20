@@ -99,8 +99,6 @@ const uw = uwave({
   secret,
 });
 
-uw.express.set('json spaces', 2);
-
 uw.on('mongoError', (err) => {
   throw explain(err, 'Could not connect to MongoDB. Is it installed and running?');
 });
