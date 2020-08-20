@@ -2,14 +2,60 @@
 
 require('make-promises-safe');
 const explain = require('explain-error');
-const envSchema = require('env-schema');
+const Ajv = require('ajv');
 const ytSource = require('u-wave-source-youtube');
 const scSource = require('u-wave-source-soundcloud');
 const uwave = require('..');
 const pkg = require('../package.json');
 const argv = require('minimist')(process.argv.slice(2));
 
-if (argv.h || argv.help) {
+const ajv = new Ajv({
+  removeAdditional: true,
+  used: true,
+  coerceTypes: true,
+  allErrors: true,
+  formats: {
+    hexadecimal: /^[0-9a-fA-F]+$/,
+  },
+});
+
+const envSchema = {
+  type: 'object',
+  required: ['SECRET'],
+  properties: {
+    PORT: {
+      type: 'number',
+      default: 6042,
+    },
+    REDIS_URL: {
+      type: 'string',
+      format: 'uri',
+      default: 'redis://localhost:6379',
+    },
+    MONGODB_URL: {
+      type: 'string',
+      format: 'uri',
+      default: 'mongodb://localhost:27017/uwave',
+    },
+    SECRET: {
+      type: 'string',
+      format: 'hexadecimal',
+      minLength: 64,
+      maxLength: 64,
+    },
+    YOUTUBE_API_KEY: {
+      type: 'string',
+    },
+    SOUNDCLOUD_API_KEY: {
+      type: 'string',
+    },
+  },
+};
+
+const config = { ...process.env };
+const validConfig = ajv.validate(envSchema, config);
+
+if (argv.h || argv.help || !validConfig) {
   console.log('u-wave-core');
   console.log('Version', pkg.version);
   console.log();
@@ -23,43 +69,24 @@ if (argv.h || argv.help) {
   console.log('  MONGODB_URL');
   console.log('    URL of the MongoDB database to use. Defaults to mongodb://localhost:27017/uwave.');
   console.log();
-  process.exit(0);
 }
 
-const config = envSchema({
-  schema: {
-    type: 'object',
-    required: ['SECRET'],
-    properties: {
-      PORT: {
-        type: 'number',
-        default: 6042,
-      },
-      REDIS_URL: {
-        type: 'string',
-        format: 'uri',
-        default: 'redis://localhost:6379',
-      },
-      MONGODB_URL: {
-        type: 'string',
-        format: 'uri',
-        default: 'mongodb://localhost:27017/uwave',
-      },
-      SECRET: {
-        type: 'string',
-        regex: '^[0-9a-fA-F]+$',
-        min: 64,
-        max: 64,
-      },
-      YOUTUBE_API_KEY: {
-        type: 'string',
-      },
-      SOUNDCLOUD_API_KEY: {
-        type: 'string',
-      },
-    },
-  },
-});
+if (argv.h || argv.help) {
+  process.exit(0);
+} else if (!validConfig) {
+  ajv.errors.forEach((error) => {
+    const { keyword, params } = error;
+    switch (keyword) {
+      case 'required':
+        console.error(`⚠️ Missing environment variable ${params.missingProperty}`);
+        break;
+      default:
+        console.error(`⚠️ Environment variable ${error.dataPath.slice(1)} ${error.message}`);
+        break;
+    }
+  });
+  process.exit(1);
+}
 
 const port = Number(argv.port || config.PORT);
 
