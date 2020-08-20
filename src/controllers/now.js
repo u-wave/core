@@ -1,3 +1,5 @@
+'use strict';
+
 const debug = require('debug')('uwave:http-api:now');
 const { getBoothData } = require('./booth');
 const { serializePlaylist } = require('../utils/serialize');

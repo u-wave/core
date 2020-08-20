@@ -1,3 +1,5 @@
+'use strict';
+
 const aclRoleModel = require('./AclRole');
 const authenticationModel = require('./Authentication');
 const historyModel = require('./History');

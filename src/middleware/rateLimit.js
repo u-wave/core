@@ -1,3 +1,5 @@
+'use strict';
+
 const ms = require('ms');
 const { promisify } = require('util');
 const RateLimiterBase = require('ratelimiter');

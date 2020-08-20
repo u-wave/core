@@ -1,3 +1,5 @@
+'use strict';
+
 const sinon = require('sinon');
 const chatPlugin = require('../src/plugins/chat');
 

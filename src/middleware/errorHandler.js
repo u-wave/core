@@ -1,3 +1,5 @@
+'use strict';
+
 const createDebug = require('debug');
 const {
   APIError,

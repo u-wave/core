@@ -1,3 +1,5 @@
+'use strict';
+
 const { Strategy } = require('passport');
 const { promisify } = require('util');
 const jwt = require('jsonwebtoken');

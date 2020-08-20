@@ -1,3 +1,5 @@
+'use strict';
+
 const createDebug = require('debug');
 const { SourceNotFoundError } = require('../errors');
 const toListResponse = require('../utils/toListResponse');

@@ -1,3 +1,5 @@
+'use strict';
+
 const parseNumber = (str, defaultN) => {
   const n = parseInt(str, 10);
   if (Number.isFinite(n)) {

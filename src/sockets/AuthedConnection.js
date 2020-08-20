@@ -1,3 +1,5 @@
+'use strict';
+
 const EventEmitter = require('events');
 const Ultron = require('ultron');
 const WebSocket = require('ws');

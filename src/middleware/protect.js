@@ -1,3 +1,5 @@
+'use strict';
+
 const { PermissionError } = require('../errors');
 const wrapMiddleware = require('../utils/wrapMiddleware');
 

@@ -1,3 +1,5 @@
+'use strict';
+
 const { flatten } = require('lodash');
 const createDebug = require('debug');
 const defaultRoles = require('../config/defaultRoles');

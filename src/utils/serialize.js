@@ -1,3 +1,5 @@
+'use strict';
+
 function serializePlaylist(model) {
   return {
     _id: model.id,

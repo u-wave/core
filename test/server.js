@@ -1,3 +1,5 @@
+'use strict';
+
 const assert = require('assert');
 const delay = require('delay');
 const uwave = require('..');

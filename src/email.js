@@ -1,3 +1,5 @@
+'use strict';
+
 const nodemailer = require('nodemailer');
 
 async function sendEmail(emailAddress, options) {

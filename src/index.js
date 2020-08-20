@@ -1,3 +1,5 @@
+'use strict';
+
 const Uwave = require('./Uwave');
 const HttpApi = require('./HttpApi');
 const SocketServer = require('./SocketServer');

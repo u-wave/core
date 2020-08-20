@@ -1,3 +1,5 @@
+'use strict';
+
 const { clamp } = require('lodash');
 
 const Page = require('../Page');

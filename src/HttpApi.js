@@ -1,3 +1,5 @@
+'use strict';
+
 const Router = require('router');
 const express = require('express');
 const bodyParser = require('body-parser');

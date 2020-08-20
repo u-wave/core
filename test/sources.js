@@ -1,3 +1,5 @@
+'use strict';
+
 const assert = require('assert');
 const uwave = require('..');
 const { Source } = require('../src/Source');

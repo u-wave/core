@@ -1,3 +1,5 @@
+'use strict';
+
 function attachUwaveMeta(httpApi, uw) {
   return (req, res, next) => {
     if (!req.uwave) {

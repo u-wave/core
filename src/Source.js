@@ -1,3 +1,5 @@
+'use strict';
+
 /**
  * Data holder for things that source plugins may require.
  */

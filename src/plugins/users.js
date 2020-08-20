@@ -1,3 +1,5 @@
+'use strict';
+
 const bcrypt = require('bcryptjs');
 const createDebug = require('debug');
 const escapeStringRegExp = require('escape-string-regexp');

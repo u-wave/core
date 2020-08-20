@@ -1,3 +1,5 @@
+'use strict';
+
 function getWaitingUserIDs(uw) {
   return uw.redis.lrange('waitlist', 0, -1);
 }

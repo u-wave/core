@@ -1,3 +1,5 @@
+'use strict';
+
 const { UserNotFoundError } = require('../errors');
 const getOffsetPagination = require('../utils/getOffsetPagination');
 const toItemResponse = require('../utils/toItemResponse');

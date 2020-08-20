@@ -1,3 +1,5 @@
+'use strict';
+
 /**
  * Wrap `async` middleware into an express style callback.
  */

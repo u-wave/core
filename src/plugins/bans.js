@@ -1,3 +1,5 @@
+'use strict';
+
 const { clamp } = require('lodash');
 const escapeStringRegExp = require('escape-string-regexp');
 const Page = require('../Page');

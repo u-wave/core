@@ -1,3 +1,5 @@
+'use strict';
+
 const router = require('router');
 const route = require('../route');
 const controller = require('../controllers/now');

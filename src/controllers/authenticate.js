@@ -1,3 +1,5 @@
+'use strict';
+
 const { URLSearchParams } = require('url');
 const cookie = require('cookie');
 const createDebug = require('debug');

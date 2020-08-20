@@ -1,3 +1,5 @@
+'use strict';
+
 class Page {
   constructor(results, opts = {}) {
     this.length = results.length;

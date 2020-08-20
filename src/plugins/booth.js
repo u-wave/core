@@ -1,3 +1,5 @@
+'use strict';
+
 const ms = require('ms');
 const RedLock = require('redlock');
 const createDebug = require('debug');

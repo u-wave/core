@@ -1,3 +1,5 @@
+'use strict';
+
 const joi = require('@hapi/joi');
 const wrapMiddleware = require('../utils/wrapMiddleware');
 

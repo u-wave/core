@@ -1,3 +1,5 @@
+'use strict';
+
 const toItemResponse = require('../utils/toItemResponse');
 const toListResponse = require('../utils/toListResponse');
 

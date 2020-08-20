@@ -1,7 +1,17 @@
+'use strict';
+
 module.exports = {
   extends: 'airbnb-base',
 
+  parserOptions: {
+    ecmaVersion: 2020,
+    sourceType: 'script',
+  },
+
   rules: {
+    // We're not transpiling
+    strict: ['error', 'global'],
+
     // MongoDB IDs
     'no-underscore-dangle': ['error', { allow: ['_id'] }],
     // Used by plugins

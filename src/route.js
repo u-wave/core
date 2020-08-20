@@ -1,3 +1,5 @@
+'use strict';
+
 function route(fn) {
   return (req, res, next) => {
     Promise.resolve(fn(req, res))

@@ -1,3 +1,5 @@
+'use strict';
+
 const assert = require('assert');
 const uwave = require('..');
 const usersPlugin = require('../src/plugins/users');

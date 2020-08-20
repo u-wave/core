@@ -1,3 +1,5 @@
+'use strict';
+
 const UwaveError = require('./UwaveError');
 
 class PermissionError extends UwaveError {

@@ -1,3 +1,5 @@
+'use strict';
+
 class UwaveError extends Error {
   constructor(message) {
     super(message);

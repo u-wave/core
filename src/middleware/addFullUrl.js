@@ -1,3 +1,5 @@
+'use strict';
+
 function addFullUrl() {
   return (req, res, next) => {
     Object.defineProperty(req, 'fullUrl', {

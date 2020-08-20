@@ -1,3 +1,5 @@
+'use strict';
+
 function toItemResponse(item, {
   url = '',
   meta = {},

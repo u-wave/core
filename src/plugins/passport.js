@@ -1,3 +1,5 @@
+'use strict';
+
 const { Passport } = require('passport');
 const { Strategy: LocalStrategy } = require('passport-local');
 const { Strategy: GoogleStrategy } = require('passport-google-oauth20');

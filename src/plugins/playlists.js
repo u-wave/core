@@ -1,3 +1,5 @@
+'use strict';
+
 const { groupBy, shuffle } = require('lodash');
 const escapeStringRegExp = require('escape-string-regexp');
 const createDebug = require('debug');

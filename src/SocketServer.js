@@ -1,3 +1,5 @@
+'use strict';
+
 const { debounce, isEmpty } = require('lodash');
 const sjson = require('secure-json-parse');
 const WebSocket = require('ws');

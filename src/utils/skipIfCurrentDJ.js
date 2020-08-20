@@ -1,3 +1,5 @@
+'use strict';
+
 function getCurrentDJ(uw) {
   return uw.redis.get('booth:currentDJ');
 }

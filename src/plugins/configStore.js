@@ -1,3 +1,5 @@
+'use strict';
+
 const mongoose = require('mongoose');
 const EventEmitter = require('events');
 const Ajv = require('ajv');

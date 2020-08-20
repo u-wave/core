@@ -1,3 +1,5 @@
+'use strict';
+
 const EventEmitter = require('events');
 const mongoose = require('mongoose');
 const Redis = require('ioredis');

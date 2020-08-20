@@ -1,3 +1,5 @@
+'use strict';
+
 const { clamp } = require('lodash');
 const NotFoundError = require('../errors/NotFoundError');
 const PermissionError = require('../errors/PermissionError');
