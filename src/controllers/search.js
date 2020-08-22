@@ -1,10 +1,9 @@
 'use strict';
 
-const createDebug = require('debug');
+const debug = require('debug')('uwave:http:search');
+const { isEqual } = require('lodash');
 const { SourceNotFoundError } = require('../errors');
 const toListResponse = require('../utils/toListResponse');
-
-const debug = createDebug('uwave:http:search');
 
 // TODO should be deprecated once the Web client uses the better single-source route.
 async function searchAll(req) {
@@ -30,11 +29,29 @@ async function searchAll(req) {
   return combinedResults;
 }
 
+async function updateSourceData(uw, updates) {
+  const { Media } = uw.models;
+  const ops = [];
+  debug('updating source data', updates);
+  for (const [id, sourceData] of updates.entries()) {
+    ops.push({
+      updateOne: {
+        filter: { _id: id },
+        update: {
+          $set: { sourceData },
+        },
+      },
+    });
+  }
+  await Media.bulkWrite(ops);
+}
+
 async function search(req) {
   const { user } = req;
   const { source: sourceName } = req.params;
   const { query } = req.query;
   const uw = req.uwave;
+  const { Media } = uw.models;
 
   const source = uw.source(sourceName);
   if (!source) {
@@ -42,16 +59,30 @@ async function search(req) {
   }
 
   const searchResults = await source.search(user, query);
-  const sourceIDs = searchResults.map((result) => result.sourceID);
 
-  const mediasInSearchResults = await uw.model('Media').find({
+  const searchResultsByID = new Map();
+  searchResults.forEach((result) => {
+    searchResultsByID.set(result.sourceID, result);
+  });
+
+  // Track medias whose `sourceData` property no longer matches that from the source.
+  // This can happen because the media was actually changed, but also because of new
+  // features in the source implementation.
+  const mediasNeedSourceDataUpdate = new Map();
+
+  const mediasInSearchResults = await Media.find({
     sourceType: sourceName,
-    sourceID: { $in: sourceIDs },
+    sourceID: { $in: Array.from(searchResultsByID.keys()) },
   });
 
   const mediaBySourceID = new Map();
   mediasInSearchResults.forEach((media) => {
     mediaBySourceID.set(media.sourceID, media);
+
+    const freshMedia = searchResultsByID.get(media.sourceID);
+    if (freshMedia && !isEqual(media.sourceData, freshMedia.sourceData)) {
+      mediasNeedSourceDataUpdate.set(media._id, freshMedia.sourceData);
+    }
   });
 
   const playlistsByMediaID = await uw.playlists.getPlaylistsContainingAnyMedia(
@@ -64,6 +95,11 @@ async function search(req) {
     if (media) {
       result.inPlaylists = playlistsByMediaID.get(media._id.toString());
     }
+  });
+
+  // don't wait for this to complete
+  updateSourceData(uw, mediasNeedSourceDataUpdate).catch((error) => {
+    debug('sourceData update failed', error);
   });
 
   return toListResponse(searchResults, {
