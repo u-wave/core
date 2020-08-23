@@ -52,6 +52,10 @@ async function migrationsPlugin(uw) {
       migrationsDirectory: path.join(__dirname, '../migrations'),
     });
 
+    set.on('migration', (migration, direction) => {
+      debug('applying migration', migration.title, direction);
+    });
+
     set.migrations.forEach((migration) => {
       if (migration.up) {
         migration.up = migration.up.bind(migration, uw);
