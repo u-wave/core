@@ -101,17 +101,18 @@ class Booth {
   }
 
   async getNextEntry(opts) {
-    const HistoryEntry = this.uw.model('History');
+    const { HistoryEntry } = this.uw.models;
+    const { playlists } = this.uw;
 
     const user = await this.getNextDJ(opts);
     if (!user) {
       return null;
     }
-    const playlist = await user.getActivePlaylist();
+    const playlist = await playlists.getUserPlaylist(user, user.activePlaylist);
     if (playlist.size === 0) {
       throw new PlaylistIsEmptyError();
     }
-    const playlistItem = await this.uw.playlists.getPlaylistItem(playlist.media[0]);
+    const playlistItem = await playlists.getPlaylistItem(playlist.media[0]);
 
     await playlistItem.populate('media').execPopulate();
 

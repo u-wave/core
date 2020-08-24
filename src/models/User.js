@@ -48,6 +48,10 @@ async function userModel(uw) {
       required: [true, 'Usernames must not consist of punctuation only.'],
       index: true,
     },
+    activePlaylist: {
+      type: Types.ObjectId,
+      ref: 'Playlist',
+    },
     level: {
       type: Number, min: 0, max: 9001, default: 0,
     },
@@ -63,35 +67,6 @@ async function userModel(uw) {
   userSchema.pre('validate', function preValidate(next) {
     this.slug = slugify(this.username);
     next();
-  });
-
-  userSchema.loadClass(class User {
-    /**
-     * @return {Promise<string>}
-     */
-    getActivePlaylistID() {
-      return uw.redis.get(`playlist:${this.id}`);
-    }
-
-    /**
-     * @return {Promise<unknown>}
-     */
-    async getActivePlaylist() {
-      const playlistID = await this.getActivePlaylistID();
-      return uw.playlists.getPlaylist(playlistID);
-    }
-
-    /**
-     * @return {Promise<unknown>}
-     */
-    async setActivePlaylist(playlistOrId) {
-      let id = playlistOrId;
-      if (playlistOrId.id) {
-        id = playlistOrId.id;
-      }
-      await uw.redis.set(`playlist:${this.id}`, id);
-      return this;
-    }
   });
 
   uw.mongo.model('User', userSchema);

@@ -61,9 +61,9 @@ class Waitlist {
    * @private
    */
   async hasValidPlaylist(userID) {
-    const { users } = this.uw;
+    const { users, playlists } = this.uw;
     const user = await users.getUser(userID);
-    const playlist = await user.getActivePlaylist();
+    const playlist = await playlists.getUserPlaylist(user, user.activePlaylist);
     return playlist && playlist.size > 0;
   }
 
