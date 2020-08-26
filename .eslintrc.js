@@ -1,12 +1,14 @@
 'use strict';
 
 module.exports = {
-  extends: 'airbnb-base',
+  extends: ['airbnb-base', 'plugin:security/recommended'],
 
   parserOptions: {
     ecmaVersion: 2020,
     sourceType: 'script',
   },
+
+  plugins: ['security'],
 
   rules: {
     // We're not transpiling
