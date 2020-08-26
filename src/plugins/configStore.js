@@ -30,7 +30,7 @@ class ConfigStore {
     this.ConfigModel = mongo.model('ConfigStore', configSchema);
     this.ajv = new Ajv({ useDefaults: true });
     this.emitter = new EventEmitter();
-    this.registry = Object.create(null);
+    this.registry = new Map();
 
     this.on = this.emitter.on.bind(this);
     this.off = this.emitter.removeListener.bind(this);
@@ -73,7 +73,7 @@ class ConfigStore {
    * @public
    */
   register(key, schema) {
-    this.registry[key] = this.ajv.compile(schema);
+    this.registry.set(key, this.ajv.compile(schema));
   }
 
   /**
@@ -85,7 +85,7 @@ class ConfigStore {
    * @public
    */
   async get(key) {
-    const validate = this.registry[key];
+    const validate = this.registry.get(key);
     if (!validate) return undefined;
 
     const config = (await this.load(key)) || {};
@@ -105,7 +105,7 @@ class ConfigStore {
    * @public
    */
   async set(key, settings, { user } = {}) {
-    const validate = this.registry[key];
+    const validate = this.registry.get(key);
     if (validate) {
       if (!validate(settings)) {
         throw new ValidationError(validate.errors, this.ajv);
@@ -124,16 +124,13 @@ class ConfigStore {
    */
   async getAllConfig() {
     const all = await this.ConfigModel.find();
-    const keys = Object.keys(this.registry);
-    const object = {};
-    keys.forEach((key) => {
-      const validate = this.registry[key];
-
+    const object = Object.create(null);
+    for (const [key, validate] of this.registry.entries()) {
       const model = all.find((m) => m._id === key);
       object[key] = model ? model.toJSON() : {};
       delete object[key]._id;
       validate(object[key]);
-    });
+    }
     return object;
   }
 
@@ -141,12 +138,12 @@ class ConfigStore {
    * @returns {import('json-schema').JSONSchema7}
    */
   getSchema() {
-    const properties = {};
+    const properties = Object.create(null);
     const required = [];
-    Object.entries(this.registry).forEach(([key, validate]) => {
+    for (const [key, validate] of this.registry.entries()) {
       properties[key] = validate.schema;
       required.push(key);
-    });
+    }
 
     return {
       type: 'object',

@@ -91,7 +91,7 @@ async function getState(req) {
   const stateKeys = Object.keys(stateShape);
   const stateValues = await Promise.all(Object.values(stateShape));
 
-  const state = {};
+  const state = Object.create(null);
   for (let i = 0; i < stateKeys.length; i += 1) {
     state[stateKeys[i]] = stateValues[i];
   }

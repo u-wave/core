@@ -43,6 +43,10 @@ Alternatively, you can provide a port for the socket server to listen on:
   `);
 }
 
+function has(object, property) {
+  return Object.prototype.hasOwnProperty.call(object, property);
+}
+
 class SocketServer {
   static async plugin(uw, options = {}) {
     uw.socketServer = new SocketServer(uw, {
@@ -454,8 +458,8 @@ class SocketServer {
     });
     connection.on('command', (command, data) => {
       debug('command', user.id, user.username, command, data);
-      const action = this.clientActions[command];
-      if (action) {
+      if (has(this.clientActions, command)) {
+        const action = this.clientActions[command];
         action(user, data, connection);
       }
     });
@@ -524,8 +528,8 @@ class SocketServer {
     if (channel === 'v1') {
       this.broadcast(command, data);
     } else if (channel === 'uwave') {
-      const action = this.serverActions[command];
-      if (action) {
+      if (has(this.serverActions, command)) {
+        const action = this.serverActions[command];
         action(data);
       }
     }
