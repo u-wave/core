@@ -382,8 +382,7 @@ class PlaylistsRepository {
     // one call.
     const itemsBySourceType = groupBy(items, 'sourceType');
     const playlistItems = [];
-    const promises = Object.keys(itemsBySourceType).map(async (sourceType) => {
-      const sourceItems = itemsBySourceType[sourceType];
+    const promises = Object.entries(itemsBySourceType).map(async ([sourceType, sourceItems]) => {
       const knownMedias = await Media.find({
         sourceType,
         sourceID: { $in: sourceItems.map((item) => item.sourceID) },

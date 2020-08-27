@@ -4,6 +4,7 @@ const Router = require('router');
 const express = require('express');
 const bodyParser = require('body-parser');
 const cookieParser = require('cookie-parser');
+const helmet = require('helmet');
 const http = require('http');
 const debug = require('debug')('uwave:http-api');
 
@@ -51,6 +52,7 @@ class UwaveHttpApi extends Router {
       secret: options.secret,
     });
 
+    uw.express.use(helmet());
     uw.express.use('/api', uw.httpApi);
     // An older name
     uw.express.use('/v1', uw.httpApi);

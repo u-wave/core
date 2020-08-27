@@ -45,8 +45,8 @@ function serializeError(err) {
     }));
   }
   if (err.name === 'ValidationError') {
-    return Object.keys(err.errors).reduce(
-      (errors, key) => errors.concat(serializeError(err.errors[key])),
+    return Object.values(err.errors).reduce(
+      (accum, error) => accum.concat(serializeError(error)),
       [],
     );
   }

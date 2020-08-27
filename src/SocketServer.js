@@ -3,6 +3,7 @@
 const { debounce, isEmpty } = require('lodash');
 const sjson = require('secure-json-parse');
 const WebSocket = require('ws');
+const Ajv = require('ajv');
 const ms = require('ms');
 const createDebug = require('debug');
 const { socketVote } = require('./controllers/booth');
@@ -13,6 +14,13 @@ const AuthedConnection = require('./sockets/AuthedConnection');
 const LostConnection = require('./sockets/LostConnection');
 
 const debug = createDebug('uwave:api:sockets');
+
+const ajv = new Ajv({
+  coerceTypes: false,
+  ownProperties: true,
+  removeAdditional: true,
+  useDefaults: false,
+});
 
 function missingServerOption() {
   throw new TypeError(`
@@ -41,6 +49,10 @@ Alternatively, you can provide a port for the socket server to listen on:
       /* ... */
     });
   `);
+}
+
+function has(object, property) {
+  return Object.prototype.hasOwnProperty.call(object, property);
 }
 
 class SocketServer {
@@ -146,6 +158,16 @@ class SocketServer {
         }
       },
     };
+
+    this.clientActionSchemas = new Map();
+    this.clientActionSchemas.set('sendChat', ajv.compile({
+      type: 'string',
+    }));
+    this.clientActionSchemas.set('vote', ajv.compile({
+      type: 'integer',
+      enum: [-1, 1],
+    }));
+    this.clientActionSchemas.set('logout', ajv.compile(true));
 
     /**
      * Handlers for commands that come in from the server side.
@@ -454,8 +476,14 @@ class SocketServer {
     });
     connection.on('command', (command, data) => {
       debug('command', user.id, user.username, command, data);
-      const action = this.clientActions[command];
-      if (action) {
+      if (has(this.clientActions, command)) {
+        // Ignore incorrect input
+        const validate = this.clientActionSchemas.get(command);
+        if (validate && !validate(data)) {
+          return;
+        }
+
+        const action = this.clientActions[command];
         action(user, data, connection);
       }
     });
@@ -524,8 +552,8 @@ class SocketServer {
     if (channel === 'v1') {
       this.broadcast(command, data);
     } else if (channel === 'uwave') {
-      const action = this.serverActions[command];
-      if (action) {
+      if (has(this.serverActions, command)) {
+        const action = this.serverActions[command];
         action(data);
       }
     }
