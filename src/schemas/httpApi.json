@@ -1,0 +1,23 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema",
+  "$id": "https://ns.u-wave.net/config/api.json#",
+  "uw:key": "u-wave:httpApi",
+  "uw:access": "admin",
+  "type": "object",
+  "title": "HTTP API Settings",
+  "description": "Configure the üWave HTTP API for this instance.",
+  "properties": {
+    "allowedOrigins": {
+      "title": "Allowed CORS Origins",
+      "description": "The URLs that are allowed to access the HTTP API. Note this *only* applies to web browsers: non-web clients can always access the HTTP API.",
+      "type": "array",
+      "items": {
+        "type": "string",
+        "format": "url"
+      },
+      "default": []
+    }
+  },
+  "required": ["allowedOrigins"]
+}
+

@@ -4,6 +4,7 @@ const Router = require('router');
 const express = require('express');
 const bodyParser = require('body-parser');
 const cookieParser = require('cookie-parser');
+const cors = require('cors');
 const helmet = require('helmet');
 const http = require('http');
 const debug = require('debug')('uwave:http-api');
@@ -25,6 +26,9 @@ const errorHandler = require('./middleware/errorHandler');
 
 // utils
 const AuthRegistry = require('./AuthRegistry');
+const matchOrigin = require('./utils/matchOrigin');
+
+const optionsSchema = require('./schemas/httpApi.json');
 
 function defaultCreatePasswordResetEmail({ token, requestUrl }) {
   const parsed = new URL(requestUrl);
@@ -44,7 +48,16 @@ function defaultCreatePasswordResetEmail({ token, requestUrl }) {
 
 class UwaveHttpApi extends Router {
   static async plugin(uw, options) {
-    debug('setup');
+    uw.config.register(optionsSchema['uw:key'], optionsSchema);
+
+    let runtimeOptions = await uw.config.get(optionsSchema['uw:key']);
+    uw.config.on('set', (key, value) => {
+      if (key === 'u-wave:api') {
+        runtimeOptions = value;
+      }
+    });
+
+    debug('setup', runtimeOptions);
     uw.express = express();
     uw.server = http.createServer(uw.express);
 
@@ -52,10 +65,21 @@ class UwaveHttpApi extends Router {
       secret: options.secret,
     });
 
-    uw.express.use(helmet());
-    uw.express.use('/api', uw.httpApi);
+    uw.express.use(helmet({
+      referrerPolicy: {
+        policy: ['origin-when-cross-origin'],
+      },
+    }));
+
+    const corsOptions = {
+      origin(origin, callback) {
+        callback(null, matchOrigin(origin, runtimeOptions.allowedOrigins));
+      },
+    };
+    uw.express.options('/api/*', cors(corsOptions));
+    uw.express.use('/api', cors(corsOptions), uw.httpApi);
     // An older name
-    uw.express.use('/v1', uw.httpApi);
+    uw.express.use('/v1', cors(corsOptions), uw.httpApi);
 
     // Set up error handlers after all the plugins have registered their routes.
     uw.after(async () => {
