@@ -15,7 +15,7 @@
         "type": "string",
         "format": "url"
       },
-      "default": ["*"]
+      "default": []
     }
   },
   "required": ["allowedOrigins"]
