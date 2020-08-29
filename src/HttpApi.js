@@ -26,6 +26,7 @@ const errorHandler = require('./middleware/errorHandler');
 
 // utils
 const AuthRegistry = require('./AuthRegistry');
+const matchOrigin = require('./utils/matchOrigin');
 
 const optionsSchema = require('./schemas/httpApi.json');
 
@@ -68,12 +69,7 @@ class UwaveHttpApi extends Router {
 
     const corsOptions = {
       origin(origin, callback) {
-        const { allowedOrigins } = runtimeOptions;
-        if (allowedOrigins.includes(origin) || allowedOrigins.includes('*')) {
-          callback(null, true);
-        } else {
-          callback(new Error('Origin not allowed'));
-        }
+        callback(null, matchOrigin(origin, runtimeOptions.allowedOrigins));
       },
     };
     uw.express.options('/api/*', cors(corsOptions));
