@@ -19,7 +19,7 @@ const getAllowedOriginsRegExp = memoize((allowedOrigins) => {
     return escapeRegExp(origin).replace('\\*', () => '.+?');
   }
 
-  return new RegExp(`^(?:${allowedOrigins.map(singleOriginToRegExp)})$`);
+  return new RegExp(`^(?:${allowedOrigins.map(singleOriginToRegExp).join('|')})$`);
 });
 
 function matchOrigin(origin, allowedOrigins) {
