@@ -1,4 +1,4 @@
-# u-wave-web change log
+# u-wave-core change log
 
 All notable changes to this project will be documented in this file.
 
@@ -14,6 +14,8 @@ Features:
  * Implement votes using HTTP requests. (#361)
    * Older client versions can still use WebSocket votes.
  * Find playlists containing a particular media. (#374)
+ * Add social authentication support. (#265, #385)
+ * Add runtime configuration support. (#380, #408)
 
 Internal:
  * Add `uw.models` property for easier mongoose model access. (#283)
@@ -21,6 +23,7 @@ Internal:
  * **Breaking:** Raise supported Node.js version to 10+. (#342)
  * Make `getPlaylistItems` faster with a single query. (#351, #370)
  * Remove use of `p-props`. (#371)
+ * **Breaking**: Handle startup with Avvio. (#400)
 
 ## 0.4.1 / 17 Jul 2018
 
