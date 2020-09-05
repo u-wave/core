@@ -26,6 +26,8 @@ const acl = require('./plugins/acl');
 const waitlist = require('./plugins/waitlist');
 const passport = require('./plugins/passport');
 
+const baseSchema = require('./schemas/base.json');
+
 mongoose.Promise = Promise;
 const MongooseConnection = mongoose.Connection;
 
@@ -71,6 +73,9 @@ class UwaveServer extends EventEmitter {
 
     this.use(models);
     this.use(configStore);
+    this.use(async (uw) => {
+      uw.config.register(baseSchema['uw:key'], baseSchema);
+    });
 
     this.use(passport, {
       secret: this.options.secret,

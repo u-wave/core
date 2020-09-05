@@ -1,0 +1,23 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema",
+  "$id": "https://ns.u-wave.net/config/base.json#",
+  "uw:key": "u-wave:base",
+  "uw:access": "admin",
+  "type": "object",
+  "title": "Basic Settings",
+  "description": "Server identification et cetera.",
+  "properties": {
+    "name": {
+      "title": "Server Name",
+      "description": "Your server name, used for public display of the server everywhere.",
+      "type": "string"
+    },
+    "url": {
+      "type": "string",
+      "format": "uri",
+      "title": "URL",
+      "description": "Publically accessible URL of this server."
+    }
+  },
+  "required": ["name", "url"]
+}
