@@ -27,6 +27,8 @@ const waitlist = require('./plugins/waitlist');
 const passport = require('./plugins/passport');
 const migrations = require('./plugins/migrations');
 
+const baseSchema = require('./schemas/base.json');
+
 const DEFAULT_MONGO_URL = 'mongodb://localhost:27017/uwave';
 const DEFAULT_REDIS_URL = 'redis://localhost:6379';
 
@@ -178,9 +180,13 @@ class UwaveServer extends EventEmitter {
 
     boot.use(models);
     boot.use(migrations);
-    boot.use(configStore);
-    boot.use(assets);
 
+    boot.use(configStore);
+    boot.use(async (uw) => {
+      uw.config.register(baseSchema['uw:key'], baseSchema);
+    });
+
+    boot.use(assets);
     boot.use(passport, {
       secret: this.options.secret,
     });
