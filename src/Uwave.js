@@ -95,6 +95,8 @@ class UwaveServer extends EventEmitter {
       this.use(waitlist);
       this.use(booth);
     }
+
+    this.use(HttpApi.errorHandling);
   }
 
   parseOptions(options) {

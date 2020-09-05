@@ -80,15 +80,15 @@ class UwaveHttpApi extends Router {
     uw.express.use('/api', cors(corsOptions), uw.httpApi);
     // An older name
     uw.express.use('/v1', cors(corsOptions), uw.httpApi);
+  }
 
-    // Set up error handlers after all the plugins have registered their routes.
-    uw.after(async () => {
-      debug('after');
-      uw.httpApi.use(errorHandler());
-      uw.express.use((error, req, res, next) => {
-        debug(error);
-        next(error);
-      });
+  // Set up error handlers after all the plugins have registered their routes.
+  static async errorHandling(uw) {
+    debug('after');
+    uw.httpApi.use(errorHandler());
+    uw.express.use((error, req, res, next) => {
+      debug(error);
+      next(error);
     });
   }
 
