@@ -2,7 +2,7 @@ name: Deploy Demo
 
 on:
   push:
-    branches: [default]
+    branches: [docker]
 
 jobs:
   deploy:
