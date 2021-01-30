@@ -2,7 +2,8 @@
 
 const mongoose = require('mongoose');
 const EventEmitter = require('events');
-const Ajv = require('ajv');
+const Ajv = require('ajv').default;
+const formats = require('ajv-formats');
 const ValidationError = require('../errors/ValidationError');
 
 const { Schema } = mongoose;
@@ -28,7 +29,14 @@ class ConfigStore {
    */
   constructor(mongo) {
     this.ConfigModel = mongo.model('ConfigStore', configSchema);
-    this.ajv = new Ajv({ useDefaults: true });
+    this.ajv = new Ajv({
+      useDefaults: true,
+      // Allow unknown keywords (`uw:xyz`)
+      strict: false,
+      strictTypes: true,
+    });
+    formats(this.ajv);
+
     this.emitter = new EventEmitter();
     this.registry = new Map();
 

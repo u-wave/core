@@ -13,7 +13,7 @@
       "type": "array",
       "items": {
         "type": "string",
-        "format": "url"
+        "format": "uri"
       },
       "default": []
     }
