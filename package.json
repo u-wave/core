@@ -19,7 +19,8 @@
   },
   "dependencies": {
     "@hapi/joi": "^16.1.8",
-    "ajv": "^6.10.2",
+    "ajv": "^7.0.3",
+    "ajv-formats": "^1.5.1",
     "avvio": "^7.2.0",
     "bcryptjs": "^2.4.3",
     "body-parser": "^1.19.0",

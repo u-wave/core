@@ -3,7 +3,7 @@
 const { debounce, isEmpty } = require('lodash');
 const sjson = require('secure-json-parse');
 const WebSocket = require('ws');
-const Ajv = require('ajv');
+const Ajv = require('ajv').default;
 const ms = require('ms');
 const createDebug = require('debug');
 const { socketVote } = require('./controllers/booth');
