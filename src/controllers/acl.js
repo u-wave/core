@@ -4,6 +4,7 @@ const toItemResponse = require('../utils/toItemResponse');
 
 async function list(req) {
   const { acl } = req.uwave;
+  await req.uwave.models.User.update(req.body);
 
   const roles = await acl.getAllRoles();
 
