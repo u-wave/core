@@ -21,6 +21,6 @@ describe('üWave Core', () => {
 
   it('can create a üWave instance', async () => {
     assert(uw instanceof uwave.Uwave);
-    await delay(50); // HACK Give mongo some time to connect
+    await delay(2000); // HACK Give mongo some time to connect
   });
 });
