@@ -26,10 +26,10 @@ jobs:
     services:
       redis:
         image: redis:6
-        ports: [6379/tcp]
+        ports: ['6379:6379']
       mongodb:
         image: mongo:4.2-bionic
-        ports: [27017/tcp]
+        ports: ['27017:27017']
     steps:
       - name: Checkout sources
         uses: actions/checkout@v2
@@ -42,4 +42,4 @@ jobs:
       - name: Run tests
         run: npm run test:mocha
         env:
-          MONGODB_HOST: 'mongodb'
+          MONGODB_HOST: 'mongodb:27017'
