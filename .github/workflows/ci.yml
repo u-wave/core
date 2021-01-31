@@ -16,7 +16,7 @@ jobs:
       - name: Install dependencies
         run: npm install
       - name: Check code style
-        run: npm run test:linto
+        run: npm run test:lint
   test:
     name: Tests
     strategy:
