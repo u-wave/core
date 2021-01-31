@@ -9,11 +9,12 @@ const createUser = require('./utils/createUser');
 const deleteDatabase = require('./utils/deleteDatabase');
 
 const DB_NAME = 'uw_test_bans';
+const DB_HOST = process.env.MONGODB_HOST || 'localhost';
 
 async function createUwaveWithBansTest() {
   const uw = uwave({
     useDefaultPlugins: false,
-    mongo: `mongodb://localhost/${DB_NAME}`,
+    mongo: `mongodb://${DB_HOST}/${DB_NAME}`,
     secret: Buffer.from(`secret_${DB_NAME}`),
   });
   uw.use(usersPlugin);

@@ -5,11 +5,13 @@ const uwave = require('..');
 const { Source } = require('../src/Source');
 const deleteDatabase = require('./utils/deleteDatabase');
 
+const DB_HOST = process.env.MONGODB_HOST || 'localhost';
+
 describe('Media Sources', () => {
   let uw;
   beforeEach(async () => {
     uw = uwave({
-      mongo: 'mongodb://localhost:27017/uw_test_sources',
+      mongo: `mongodb://${DB_HOST}/uw_test_sources`,
       useDefaultPlugins: false,
       secret: Buffer.from('secret_test_sources'),
     });

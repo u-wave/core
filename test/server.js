@@ -4,11 +4,13 @@ const assert = require('assert');
 const delay = require('delay');
 const uwave = require('..');
 
+const DB_HOST = process.env.MONGODB_HOST || 'localhost';
+
 describe('üWave Core', () => {
   let uw;
   beforeEach(async () => {
     uw = uwave({
-      mongo: 'mongodb://localhost:27017/uw_test_server',
+      mongo: `mongodb://${DB_HOST}/uw_test_server`,
       secret: 'uw_test_secret',
     });
     await uw.ready();
