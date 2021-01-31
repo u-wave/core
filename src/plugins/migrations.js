@@ -15,12 +15,11 @@ const schema = new Schema({}, {
 class MongoStore {
   constructor(db) {
     this.db = db;
-    this.db.model('Migration', schema);
+    this.Migration = this.db.model('Migration', schema);
   }
 
   load(callback) {
-    const Migration = this.db.model('Migration');
-    Migration.find().sort({ createdAt: -1 }).findOne((err, set) => {
+    this.Migration.find().sort({ createdAt: -1 }).findOne((err, set) => {
       if (err) {
         callback(err);
       } else if (set) {
@@ -32,8 +31,7 @@ class MongoStore {
   }
 
   save(set, callback) {
-    const Migration = this.db.model('Migration');
-    Migration.create(set, (err) => {
+    this.Migration.create(set, (err) => {
       callback(err);
     });
   }
