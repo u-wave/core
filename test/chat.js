@@ -3,14 +3,14 @@
 const assert = require('assert');
 const sinon = require('sinon');
 const delay = require('delay');
-const chatPlugin = require('../src/plugins/chat');
 const createUwave = require('./utils/createUwave');
 const createUser = require('./utils/createUser');
 const connectAs = require('./utils/connectAs');
 
+const sandbox = sinon.createSandbox();
+
 describe('Chat', () => {
   let uw;
-  let sandbox = sinon.createSandbox();
 
   beforeEach(async () => {
     uw = await createUwave('chat');

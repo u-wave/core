@@ -45,17 +45,11 @@ function serializeError(err) {
     }));
   }
   if (err.name === 'ValidationError') {
-    return Object.values(err.errors).reduce(
-      (accum, error) => accum.concat(serializeError(error)),
-      [],
-    );
-  }
-  if (err.name === 'ValidatorError') {
-    return [{
+    return Object.values(err.errors).map((error) => ({
       status: 400,
-      code: 'validator-error',
-      title: err.message,
-    }];
+      code: 'validation-error',
+      title: `${error.dataPath} ${error.message}`,
+    }));
   }
   if (err.name === 'ReplyError') {
     return [{

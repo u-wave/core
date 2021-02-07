@@ -11,7 +11,7 @@ const createUser = require('./utils/createUser');
 describe('Media Sources', () => {
   let uw;
   beforeEach(async () => {
-    uw = await createUwave('sources');;
+    uw = await createUwave('sources');
   });
   afterEach(async () => {
     await delay(1000);
@@ -126,6 +126,7 @@ describe('Media Sources', () => {
 
       const res = await supertest(uw.server)
         .get('/api/search/garbage')
+        .query({ query: 'garbage' })
         .set('accept', 'application/json')
         .set('cookie', `uwsession=${token}`)
         .send()
@@ -134,6 +135,30 @@ describe('Media Sources', () => {
       sinon.assert.match(res.body.errors[0], {
         status: 404,
         code: 'source-not-found',
+      });
+    });
+
+    it('should reject requests with invalid query data types', async () => {
+      uw.source(testSource);
+
+      const user = await createUser(uw);
+      const token = await uw.createTestSessionToken(user);
+
+      const res = await supertest(uw.server)
+        .get('/api/search/test-source')
+        .query({
+          query: {
+            some: 'garbage',
+          },
+        })
+        .set('accept', 'application/json')
+        .set('cookie', `uwsession=${token}`)
+        .send()
+        .expect(400);
+
+      sinon.assert.match(res.body.errors[0], {
+        status: 400,
+        code: 'validation-error',
       });
     });
   });

@@ -12,6 +12,7 @@ async function createUwave(name) {
   const port = await getPort();
 
   const uw = uwave({
+    port,
     mongo: mongoUrl,
     secret: Buffer.from(`secret_${name}`),
   });
