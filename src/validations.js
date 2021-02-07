@@ -272,11 +272,16 @@ exports.deleteChatMessage = {
 
 // Validations for MOTD routes:
 
-exports.setMotd = joi.object({
-  body: joi.object({
-    motd: joi.string().required(),
-  }),
-});
+exports.setMotd = {
+  body: {
+    type: 'object',
+    properties: {
+      // `null` to remove the MOTD.
+      motd: { type: ['string', 'null'] },
+    },
+    required: ['motd'],
+  },
+};
 
 // Validations for playlist routes:
 
