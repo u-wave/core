@@ -91,10 +91,7 @@ class Acl {
   }
 
   async deleteRole(name) {
-    const role = await this.AclRole.findById(name);
-    if (role) {
-      await role.remove();
-    }
+    await this.AclRole.deleteOne({ _id: name });
   }
 
   async allow(user, roleNames) {

@@ -20,11 +20,16 @@ class AuthRegistry {
     if (token.length !== 128) {
       throw new Error('Invalid token');
     }
-    const [userID] = await this.redis
+    const [result] = await this.redis
       .multi()
       .get(`http-api:socketAuth:${token}`)
       .del(`http-api:socketAuth:${token}`)
       .exec();
+
+    const [err, userID] = result;
+    if (err) {
+      throw err;
+    }
 
     return userID;
   }

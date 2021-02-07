@@ -1,52 +1,64 @@
 'use strict';
 
+const assert = require('assert');
 const sinon = require('sinon');
+const delay = require('delay');
 const chatPlugin = require('../src/plugins/chat');
-
-async function createUwaveWithChatTest() {
-  const uw = {
-    redis: {
-      exists: sinon.stub().returns(false),
-    },
-    httpApi: {
-      use: sinon.stub(),
-    },
-    publish: sinon.spy(),
-  };
-
-  await chatPlugin(uw);
-
-  return uw;
-}
+const createUwave = require('./utils/createUwave');
+const createUser = require('./utils/createUser');
+const connectAs = require('./utils/connectAs');
 
 describe('Chat', () => {
   let uw;
+  let sandbox = sinon.createSandbox();
 
   beforeEach(async () => {
-    uw = await createUwaveWithChatTest();
+    uw = await createUwave('chat');
+  });
+  afterEach(async () => {
+    sandbox.restore();
+    await delay(100);
+    await uw.destroy();
   });
 
   it('can broadcast chat messages', async () => {
-    await uw.chat.send({ id: 1 }, 'Message text');
-    sinon.assert.calledWithMatch(uw.publish, 'chat:message', {
-      userID: 1,
+    const user = await createUser(uw);
+
+    const spy = sandbox.spy(uw, 'publish');
+
+    const ws = await connectAs(uw, user);
+    ws.send(JSON.stringify({ command: 'sendChat', data: 'Message text' }));
+    await delay(200);
+
+    assert(spy.calledWith('chat:message', sinon.match({
+      userID: user.id,
       message: 'Message text',
-    });
+    })));
   });
 
   it('does not broadcast chat messages from muted users', async () => {
-    const stub = sinon.stub(uw.chat, 'isMuted');
-    stub.withArgs({ id: 1 }).returns(false);
-    stub.withArgs({ id: 2 }).returns(true);
+    const user = await createUser(uw);
+    const mutedUser = await createUser(uw);
 
-    await uw.chat.send({ id: 1 }, 'Message text');
-    await uw.chat.send({ id: 2 }, 'Message text');
+    const stub = sandbox.stub(uw.chat, 'isMuted');
+    stub.withArgs(sinon.match({ id: user.id })).resolves(false);
+    stub.withArgs(sinon.match({ id: mutedUser.id })).resolves(true);
 
-    sinon.assert.calledWithMatch(uw.publish, 'chat:message', {
-      userID: 1,
-    });
-    sinon.assert.neverCalledWithMatch(uw.publish, 'chat:message', {
-      userID: 2,
-    });
+    const spy = sandbox.spy(uw, 'publish');
+
+    const ws = await connectAs(uw, user);
+    ws.send(JSON.stringify({ command: 'sendChat', data: 'unmuted' }));
+    const mutedWs = await connectAs(uw, mutedUser);
+    mutedWs.send(JSON.stringify({ command: 'sendChat', data: 'muted' }));
+
+    await delay(200);
+
+    assert(spy.calledWith('chat:message', sinon.match({
+      userID: user.id,
+    })));
+
+    assert(spy.neverCalledWith('chat:message', sinon.match({
+      userID: mutedUser.id,
+    })));
   });
 });

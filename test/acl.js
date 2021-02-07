@@ -1,84 +1,66 @@
 'use strict';
 
 const assert = require('assert');
-const uwave = require('..');
-const usersPlugin = require('../src/plugins/users');
-const aclPlugin = require('../src/plugins/acl');
+const delay = require('delay');
 const createUser = require('./utils/createUser');
-const deleteDatabase = require('./utils/deleteDatabase');
-
-const DB_NAME = 'uw_test_acl';
-const DB_HOST = process.env.MONGODB_HOST || 'localhost';
-
-async function createUwaveWithAclTest() {
-  const uw = uwave({
-    useDefaultPlugins: false,
-    mongo: `mongodb://${DB_HOST}/${DB_NAME}`,
-    secret: Buffer.from(`secret_${DB_NAME}`),
-  });
-  uw.use(usersPlugin);
-  uw.use(aclPlugin, { defaultRoles: false });
-  await uw.ready();
-  return uw;
-}
+const createUwave = require('./utils/createUwave');
 
 describe('acl', () => {
   let user;
   let uw;
-  let acl;
   beforeEach(async () => {
-    uw = await createUwaveWithAclTest();
-    acl = uw.acl; // eslint-disable-line prefer-destructuring
-    await acl.createRole('test.role', []);
-    user = createUser(uw);
+    uw = await createUwave('acl');
+    user = await createUser(uw);
+
+    await uw.acl.createRole('test.role', []);
   });
   afterEach(async () => {
-    await uw.close();
-    await deleteDatabase(uw.options.mongo);
+    await delay(100);
+    await uw.destroy();
   });
 
   it('can check if a user is not allowed to do something', async () => {
-    assert.strictEqual(await acl.isAllowed(user, 'test.role'), false);
+    assert.strictEqual(await uw.acl.isAllowed(user, 'test.role'), false);
   });
 
   it('disallows nonexistent roles by default', async () => {
-    assert.strictEqual(await acl.isAllowed(user, 'something.that.is.not.allowed'), false);
+    assert.strictEqual(await uw.acl.isAllowed(user, 'something.that.is.not.allowed'), false);
   });
 
   it('can allow users to do things', async () => {
-    assert.strictEqual(await acl.isAllowed(user, 'test.role'), false);
+    assert.strictEqual(await uw.acl.isAllowed(user, 'test.role'), false);
 
-    await acl.allow(user, ['test.role']);
-    assert.strictEqual(await acl.isAllowed(user, 'test.role'), true);
+    await uw.acl.allow(user, ['test.role']);
+    assert.strictEqual(await uw.acl.isAllowed(user, 'test.role'), true);
   });
 
   it('can create new roles, grouping existing roles', async () => {
-    await acl.createRole('group.of.roles', [
+    await uw.acl.createRole('group.of.roles', [
       'test.role',
       'some.other.role',
       'universe.destroy',
       'universe.create',
     ]);
-    await acl.createRole('other.group.of.roles', [
+    await uw.acl.createRole('other.group.of.roles', [
       'strawberry.eat',
     ]);
 
-    await acl.allow(user, ['group.of.roles']);
-    assert.strictEqual(await acl.isAllowed(user, 'universe.create'), true);
+    await uw.acl.allow(user, ['group.of.roles']);
+    assert.strictEqual(await uw.acl.isAllowed(user, 'universe.create'), true);
   });
 
   it('can remove permissions from users', async () => {
-    await acl.allow(user, ['test.role']);
-    assert.strictEqual(await acl.isAllowed(user, 'test.role'), true);
+    await uw.acl.allow(user, ['test.role']);
+    assert.strictEqual(await uw.acl.isAllowed(user, 'test.role'), true);
 
-    await acl.disallow(user, ['test.role']);
-    assert.strictEqual(await acl.isAllowed(user, 'test.role'), false);
+    await uw.acl.disallow(user, ['test.role']);
+    assert.strictEqual(await uw.acl.isAllowed(user, 'test.role'), false);
   });
 
   it('can delete roles', async () => {
-    await acl.createRole('test.role', []);
-    assert.deepStrictEqual(Object.keys(await acl.getAllRoles()), ['test.role']);
-    await acl.deleteRole('test.role');
-    assert.deepStrictEqual(Object.keys(await acl.getAllRoles()), []);
+    await uw.acl.createRole('test.role', []);
+    assert.deepStrictEqual(Object.keys(await uw.acl.getAllRoles()), ['test.role']);
+    await uw.acl.deleteRole('test.role');
+    assert.deepStrictEqual(Object.keys(await uw.acl.getAllRoles()), []);
   });
 });
