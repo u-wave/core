@@ -4,7 +4,7 @@ const router = require('router');
 const route = require('../route');
 const validations = require('../validations');
 const protect = require('../middleware/protect');
-const checkFields = require('../middleware/checkFields');
+const schema = require('../middleware/schema');
 const controller = require('../controllers/authenticate');
 
 function authenticateRoutes(api, options) {
@@ -24,13 +24,13 @@ function authenticateRoutes(api, options) {
     // POST /auth/register - Create a new user account.
     .post(
       '/register',
-      checkFields(validations.register),
+      schema(validations.register),
       route(controller.register.bind(null, options)),
     )
     // POST /auth/login - Log in as an existing user.
     .post(
       '/login',
-      checkFields(validations.login),
+      schema(validations.login),
       passport.authenticate('local', { failWithError: true }),
       route(controller.login.bind(null, options)),
     )
@@ -49,13 +49,13 @@ function authenticateRoutes(api, options) {
     // POST /auth/password/reset - Request a password reset.
     .post(
       '/password/reset',
-      checkFields(validations.requestPasswordReset),
+      schema(validations.requestPasswordReset),
       route(controller.reset.bind(null, options)),
     )
     // POST /auth/password/reset/:reset - Change the password using a reset token.
     .post(
       '/password/reset/:reset',
-      checkFields(validations.passwordReset),
+      schema(validations.passwordReset),
       route(controller.changePassword),
     )
     // DELETE /auth/session/:id - Unused? Forcibly quit a user's session.

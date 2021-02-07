@@ -2,6 +2,7 @@
 
 const joi = require('@hapi/joi');
 const { InvalidUsernameError, InvalidEmailError } = require('./errors');
+const Ajv = require('ajv').default;
 
 const objectID = joi.string().length(24);
 const userName = joi.string()
@@ -39,44 +40,96 @@ const pagination = [
 
 // Validations for authentication routes:
 
-exports.register = joi.object({
-  body: joi.object({
-    email: userEmail.required(),
-    username: userName.required(),
-    password: userPassword.required(),
-  }),
-});
+exports.register = {
+  body: {
+    type: 'object',
+    properties: {
+      email: {
+        type: 'string',
+        format: 'email',
+      },
+      username: {
+        type: 'string',
+        minLength: 3,
+        maxLength: 32,
+        pattern: /^[^\s\n]+$/.toString(),
+      },
+      password: {
+        type: 'string',
+        minLength: 6,
+      },
+    },
+    required: ['email', 'username', 'password'],
+  },
+};
 
-exports.login = joi.object({
-  query: joi.object({
-    session: joi.string().valid('token', 'cookie').default('token'),
-  }),
-  body: joi.object({
-    // This is less strict than the email and password validation used in
-    // `register`, because we check this against the DB anyway, and an
-    // error message about a nonexistent account or mismatching passwords
-    // makes more sense when logging in than an error message about the
-    // email being incorrectly formatted or the password being too short.
-    email: joi.string().required(),
-    password: joi.string().required(),
-  }),
-});
+exports.login = {
+  query: {
+    type: 'object',
+    properties: {
+      session: {
+        type: 'string',
+        enum: ['token', 'cookie'],
+        default: 'token',
+      },
+    },
+  },
+  body: {
+    type: 'object',
+    properties: {
+      // This is less strict than the email and password validation used in
+      // `register`, because we check this against the DB anyway, and an
+      // error message about a nonexistent account or mismatching passwords
+      // makes more sense when logging in than an error message about the
+      // email being incorrectly formatted or the password being too short.
+      email: {
+        type: 'string',
+        minLength: 1,
+      },
+      password: {
+        type: 'string',
+        minLength: 1,
+      },
+    },
+    required: ['email', 'password'],
+  },
+};
 
-exports.requestPasswordReset = joi.object({
-  body: joi.object({
-    // Checked against DB like in `login`.
-    email: joi.string().required(),
-  }),
-});
+exports.requestPasswordReset = {
+  body: {
+    type: 'object',
+    properties: {
+      // Checked against DB like in `login`.
+      email: {
+        type: 'string',
+        minLength: 1,
+      },
+    },
+    required: ['email'],
+  },
+};
 
-exports.passwordReset = joi.object({
-  params: joi.object({
-    reset: joi.string().required(),
-  }),
-  body: joi.object({
-    password: userPassword.required(),
-  }),
-});
+exports.passwordReset = {
+  params: {
+    type: 'object',
+    properties: {
+      // Technically should be a specific length, but
+      // we can let the controller take care of that.
+      reset: { type: 'string', minLength: 1 },
+    },
+    required: ['reset'],
+  },
+  body: {
+    type: 'object',
+    properties: {
+      password: {
+        type: 'string',
+        minLength: 6,
+      },
+    },
+    required: ['password'],
+  },
+};
 
 // Validations for ACL routes:
 
