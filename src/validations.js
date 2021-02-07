@@ -132,20 +132,35 @@ exports.passwordReset = {
 
 // Validations for ACL routes:
 
-exports.createAclRole = joi.object({
-  params: joi.object({
-    name: joi.string().required(),
-  }),
-  body: joi.object({
-    permissions: joi.array().items(joi.string()).required(),
-  }),
-});
+exports.createAclRole = {
+  params: {
+    type: 'object',
+    properties: {
+      name: { type: 'string', minLength: 1 },
+    },
+    required: ['name'],
+  },
+  body: {
+    type: 'object',
+    properties: {
+      permissions: {
+        type: 'array',
+        items: { type: 'string' },
+      },
+    },
+    required: ['permissions'],
+  },
+};
 
-exports.deleteAclRole = joi.object({
-  params: joi.object({
-    name: joi.string().required(),
-  }),
-});
+exports.deleteAclRole = {
+  params: {
+    type: 'object',
+    properties: {
+      name: { type: 'string' },
+    },
+    required: ['name'],
+  },
+};
 
 // Validations for booth routes:
 
