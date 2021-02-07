@@ -283,121 +283,183 @@ exports.setMotd = joi.object({
 
 // Validations for playlist routes:
 
-const playlistParams = joi.object({
-  id: objectID.required(),
-});
+const playlistParams = {
+  type: 'object',
+  properties: {
+    id: { $ref: 'https://ns.u-wave.net/schemas/definitions.json#/definitions/ObjectID' },
+  },
+  required: ['id'],
+};
 
-const playlistItemParams = joi.object({
-  id: objectID.required(),
-  itemID: objectID.required(),
-});
+const playlistItemParams = {
+  type: 'object',
+  properties: {
+    id: { $ref: 'https://ns.u-wave.net/schemas/definitions.json#/definitions/ObjectID' },
+    itemID: { $ref: 'https://ns.u-wave.net/schemas/definitions.json#/definitions/ObjectID' },
+  },
+  required: ['id', 'itemID'],
+};
 
-const playlistItem = joi.object({
-  sourceType: joi.string().required(),
-  sourceID: joi.string().required(),
-  artist: joi.string(),
-  title: joi.string(),
-  start: joi.number().min(0),
-  end: joi.number().min(0),
-});
-const playlistItemIDs = joi.array().items(objectID);
-const playlistItems = joi.array().items(playlistItem);
+const playlistItem = {
+  type: 'object',
+  properties: {
+    sourceType: { type: 'string' },
+    sourceID: { type: 'string' },
+    artist: { type: 'string' },
+    title: { type: 'string' },
+    start: { type: 'integer', minimum: 0 },
+    end: { type: 'integer', minimum: 0 },
+  },
+  required: ['sourceType', 'sourceID'],
+};
 
-exports.getPlaylists = joi.object({
-  query: joi.object({
-    contains: objectID,
-  }),
-});
+exports.getPlaylists = {
+  query: {
+    type: 'object',
+    properties: {
+      contains: { $ref: 'https://ns.u-wave.net/schemas/definitions.json#/definitions/ObjectID' },
+    },
+  },
+};
 
-exports.createPlaylist = joi.object({
-  body: joi.object({
-    name: joi.string().required(),
-  }),
-});
+exports.createPlaylist = {
+  body: {
+    type: 'object',
+    properties: {
+      name: { type: 'string', minLength: 1 },
+    },
+    required: ['name'],
+  },
+};
 
-exports.getPlaylist = joi.object({
+exports.getPlaylist = {
   params: playlistParams,
-});
+};
 
-exports.deletePlaylist = joi.object({
+exports.deletePlaylist = {
   params: playlistParams,
-});
+};
 
-exports.updatePlaylist = joi.object({
+exports.updatePlaylist = {
   params: playlistParams,
-  body: joi.object({
-    name: joi.string(),
-    shared: joi.bool(),
-    description: joi.string(),
-  }),
-});
+  body: {
+    type: 'object',
+    properties: {
+      name: { type: 'string', minLength: 1 },
+      description: { type: 'string' },
+    },
+  },
+};
 
-exports.renamePlaylist = joi.object({
+exports.renamePlaylist = {
   params: playlistParams,
-  body: joi.object({
-    name: joi.string().required(),
-  }),
-});
+  body: {
+    type: 'object',
+    properties: {
+      name: { type: 'string', minLength: 1 },
+    },
+    required: ['name'],
+  },
+};
 
-exports.sharePlaylist = joi.object({
+exports.getPlaylistItems = {
   params: playlistParams,
-  body: joi.object({
-    shared: joi.bool().required(),
-  }),
-});
-
-exports.getPlaylistItems = joi.object({
-  params: playlistParams,
-  query: pagination,
-});
-
-exports.addPlaylistItems = joi.object({
-  params: playlistParams,
-  body: joi.object({
-    items: playlistItems.required(),
-  }),
-});
-
-exports.removePlaylistItems = joi.object({
-  params: playlistParams,
-  body: joi.object({
-    items: playlistItemIDs.required(),
-  }),
-});
-
-exports.movePlaylistItems = joi.object({
-  params: playlistParams,
-  body: joi.object({
-    items: playlistItemIDs.required(),
-    after: [
-      objectID, // Insert after ID
-      joi.number().valid(-1), // Old-style prepend (use at=start instead)
+  query: {
+    oneOf: [
+      { $ref: 'https://ns.u-wave.net/schemas/definitions.json#/definitions/Pagination' },
+      { $ref: 'https://ns.u-wave.net/schemas/definitions.json#/definitions/LegacyPagination' },
+      true,
     ],
-    at: joi.string().valid('start', 'end'),
-  }).xor('after', 'at'),
-});
+  },
+};
 
-exports.shufflePlaylistItems = joi.object({
+exports.addPlaylistItems = {
   params: playlistParams,
-});
+  body: {
+    type: 'object',
+    properties: {
+      items: {
+        type: 'array',
+        items: { $ref: 'https://ns.u-wave.net/schemas/definitions.json#/definitions/ObjectID' },
+      },
+    },
+    required: ['items'],
+  },
+};
 
-exports.getPlaylistItem = joi.object({
-  params: playlistItemParams,
-});
+exports.removePlaylistItems = {
+  params: playlistParams,
+  body: {
+    type: 'object',
+    properties: {
+      items: {
+        type: 'array',
+        items: { $ref: 'https://ns.u-wave.net/schemas/definitions.json#/definitions/ObjectID' },
+      },
+    },
+    required: ['items'],
+  },
+};
 
-exports.updatePlaylistItem = joi.object({
-  params: playlistItemParams,
-  body: joi.object({
-    artist: joi.string(),
-    title: joi.string(),
-    start: joi.number().min(0),
-    end: joi.number().min(0),
-  }),
-});
+exports.movePlaylistItems = {
+  params: playlistParams,
+  body: {
+    type: 'object',
+    properties: {
+      items: {
+        type: 'array',
+        items: { $ref: 'https://ns.u-wave.net/schemas/definitions.json#/definitions/ObjectID' },
+      },
+    },
+    required: ['items'],
+    oneOf: [
+      {
+        type: 'object',
+        properties: {
+          after: {
+            oneOf: [
+              { $ref: 'https://ns.u-wave.net/schemas/definitions.json#/definitions/ObjectID' },
+              { const: -1 },
+            ],
+          },
+        },
+        required: ['after'],
+      },
+      {
+        type: 'object',
+        properties: {
+          at: { enum: ['start', 'end'] },
+        },
+        required: ['at'],
+      },
+    ],
+  },
+};
 
-exports.removePlaylistItem = joi.object({
+exports.shufflePlaylistItems = {
+  params: playlistParams,
+};
+
+exports.getPlaylistItem = {
   params: playlistItemParams,
-});
+};
+
+exports.updatePlaylistItem = {
+  params: playlistItemParams,
+  body: {
+    type: 'object',
+    properties: {
+      artist: { type: 'string' },
+      title: { type: 'string' },
+      start: { type: 'integer', minimum: 0 },
+      end: { type: 'integer', minimum: 0 },
+    },
+  },
+};
+
+exports.removePlaylistItem = {
+  params: playlistItemParams,
+};
 
 // Validations for user routes:
 
