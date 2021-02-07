@@ -1,42 +1,5 @@
 'use strict';
 
-const joi = require('@hapi/joi');
-const { InvalidUsernameError, InvalidEmailError } = require('./errors');
-
-const objectID = joi.string().length(24);
-const userName = joi.string()
-  .min(3).max(32)
-  .pattern(/^[^\s\n]+$/)
-  .error((errors) => {
-    const error = new InvalidUsernameError({ username: errors[0].value });
-    error.path = errors[0].path;
-    error.errors = errors;
-    return error;
-  });
-const userEmail = joi.string().email().error((errors) => {
-  const source = errors[0];
-  const error = new InvalidEmailError({ email: source.value });
-  error.path = source.path;
-  error.source = source;
-  return error;
-});
-const userPassword = joi.string().min(6);
-
-const newStylePagination = joi.object({
-  page: joi.object({
-    offset: joi.number().min(0),
-    limit: joi.number().min(0),
-  }),
-});
-const oldStylePagination = joi.object({
-  page: joi.number().min(0),
-  limit: joi.number().min(0),
-});
-const pagination = [
-  newStylePagination,
-  oldStylePagination,
-];
-
 // Validations for authentication routes:
 
 exports.register = {
