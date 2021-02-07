@@ -400,21 +400,42 @@ exports.getUserHistory = joi.object({
 
 // Validations for Waitlist routes:
 
-exports.joinWaitlist = joi.object({
-  body: joi.object({
-    userID: objectID.required(),
-  }),
-});
+exports.joinWaitlist = {
+  body: {
+    type: 'object',
+    properties: {
+      userID: {
+        type: 'string',
+        format: 'objectid',
+      },
+    },
+    required: ['userID'],
+  },
+};
 
-exports.moveWaitlist = joi.object({
-  body: joi.object({
-    userID: objectID.required(),
-    position: joi.number().min(0).required(),
-  }),
-});
+exports.moveWaitlist = {
+  body: {
+    type: 'object',
+    properties: {
+      userID: {
+        type: 'string',
+        format: 'objectid',
+      },
+      position: {
+        type: 'integer',
+        minimum: 0,
+      },
+    },
+    required: ['userID', 'position'],
+  },
+};
 
-exports.lockWaitlist = joi.object({
-  body: joi.object({
-    lock: joi.bool().required(),
-  }),
-});
+exports.lockWaitlist = {
+  body: {
+    type: 'object',
+    properties: {
+      lock: { type: 'boolean' },
+    },
+    required: ['lock'],
+  },
+};
