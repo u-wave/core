@@ -4,7 +4,7 @@ const router = require('router');
 const route = require('../route');
 const validations = require('../validations');
 const protect = require('../middleware/protect');
-const checkFields = require('../middleware/checkFields');
+const schema = require('../middleware/schema');
 const controller = require('../controllers/chat');
 
 function chatRoutes() {
@@ -19,14 +19,14 @@ function chatRoutes() {
     .delete(
       '/user/:id',
       protect('chat.delete'),
-      checkFields(validations.deleteChatByUser),
+      schema(validations.deleteChatByUser),
       route(controller.deleteByUser),
     )
     // DELETE /chat/:id - Delete a chat message.
     .delete(
       '/:id',
       protect('chat.delete'),
-      checkFields(validations.deleteChatMessage),
+      schema(validations.deleteChatMessage),
       route(controller.deleteMessage),
     );
 }

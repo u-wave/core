@@ -238,17 +238,25 @@ exports.getRoomHistory = {
 
 // Validations for chat routes:
 
-exports.deleteChatByUser = joi.object({
-  params: joi.object({
-    id: objectID.required(),
-  }),
-});
+exports.deleteChatByUser = {
+  params: {
+    type: 'object',
+    properties: {
+      id: { $ref: 'https://ns.u-wave.net/schemas/definitions.json#/definitions/ObjectID' },
+    },
+    required: ['id'],
+  },
+};
 
-exports.deleteChatMessage = joi.object({
-  params: joi.object({
-    id: joi.string().required(),
-  }),
-});
+exports.deleteChatMessage = {
+  params: {
+    type: 'object',
+    properties: {
+      id: { type: 'string', minLength: 1 },
+    },
+    required: ['id'],
+  },
+};
 
 // Validations for MOTD routes:
 
