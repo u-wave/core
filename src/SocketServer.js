@@ -446,15 +446,18 @@ class SocketServer {
     });
     connection.on('authenticate', async (user, token) => {
       debug('connecting', user.id, user.username);
-      if (await connection.isReconnect(user)) {
+      const isReconnect = await connection.isReconnect(user);
+      if (isReconnect) {
         debug('is reconnection');
         const previousConnection = this.getLostConnection(user);
         if (previousConnection) this.remove(previousConnection);
-      } else {
-        this.uw.publish('user:join', { userID: user.id });
       }
 
       this.replace(connection, this.createAuthedConnection(socket, user, token));
+
+      if (!isReconnect) {
+        this.uw.publish('user:join', { userID: user.id });
+      }
     });
     return connection;
   }
