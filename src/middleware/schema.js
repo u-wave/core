@@ -25,13 +25,16 @@ function schema({ body, params, query }) {
   const validateQuery = query ? ajv.compile(query) : alwaysTrue;
   return (req, res, next) => {
     if (!validateParams(req.params)) {
-      return next(new ValidationError(validateParams.errors, ajv));
+      next(new ValidationError(validateParams.errors, ajv));
+      return;
     }
     if (!validateQuery(req.query)) {
-      return next(new ValidationError(validateQuery.errors, ajv));
+      next(new ValidationError(validateQuery.errors, ajv));
+      return;
     }
     if (!validateBody(req.body)) {
-      return next(new ValidationError(validateBody.errors, ajv));
+      next(new ValidationError(validateBody.errors, ajv));
+      return;
     }
     next();
   };

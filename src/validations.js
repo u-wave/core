@@ -136,7 +136,7 @@ exports.skipBooth = {
       reason: ['userID'],
       userID: ['reason'],
     },
-  }
+  },
 };
 
 exports.replaceBooth = {
@@ -205,7 +205,7 @@ exports.getRoomHistory = {
               media: { $ref: 'https://ns.u-wave.net/schemas/definitions.json#/definitions/ObjectID' },
             },
           },
-        }
+        },
       },
     ],
   },
@@ -263,19 +263,6 @@ const playlistItemParams = {
     itemID: { $ref: 'https://ns.u-wave.net/schemas/definitions.json#/definitions/ObjectID' },
   },
   required: ['id', 'itemID'],
-};
-
-const playlistItem = {
-  type: 'object',
-  properties: {
-    sourceType: { type: 'string' },
-    sourceID: { type: 'string' },
-    artist: { type: 'string' },
-    title: { type: 'string' },
-    start: { type: 'integer', minimum: 0 },
-    end: { type: 'integer', minimum: 0 },
-  },
-  required: ['sourceType', 'sourceID'],
 };
 
 exports.getPlaylists = {
