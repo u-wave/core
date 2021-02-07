@@ -73,6 +73,7 @@
     "nodemon": "^2.0.2",
     "recaptcha-test-keys": "^1.0.0",
     "sinon": "^9.0.0",
+    "supertest": "^6.1.3",
     "u-wave-announce": "^0.4.0"
   },
   "scripts": {

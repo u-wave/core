@@ -1,6 +1,7 @@
 'use strict';
 
 const getPort = require('get-port');
+const jwt = require('jsonwebtoken');
 const deleteDatabase = require('./deleteDatabase');
 const uwave = require('../..');
 
@@ -14,6 +15,15 @@ async function createUwave(name) {
     mongo: mongoUrl,
     secret: Buffer.from(`secret_${name}`),
   });
+
+  uw.createTestSessionToken = async (user) => {
+    const token = await jwt.sign(
+      { id: user.id },
+      uw.options.secret,
+      { expiresIn: '1d' },
+    );
+    return token;
+  };
 
   uw.destroy = async () => {
     await uw.close();

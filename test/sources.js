@@ -1,25 +1,21 @@
 'use strict';
 
 const assert = require('assert');
-const uwave = require('..');
+const delay = require('delay');
+const supertest = require('supertest');
+const sinon = require('sinon');
 const { Source } = require('../src/Source');
-const deleteDatabase = require('./utils/deleteDatabase');
-
-const DB_HOST = process.env.MONGODB_HOST || 'localhost';
+const createUwave = require('./utils/createUwave');
+const createUser = require('./utils/createUser');
 
 describe('Media Sources', () => {
   let uw;
   beforeEach(async () => {
-    uw = uwave({
-      mongo: `mongodb://${DB_HOST}/uw_test_sources`,
-      useDefaultPlugins: false,
-      secret: Buffer.from('secret_test_sources'),
-    });
-    await uw.ready();
+    uw = await createUwave('sources');;
   });
   afterEach(async () => {
-    await uw.close();
-    await deleteDatabase(uw.options.mongo);
+    await delay(1000);
+    await uw.destroy();
   });
 
   const testSourceObject = {
@@ -32,7 +28,7 @@ describe('Media Sources', () => {
     },
   };
 
-  const testSource = () => {
+  function testSource() {
     const search = async (query) => [{ sourceID: query }];
     const get = async (ids) => ids.map((sourceID) => ({ sourceID }));
     return {
@@ -40,15 +36,17 @@ describe('Media Sources', () => {
       search,
       get: get, // eslint-disable-line object-shorthand
     };
-  };
+  }
 
   it('should register sources from objects', () => {
     uw.source(testSourceObject);
     assert(uw.source('test-source') instanceof Source);
+    assert.strictEqual(uw.source('test-source').apiVersion, 1);
   });
   it('should register sources from a factory function', () => {
     uw.source(testSource);
     assert(uw.source('test-source') instanceof Source);
+    assert.strictEqual(uw.source('test-source').apiVersion, 1);
   });
 
   it('should respond to search(query) API calls', async () => {
@@ -89,5 +87,54 @@ describe('Media Sources', () => {
 
     const results = await promise;
     assert.deepStrictEqual(results, { sourceType: 'test-source', sourceID: id });
+  });
+
+  describe('GET /search/:source', () => {
+    it('should reject unauthenticated requests', async () => {
+      uw.source(testSource);
+      await supertest(uw.server)
+        .get('/api/search/test-source')
+        .set('accept', 'application/json')
+        .send()
+        .expect(403);
+    });
+
+    it('responds to an authenticated request', async () => {
+      uw.source(testSource);
+
+      const user = await createUser(uw);
+      const token = await uw.createTestSessionToken(user);
+
+      const query = 'search-query';
+      const results = await supertest(uw.server)
+        .get('/api/search/test-source')
+        .query({ query })
+        .set('accept', 'application/json')
+        .set('cookie', `uwsession=${token}`)
+        .send()
+        .expect(200);
+      sinon.assert.match(results.body, {
+        data: [
+          { sourceType: 'test-source', sourceID: query },
+        ],
+      });
+    });
+
+    it('should reject requests for nonexistent sources', async () => {
+      const user = await createUser(uw);
+      const token = await uw.createTestSessionToken(user);
+
+      const res = await supertest(uw.server)
+        .get('/api/search/garbage')
+        .set('accept', 'application/json')
+        .set('cookie', `uwsession=${token}`)
+        .send()
+        .expect(404);
+
+      sinon.assert.match(res.body.errors[0], {
+        status: 404,
+        code: 'source-not-found',
+      });
+    });
   });
 });
