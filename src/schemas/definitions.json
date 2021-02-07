@@ -1,0 +1,35 @@
+{
+  "$schema": "https://json-schema.org/draft/2019-09/schema",
+  "$id": "https://ns.u-wave.net/schemas/definitions.json#",
+  "definitions": {
+    "ObjectID": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{24}$"
+    },
+    "Username": {
+      "type": "string",
+      "minLength": 3,
+      "maxLength": 32,
+      "pattern": "^[^\\s\\n]+$"
+    },
+    "Pagination": {
+      "type": "object",
+      "properties": {
+        "page": {
+          "type": "object",
+          "properties": {
+            "offset": { "type": "integer", "minimum": 0 },
+            "limit": { "type": "integer", "minimum": 0 }
+          }
+        }
+      }
+    },
+    "LegacyPagination": {
+      "type": "object",
+      "properties": {
+        "page": { "type": "integer", "minimum": 0 },
+        "limit": { "type": "integer", "minimum": 0 }
+      }
+    }
+  }
+}

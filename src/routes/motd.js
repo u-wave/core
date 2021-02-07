@@ -4,7 +4,7 @@ const router = require('router');
 const route = require('../route');
 const validations = require('../validations');
 const protect = require('../middleware/protect');
-const checkFields = require('../middleware/checkFields');
+const schema = require('../middleware/schema');
 const controller = require('../controllers/motd');
 
 function motdRoutes() {
@@ -18,7 +18,7 @@ function motdRoutes() {
     .put(
       '/',
       protect('motd.set'),
-      checkFields(validations.setMotd),
+      schema(validations.setMotd),
       route(controller.setMotd),
     );
 }
