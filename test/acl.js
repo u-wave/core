@@ -5,7 +5,7 @@ const delay = require('delay');
 const createUser = require('./utils/createUser');
 const createUwave = require('./utils/createUwave');
 
-describe('acl', () => {
+describe('ACL', () => {
   let user;
   let uw;
   beforeEach(async () => {

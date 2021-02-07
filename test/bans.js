@@ -6,7 +6,7 @@ const ms = require('ms');
 const createUser = require('./utils/createUser');
 const createUwave = require('./utils/createUwave');
 
-describe('bans', () => {
+describe('Bans', () => {
   let user;
   let uw;
   beforeEach(async () => {
