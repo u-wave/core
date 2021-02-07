@@ -48,10 +48,7 @@ exports.register = {
         format: 'email',
       },
       username: {
-        type: 'string',
-        minLength: 3,
-        maxLength: 32,
-        pattern: /^[^\s\n]+$/.toString(),
+        $ref: 'https://ns.u-wave.net/schemas/definitions.json#/definitions/Username',
       },
       password: {
         type: 'string',
@@ -463,64 +460,98 @@ exports.removePlaylistItem = {
 
 // Validations for user routes:
 
-const userParams = joi.object({
-  id: objectID.required(),
-});
+const userParams = {
+  type: 'object',
+  properties: {
+    id: { $ref: 'https://ns.u-wave.net/schemas/definitions.json#/definitions/ObjectID' },
+  },
+  required: ['id'],
+};
 
-exports.getUser = joi.object({
+exports.getUser = {
   params: userParams,
-});
+};
 
-exports.muteUser = joi.object({
+exports.muteUser = {
   params: userParams,
-  body: joi.object({
-    time: joi.number().min(0).required(),
-  }),
-});
+  body: {
+    type: 'object',
+    properties: {
+      time: { type: 'integer', minimum: 0 },
+    },
+    required: ['time'],
+  },
+};
 
-exports.unmuteUser = joi.object({
+exports.unmuteUser = {
   params: userParams,
-});
+};
 
-exports.addUserRole = joi.object({
-  params: joi.object({
-    id: objectID.required(),
-    role: joi.string().required(),
-  }),
-});
+exports.addUserRole = {
+  params: {
+    type: 'object',
+    properties: {
+      id: { $ref: 'https://ns.u-wave.net/schemas/definitions.json#/definitions/ObjectID' },
+      role: { type: 'string' },
+    },
+    required: ['id', 'role'],
+  },
+};
 
-exports.removeUserRole = joi.object({
-  params: joi.object({
-    id: objectID.required(),
-    role: joi.string().required(),
-  }),
-});
+exports.removeUserRole = {
+  params: {
+    type: 'object',
+    properties: {
+      id: { $ref: 'https://ns.u-wave.net/schemas/definitions.json#/definitions/ObjectID' },
+      role: { type: 'string' },
+    },
+    required: ['id', 'role'],
+  },
+};
 
-exports.setUserName = joi.object({
+exports.setUserName = {
   params: userParams,
-  body: joi.object({
-    username: userName,
-  }),
-});
+  body: {
+    type: 'object',
+    properties: {
+      username: { $ref: 'https://ns.u-wave.net/schemas/definitions.json#/definitions/Username' },
+    },
+    required: ['username'],
+  },
+};
 
-exports.setUserAvatar = joi.object({
+exports.setUserAvatar = {
   params: userParams,
-  body: joi.object({
-    avatar: joi.string(),
-  }),
-});
+  body: {
+    type: 'object',
+    properties: {
+      avatar: { type: 'string' },
+    },
+    required: ['avatar'],
+  },
+};
 
-exports.setUserStatus = joi.object({
+exports.setUserStatus = {
   params: userParams,
-  body: joi.object({
-    status: joi.number(),
-  }),
-});
+  body: {
+    type: 'object',
+    properties: {
+      status: { type: 'integer' },
+    },
+    required: ['status'],
+  },
+};
 
-exports.getUserHistory = joi.object({
+exports.getUserHistory = {
   params: userParams,
-  query: pagination,
-});
+  query: {
+    oneOf: [
+      { $ref: 'https://ns.u-wave.net/schemas/definitions.json#/definitions/Pagination' },
+      { $ref: 'https://ns.u-wave.net/schemas/definitions.json#/definitions/LegacyPagination' },
+      true,
+    ],
+  },
+};
 
 // Validations for Waitlist routes:
 
