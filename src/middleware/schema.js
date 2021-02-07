@@ -1,19 +1,19 @@
 'use strict';
 
-const Ajv = require('ajv').default;
+const Ajv = require('ajv/dist/2019').default;
 const addFormats = require('ajv-formats').default;
 const ValidationError = require('../errors/ValidationError');
 
 const ajv = new Ajv({
-  coerceTypes: true,
+  coerceTypes: false,
   removeAdditional: true,
   useDefaults: true,
   ownProperties: true,
   allErrors: true,
 });
 addFormats(ajv);
-
-ajv.addFormat('objectid', /^[0-9a-f]{24}$/);
+ajv.addMetaSchema(require('ajv/dist/refs/json-schema-draft-07.json'));
+ajv.addSchema(require('../schemas/definitions.json'));
 
 function alwaysTrue() {
   return true;

@@ -2,7 +2,6 @@
 
 const joi = require('@hapi/joi');
 const { InvalidUsernameError, InvalidEmailError } = require('./errors');
-const Ajv = require('ajv').default;
 
 const objectID = joi.string().length(24);
 const userName = joi.string()
@@ -150,52 +149,92 @@ exports.deleteAclRole = joi.object({
 
 // Validations for booth routes:
 
-exports.skipBooth = joi.object({
-  body: joi.object({
-    reason: joi.string().allow(''),
-    userID: objectID,
-    remove: joi.bool(),
-  }).and('userID', 'reason'),
-});
+exports.skipBooth = {
+  body: {
+    type: 'object',
+    properties: {
+      reason: { type: 'string' },
+      userID: { $ref: 'https://ns.u-wave.net/schemas/definitions.json#/definitions/ObjectID' },
+      remove: { type: 'boolean', default: false },
+    },
+    dependentRequired: {
+      reason: ['userID'],
+      userID: ['reason'],
+    },
+  }
+};
 
-exports.replaceBooth = joi.object({
-  body: joi.object({
-    userID: objectID.required(),
-  }),
-});
+exports.replaceBooth = {
+  body: {
+    type: 'object',
+    properties: {
+      userID: { $ref: 'https://ns.u-wave.net/schemas/definitions.json#/definitions/ObjectID' },
+    },
+    required: ['userID'],
+  },
+};
 
-exports.getVote = joi.object({
-  params: joi.object({
-    historyID: objectID.required(),
-  }),
-});
+exports.getVote = {
+  params: {
+    type: 'object',
+    properties: {
+      historyID: { $ref: 'https://ns.u-wave.net/schemas/definitions.json#/definitions/ObjectID' },
+    },
+    required: ['historyID'],
+  },
+};
 
-exports.vote = joi.object({
-  params: joi.object({
-    historyID: objectID.required(),
-  }),
-  body: joi.object({
-    direction: joi.number().valid(-1, 1).required(),
-  }),
-});
+exports.vote = {
+  params: {
+    type: 'object',
+    properties: {
+      historyID: { $ref: 'https://ns.u-wave.net/schemas/definitions.json#/definitions/ObjectID' },
+    },
+    required: ['historyID'],
+  },
+  body: {
+    type: 'object',
+    properties: {
+      direction: { enum: [-1, 1] },
+    },
+    required: ['direction'],
+  },
+};
 
-exports.favorite = joi.object({
-  body: joi.object({
-    playlistID: objectID.required(),
-    historyID: objectID.required(),
-  }),
-});
+exports.favorite = {
+  body: {
+    type: 'object',
+    properties: {
+      playlistID: { $ref: 'https://ns.u-wave.net/schemas/definitions.json#/definitions/ObjectID' },
+      historyID: { $ref: 'https://ns.u-wave.net/schemas/definitions.json#/definitions/ObjectID' },
+    },
+    required: ['playlistID', 'historyID'],
+  },
+};
 
-exports.getRoomHistory = joi.object({
-  query: joi.alternatives().match('all').try(
-    joi.object({
-      filter: joi.object({
-        media: objectID,
-      }),
-    }),
-    joi.alternatives().try(...pagination),
-  ),
-});
+exports.getRoomHistory = {
+  query: {
+    anyOf: [
+      {
+        oneOf: [
+          { $ref: 'https://ns.u-wave.net/schemas/definitions.json#/definitions/Pagination' },
+          { $ref: 'https://ns.u-wave.net/schemas/definitions.json#/definitions/LegacyPagination' },
+        ],
+      },
+      {
+        type: 'object',
+        properties: {
+          filter: {
+            type: 'object',
+            properties: {
+              media: { $ref: 'https://ns.u-wave.net/schemas/definitions.json#/definitions/ObjectID' },
+            },
+          },
+        }
+      },
+    ],
+  },
+};
 
 // Validations for chat routes:
 
@@ -404,10 +443,7 @@ exports.joinWaitlist = {
   body: {
     type: 'object',
     properties: {
-      userID: {
-        type: 'string',
-        format: 'objectid',
-      },
+      userID: { $ref: 'https://ns.u-wave.net/schemas/definitions.json#/definitions/ObjectID' },
     },
     required: ['userID'],
   },
@@ -417,10 +453,7 @@ exports.moveWaitlist = {
   body: {
     type: 'object',
     properties: {
-      userID: {
-        type: 'string',
-        format: 'objectid',
-      },
+      userID: { $ref: 'https://ns.u-wave.net/schemas/definitions.json#/definitions/ObjectID' },
       position: {
         type: 'integer',
         minimum: 0,

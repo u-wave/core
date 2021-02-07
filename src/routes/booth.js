@@ -4,7 +4,7 @@ const router = require('router');
 const route = require('../route');
 const validations = require('../validations');
 const protect = require('../middleware/protect');
-const checkFields = require('../middleware/checkFields');
+const schema = require('../middleware/schema');
 const controller = require('../controllers/booth');
 
 function boothRoutes() {
@@ -18,41 +18,41 @@ function boothRoutes() {
     .post(
       '/skip',
       protect(),
-      checkFields(validations.skipBooth),
+      schema(validations.skipBooth),
       route(controller.skipBooth),
     )
     // POST /booth/replace - Replace the current DJ with someone else.
     .post(
       '/replace',
       protect('booth.replace'),
-      checkFields(validations.replaceBooth),
+      schema(validations.replaceBooth),
       route(controller.replaceBooth),
     )
     // GET /booth/:historyID/vote - Get the current user's vote for the current play.
     .get(
       '/:historyID/vote',
       protect(),
-      checkFields(validations.getVote),
+      schema(validations.getVote),
       route(controller.getVote),
     )
     // PUT /booth/:historyID/vote - Upvote or downvote the current play.
     .put(
       '/:historyID/vote',
       protect(),
-      checkFields(validations.vote),
+      schema(validations.vote),
       route(controller.vote),
     )
     // POST /booth/favorite - Add the current play to your favorites.
     .post(
       '/favorite',
       protect(),
-      checkFields(validations.favorite),
+      schema(validations.favorite),
       route(controller.favorite),
     )
     // GET /booth/history - Get recent plays.
     .get(
       '/history',
-      checkFields(validations.getRoomHistory),
+      schema(validations.getRoomHistory),
       route(controller.getHistory),
     );
 }
