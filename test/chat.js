@@ -48,7 +48,7 @@ describe('Chat', () => {
     const mutedWs = await uw.test.connectToWebSocketAs(mutedUser);
     mutedWs.send(JSON.stringify({ command: 'sendChat', data: 'muted' }));
 
-    await delay(200);
+    await delay(500);
 
     assert(spy.calledWith('chat:message', sinon.match({
       userID: user.id,
