@@ -181,7 +181,14 @@ class Booth {
 
   async publish(next) {
     if (next) {
-      this.uw.publish('advance:complete', next);
+      this.uw.publish('advance:complete', {
+        historyID: next.id,
+        userID: next.user.id,
+        playlistID: next.playlist.id,
+        itemID: next.item.id,
+        media: next.media,
+        playedAt: next.playedAt,
+      });
       this.uw.publish('playlist:cycle', {
         userID: next.user.id,
         playlistID: next.playlist.id,
