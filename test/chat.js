@@ -17,7 +17,6 @@ describe('Chat', () => {
   });
   afterEach(async () => {
     sandbox.restore();
-    await delay(100);
     await uw.destroy();
   });
 

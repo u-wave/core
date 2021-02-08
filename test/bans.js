@@ -1,7 +1,6 @@
 'use strict';
 
 const assert = require('assert');
-const delay = require('delay');
 const ms = require('ms');
 const createUser = require('./utils/createUser');
 const createUwave = require('./utils/createUwave');
@@ -14,7 +13,6 @@ describe('Bans', () => {
     user = await createUser(uw);
   });
   afterEach(async () => {
-    await delay(100);
     await uw.destroy();
   });
 

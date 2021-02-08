@@ -1,7 +1,6 @@
 'use strict';
 
 const assert = require('assert');
-const delay = require('delay');
 const supertest = require('supertest');
 const sinon = require('sinon');
 const { Source } = require('../src/Source');
@@ -14,7 +13,6 @@ describe('Media Sources', () => {
     uw = await createUwave('sources');
   });
   afterEach(async () => {
-    await delay(1000);
     await uw.destroy();
   });
 

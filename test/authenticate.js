@@ -1,7 +1,6 @@
 'use strict';
 
 const assert = require('assert');
-const delay = require('delay');
 const sinon = require('sinon');
 const supertest = require('supertest');
 const createUwave = require('./utils/createUwave');
@@ -14,7 +13,6 @@ describe('Authentication', () => {
     uw = await createUwave('auth');
   });
   afterEach(async () => {
-    await delay(500);
     await uw.destroy();
   });
 
