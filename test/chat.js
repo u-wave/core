@@ -4,8 +4,6 @@ const assert = require('assert');
 const sinon = require('sinon');
 const delay = require('delay');
 const createUwave = require('./utils/createUwave');
-const createUser = require('./utils/createUser');
-const connectAs = require('./utils/connectAs');
 
 const sandbox = sinon.createSandbox();
 
@@ -21,11 +19,11 @@ describe('Chat', () => {
   });
 
   it('can broadcast chat messages', async () => {
-    const user = await createUser(uw);
+    const user = await uw.test.createUser();
 
     const spy = sandbox.spy(uw, 'publish');
 
-    const ws = await connectAs(uw, user);
+    const ws = await uw.test.connectToWebSocketAs(user);
     ws.send(JSON.stringify({ command: 'sendChat', data: 'Message text' }));
     await delay(200);
 
@@ -36,8 +34,8 @@ describe('Chat', () => {
   });
 
   it('does not broadcast chat messages from muted users', async () => {
-    const user = await createUser(uw);
-    const mutedUser = await createUser(uw);
+    const user = await uw.test.createUser();
+    const mutedUser = await uw.test.createUser();
 
     const stub = sandbox.stub(uw.chat, 'isMuted');
     stub.withArgs(sinon.match({ id: user.id })).resolves(false);
@@ -45,9 +43,9 @@ describe('Chat', () => {
 
     const spy = sandbox.spy(uw, 'publish');
 
-    const ws = await connectAs(uw, user);
+    const ws = await uw.test.connectToWebSocketAs(user);
     ws.send(JSON.stringify({ command: 'sendChat', data: 'unmuted' }));
-    const mutedWs = await connectAs(uw, mutedUser);
+    const mutedWs = await uw.test.connectToWebSocketAs(mutedUser);
     mutedWs.send(JSON.stringify({ command: 'sendChat', data: 'muted' }));
 
     await delay(200);

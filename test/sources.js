@@ -5,7 +5,6 @@ const supertest = require('supertest');
 const sinon = require('sinon');
 const { Source } = require('../src/Source');
 const createUwave = require('./utils/createUwave');
-const createUser = require('./utils/createUser');
 
 describe('Media Sources', () => {
   let uw;
@@ -100,8 +99,8 @@ describe('Media Sources', () => {
     it('responds to an authenticated request', async () => {
       uw.source(testSource);
 
-      const user = await createUser(uw);
-      const token = await uw.createTestSessionToken(user);
+      const user = await uw.test.createUser();
+      const token = await uw.test.createTestSessionToken(user);
 
       const query = 'search-query';
       const results = await supertest(uw.server)
@@ -119,8 +118,8 @@ describe('Media Sources', () => {
     });
 
     it('should reject requests for nonexistent sources', async () => {
-      const user = await createUser(uw);
-      const token = await uw.createTestSessionToken(user);
+      const user = await uw.test.createUser();
+      const token = await uw.test.createTestSessionToken(user);
 
       const res = await supertest(uw.server)
         .get('/api/search/garbage')
@@ -139,8 +138,8 @@ describe('Media Sources', () => {
     it('should reject requests with invalid query data types', async () => {
       uw.source(testSource);
 
-      const user = await createUser(uw);
-      const token = await uw.createTestSessionToken(user);
+      const user = await uw.test.createUser();
+      const token = await uw.test.createTestSessionToken(user);
 
       const res = await supertest(uw.server)
         .get('/api/search/test-source')

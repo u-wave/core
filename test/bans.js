@@ -2,7 +2,6 @@
 
 const assert = require('assert');
 const ms = require('ms');
-const createUser = require('./utils/createUser');
 const createUwave = require('./utils/createUwave');
 
 describe('Bans', () => {
@@ -10,7 +9,7 @@ describe('Bans', () => {
   let uw;
   beforeEach(async () => {
     uw = await createUwave('bans');
-    user = await createUser(uw);
+    user = await uw.test.createUser();
   });
   afterEach(async () => {
     await uw.destroy();
@@ -32,7 +31,7 @@ describe('Bans', () => {
 
   describe('ban() and unban()', () => {
     it('can ban and unban a user', async () => {
-      const moderator = await createUser(uw);
+      const moderator = await uw.test.createUser();
       assert.strictEqual(await uw.bans.isBanned(user.id), false);
       await uw.bans.ban(user, {
         moderator,

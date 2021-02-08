@@ -4,7 +4,6 @@ const assert = require('assert');
 const sinon = require('sinon');
 const supertest = require('supertest');
 const createUwave = require('./utils/createUwave');
-const createUser = require('./utils/createUser');
 
 describe('Authentication', () => {
   let uw;
@@ -25,8 +24,8 @@ describe('Authentication', () => {
     });
 
     it('returns the current user object when authenticated', async () => {
-      const user = await createUser(uw);
-      const token = await uw.createTestSessionToken(user);
+      const user = await uw.test.createUser();
+      const token = await uw.test.createTestSessionToken(user);
 
       const res = await supertest(uw.server)
         .get('/api/auth')

@@ -1,7 +1,6 @@
 'use strict';
 
 const assert = require('assert');
-const createUser = require('./utils/createUser');
 const createUwave = require('./utils/createUwave');
 
 describe('ACL', () => {
@@ -9,7 +8,7 @@ describe('ACL', () => {
   let uw;
   beforeEach(async () => {
     uw = await createUwave('acl');
-    user = await createUser(uw);
+    user = await uw.test.createUser();
 
     await uw.acl.createRole('test.role', []);
   });

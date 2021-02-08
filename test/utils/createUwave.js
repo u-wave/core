@@ -1,9 +1,9 @@
 'use strict';
 
 const getPort = require('get-port');
-const jwt = require('jsonwebtoken');
 const deleteDatabase = require('./deleteDatabase');
 const uwave = require('../..');
+const testPlugin = require('./plugin');
 
 const DB_HOST = process.env.MONGODB_HOST || 'localhost';
 
@@ -17,14 +17,7 @@ async function createUwave(name) {
     secret: Buffer.from(`secret_${name}`),
   });
 
-  uw.createTestSessionToken = async (user) => {
-    const token = await jwt.sign(
-      { id: user.id },
-      uw.options.secret,
-      { expiresIn: '1d' },
-    );
-    return token;
-  };
+  uw.use(testPlugin);
 
   uw.destroy = async () => {
     await uw.close();
