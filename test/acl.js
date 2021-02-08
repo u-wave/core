@@ -57,8 +57,8 @@ describe('ACL', () => {
 
   it('can delete roles', async () => {
     await uw.acl.createRole('test.role', []);
-    assert.deepStrictEqual(Object.keys(await uw.acl.getAllRoles()), ['test.role']);
+    assert(Object.keys(await uw.acl.getAllRoles()).includes('test.role'));
     await uw.acl.deleteRole('test.role');
-    assert.deepStrictEqual(Object.keys(await uw.acl.getAllRoles()), []);
+    assert(!Object.keys(await uw.acl.getAllRoles()).includes('test.role'));
   });
 });
