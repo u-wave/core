@@ -1,5 +1,6 @@
 'use strict';
 
+const { promisify } = require('util');
 const { debounce, isEmpty } = require('lodash');
 const sjson = require('secure-json-parse');
 const WebSocket = require('ws');
@@ -567,8 +568,9 @@ class SocketServer {
    */
   async destroy() {
     clearInterval(this.pinger);
-    this.wss.close();
-    this.redisSubscription.quit();
+    const closeWsServer = promisify(this.wss.close.bind(this.wss));
+    await closeWsServer();
+    await this.redisSubscription.quit();
   }
 
   /**
