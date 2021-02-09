@@ -46,14 +46,6 @@ const envSchema = {
       minLength: 64,
       maxLength: 64,
     },
-    // TODO maybe store this in the database in the future?
-    // It should be a randomly generated identifier but it should be consistent across server restarts and migrations.
-    ANNOUNCE_SECRET: {
-      type: 'string',
-      format: 'hexadecimal',
-      minLength: 64,
-      maxLength: 64,
-    },
     YOUTUBE_API_KEY: {
       type: 'string',
     },
@@ -83,8 +75,6 @@ if (argv.h || argv.help || !validConfig) {
   console.log('    Your YouTube Data API key.');
   console.log('  SOUNDCLOUD_API_KEY [optional]');
   console.log('    Your SoundCloud API key.');
-  console.log('  ANNOUNCE_SEED [optional]');
-  console.log('    A secret key used for identifying this server when announcing its existence. Must be a 64-character hexadecimal string.');
   console.log();
 }
 
@@ -124,11 +114,7 @@ uw.on('redisError', (err) => {
   throw explain(err, 'Could not connect to the Redis server. Is it installed and running?');
 });
 
-if (config.ANNOUNCE_SEED) {
-  uw.use(announce, {
-    seed: config.ANNOUNCE_SEED,
-  });
-}
+uw.use(announce);
 
 if (config.YOUTUBE_API_KEY) {
   uw.source(ytSource,  {
