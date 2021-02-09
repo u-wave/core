@@ -44,11 +44,12 @@ describe('Chat', () => {
     const spy = sandbox.spy(uw, 'publish');
 
     const ws = await uw.test.connectToWebSocketAs(user);
-    ws.send(JSON.stringify({ command: 'sendChat', data: 'unmuted' }));
     const mutedWs = await uw.test.connectToWebSocketAs(mutedUser);
+
+    ws.send(JSON.stringify({ command: 'sendChat', data: 'unmuted' }));
     mutedWs.send(JSON.stringify({ command: 'sendChat', data: 'muted' }));
 
-    await delay(500);
+    await delay(1500);
 
     console.log(spy.getCalls().map((call) => call.args));
 
