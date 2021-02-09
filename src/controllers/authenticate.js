@@ -215,15 +215,15 @@ async function getSocketToken(req) {
 
 async function verifyCaptcha(responseString, options) {
   if (!options.recaptcha) {
-    debug('ReCaptcha validation is disabled');
+    debug('hCaptcha validation is disabled');
     return null;
   }
   if (!responseString) {
-    throw new Error('ReCaptcha validation failed. Please try again.');
+    throw new Error('hCaptcha validation failed. Please try again.');
   }
 
-  debug('recaptcha: sending siteverify request');
-  const response = await fetch('https://www.google.com/recaptcha/api/siteverify', {
+  debug('hcaptcha: sending siteverify request');
+  const response = await fetch('https://www.hcaptcha.com/siteverify', {
     method: 'post',
     headers: {
       'content-type': 'application/x-www-form-urlencoded',
@@ -237,10 +237,10 @@ async function verifyCaptcha(responseString, options) {
   const body = await response.json();
 
   if (!body.success) {
-    debug('recaptcha: validation failure', body);
-    throw new Error('ReCaptcha validation failed. Please try again.');
+    debug('hcaptcha: validation failure', body);
+    throw new Error('hCaptcha validation failed. Please try again.');
   } else {
-    debug('recaptcha: ok');
+    debug('hcaptcha: ok');
   }
 
   return null;
