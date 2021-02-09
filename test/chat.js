@@ -50,6 +50,8 @@ describe('Chat', () => {
 
     await delay(500);
 
+    console.log(spy.getCalls().map((call) => call.args));
+
     assert(spy.calledWith('chat:message', sinon.match({
       userID: user.id,
     })));
