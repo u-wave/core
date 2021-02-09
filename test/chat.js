@@ -34,36 +34,29 @@ describe('Chat', () => {
   });
 
   it('does not broadcast chat messages from muted users', async () => {
-    try {
-      const user = await uw.test.createUser();
-      const mutedUser = await uw.test.createUser();
+    const user = await uw.test.createUser();
+    const mutedUser = await uw.test.createUser();
 
-      const stub = sandbox.stub(uw.chat, 'isMuted');
-      stub.withArgs(sinon.match({ id: user.id })).resolves(false);
-      stub.withArgs(sinon.match({ id: mutedUser.id })).resolves(true);
+    const stub = sandbox.stub(uw.chat, 'isMuted');
+    stub.withArgs(sinon.match({ id: user.id })).resolves(false);
+    stub.withArgs(sinon.match({ id: mutedUser.id })).resolves(true);
 
-      const spy = sandbox.spy(uw, 'publish');
+    const spy = sandbox.spy(uw, 'publish');
 
-      const ws = await uw.test.connectToWebSocketAs(user);
-      const mutedWs = await uw.test.connectToWebSocketAs(mutedUser);
+    const ws = await uw.test.connectToWebSocketAs(user);
+    const mutedWs = await uw.test.connectToWebSocketAs(mutedUser);
 
-      ws.send(JSON.stringify({ command: 'sendChat', data: 'unmuted' }));
-      mutedWs.send(JSON.stringify({ command: 'sendChat', data: 'muted' }));
+    ws.send(JSON.stringify({ command: 'sendChat', data: 'unmuted' }));
+    mutedWs.send(JSON.stringify({ command: 'sendChat', data: 'muted' }));
 
-      await delay(500);
+    await delay(1500);
 
-      console.log(spy.getCalls().map((call) => call.args));
+    assert(spy.calledWith('chat:message', sinon.match({
+      userID: user.id,
+    })));
 
-      assert(spy.calledWith('chat:message', sinon.match({
-        userID: user.id,
-      })));
-
-      assert(spy.neverCalledWith('chat:message', sinon.match({
-        userID: mutedUser.id,
-      })));
-    } catch(err) {
-      console.error(err.stack);
-      throw err;
-    }
+    assert(spy.neverCalledWith('chat:message', sinon.match({
+      userID: mutedUser.id,
+    })));
   });
 });
