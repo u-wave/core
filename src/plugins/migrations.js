@@ -1,3 +1,5 @@
+'use strict';
+
 const path = require('path');
 const RedLock = require('redlock');
 const { Umzug, MongoDBStorage } = require('umzug');
