@@ -1,6 +1,7 @@
 'use strict';
 
 const getPort = require('get-port');
+const Redis = require('ioredis');
 const deleteDatabase = require('./deleteDatabase');
 const uwave = require('../..');
 const testPlugin = require('./plugin');
