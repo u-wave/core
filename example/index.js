@@ -11,10 +11,11 @@ const port = process.env.PORT || 80;
 const secret = Buffer.from(process.env.SECRET, 'hex');
 
 const uw = uwave({
+  port,
   secret,
 });
 
-uw.use(() => {
+uw.use(async () => {
   // Register your Media Sources. The API keys are configured in the config.json
   // file.
   uw.source(youTubeSource, {
@@ -25,7 +26,7 @@ uw.use(() => {
   });
 });
 
-uw.use(() => {
+uw.use(async () => {
   const webClient = createWebClient(null, {
     apiBase: '/api',
   });
@@ -33,8 +34,11 @@ uw.use(() => {
   uw.express.use(webClient);
 });
 
-uw.ready().then(() => {
+uw.listen().then(() => {
   console.log(`üWave server running on http://localhost:${port}/`);
+}, (err) => {
+  console.error(err.stack);
+  process.exit(1);
 });
 
 process.on('beforeExit', () => {

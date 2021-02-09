@@ -4,7 +4,7 @@ const router = require('router');
 const route = require('../route');
 const validations = require('../validations');
 const protect = require('../middleware/protect');
-const checkFields = require('../middleware/checkFields');
+const schema = require('../middleware/schema');
 const controller = require('../controllers/acl');
 
 function serverRoutes() {
@@ -18,14 +18,14 @@ function serverRoutes() {
     .put(
       '/:name',
       protect('acl.create'),
-      checkFields(validations.createAclRole),
+      schema(validations.createAclRole),
       route(controller.createRole),
     )
     // DELETE /roles/:name - Delete a new role.
     .delete(
       '/:name',
       protect('acl.delete'),
-      checkFields(validations.deleteAclRole),
+      schema(validations.deleteAclRole),
       route(controller.deleteRole),
     );
 }

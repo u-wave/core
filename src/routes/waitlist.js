@@ -5,7 +5,7 @@ const route = require('../route');
 const validations = require('../validations');
 const protect = require('../middleware/protect');
 const requireActiveConnection = require('../middleware/requireActiveConnection');
-const checkFields = require('../middleware/checkFields');
+const schema = require('../middleware/schema');
 const controller = require('../controllers/waitlist');
 
 function waitlistRoutes() {
@@ -20,7 +20,7 @@ function waitlistRoutes() {
       '/',
       protect('waitlist.join'),
       requireActiveConnection(),
-      checkFields(validations.joinWaitlist),
+      schema(validations.joinWaitlist),
       route(controller.addToWaitlist),
     )
     // DELETE /waitlist/ - Clear the waitlist.
@@ -33,7 +33,7 @@ function waitlistRoutes() {
     .put(
       '/move',
       protect('waitlist.move'),
-      checkFields(validations.moveWaitlist),
+      schema(validations.moveWaitlist),
       route(controller.moveWaitlist),
     )
     // DELETE /waitlist/:id - Remove a user from the waitlist.
@@ -46,7 +46,7 @@ function waitlistRoutes() {
     .put(
       '/lock',
       protect('waitlist.lock'),
-      checkFields(validations.lockWaitlist),
+      schema(validations.lockWaitlist),
       route(controller.lockWaitlist),
     );
 }

@@ -4,7 +4,7 @@ const router = require('router');
 const route = require('../route');
 const validations = require('../validations');
 const protect = require('../middleware/protect');
-const checkFields = require('../middleware/checkFields');
+const schema = require('../middleware/schema');
 const rateLimit = require('../middleware/rateLimit');
 const controller = require('../controllers/users');
 const { NameChangeRateLimitError } = require('../errors');
@@ -20,7 +20,7 @@ function userRoutes() {
     // GET /users/:id - Show a single user.
     .get(
       '/:id',
-      checkFields(validations.getUser),
+      schema(validations.getUser),
       route(controller.getUser),
     )
     // POST /users/:id/mute - Mute a user in the chat.
@@ -28,7 +28,7 @@ function userRoutes() {
     .post(
       '/:id/mute',
       protect('chat.mute'),
-      checkFields(validations.muteUser),
+      schema(validations.muteUser),
       route(controller.muteUser),
     )
     // DELETE /users/:id/mute - Unmute a user in the chat.
@@ -36,7 +36,7 @@ function userRoutes() {
     .delete(
       '/:id/mute',
       protect('chat.unmute'),
-      checkFields(validations.unmuteUser),
+      schema(validations.unmuteUser),
       route(controller.unmuteUser),
     )
     // GET /users/:id/roles - List the roles that a user has.
@@ -48,20 +48,20 @@ function userRoutes() {
     .put(
       '/:id/roles/:role',
       protect(),
-      checkFields(validations.addUserRole),
+      schema(validations.addUserRole),
       route(controller.addUserRole),
     )
     // DELETE /users/:id/roles/:role - Remove a role from a user.
     .delete(
       '/:id/roles/:role',
       protect(),
-      checkFields(validations.removeUserRole),
+      schema(validations.removeUserRole),
       route(controller.removeUserRole),
     )
     // PUT /users/:id/username - Change a user's username.
     .put(
       '/:id/username',
-      checkFields(validations.setUserName),
+      schema(validations.setUserName),
       rateLimit('change-username', {
         max: 5,
         duration: 60 * 60 * 1000,
@@ -73,13 +73,13 @@ function userRoutes() {
     .put(
       '/:id/avatar',
       protect(),
-      checkFields(validations.setUserAvatar),
+      schema(validations.setUserAvatar),
       route(controller.changeAvatar),
     )
     // GET /users/:id/history - Show recent plays by a user.
     .get(
       '/:id/history',
-      checkFields(validations.getUserHistory),
+      schema(validations.getUserHistory),
       route(controller.getHistory),
     );
 }
