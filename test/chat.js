@@ -49,7 +49,7 @@ describe('Chat', () => {
     ws.send(JSON.stringify({ command: 'sendChat', data: 'unmuted' }));
     mutedWs.send(JSON.stringify({ command: 'sendChat', data: 'muted' }));
 
-    await delay(1500);
+    await delay(200);
 
     console.log(spy.getCalls().map((call) => call.args));
 

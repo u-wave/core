@@ -21,6 +21,12 @@ async function createUwave(name) {
 
   uw.destroy = async () => {
     await uw.close();
+
+    // Clear state between test runs.
+    const redis = new Redis('redis://localhost:6379');
+    await redis.flushall();
+    await redis.quit();
+
     await deleteDatabase(mongoUrl);
   };
 
