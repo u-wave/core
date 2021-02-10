@@ -3,6 +3,8 @@
 const { ObjectId } = require('mongoose').mongo;
 const { zip } = require('lodash');
 
+const rxObjectId = /^[0-9a-f]{24}$/;
+
 async function up({ context: uw }) {
   const { User } = uw.models;
 
@@ -15,6 +17,10 @@ async function up({ context: uw }) {
     const values = await uw.redis.mget(keys);
     for (const [key, playlistID] of zip(keys, values)) {
       const userID = key.replace(/^playlist:/, '');
+      if (!rxObjectId.test(userID) || !rxObjectId.test(playlistID)) {
+        // must be corrupt if it isn't an object ID.
+        continue;
+      }
 
       ops.push({
         updateOne: {
