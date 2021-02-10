@@ -1,7 +1,7 @@
 const { ObjectId } = require('mongoose').mongo;
 const { zip } = require('lodash');
 
-exports.up = async function up(uw) {
+async function up({ context: uw }) {
   const { User } = uw.models;
 
   const ops = [];
@@ -21,9 +21,9 @@ exports.up = async function up(uw) {
   }
 
   await User.bulkWrite(ops);
-};
+}
 
-exports.down = async function down(uw) {
+async function down({ context: uw }) {
   const { User } = uw.models;
 
   const users = User.find({ activePlaylist: { $ne: null } });
@@ -33,4 +33,6 @@ exports.down = async function down(uw) {
 
     await uw.redis.set(`playlist:${user.id}`, user.activePlaylist.toString());
   }
-};
+}
+
+module.exports = { up, down };
