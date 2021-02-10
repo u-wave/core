@@ -96,12 +96,10 @@ class PlaylistsRepository {
     });
 
     // If this is the user's first playlist, immediately activate it.
-    try {
-      // Throws if we don't have an active playlist yet.
-      await user.getActivePlaylist();
-    } catch (err) {
+    if (user.activePlaylist == null) {
       debug(`activating first playlist for ${user.id} ${user.username}`);
-      await user.setActivePlaylist(playlist);
+      user.activePlaylist = playlist._id;
+      await user.save();
     }
 
     return playlist;

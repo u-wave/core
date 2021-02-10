@@ -57,7 +57,7 @@ async function createPlaylist(req) {
     shared,
   });
 
-  const activeID = await user.getActivePlaylistID();
+  const activeID = user.activePlaylist.toString();
 
   return toItemResponse(
     serializePlaylist(playlist),
@@ -158,7 +158,8 @@ async function activatePlaylist(req) {
     throw new PlaylistNotFoundError({ id });
   }
 
-  await user.setActivePlaylist(playlist.id);
+  user.activePlaylist = playlist._id;
+  await user.save();
 
   return toItemResponse({});
 }
