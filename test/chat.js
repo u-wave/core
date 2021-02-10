@@ -41,22 +41,20 @@ describe('Chat', () => {
     stub.withArgs(sinon.match({ id: user.id })).resolves(false);
     stub.withArgs(sinon.match({ id: mutedUser.id })).resolves(true);
 
-    const spy = sandbox.spy(uw, 'publish');
-
     const ws = await uw.test.connectToWebSocketAs(user);
     const mutedWs = await uw.test.connectToWebSocketAs(mutedUser);
+
+    const receivedMessages = [];
+    ws.on('message', (data) => {
+      receivedMessages.push(JSON.parse(data));
+    });
 
     ws.send(JSON.stringify({ command: 'sendChat', data: 'unmuted' }));
     mutedWs.send(JSON.stringify({ command: 'sendChat', data: 'muted' }));
 
     await delay(1500);
 
-    assert(spy.calledWith('chat:message', sinon.match({
-      userID: user.id,
-    })));
-
-    assert(spy.neverCalledWith('chat:message', sinon.match({
-      userID: mutedUser.id,
-    })));
+    assert(receivedMessages.some((message) => message.command === 'chatMessage' && message.data.userID === user.id));
+    assert(!receivedMessages.some((message) => message.command === 'chatMessage' && message.data.userID === mutedUser.id));
   });
 });
