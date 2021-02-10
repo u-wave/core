@@ -1,3 +1,5 @@
+'use strict';
+
 const { ObjectId } = require('mongoose').mongo;
 const { zip } = require('lodash');
 
