@@ -17,7 +17,7 @@ async function migrationsPlugin(uw) {
       migrations,
       context: uw,
       storage: new MongoDBStorage({
-        collection: uw.mongo.collection('migrations'),
+        collection: uw.mongo.db.collection('migrations'),
       }),
       logger: {
         // Only `info` is used right now. When Umzug actually implements the warn/error
