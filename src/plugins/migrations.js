@@ -5,6 +5,10 @@ const RedLock = require('redlock');
 const { Umzug, MongoDBStorage } = require('umzug');
 const debug = require('debug')('uwave:migrate');
 
+function log(record) {
+  debug(record.event, record.name || record.path || record);
+}
+
 async function migrationsPlugin(uw) {
   const redLock = new RedLock([uw.redis]);
 
@@ -16,10 +20,12 @@ async function migrationsPlugin(uw) {
         collection: uw.mongo.collection('migrations'),
       }),
       logger: {
-        debug: debug.extend('debug'),
-        info: debug.extend('info'),
-        warn: debug.extend('warn'),
-        error: debug.extend('error'),
+        // Only `info` is used right now. When Umzug actually implements the warn/error
+        // levels we could pass in different logging functions.
+        debug: log,
+        info: log,
+        warn: log,
+        error: log,
       },
     });
 
