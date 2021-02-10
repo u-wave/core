@@ -21,16 +21,17 @@ describe('Chat', () => {
   it('can broadcast chat messages', async () => {
     const user = await uw.test.createUser();
 
-    const spy = sandbox.spy(uw, 'publish');
-
     const ws = await uw.test.connectToWebSocketAs(user);
-    ws.send(JSON.stringify({ command: 'sendChat', data: 'Message text' }));
-    await delay(200);
 
-    assert(spy.calledWith('chat:message', sinon.match({
-      userID: user.id,
-      message: 'Message text',
-    })));
+    const receivedMessages = [];
+    ws.on('message', (data) => {
+      receivedMessages.push(JSON.parse(data));
+    });
+
+    ws.send(JSON.stringify({ command: 'sendChat', data: 'Message text' }));
+    await delay(500);
+
+    assert(receivedMessages.some((message) => message.command === 'chatMessage' && message.data.userID === user.id && message.data.message === 'Message text'));
   });
 
   it('does not broadcast chat messages from muted users', async () => {
