@@ -18,6 +18,8 @@ module.exports = {
     'no-param-reassign': ['error', { props: false }],
     // I disagree that this is bad
     'max-classes-per-file': 'off',
+    // Allow `continue` in loops
+    'no-continue': ['off'],
     // Allow `for..of`
     'no-restricted-syntax': [
       'error',

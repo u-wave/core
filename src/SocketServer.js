@@ -180,9 +180,9 @@ class SocketServer {
       'advance:complete': (next) => {
         if (next) {
           this.broadcast('advance', {
-            historyID: next._id,
-            userID: next.user._id,
-            item: next.item._id,
+            historyID: next.historyID,
+            userID: next.userID,
+            item: next.itemID,
             media: next.media,
             playedAt: new Date(next.playedAt).getTime(),
           });
