@@ -39,7 +39,7 @@ async function down({ context: uw }) {
   for await (const user of users.stream()) {
     if (!user.activePlaylist) return;
 
-    await uw.redis.set(`playlist:${user.id}`, user.activePlaylist.toString());
+    await uw.redis.set(`playlist:${user._id}`, user.activePlaylist.toString());
   }
 }
 
