@@ -447,6 +447,35 @@ exports.removePlaylistItem = {
   params: playlistItemParams,
 };
 
+// Validations for search routes:
+
+exports.searchAll = {
+  query: {
+    type: 'object',
+    properties: {
+      query: { type: 'string' },
+    },
+    required: ['query'],
+  },
+};
+
+exports.search = {
+  query: {
+    type: 'object',
+    properties: {
+      query: { type: 'string' },
+    },
+    required: ['query'],
+  },
+  params: {
+    type: 'object',
+    properties: {
+      source: { type: 'string', minLength: 1 },
+    },
+    required: ['source'],
+  },
+};
+
 // Validations for user routes:
 
 const userParams = {

@@ -1,5 +1,6 @@
 'use strict';
 
+const { promisify } = require('util');
 const { debounce, isEmpty } = require('lodash');
 const sjson = require('secure-json-parse');
 const WebSocket = require('ws');
@@ -446,15 +447,18 @@ class SocketServer {
     });
     connection.on('authenticate', async (user, token) => {
       debug('connecting', user.id, user.username);
-      if (await connection.isReconnect(user)) {
+      const isReconnect = await connection.isReconnect(user);
+      if (isReconnect) {
         debug('is reconnection');
         const previousConnection = this.getLostConnection(user);
         if (previousConnection) this.remove(previousConnection);
-      } else {
-        this.uw.publish('user:join', { userID: user.id });
       }
 
       this.replace(connection, this.createAuthedConnection(socket, user, token));
+
+      if (!isReconnect) {
+        this.uw.publish('user:join', { userID: user.id });
+      }
     });
     return connection;
   }
@@ -564,8 +568,9 @@ class SocketServer {
    */
   async destroy() {
     clearInterval(this.pinger);
-    this.wss.close();
-    this.redisSubscription.quit();
+    const closeWsServer = promisify(this.wss.close.bind(this.wss));
+    await closeWsServer();
+    await this.redisSubscription.quit();
   }
 
   /**

@@ -91,10 +91,7 @@ class Acl {
   }
 
   async deleteRole(name) {
-    const role = await this.AclRole.findById(name);
-    if (role) {
-      await role.remove();
-    }
+    await this.AclRole.deleteOne({ _id: name });
   }
 
   async allow(user, roleNames) {
@@ -151,8 +148,8 @@ async function acl(uw, opts = {}) {
   uw.httpApi.use('/acl', routes());
 
   if (opts.defaultRoles !== false) {
-    uw.after(() => {
-      uw.acl.maybeAddDefaultRoles();
+    uw.after(async () => {
+      await uw.acl.maybeAddDefaultRoles();
     });
   }
 }

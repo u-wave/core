@@ -26,7 +26,7 @@ function seconds(str) {
 }
 
 function getCurrentUser(req) {
-  return toItemResponse(req.user || {}, {
+  return toItemResponse(req.user || null, {
     url: req.fullUrl,
   });
 }
