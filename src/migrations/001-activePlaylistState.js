@@ -8,13 +8,19 @@ async function up({ context: uw }) {
 
   const ops = [];
   for await (const keys of uw.redis.scanStream({ match: 'playlist:*' })) {
+    if (keys.length === 0) {
+      continue;
+    }
+
     const values = await uw.redis.mget(keys);
-    for (const [key, value] of zip(keys, values)) {
+    for (const [key, playlistID] of zip(keys, values)) {
+      const userID = key.replace(/^playlist:/, '');
+
       ops.push({
         updateOne: {
-          filter: { _id: new ObjectId(key) },
+          filter: { _id: new ObjectId(userID) },
           update: {
-            $set: { activePlaylist: new ObjectId(value) },
+            $set: { activePlaylist: new ObjectId(playlistID) },
           },
         },
       });
