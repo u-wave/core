@@ -14,6 +14,7 @@ describe('Chat', () => {
     uw = await createUwave('chat');
   });
   afterEach(async () => {
+    console.log('afterEach');
     sandbox.restore();
     await uw.destroy();
   });
