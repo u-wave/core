@@ -332,10 +332,43 @@ exports.addPlaylistItems = {
     properties: {
       items: {
         type: 'array',
-        items: { $ref: 'https://ns.u-wave.net/schemas/definitions.json#/definitions/ObjectID' },
+        items: {
+          type: 'object',
+          properties: {
+            sourceType: { type: 'string' },
+            sourceID: { type: 'string' },
+            artist: { type: 'string' },
+            title: { type: 'string' },
+          },
+          required: ['sourceType', 'sourceID', 'artist', 'title'],
+        },
       },
     },
     required: ['items'],
+
+    // Different ways to describe the insert position
+    oneOf: [
+      {
+        type: 'object',
+        properties: {
+          after: {
+            oneOf: [
+              { $ref: 'https://ns.u-wave.net/schemas/definitions.json#/definitions/ObjectID' },
+              { const: null },
+              { const: -1 },
+            ],
+          },
+        },
+        required: ['after'],
+      },
+      {
+        type: 'object',
+        properties: {
+          at: { enum: ['start', 'end'] },
+        },
+        required: ['at'],
+      },
+    ],
   },
 };
 
@@ -364,6 +397,7 @@ exports.movePlaylistItems = {
       },
     },
     required: ['items'],
+    // Different ways to describe the insert position
     oneOf: [
       {
         type: 'object',
