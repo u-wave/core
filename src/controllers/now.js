@@ -48,7 +48,7 @@ async function getState(req) {
   const booth = getBoothData(uw);
   const waitlist = uw.waitlist.getUserIDs();
   const waitlistLocked = uw.waitlist.isLocked();
-  let activePlaylist = user ? user.getActivePlaylist() : null;
+  let activePlaylist = user ? uw.playlists.getUserPlaylist(user, user.activePlaylist) : null;
   const playlists = user ? uw.playlists.getUserPlaylists(user) : null;
   const firstActivePlaylistItem = activePlaylist ? getFirstItem(uw, activePlaylist) : null;
   const socketToken = user ? authRegistry.createAuthToken(user) : null;
