@@ -25,6 +25,7 @@ describe('Chat', () => {
 
     const receivedMessages = [];
     ws.on('message', (data) => {
+      console.log('received', data);
       receivedMessages.push(JSON.parse(data));
     });
 
@@ -47,6 +48,7 @@ describe('Chat', () => {
 
     const receivedMessages = [];
     ws.on('message', (data) => {
+      console.log('received', data);
       receivedMessages.push(JSON.parse(data));
     });
 
