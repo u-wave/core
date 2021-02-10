@@ -1,3 +1,9 @@
+/**
+ * Moves the active playlist state from Redis into MongoDB.
+ *
+ * See https://github.com/u-wave/core/issues/401.
+ */
+
 'use strict';
 
 const { ObjectId } = require('mongoose').mongo;
