@@ -22,14 +22,14 @@ const migrationSchema = new Schema({
 /**
  * Custom MongoDBStorage based on Mongoose and with timestamps.
  */
-class MongoDBStorage {
+const mongooseStorage = {
   async logMigration({ name, context: uw }) {
     const { Migration } = uw.models;
 
     await Migration.create({
       migrationName: name,
     });
-  }
+  },
 
   async unlogMigration({ name, context: uw }) {
     const { Migration } = uw.models;
@@ -37,7 +37,7 @@ class MongoDBStorage {
     await Migration.deleteOne({
       migrationName: name,
     });
-  }
+  },
 
   async executed({ context: uw }) {
     const { Migration } = uw.models;
@@ -46,8 +46,8 @@ class MongoDBStorage {
       .select({ migrationName: 1 })
       .lean();
     return documents.map((doc) => doc.migrationName);
-  }
-}
+  },
+};
 
 async function migrationsPlugin(uw) {
   const redLock = new RedLock([uw.redis]);
@@ -57,7 +57,7 @@ async function migrationsPlugin(uw) {
     const migrator = new Umzug({
       migrations,
       context: uw,
-      storage: new MongoDBStorage(),
+      storage: mongooseStorage,
       logger: {
         // Only `info` is used right now. When Umzug actually implements the warn/error
         // levels we could pass in different logging functions.
