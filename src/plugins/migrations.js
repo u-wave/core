@@ -2,23 +2,62 @@
 
 const path = require('path');
 const RedLock = require('redlock');
-const { Umzug, MongoDBStorage } = require('umzug');
+const mongoose = require('mongoose');
+const { Umzug } = require('umzug');
 const debug = require('debug')('uwave:migrate');
+
+const { Schema } = mongoose;
 
 function log(record) {
   debug(record.event, record.name || record.path || record);
 }
 
+const migrationSchema = new Schema({
+  migrationName: { type: String, required: true },
+}, {
+  timestamps: true,
+  collection: 'migrations',
+});
+
+/**
+ * Custom MongoDBStorage based on Mongoose and with timestamps.
+ */
+class MongoDBStorage {
+  async logMigration({ name, context: uw }) {
+    const { Migration } = uw.models;
+
+    await Migration.create({
+      migrationName: name,
+    });
+  }
+
+  async unlogMigration({ name, context: uw }) {
+    const { Migration } = uw.models;
+
+    await Migration.deleteOne({
+      migrationName: name,
+    });
+  }
+
+  async executed({ context: uw }) {
+    const { Migration } = uw.models;
+
+    const documents = await Migration.find({})
+      .select({ migrationName: 1 })
+      .lean();
+    return documents.map((doc) => doc.migrationName);
+  }
+}
+
 async function migrationsPlugin(uw) {
   const redLock = new RedLock([uw.redis]);
+  uw.models.Migration = uw.mongo.model('Migration', migrationSchema);
 
   async function migrate(migrations) {
     const migrator = new Umzug({
       migrations,
       context: uw,
-      storage: new MongoDBStorage({
-        collection: uw.mongo.db.collection('migrations'),
-      }),
+      storage: new MongoDBStorage(),
       logger: {
         // Only `info` is used right now. When Umzug actually implements the warn/error
         // levels we could pass in different logging functions.
