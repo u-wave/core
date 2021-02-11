@@ -410,7 +410,7 @@ class SocketServer {
     socket.on('error', (error) => {
       this.onSocketError(socket, error);
     });
-    this.add(this.createGuestConnection(socket, req));
+    this.add(this.createGuestConnection(socket));
   }
 
   onSocketError(socket, error) {
@@ -437,8 +437,8 @@ class SocketServer {
   /**
    * Create a connection instance for an unauthenticated user.
    */
-  createGuestConnection(socket, req) {
-    const connection = new GuestConnection(this.uw, socket, req, {
+  createGuestConnection(socket) {
+    const connection = new GuestConnection(this.uw, socket, {
       secret: this.options.secret,
       authRegistry: this.authRegistry,
     });

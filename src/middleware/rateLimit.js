@@ -1,13 +1,9 @@
 'use strict';
 
 const ms = require('ms');
-const { promisify } = require('util');
-const RateLimiterBase = require('ratelimiter');
 const wrapMiddleware = require('../utils/wrapMiddleware');
+const RateLimiter = require('../utils/RateLimiter');
 const { RateLimitError } = require('../errors');
-
-class RateLimiter extends RateLimiterBase {}
-RateLimiter.prototype.getAsync = promisify(RateLimiter.prototype.get);
 
 function rateLimit(prefix, opts) {
   const RLError = opts.error || RateLimitError;

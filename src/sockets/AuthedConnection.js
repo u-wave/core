@@ -1,12 +1,12 @@
 'use strict';
 
 const EventEmitter = require('events');
+const ms = require('ms');
 const Ultron = require('ultron');
 const WebSocket = require('ws');
-const createDebug = require('debug');
 const sjson = require('secure-json-parse');
-
-const debug = createDebug('uwave:api:sockets:authed');
+const debug = require('debug')('uwave:api:sockets:authed');
+const RateLimiter = require('../utils/RateLimiter');
 
 class AuthedConnection extends EventEmitter {
   constructor(uw, socket, user) {
@@ -15,6 +15,12 @@ class AuthedConnection extends EventEmitter {
     this.socket = socket;
     this.events = new Ultron(this.socket);
     this.user = user;
+    this.rateLimit = new RateLimiter({
+      max: 15,
+      duration: ms('5 seconds'),
+      id: `api-ws:${this.user.id}`,
+      db: uw.redis,
+    });
 
     this.events.on('close', () => {
       this.emit('close', { banned: this.banned });
@@ -52,10 +58,21 @@ class AuthedConnection extends EventEmitter {
   }
 
   onMessage(raw) {
-    const { command, data } = sjson.safeParse(raw) || {};
-    if (command) {
-      this.emit('command', command, data);
-    }
+    this.rateLimit.getAsync().then((limit) => {
+      if (limit.remaining === 0) {
+        this.send('rateLimit', {
+          retryAfter: limit.reset,
+        });
+        return;
+      }
+
+      const { command, data } = sjson.safeParse(raw) || {};
+      if (command) {
+        this.emit('command', command, data);
+      }
+    }, (err) => {
+      this.send('error', err.message);
+    });
   }
 
   send(command, data) {

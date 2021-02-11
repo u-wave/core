@@ -10,10 +10,9 @@ class GuestConnection extends EventEmitter {
   /**
    * @param {import('../Uwave')} uw
    * @param {import('ws')} socket
-   * @param {unknown} req
    * @param {{ authRegistry: import('../AuthRegistry') }} options
    */
-  constructor(uw, socket, req, options) {
+  constructor(uw, socket, options) {
     super();
     this.uw = uw;
     this.socket = socket;
