@@ -88,7 +88,6 @@ describe('ACL', () => {
     });
 
     it('requires the acl.create role', async () => {
-      const user = await uw.test.createUser();
       const token = await uw.test.createTestSessionToken(user);
 
       await supertest(uw.server)
@@ -111,7 +110,6 @@ describe('ACL', () => {
     });
 
     it('validates input', async () => {
-      const user = await uw.test.createUser();
       const token = await uw.test.createTestSessionToken(user);
       await uw.acl.allow(user, ['acl.create']);
 
@@ -147,7 +145,6 @@ describe('ACL', () => {
     });
 
     it('creates a role', async () => {
-      const user = await uw.test.createUser();
       const token = await uw.test.createTestSessionToken(user);
       await uw.acl.allow(user, ['acl.create']);
 
@@ -176,7 +173,6 @@ describe('ACL', () => {
     });
 
     it('requires the acl.delete role', async () => {
-      const user = await uw.test.createUser();
       const token = await uw.test.createTestSessionToken(user);
 
       await uw.acl.createRole('test.role', ['test.permission', 'test.permission2']);
@@ -195,7 +191,6 @@ describe('ACL', () => {
     });
 
     it('deletes the role', async () => {
-      const user = await uw.test.createUser();
       const moderator = await uw.test.createUser();
       const token = await uw.test.createTestSessionToken(moderator);
 

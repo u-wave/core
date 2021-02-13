@@ -25,7 +25,7 @@ async function createRole(req, res) {
   });
 }
 
-async function deleteRole(req, res) {
+async function deleteRole(req) {
   const { name } = req.params;
   const { acl } = req.uwave;
 

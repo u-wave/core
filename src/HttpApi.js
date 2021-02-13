@@ -11,7 +11,6 @@ const debug = require('debug')('uwave:http-api');
 
 // routes
 const authenticate = require('./routes/authenticate');
-const acl = require('./routes/acl');
 const bans = require('./routes/bans');
 const search = require('./routes/search');
 const server = require('./routes/server');
