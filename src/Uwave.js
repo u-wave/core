@@ -81,6 +81,10 @@ class UwaveServer extends EventEmitter {
     // Initial API setup
     this.use(HttpApi.plugin, {
       secret: this.options.secret,
+      mailTransport: this.options.mailTransport,
+      recaptcha: this.options.recaptcha,
+      createPasswordResetEmail: this.options.createPasswordResetEmail,
+      onError: this.options.onError,
     });
     this.use(SocketServer.plugin, {
       secret: this.options.secret,
