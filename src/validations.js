@@ -336,7 +336,7 @@ exports.addPlaylistItems = {
           type: 'object',
           properties: {
             sourceType: { type: 'string' },
-            sourceID: { type: 'string' },
+            sourceID: { type: ['string', 'number'] },
             artist: { type: 'string' },
             title: { type: 'string' },
           },
