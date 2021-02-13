@@ -99,7 +99,7 @@ describe('Password Reset', () => {
     await uw.models.Authentication.create({
       email: 'test@example.com',
       user,
-      hash: 'passwordhash'
+      hash: 'passwordhash',
     });
 
     await supertest(uw.server)
@@ -134,7 +134,7 @@ describe('Password Reset', () => {
     await uw.models.Authentication.create({
       email: 'test@example.com',
       user,
-      hash: 'passwordhash'
+      hash: 'passwordhash',
     });
 
     await supertest(uw.server)
