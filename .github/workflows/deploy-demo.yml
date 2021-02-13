@@ -1,0 +1,17 @@
+name: Deploy Demo
+
+on:
+  push:
+    branches: [default]
+
+jobs:
+  deploy:
+    name: Deploy
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: superfly/flyctl-actions@1.1
+        with:
+          args: deploy
+        env:
+          FLY_API_TOKEN: ${{secrets.FLY_API_TOKEN}}
