@@ -8,11 +8,12 @@ const testPlugin = require('./plugin');
 
 const DB_HOST = process.env.MONGODB_HOST || 'localhost';
 
-async function createUwave(name) {
+async function createUwave(name, options) {
   const mongoUrl = `mongodb://${DB_HOST}/uw_test_${name}`;
   const port = await getPort();
 
   const uw = uwave({
+    ...options,
     port,
     mongo: mongoUrl,
     secret: Buffer.from(`secret_${name}`),

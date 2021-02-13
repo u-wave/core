@@ -61,9 +61,7 @@ class UwaveHttpApi extends Router {
     uw.express = express();
     uw.server = http.createServer(uw.express);
 
-    uw.httpApi = new UwaveHttpApi(uw, {
-      secret: options.secret,
-    });
+    uw.httpApi = new UwaveHttpApi(uw, options);
 
     uw.express.use(helmet({
       referrerPolicy: {
