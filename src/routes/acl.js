@@ -7,7 +7,7 @@ const protect = require('../middleware/protect');
 const schema = require('../middleware/schema');
 const controller = require('../controllers/acl');
 
-function serverRoutes() {
+function aclRoutes() {
   return router()
     // GET /roles - List available roles.
     .get(
@@ -30,4 +30,4 @@ function serverRoutes() {
     );
 }
 
-module.exports = serverRoutes;
+module.exports = aclRoutes;
