@@ -24,6 +24,7 @@ const history = require('./plugins/history');
 const acl = require('./plugins/acl');
 const waitlist = require('./plugins/waitlist');
 const passport = require('./plugins/passport');
+const webClient = require('./plugins/webClient');
 const migrations = require('./plugins/migrations');
 
 const DEFAULT_MONGO_URL = 'mongodb://localhost:27017/uwave';
@@ -196,7 +197,50 @@ class UwaveServer extends EventEmitter {
     boot.use(waitlist);
     boot.use(booth);
 
+    boot.use(webClient);
     boot.use(httpApi.errorHandling);
+  }
+
+  parseOptions(options) {
+    const defaultOptions = {
+      useNewUrlParser: true,
+      useCreateIndex: true,
+      useFindAndModify: false,
+      useUnifiedTopology: true,
+    };
+
+    if (typeof options.mongo === 'string') {
+      this.mongo = mongoose.createConnection(options.mongo, defaultOptions);
+    } else if (isPlainObject(options.mongo)) {
+      this.mongo = mongoose.createConnection({
+        ...defaultOptions,
+        ...options.mongo,
+      });
+    } else if (options.mongo instanceof MongooseConnection) {
+      this.mongo = options.mongo;
+    } else {
+      this.mongo = mongoose.createConnection(DEFAULT_MONGO_URL, defaultOptions);
+    }
+
+    if (typeof options.redis === 'string') {
+      this.redis = new Redis(options.redis, { lazyConnect: true });
+    } else if (isPlainObject(options.redis)) {
+      this.redis = new Redis(options.redis.port, options.redis.host, {
+        ...options.redis.options,
+        lazyConnect: true,
+      });
+    } else if (options.redis instanceof Redis) {
+      this.redis = options.redis;
+    } else {
+      this.redis = new Redis(DEFAULT_REDIS_URL, { lazyConnect: true });
+    }
+
+    Object.assign(this.options, options);
+  }
+
+  model(name) {
+    return this.mongo.model(name);
+>>>>>>> 49b1abd (Work on runtime configuration for the web client)
   }
 
   /**

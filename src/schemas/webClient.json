@@ -1,0 +1,17 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema",
+  "$id": "https://ns.u-wave.net/config/webClient.json#",
+  "uw:key": "u-wave:webClient",
+  "uw:access": "admin",
+  "type": "object",
+  "title": "Web Client Settings",
+  "description": "Configure the üWave Web Client for this instance.",
+  "properties": {
+    "about": {
+      "title": "About Page",
+      "description": "The contents of the About section in the web client. This field can contain MDX code.",
+      "type": "string",
+      "uw:control": "mdx"
+    }
+  }
+}
