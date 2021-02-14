@@ -126,11 +126,20 @@ async function replaceBooth(req) {
 }
 
 async function addVote(uw, userID, direction) {
-  await uw.redis.multi()
+  const results = await uw.redis.multi()
     .srem('booth:upvotes', userID)
     .srem('booth:downvotes', userID)
     .sadd(direction > 0 ? 'booth:upvotes' : 'booth:downvotes', userID)
     .exec();
+  const replacedUpvote = results[0][1] !== 0;
+  const replacedDownvote = results[1][1] !== 0;
+
+  // Replaced an upvote by an upvote or a downvote by a downvote: the vote didn't change.
+  // We don't need to broadcast the non-change to everyone.
+  if ((replacedUpvote && direction > 0) || (replacedDownvote && direction < 0)) {
+    return;
+  }
+
   uw.publish('booth:vote', {
     userID, direction,
   });
