@@ -80,10 +80,12 @@ async function createUwave(name, options) {
   uw.use(testPlugin);
 
   uw.destroy = async () => {
-    await uw.close();
-
-    await redisServer.close();
-    await deleteDatabase(mongoUrl);
+    try {
+      await uw.close();
+    } finally {
+      await redisServer.close();
+      await deleteDatabase(mongoUrl);
+    }
   };
 
   await uw.listen();
