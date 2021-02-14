@@ -147,7 +147,11 @@ class SocketServer {
     this.clientActions = {
       sendChat: (user, message) => {
         debug('sendChat', user, message);
-        this.uw.chat.send(user, message);
+        if (typeof message === 'string') {
+          this.uw.chat.send(user, { message });
+        } else {
+          this.uw.chat.send(user, message);
+        }
       },
       vote: (user, direction) => {
         socketVote(this.uw, user.id, direction);
@@ -162,7 +166,18 @@ class SocketServer {
 
     this.clientActionSchemas = new Map();
     this.clientActionSchemas.set('sendChat', ajv.compile({
-      type: 'string',
+      oneOf: [{
+        type: 'string',
+      }, {
+        type: 'object',
+        properties: {
+          message: { type: 'string' },
+          tags: {
+            type: 'object',
+          },
+        },
+        required: ['message'],
+      }],
     }));
     this.clientActionSchemas.set('vote', ajv.compile({
       type: 'integer',

@@ -48,9 +48,21 @@ class Chat {
     return message.slice(0, this.options.maxLength);
   }
 
-  async send(user, message) {
+  async send(user, { message, tags }) {
+    const { acl } = this.uw;
+
     if (await this.isMuted(user)) {
       return;
+    }
+
+    const filteredTags = {};
+    if (tags && Object.keys(tags).length > 0) {
+      const permissions = await acl.getAllPermissions(user);
+      Object.entries(tags).forEach(([tagName, value]) => {
+        if (permissions.includes(`chat.tags.${tagName}`)) {
+          filteredTags[tagName] = value;
+        }
+      });
     }
 
     this.chatID += 1;
@@ -59,6 +71,7 @@ class Chat {
       id: `${user.id}-${this.chatID}`,
       userID: user.id,
       message: this.truncate(message),
+      tags: filteredTags,
       timestamp: Date.now(),
     });
   }
