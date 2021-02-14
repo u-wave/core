@@ -1,8 +1,9 @@
 'use strict';
 
-const getPort = require('get-port');
 const { once } = require('events');
 const { spawn } = require('child_process');
+const getPort = require('get-port');
+const Redis = require('ioredis');
 const deleteDatabase = require('./deleteDatabase');
 const uwave = require('../..');
 const testPlugin = require('./plugin');
