@@ -70,6 +70,12 @@ class UwaveServer extends EventEmitter {
       this.mongo.close(),
     ]));
 
+    // Wait for the connections to be set up.
+    this.use(async () => {
+      this.mongoLog('waiting for mongodb...');
+      await this.mongo;
+    });
+
     this.use(models);
     this.use(migrations);
     this.use(configStore);
