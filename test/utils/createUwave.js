@@ -10,7 +10,8 @@ const testPlugin = require('./plugin');
 const DB_HOST = process.env.MONGODB_HOST || 'localhost';
 
 /**
- * Create an in-memory redis database to run tests against.
+ * Create a separate in-memory redis instance to run tests against.
+ * This way tests don't interfere with other redises on the system.
  */
 async function createIsolatedRedis() {
   const port = await getPort();
@@ -29,14 +30,40 @@ async function createIsolatedRedis() {
     }
   }
 
+  async function close() {
+    proc.kill('SIGINT');
+    await once(proc, 'close');
+  }
+
   return {
-    port,
-    proc,
+    url: `redis://localhost:${port}`,
+    close,
+  };
+}
+
+/**
+ * Connect to Redis, setting up to completely clear the database at the end.
+ * This can be used to run tests on CI.
+ */
+function createRedisConnection() {
+  const url = process.env.REDIS_URL || 'redis://localhost:6379';
+
+  async function close() {
+    const redis = new Redis(url);
+    await redis.flushall();
+    await redis.quit();
+  }
+
+  return {
+    url,
+    close,
   };
 }
 
 async function createUwave(name, options) {
-  const redisServer = await createIsolatedRedis();
+  const redisServer = process.env.REDIS_URL
+    ? await createRedisConnection()
+    : await createIsolatedRedis();
   const mongoUrl = `mongodb://${DB_HOST}/uw_test_${name}`;
 
   const port = await getPort();
@@ -44,7 +71,7 @@ async function createUwave(name, options) {
   const uw = uwave({
     ...options,
     port,
-    redis: `redis://localhost:${redisServer.port}`,
+    redis: redisServer.url,
     mongo: mongoUrl,
     secret: Buffer.from(`secret_${name}`),
   });
@@ -54,9 +81,7 @@ async function createUwave(name, options) {
   uw.destroy = async () => {
     await uw.close();
 
-    redisServer.proc.kill('SIGINT');
-    await once(redisServer.proc, 'close');
-
+    await redisServer.close();
     await deleteDatabase(mongoUrl);
   };
 
