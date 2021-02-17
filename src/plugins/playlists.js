@@ -460,7 +460,7 @@ class PlaylistsRepository {
 
     const newMedia = itemsInPlaylist.filter((item) => !itemIDsToInsert.includes(`${item}`));
     // Reinsert items at their new position.
-    const insertIndex = newMedia.findIndex((item) => `${item}` === afterID);
+    const insertIndex = newMedia.findIndex((item) => `${item}` === `${afterID}`);
     newMedia.splice(insertIndex + 1, 0, ...itemIDsToInsert);
     playlist.media = newMedia;
 
