@@ -108,7 +108,7 @@ class PlaylistsRepository {
   async getUserPlaylists(user) {
     const Playlist = this.uw.model('Playlist');
     const userID = typeof user === 'object' ? user.id : user;
-    const playlists = await Playlist.where('author').eq(userID);
+    const playlists = await Playlist.where('author').eq(userID).lean();
     return playlists;
   }
 
