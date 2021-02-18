@@ -48,13 +48,12 @@ async function getPlaylist(req) {
 
 async function createPlaylist(req) {
   const { user } = req;
-  const { name, description, shared } = req.body;
+  const { name, description } = req.body;
   const { playlists } = req.uwave;
 
   const playlist = await playlists.createPlaylist(user, {
     name,
     description,
-    shared,
   });
 
   const activeID = user.activePlaylist.toString();
@@ -83,7 +82,7 @@ async function deletePlaylist(req) {
   return toItemResponse(result, { url: req.fullUrl });
 }
 
-const patchableKeys = ['name', 'shared', 'description'];
+const patchableKeys = ['name', 'description'];
 async function updatePlaylist(req) {
   const { user } = req;
   const { id } = req.params;
@@ -122,25 +121,6 @@ async function renamePlaylist(req) {
   }
 
   await playlists.updatePlaylist(playlist, { name });
-
-  return toItemResponse(
-    serializePlaylist(playlist),
-    { url: req.fullUrl },
-  );
-}
-
-async function sharePlaylist(req) {
-  const { user } = req;
-  const { id } = req.params;
-  const { shared } = req.body;
-  const { playlists } = req.uwave;
-
-  const playlist = await playlists.getUserPlaylist(user, id);
-  if (!playlist) {
-    throw new PlaylistNotFoundError({ id });
-  }
-
-  await playlists.updatePlaylist(playlist, { shared });
 
   return toItemResponse(
     serializePlaylist(playlist),
@@ -363,7 +343,6 @@ exports.createPlaylist = createPlaylist;
 exports.deletePlaylist = deletePlaylist;
 exports.updatePlaylist = updatePlaylist;
 exports.renamePlaylist = renamePlaylist;
-exports.sharePlaylist = sharePlaylist;
 exports.activatePlaylist = activatePlaylist;
 exports.getPlaylistItems = getPlaylistItems;
 exports.addPlaylistItems = addPlaylistItems;

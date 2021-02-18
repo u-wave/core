@@ -7,8 +7,6 @@ function serializePlaylist(model) {
     author: model.author,
     createdAt: model.createdAt,
     description: model.description,
-    shared: model.shared,
-    nsfw: model.nsfw,
     size: model.media.length,
   };
 }
