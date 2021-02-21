@@ -20,12 +20,14 @@
         "clientID": {
           "type": "string",
           "title": "Client ID",
-          "description": "The OAuth2 Client ID."
+          "description": "The OAuth2 Client ID.",
+          "minLength": 1
         },
         "clientSecret": {
           "type": "string",
           "title": "Client Secret",
-          "description": "The secret key."
+          "description": "The secret key.",
+          "minLength": 1
         },
         "callbackURL": {
           "type": "string",
