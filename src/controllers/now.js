@@ -85,6 +85,7 @@ async function getState(req) {
   const socketToken = user ? authRegistry.createAuthToken(user) : null;
   const authStrategies = passport.strategies();
   const time = Date.now();
+  const webClient = uw.webClient ? uw.webClient.getConfig() : null;
 
   if (activePlaylist != null) {
     activePlaylist = activePlaylist
@@ -117,6 +118,7 @@ async function getState(req) {
     socketToken,
     authStrategies,
     time,
+    webClient,
   };
 
   const stateKeys = Object.keys(stateShape);

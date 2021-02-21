@@ -2,6 +2,7 @@
 
 const astring = require('astring');
 const schema = require('../schemas/webClient.json');
+const route = require('../route');
 const toItemResponse = require('../utils/toItemResponse');
 
 function recmaBundle() {
@@ -64,11 +65,11 @@ async function webClientPlugin(uw) {
   uw.config.register(schema['uw:key'], schema);
 
   let currentConfig;
-  let aboutPage;
+  let compiledAboutPage;
 
   async function refresh() {
     currentConfig = await uw.config.get(schema['uw:key']);
-    aboutPage = compileAboutPage(currentConfig);
+    compiledAboutPage = compileAboutPage(currentConfig);
   }
 
   await refresh();
@@ -81,16 +82,20 @@ async function webClientPlugin(uw) {
     }
   });
 
-  uw.httpApi.use('/web-client/config.json', (req, res, next) => {
-    aboutPage.then((result) => {
-      res.json(toItemResponse({
-        ...currentConfig,
-        aboutPage: result,
-      }));
-    }, (error) => {
-      next(error);
-    });
-  });
+  async function getConfig() {
+    const aboutPage = await compiledAboutPage;
+    return {
+      aboutPage,
+    };
+  }
+
+  uw.webClient = {
+    getConfig,
+  };
+
+  uw.httpApi.use('/web-client/config.json', route(async () => {
+    return toItemResponse(await getConfig());
+  }));
 }
 
 module.exports = webClientPlugin;

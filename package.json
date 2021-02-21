@@ -67,7 +67,7 @@
     "ultron": "^1.1.1",
     "umzug": "3.0.0-beta.16",
     "ws": "^8.0.0",
-    "xdm": "1.1.0",
+    "xdm": "^1.2.0",
     "yaml": "^1.7.2"
   },
   "devDependencies": {
