@@ -2,7 +2,7 @@
 
 const mongoose = require('mongoose');
 const EventEmitter = require('events');
-const Ajv = require('ajv').default;
+const Ajv = require('ajv/dist/2019').default;
 const formats = require('ajv-formats');
 const ValidationError = require('../errors/ValidationError');
 
@@ -36,6 +36,8 @@ class ConfigStore {
       strictTypes: true,
     });
     formats(this.ajv);
+    this.ajv.addMetaSchema(require('ajv/dist/refs/json-schema-draft-07.json'));
+    this.ajv.addSchema(require('../schemas/definitions.json'));
 
     this.emitter = new EventEmitter();
     this.registry = new Map();
