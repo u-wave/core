@@ -63,13 +63,15 @@ async function compileAboutPage(config) {
 async function webClientPlugin(uw) {
   uw.config.register(schema['uw:key'], schema);
 
-  let currentConfig = await uw.config.get(schema['uw:key']);
-  let aboutPage = compileAboutPage(currentConfig);
+  let currentConfig;
+  let aboutPage;
 
   async function refresh() {
     currentConfig = await uw.config.get(schema['uw:key']);
     aboutPage = compileAboutPage(currentConfig);
   }
+
+  await refresh();
 
   uw.config.on('set', (key) => {
     if (key === schema['uw:key']) {
