@@ -1,5 +1,6 @@
 'use strict';
 
+const { URL } = require('url');
 const Router = require('router');
 const express = require('express');
 const bodyParser = require('body-parser');
@@ -135,12 +136,12 @@ class UwaveHttpApi extends Router {
         createPasswordResetEmail:
           options.createPasswordResetEmail || defaultCreatePasswordResetEmail,
       }))
-      .use('/bans', bans(this))
-      .use('/import', imports(this))
-      .use('/now', now(this))
-      .use('/search', search(this))
+      .use('/bans', bans())
+      .use('/import', imports())
+      .use('/now', now())
+      .use('/search', search())
       .use('/server', server())
-      .use('/users', users(this));
+      .use('/users', users());
 
     return router;
   }

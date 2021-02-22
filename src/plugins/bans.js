@@ -4,6 +4,10 @@ const { clamp } = require('lodash');
 const escapeStringRegExp = require('escape-string-regexp');
 const Page = require('../Page');
 
+/**
+ * @typedef {import('mongoose').Types.ObjectId} ObjectId
+ */
+
 function isValidBan(user) {
   return !!(user.banned && user.banned.expiresAt > Date.now());
 }

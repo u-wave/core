@@ -1,0 +1,16 @@
+{
+  "extends": "@tsconfig/node12/tsconfig.json",
+  "compilerOptions": {
+    "strict": false,
+    "noEmit": true,
+    "allowJs": true,
+    "checkJs": true,
+    "resolveJsonModule": true
+  },
+  "include": [
+    "src/**/*.js"
+  ],
+  "exclude": [
+    "node_modules"
+  ]
+}

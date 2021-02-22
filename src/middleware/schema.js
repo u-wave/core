@@ -19,6 +19,12 @@ function alwaysTrue() {
   return true;
 }
 
+/**
+ * @param {object} schemas
+ * @prop {object} [schemas.body]
+ * @prop {object} [schemas.params]
+ * @prop {object} [schemas.query]
+ */
 function schema({ body, params, query }) {
   const validateBody = body ? ajv.compile(body) : alwaysTrue;
   const validateParams = params ? ajv.compile(params) : alwaysTrue;

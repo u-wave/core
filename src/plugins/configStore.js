@@ -3,7 +3,7 @@
 const mongoose = require('mongoose');
 const EventEmitter = require('events');
 const Ajv = require('ajv/dist/2019').default;
-const formats = require('ajv-formats');
+const formats = require('ajv-formats').default;
 const ValidationError = require('../errors/ValidationError');
 
 const { Schema } = mongoose;
@@ -133,7 +133,7 @@ class ConfigStore {
   /**
    * Get *all* settings.
    *
-   * @returns {{ [key: string]: object }}
+   * @returns {Promise<{ [key: string]: object }>}
    */
   async getAllConfig() {
     const all = await this.ConfigModel.find();

@@ -16,6 +16,10 @@ const LostConnection = require('./sockets/LostConnection');
 
 const debug = createDebug('uwave:api:sockets');
 
+/**
+ * @typedef {GuestConnection | AuthedConnection | LostConnection} Connection
+ */
+
 const ajv = new Ajv({
   coerceTypes: false,
   ownProperties: true,
@@ -24,7 +28,7 @@ const ajv = new Ajv({
 });
 
 function missingServerOption() {
-  throw new TypeError(`
+  return new TypeError(`
 Exactly one of "options.server" and "options.port" is required. These
 options are used to attach the WebSocket server to the correct HTTP server.
 
@@ -75,19 +79,22 @@ class SocketServer {
   /**
    * Create a socket server.
    *
-   * @param {Uwave} uw üWave Core instance.
+   * @param {import('./Uwave')} uw üWave Core instance.
    * @param {object} options Socket server options.
-   * @param {number} options.timeout Time in seconds to wait for disconnected
+   * @param {number} [options.timeout] Time in seconds to wait for disconnected
    *     users to reconnect before removing them.
+   * @param {string} options.secret
+   * @param {import('http').Server | import('https').Server} [options.server]
+   * @param {number} [options.port]
    */
-  constructor(uw, options = {}) {
+  constructor(uw, options) {
     if (!uw || !('mongo' in uw)) {
       throw new TypeError('Expected a u-wave-core instance in the first parameter. If you are '
         + 'developing, you may have to upgrade your u-wave-* modules.');
     }
 
     if (!options.server && !options.port) {
-      missingServerOption(options);
+      throw missingServerOption();
     }
 
     if (!options.secret) {
@@ -439,13 +446,12 @@ class SocketServer {
    */
   createGuestConnection(socket, req) {
     const connection = new GuestConnection(this.uw, socket, req, {
-      secret: this.options.secret,
       authRegistry: this.authRegistry,
     });
     connection.on('close', () => {
       this.remove(connection);
     });
-    connection.on('authenticate', async (user, token) => {
+    connection.on('authenticate', async (user) => {
       debug('connecting', user.id, user.username);
       const isReconnect = await connection.isReconnect(user);
       if (isReconnect) {
@@ -454,7 +460,7 @@ class SocketServer {
         if (previousConnection) this.remove(previousConnection);
       }
 
-      this.replace(connection, this.createAuthedConnection(socket, user, token));
+      this.replace(connection, this.createAuthedConnection(socket, user));
 
       if (!isReconnect) {
         this.uw.publish('user:join', { userID: user.id });
@@ -466,8 +472,8 @@ class SocketServer {
   /**
    * Create a connection instance for an authenticated user.
    */
-  createAuthedConnection(socket, user, token) {
-    const connection = new AuthedConnection(this.uw, socket, user, token);
+  createAuthedConnection(socket, user) {
+    const connection = new AuthedConnection(this.uw, socket, user);
     connection.on('close', ({ banned }) => {
       if (banned) {
         debug('removing connection after ban', user.id, user.username);

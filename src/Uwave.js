@@ -35,10 +35,28 @@ const kSources = Symbol('Media sources');
 const DEFAULT_MONGO_URL = 'mongodb://localhost:27017/uwave';
 const DEFAULT_REDIS_URL = 'redis://localhost:6379';
 
+/**
+ * @typedef {import('avvio').Avvio} Avvio
+ */
+
+/**
+ * @prop {any} acl
+ * @prop {any} bans
+ * @prop {any} booth
+ * @prop {any} chat
+ * @prop {any} config
+ * @prop {any} history
+ * @prop {any} migrations
+ * @prop {any} motd
+ * @prop {any} passport
+ * @prop {any} playlists
+ * @prop {any} users
+ * @prop {any} waitlist
+ */
 class UwaveServer extends EventEmitter {
   /**
-  * @constructor
-  * @param {Object} options
+  * @param {object} [options]
+  * @param {boolean} [options.useDefaultPlugins]
   */
   constructor(options = {}) {
     super();
