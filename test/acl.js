@@ -1,84 +1,216 @@
 'use strict';
 
 const assert = require('assert');
-const uwave = require('..');
-const usersPlugin = require('../src/plugins/users');
-const aclPlugin = require('../src/plugins/acl');
-const createUser = require('./utils/createUser');
-const deleteDatabase = require('./utils/deleteDatabase');
+const supertest = require('supertest');
+const sinon = require('sinon');
+const createUwave = require('./utils/createUwave');
 
-const DB_NAME = 'uw_test_acl';
-const DB_HOST = process.env.MONGODB_HOST || 'localhost';
-
-async function createUwaveWithAclTest() {
-  const uw = uwave({
-    useDefaultPlugins: false,
-    mongo: `mongodb://${DB_HOST}/${DB_NAME}`,
-    secret: Buffer.from(`secret_${DB_NAME}`),
-  });
-  uw.use(usersPlugin);
-  uw.use(aclPlugin, { defaultRoles: false });
-  await uw.ready();
-  return uw;
-}
-
-describe('acl', () => {
+describe('ACL', () => {
   let user;
   let uw;
-  let acl;
   beforeEach(async () => {
-    uw = await createUwaveWithAclTest();
-    acl = uw.acl; // eslint-disable-line prefer-destructuring
-    await acl.createRole('test.role', []);
-    user = createUser(uw);
+    uw = await createUwave('acl');
+    user = await uw.test.createUser();
+
+    await uw.acl.createRole('test.role', []);
   });
   afterEach(async () => {
-    await uw.close();
-    await deleteDatabase(uw.options.mongo);
+    await uw.destroy();
   });
 
   it('can check if a user is not allowed to do something', async () => {
-    assert.strictEqual(await acl.isAllowed(user, 'test.role'), false);
+    assert.strictEqual(await uw.acl.isAllowed(user, 'test.role'), false);
   });
 
   it('disallows nonexistent roles by default', async () => {
-    assert.strictEqual(await acl.isAllowed(user, 'something.that.is.not.allowed'), false);
+    assert.strictEqual(await uw.acl.isAllowed(user, 'something.that.is.not.allowed'), false);
   });
 
   it('can allow users to do things', async () => {
-    assert.strictEqual(await acl.isAllowed(user, 'test.role'), false);
+    assert.strictEqual(await uw.acl.isAllowed(user, 'test.role'), false);
 
-    await acl.allow(user, ['test.role']);
-    assert.strictEqual(await acl.isAllowed(user, 'test.role'), true);
+    await uw.acl.allow(user, ['test.role']);
+    assert.strictEqual(await uw.acl.isAllowed(user, 'test.role'), true);
   });
 
   it('can create new roles, grouping existing roles', async () => {
-    await acl.createRole('group.of.roles', [
+    await uw.acl.createRole('group.of.roles', [
       'test.role',
       'some.other.role',
       'universe.destroy',
       'universe.create',
     ]);
-    await acl.createRole('other.group.of.roles', [
+    await uw.acl.createRole('other.group.of.roles', [
       'strawberry.eat',
     ]);
 
-    await acl.allow(user, ['group.of.roles']);
-    assert.strictEqual(await acl.isAllowed(user, 'universe.create'), true);
+    await uw.acl.allow(user, ['group.of.roles']);
+    assert.strictEqual(await uw.acl.isAllowed(user, 'universe.create'), true);
   });
 
   it('can remove permissions from users', async () => {
-    await acl.allow(user, ['test.role']);
-    assert.strictEqual(await acl.isAllowed(user, 'test.role'), true);
+    await uw.acl.allow(user, ['test.role']);
+    assert.strictEqual(await uw.acl.isAllowed(user, 'test.role'), true);
 
-    await acl.disallow(user, ['test.role']);
-    assert.strictEqual(await acl.isAllowed(user, 'test.role'), false);
+    await uw.acl.disallow(user, ['test.role']);
+    assert.strictEqual(await uw.acl.isAllowed(user, 'test.role'), false);
   });
 
   it('can delete roles', async () => {
-    await acl.createRole('test.role', []);
-    assert.deepStrictEqual(Object.keys(await acl.getAllRoles()), ['test.role']);
-    await acl.deleteRole('test.role');
-    assert.deepStrictEqual(Object.keys(await acl.getAllRoles()), []);
+    await uw.acl.createRole('test.role', []);
+    assert(Object.keys(await uw.acl.getAllRoles()).includes('test.role'));
+    await uw.acl.deleteRole('test.role');
+    assert(!Object.keys(await uw.acl.getAllRoles()).includes('test.role'));
+  });
+
+  describe('GET /roles', () => {
+    it('lists available roles', async () => {
+      await uw.acl.createRole('test.role', ['test.permission', 'test.permission2']);
+
+      const res = await supertest(uw.server)
+        .get('/api/roles')
+        .expect(200);
+
+      sinon.assert.match(res.body.data, {
+        'test.role': ['test.permission', 'test.permission2'],
+      });
+    });
+  });
+
+  describe('PUT /roles/:name', () => {
+    it('requires authentication', async () => {
+      await supertest(uw.server)
+        .put('/api/roles/test.role')
+        .send({
+          permissions: ['test.permission', 'test.permission2'],
+        })
+        .expect(403);
+    });
+
+    it('requires the acl.create role', async () => {
+      const token = await uw.test.createTestSessionToken(user);
+
+      await supertest(uw.server)
+        .put('/api/roles/test.role')
+        .set('Cookie', `uwsession=${token}`)
+        .send({
+          permissions: ['test.permission', 'test.permission2'],
+        })
+        .expect(403);
+
+      await uw.acl.allow(user, ['acl.create']);
+
+      await supertest(uw.server)
+        .put('/api/roles/test.role')
+        .set('Cookie', `uwsession=${token}`)
+        .send({
+          permissions: ['test.permission', 'test.permission2'],
+        })
+        .expect(201);
+    });
+
+    it('validates input', async () => {
+      const token = await uw.test.createTestSessionToken(user);
+      await uw.acl.allow(user, ['acl.create']);
+
+      let res = await supertest(uw.server)
+        .put('/api/roles/test.role')
+        .set('Cookie', `uwsession=${token}`)
+        .send({})
+        .expect(400);
+      sinon.assert.match(res.body.errors[0], {
+        status: 400,
+        code: 'validation-error',
+      });
+
+      res = await supertest(uw.server)
+        .put('/api/roles/test.role')
+        .set('Cookie', `uwsession=${token}`)
+        .send({ permissions: 'not an array' })
+        .expect(400);
+      sinon.assert.match(res.body.errors[0], {
+        status: 400,
+        code: 'validation-error',
+      });
+
+      res = await supertest(uw.server)
+        .put('/api/roles/test.role')
+        .set('Cookie', `uwsession=${token}`)
+        .send({ permissions: [{ not: 'a' }, 'string'] })
+        .expect(400);
+      sinon.assert.match(res.body.errors[0], {
+        status: 400,
+        code: 'validation-error',
+      });
+    });
+
+    it('creates a role', async () => {
+      const token = await uw.test.createTestSessionToken(user);
+      await uw.acl.allow(user, ['acl.create']);
+
+      const res = await supertest(uw.server)
+        .put('/api/roles/test.role')
+        .set('Cookie', `uwsession=${token}`)
+        .send({
+          permissions: ['test.permission', 'test.permission2'],
+        })
+        .expect(201);
+
+      sinon.assert.match(res.body.data, {
+        name: 'test.role',
+        permissions: ['test.permission', 'test.permission2'],
+      });
+    });
+  });
+
+  describe('DELETE /roles/:name', () => {
+    it('requires authentication', async () => {
+      await uw.acl.createRole('test.role', []);
+
+      await supertest(uw.server)
+        .delete('/api/roles/test.role')
+        .expect(403);
+    });
+
+    it('requires the acl.delete role', async () => {
+      const token = await uw.test.createTestSessionToken(user);
+
+      await uw.acl.createRole('test.role', ['test.permission', 'test.permission2']);
+
+      await supertest(uw.server)
+        .delete('/api/roles/test.role')
+        .set('Cookie', `uwsession=${token}`)
+        .expect(403);
+
+      await uw.acl.allow(user, ['acl.delete']);
+
+      await supertest(uw.server)
+        .delete('/api/roles/test.role')
+        .set('Cookie', `uwsession=${token}`)
+        .expect(200);
+    });
+
+    it('deletes the role', async () => {
+      const moderator = await uw.test.createUser();
+      const token = await uw.test.createTestSessionToken(moderator);
+
+      await uw.acl.createRole('test.role', ['test.permission', 'test.permission2']);
+      await uw.acl.allow(user, ['test.role']);
+      await uw.acl.allow(moderator, ['acl.delete']);
+
+      assert(await uw.acl.isAllowed(user, 'test.role'));
+
+      await supertest(uw.server)
+        .delete('/api/roles/test.role')
+        .set('Cookie', `uwsession=${token}`)
+        .expect(200);
+
+      const res = await supertest(uw.server)
+        .get('/api/roles')
+        .expect(200);
+      assert(!Object.keys(res.body.data).includes('test.role'));
+
+      assert(!await uw.acl.isAllowed(user, 'test.role'));
+    });
   });
 });

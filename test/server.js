@@ -1,26 +1,19 @@
 'use strict';
 
 const assert = require('assert');
-const delay = require('delay');
 const uwave = require('..');
-
-const DB_HOST = process.env.MONGODB_HOST || 'localhost';
+const createUwave = require('./utils/createUwave');
 
 describe('üWave Core', () => {
   let uw;
   beforeEach(async () => {
-    uw = uwave({
-      mongo: `mongodb://${DB_HOST}/uw_test_server`,
-      secret: 'uw_test_secret',
-    });
-    await uw.ready();
+    uw = await createUwave('core');
   });
   afterEach(async () => {
-    await uw.close();
+    await uw.destroy();
   });
 
   it('can create a üWave instance', async () => {
     assert(uw instanceof uwave.Uwave);
-    await delay(2000); // HACK Give mongo some time to connect
   });
 });

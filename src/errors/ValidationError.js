@@ -7,7 +7,7 @@ class ValidationError extends UwaveError {
     const message = ajv ? ajv.errorsText(errors) : 'Validation failed';
     super(message);
 
-    this.public = true;
+    this.expose = true;
     this.name = 'ValidationError';
     this.code = 'SCHEMA_VALIDATION_FAILED';
 

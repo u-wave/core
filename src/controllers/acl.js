@@ -12,13 +12,14 @@ async function list(req) {
   });
 }
 
-async function createRole(req) {
+async function createRole(req, res) {
   const { name } = req.params;
   const { permissions } = req.body;
   const { acl } = req.uwave;
 
   const role = await acl.createRole(name, permissions);
 
+  res.status(201);
   return toItemResponse(role, {
     url: req.fullUrl,
   });

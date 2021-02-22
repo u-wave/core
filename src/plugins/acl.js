@@ -88,13 +88,16 @@ class Acl {
       { roles },
       { upsert: true },
     );
+
+    const subRoles = await Promise.all(roles.map(getSubRoles));
+    return {
+      name,
+      permissions: flatten(subRoles).map((role) => role._id),
+    };
   }
 
   async deleteRole(name) {
-    const role = await this.AclRole.findById(name);
-    if (role) {
-      await role.remove();
-    }
+    await this.AclRole.deleteOne({ _id: name });
   }
 
   async allow(user, roleNames) {
@@ -148,11 +151,11 @@ class Acl {
 
 async function acl(uw, opts = {}) {
   uw.acl = new Acl(uw);
-  uw.httpApi.use('/acl', routes());
+  uw.httpApi.use('/roles', routes());
 
   if (opts.defaultRoles !== false) {
-    uw.after(() => {
-      uw.acl.maybeAddDefaultRoles();
+    uw.after(async () => {
+      await uw.acl.maybeAddDefaultRoles();
     });
   }
 }

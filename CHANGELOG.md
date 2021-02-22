@@ -16,6 +16,7 @@ Features:
  * Find playlists containing a particular media. (#374)
  * Add social authentication support. (#265, #385)
  * Add runtime configuration support. (#380, #408)
+ * Add database migrations. (#410)
 
 Internal:
  * Add `uw.models` property for easier mongoose model access. (#283)
@@ -24,6 +25,10 @@ Internal:
  * Make `getPlaylistItems` faster with a single query. (#351, #370)
  * Remove use of `p-props`. (#371)
  * **Breaking**: Handle startup with Avvio. (#400)
+ * Use JSON schemas for request validation. (#416)
+ * Move active playlist state from Redis into MongoDB. (#419)
+ * More tests. (#417, #426)
+ * Update `sourceData` values when adding media from search results. (#405)
 
 ## 0.4.1 / 17 Jul 2018
 

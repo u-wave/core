@@ -27,7 +27,17 @@ async function getOnlineUsers(uw) {
   const { User } = uw.models;
 
   const userIDs = await uw.redis.lrange('users', 0, -1);
-  return User.find({ _id: { $in: userIDs } });
+  const users = await User.find({ _id: { $in: userIDs } })
+    .select({
+      activePlaylist: 0,
+      exiled: 0,
+      level: 0,
+      updatedAt: 0,
+      __v: 0,
+    })
+    .lean();
+
+  return users;
 }
 
 async function getGuestsCount(uw) {

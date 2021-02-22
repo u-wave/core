@@ -70,6 +70,12 @@ class UwaveServer extends EventEmitter {
       this.mongo.close(),
     ]));
 
+    // Wait for the connections to be set up.
+    this.use(async () => {
+      this.mongoLog('waiting for mongodb...');
+      await this.mongo;
+    });
+
     this.use(models);
     this.use(migrations);
     this.use(configStore);
@@ -81,6 +87,10 @@ class UwaveServer extends EventEmitter {
     // Initial API setup
     this.use(HttpApi.plugin, {
       secret: this.options.secret,
+      mailTransport: this.options.mailTransport,
+      recaptcha: this.options.recaptcha,
+      createPasswordResetEmail: this.options.createPasswordResetEmail,
+      onError: this.options.onError,
     });
     this.use(SocketServer.plugin, {
       secret: this.options.secret,
