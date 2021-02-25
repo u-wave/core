@@ -5,7 +5,7 @@ const escapeStringRegExp = require('escape-string-regexp');
 const Page = require('../Page');
 
 /**
- * @typedef {import('mongoose').Types.ObjectId} ObjectId
+ * @typedef {import('mongodb').ObjectID} ObjectId
  * @typedef {import('../models/User').User} User
  */
 
@@ -14,6 +14,9 @@ function isValidBan(user) {
 }
 
 class Bans {
+  /**
+   * @param {import('../Uwave')} uw
+   */
   constructor(uw) {
     this.uw = uw;
   }

@@ -37,17 +37,18 @@ const getRoleName = (role) => (
 );
 
 class Acl {
+  /**
+   * @param {import('../Uwave')} uw
+   */
   constructor(uw) {
     this.uw = uw;
     this.superRole = '*';
   }
 
-  get AclRole() {
-    return this.uw.model('AclRole');
-  }
-
   async maybeAddDefaultRoles() {
-    const existingRoles = await this.AclRole.estimatedDocumentCount();
+    const { AclRole } = this.uw.models;
+
+    const existingRoles = await AclRole.estimatedDocumentCount();
     debug('existing roles', existingRoles);
     if (existingRoles === 0) {
       debug('no roles found, adding defaults');
@@ -59,12 +60,14 @@ class Acl {
   }
 
   async getAclRoles(names, options = {}) {
-    const existingRoles = await this.AclRole.find({ _id: { $in: names } });
+    const { AclRole } = this.uw.models;
+
+    const existingRoles = await AclRole.find({ _id: { $in: names } });
     const newNames = names.filter((name) => (
       !existingRoles.some((role) => role.id === name)
     ));
     if (options.create && newNames.length > 0) {
-      const newRoles = await this.AclRole.create(newNames.map((name) => ({ _id: name })));
+      const newRoles = await AclRole.create(newNames.map((name) => ({ _id: name })));
       existingRoles.push(...newRoles);
     }
     return existingRoles;
@@ -75,15 +78,19 @@ class Acl {
   }
 
   async getAllRoles() {
-    const roles = await this.AclRole.find().lean();
+    const { AclRole } = this.uw.models;
+
+    const roles = await AclRole.find().lean();
     return roles.reduce((map, role) => Object.assign(map, {
       [role._id]: role.roles,
     }), {});
   }
 
   async createRole(name, permissions) {
+    const { AclRole } = this.uw.models;
+
     const roles = await this.getAclRoles(permissions, { create: true });
-    await this.AclRole.findByIdAndUpdate(
+    await AclRole.findByIdAndUpdate(
       name,
       { roles },
       { upsert: true },
@@ -97,7 +104,9 @@ class Acl {
   }
 
   async deleteRole(name) {
-    await this.AclRole.deleteOne({ _id: name });
+    const { AclRole } = this.uw.models;
+
+    await AclRole.deleteOne({ _id: name });
   }
 
   async allow(user, roleNames) {
@@ -134,7 +143,9 @@ class Acl {
   }
 
   async isAllowed(user, permission) {
-    const role = await this.AclRole.findById(permission);
+    const { AclRole } = this.uw.models;
+
+    const role = await AclRole.findById(permission);
     if (!role) {
       return false;
     }

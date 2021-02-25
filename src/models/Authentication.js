@@ -7,15 +7,15 @@ const { Types } = mongoose.Schema;
 
 /**
  * @typedef {object} LeanAuthentication
- * @prop {import('mongoose').Types.ObjectId} _id
- * @prop {import('mongoose').Types.ObjectId} user
+ * @prop {import('mongodb').ObjectID} _id
+ * @prop {import('mongodb').ObjectID} user
  * @prop {string} type
  * @prop {string} [email]
  * @prop {string} [hash]
  * @prop {string} [id]
  * @prop {string} [avatar]
  *
- * @typedef {import('mongoose').Document<LeanAuthentication>} Authentication
+ * @typedef {import('mongoose').Document<LeanAuthentication["_id"]> & LeanAuthentication} Authentication
  */
 
 const schema = new Schema({

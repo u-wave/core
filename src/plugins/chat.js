@@ -7,6 +7,9 @@ const defaultOptions = {
 };
 
 class Chat {
+  /**
+   * @param {import('../Uwave')} uw
+   */
   constructor(uw, options = {}) {
     this.uw = uw;
 

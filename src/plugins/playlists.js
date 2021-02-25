@@ -10,9 +10,9 @@ const Page = require('../Page');
 const routes = require('../routes/playlists');
 
 /**
- * @typedef {import('../models/User').User} User
- * @typedef {import('../models/Playlist').Playlist} Playlist
- * @typedef {import('../models/Media').Media} Media
+ * @typedef {import('../models').User} User
+ * @typedef {import('../models').Playlist} Playlist
+ * @typedef {import('../models').Media} Media
  */
 
 function isValidPlaylistItem(item) {
@@ -52,6 +52,9 @@ function toPlaylistItem(itemProps, media) {
 }
 
 class PlaylistsRepository {
+  /**
+   * @param {import('../Uwave')} uw
+   */
   constructor(uw) {
     this.uw = uw;
   }
@@ -181,6 +184,7 @@ class PlaylistsRepository {
   }
 
   async getPlaylistItems(playlistOrID, filter = null, pagination = null) {
+    const { Playlist } = this.uw.models;
     const playlist = await this.getPlaylist(playlistOrID);
 
     const aggregate = [
@@ -238,7 +242,7 @@ class PlaylistsRepository {
       },
     });
 
-    const [{ count, items }] = await this.uw.model('Playlist').aggregate(aggregate);
+    const [{ count, items }] = await Playlist.aggregate(aggregate);
 
     // `items` is the same shape as a PlaylistItem instance!
     return new Page(items, {
@@ -271,7 +275,7 @@ class PlaylistsRepository {
    * @return {Promise<Playlist[]>}
    */
   async getPlaylistsContainingMedia(mediaOrID, options = {}) {
-    const Playlist = this.uw.model('Playlist');
+    const { Playlist } = this.uw.models;
     const media = await this.getMedia(mediaOrID);
 
     const aggregate = [];

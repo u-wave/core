@@ -3,6 +3,9 @@
 const routes = require('../routes/motd');
 
 class MOTD {
+  /**
+   * @param {import('../Uwave')} uw
+   */
   constructor(uw) {
     this.uw = uw;
   }

@@ -7,15 +7,15 @@ const { Types } = mongoose.Schema;
 
 /**
  * @typedef {object} LeanPlaylist
- * @prop {import('mongoose').Types.ObjectId} _id
+ * @prop {import('mongodb').ObjectID} _id
  * @prop {string} name
  * @prop {string} description
- * @prop {import('mongoose').Types.ObjectId} author
- * @prop {import('mongoose').Types.ObjectId[]} media
+ * @prop {import('mongodb').ObjectID} author
+ * @prop {import('mongodb').ObjectID[]} media
  * @prop {Date} createdAt
  * @prop {Date} updatedAt
  *
- * @typedef {import('mongoose').Document<LeanPlaylist> & {
+ * @typedef {import('mongoose').Document<LeanPlaylist["_id"]> & LeanPlaylist & {
  *  readonly size: number
  * }} Playlist
  */

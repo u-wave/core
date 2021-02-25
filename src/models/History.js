@@ -9,23 +9,27 @@ const listOfUsers = [{ type: Types.ObjectId, ref: 'User' }];
 
 /**
  * @typedef {object} HistoryMedia
- * @prop {import('mongoose').Types.ObjectId} media
+ * @prop {import('mongodb').ObjectID} media
  * @prop {string} artist
  * @prop {string} title
  * @prop {number} start
  * @prop {number} end
- *
+ */
+
+/**
  * @typedef {object} LeanHistoryEntry
- * @prop {import('mongoose').Types.ObjectId} _id
- * @prop {import('mongoose').Types.ObjectId} user
- * @prop {import('mongoose').Types.ObjectId} playlist
- * @prop {import('mongoose').Types.ObjectId} item
+ * @prop {import('mongodb').ObjectID} _id
+ * @prop {import('mongodb').ObjectID} user
+ * @prop {import('mongodb').ObjectID} playlist
+ * @prop {import('mongodb').ObjectID} item
  * @prop {Date} playedAt
- * @prop {import('mongoose').Types.ObjectId[]} upvotes
- * @prop {import('mongoose').Types.ObjectId[]} downvotes
- * @prop {import('mongoose').Types.ObjectId[]} favorites
- *
- * @typedef {import('mongoose').Document<LeanHistoryEntry>} HistoryEntry
+ * @prop {import('mongodb').ObjectID[]} upvotes
+ * @prop {import('mongodb').ObjectID[]} downvotes
+ * @prop {import('mongodb').ObjectID[]} favorites
+ */
+
+/**
+ * @typedef {import('mongoose').Document<LeanHistoryEntry["_id"]> & LeanHistoryEntry} HistoryEntry
  */
 
 const schema = new Schema({

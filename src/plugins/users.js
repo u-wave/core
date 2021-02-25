@@ -18,12 +18,15 @@ function getDefaultAvatar(user) {
 }
 
 class UsersRepository {
+  /**
+   * @param {import('../Uwave')} uw
+   */
   constructor(uw) {
     this.uw = uw;
   }
 
   async getUsers(filter = null, page = {}) {
-    const User = this.uw.model('User');
+    const { User } = this.uw.models;
 
     if (filter && (typeof filter.offset === 'number' || typeof filter.limit === 'number')) {
       page = filter; // eslint-disable-line no-param-reassign
@@ -74,10 +77,13 @@ class UsersRepository {
     });
   }
 
+  /**
+   * @param {import('mongodb').ObjectID|string|User} id
+   */
   getUser(id) {
-    const User = this.uw.model('User');
+    const { User } = this.uw.models;
     if (id instanceof User) {
-      return id;
+      return Promise.resolve(id);
     }
     return User.findById(id);
   }
@@ -108,7 +114,7 @@ class UsersRepository {
    * @param {LocalLoginOptions} options
    */
   async localLogin({ email, password }) {
-    const Authentication = this.uw.model('Authentication');
+    const { Authentication } = this.uw.models;
 
     const auth = await Authentication.findOne({
       email: email.toLowerCase(),
@@ -145,8 +151,7 @@ class UsersRepository {
     username,
     avatar,
   }) {
-    const User = this.uw.model('User');
-    const Authentication = this.uw.model('Authentication');
+    const { User, Authentication } = this.uw.models;
 
     debug('find or create social', type, id);
 
@@ -200,8 +205,7 @@ class UsersRepository {
   async createUser({
     username, email, password,
   }) {
-    const User = this.uw.model('User');
-    const Authentication = this.uw.model('Authentication');
+    const { User, Authentication } = this.uw.models;
 
     debug('create user', username, email.toLowerCase());
 
@@ -245,7 +249,7 @@ class UsersRepository {
   }
 
   async updatePassword(id, password) {
-    const Authentication = this.uw.model('Authentication');
+    const { Authentication } = this.uw.models;
 
     const user = await this.getUser(id);
     if (!user) throw new UserNotFoundError({ id });

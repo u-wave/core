@@ -7,7 +7,8 @@ const { Types } = mongoose.Schema;
 
 /**
  * @typedef {object} LeanPlaylistItem
- * @prop {import('mongoose').Types.ObjectId} media
+ * @prop {import('mongodb').ObjectID} _id
+ * @prop {import('mongodb').ObjectID} media
  * @prop {string} artist
  * @prop {string} title
  * @prop {number} start
@@ -15,7 +16,7 @@ const { Types } = mongoose.Schema;
  * @prop {Date} createdAt
  * @prop {Date} updatedAt
  *
- * @typedef {import('mongoose').Document<LeanPlaylistItem>} PlaylistItem
+ * @typedef {import('mongoose').Document<LeanPlaylistItem["_id"]> & LeanPlaylistItem} PlaylistItem
  */
 
 const schema = new Schema({

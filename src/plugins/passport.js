@@ -14,6 +14,9 @@ const schema = require('../schemas/socialAuth.json');
  */
 
 class PassportPlugin extends Passport {
+  /**
+   * @param {import('../Uwave')} uw
+   */
   constructor(uw, options) {
     super();
 

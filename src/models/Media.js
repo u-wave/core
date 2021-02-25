@@ -6,7 +6,7 @@ const { Schema } = mongoose;
 
 /**
  * @typedef {object} LeanMedia
- * @prop {import('mongoose').Types.ObjectId} _id
+ * @prop {import('mongodb').ObjectID} _id
  * @prop {string} sourceID
  * @prop {string} sourceType
  * @prop {object} sourceData
@@ -17,7 +17,7 @@ const { Schema } = mongoose;
  * @prop {Date} createdAt
  * @prop {Date} updatedAt
  *
- * @typedef {import('mongoose').Document<LeanMedia>} Media
+ * @typedef {import('mongoose').Document<LeanMedia["_id"]> & LeanMedia} Media
  */
 
 const schema = new Schema({

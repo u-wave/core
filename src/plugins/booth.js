@@ -5,6 +5,12 @@ const RedLock = require('redlock');
 const createDebug = require('debug');
 const routes = require('../routes/booth');
 
+/**
+ * @typedef {import('../models').Playlist} Playlist
+ * @typedef {import('../models').PlaylistItem} PlaylistItem
+ * @typedef {import('../models').HistoryEntry} HistoryEntry
+ */
+
 class PlaylistIsEmptyError extends Error {
   constructor(message) {
     super(message);
@@ -14,13 +20,20 @@ class PlaylistIsEmptyError extends Error {
 
 const debug = createDebug('uwave:advance');
 
-function cyclePlaylist(playlist) {
+/**
+ * @param {Playlist} playlist
+ * @returns {Promise<void>}
+ */
+async function cyclePlaylist(playlist) {
   const item = playlist.media.shift();
   playlist.media.push(item);
-  return playlist.save();
+  await playlist.save();
 }
 
 class Booth {
+  /**
+   * @param {import('../Uwave')} uw
+   */
   constructor(uw) {
     this.uw = uw;
     this.timeout = null;
@@ -100,6 +113,9 @@ class Booth {
     return User.findById(userID);
   }
 
+  /**
+   * @returns {Promise<HistoryEntry | null>}
+   */
   async getNextEntry(opts) {
     const { HistoryEntry } = this.uw.models;
     const { playlists } = this.uw;

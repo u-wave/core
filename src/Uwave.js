@@ -26,9 +26,6 @@ const waitlist = require('./plugins/waitlist');
 const passport = require('./plugins/passport');
 const migrations = require('./plugins/migrations');
 
-mongoose.Promise = Promise;
-const MongooseConnection = mongoose.Connection;
-
 const kSources = Symbol('Media sources');
 
 const DEFAULT_MONGO_URL = 'mongodb://localhost:27017/uwave';
@@ -154,7 +151,7 @@ class UwaveServer extends Avvio {
         ...defaultOptions,
         ...options.mongo,
       });
-    } else if (options.mongo instanceof MongooseConnection) {
+    } else if (options.mongo instanceof mongoose.Connection) {
       this.mongo = options.mongo;
     } else {
       this.mongo = mongoose.createConnection(DEFAULT_MONGO_URL, defaultOptions);
@@ -192,11 +189,11 @@ class UwaveServer extends Avvio {
    * If the first parameter is a string, returns an existing source plugin.
    * Else, adds a source plugin and returns its wrapped source plugin.
    *
-   * @param sourcePlugin {string|Function|Object} Source name or definition.
+   * @param {string|Function|Object} sourcePlugin Source name or definition.
    *     When a string: Source type name.
    *     Used to signal where a given media item originated from.
    *     When a function or object: Source plugin or plugin factory.
-   * @param opts {Object} Options to pass to the source plugin. Only used if
+   * @param {object} opts Options to pass to the source plugin. Only used if
    *     a source plugin factory was passed to `sourcePlugin`.
    */
   source(sourcePlugin, opts = {}) {
@@ -265,6 +262,8 @@ class UwaveServer extends Avvio {
 
   /**
    * Publish an event to the üWave channel.
+   * @param {string} command
+   * @param {import('type-fest').JsonValue} data
    */
   publish(command, data) {
     this.redis.publish('uwave', JSON.stringify({

@@ -12,6 +12,9 @@ const MAX_PAGE_SIZE = 100;
  */
 
 class HistoryRepository {
+  /**
+   * @param {import('../Uwave')} uw
+   */
   constructor(uw) {
     this.uw = uw;
   }
