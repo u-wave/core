@@ -1,13 +1,15 @@
 'use strict';
 
 const bcrypt = require('bcryptjs');
-const createDebug = require('debug');
+const debug = require('debug')('uwave:users');
 const escapeStringRegExp = require('escape-string-regexp');
 const Page = require('../Page');
 const { UserNotFoundError } = require('../errors');
 const PasswordError = require('../errors/PasswordError');
 
-const debug = createDebug('uwave:users');
+/**
+ * @typedef {import('../models').User} User
+ */
 
 function encryptPassword(password) {
   return bcrypt.hash(password, 10);
@@ -100,6 +102,7 @@ class UsersRepository {
    * @typedef {SocialLoginOptions & { type: string }} DiscriminatedSocialLoginOptions
    *
    * @param {DiscriminatedLocalLoginOptions | DiscriminatedSocialLoginOptions} options
+   * @returns {Promise<User>}
    */
   login({ type, ...params }) {
     if (type === 'local') {
@@ -112,10 +115,14 @@ class UsersRepository {
 
   /**
    * @param {LocalLoginOptions} options
+   * @returns {Promise<User>}
    */
   async localLogin({ email, password }) {
     const { Authentication } = this.uw.models;
 
+    /**
+     * @type {Authentication & { user: User }}
+     */
     const auth = await Authentication.findOne({
       email: email.toLowerCase(),
     }).populate('user').exec();
@@ -134,6 +141,7 @@ class UsersRepository {
   /**
    * @param {string} type
    * @param {SocialLoginOptions} options
+   * @returns {Promise<User>}
    */
   async socialLogin(type, { profile }) {
     const user = {
@@ -145,6 +153,9 @@ class UsersRepository {
     return this.uw.users.findOrCreateSocialUser(user);
   }
 
+  /*
+   * @returns {Promise<User>}
+   */
   async findOrCreateSocialUser({
     type,
     id,
@@ -194,7 +205,7 @@ class UsersRepository {
       }
 
       this.uw.publish('user:create', {
-        user: user.toJSON(),
+        user: user.id,
         auth: { type, id },
       });
     }
@@ -202,6 +213,9 @@ class UsersRepository {
     return auth.user;
   }
 
+  /*
+   * @returns {Promise<User>}
+   */
   async createUser({
     username, email, password,
   }) {
@@ -241,7 +255,7 @@ class UsersRepository {
     }
 
     this.uw.publish('user:create', {
-      user: user.toJSON(),
+      user: user.id,
       auth: { type: 'local', email: email.toLowerCase() },
     });
 

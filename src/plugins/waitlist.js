@@ -56,13 +56,12 @@ class Waitlist {
   }
 
   /**
-   * @param {string} userID
+   * @param {User} user
    * @return {Promise<boolean>}
    * @private
    */
-  async hasValidPlaylist(userID) {
-    const { users, playlists } = this.uw;
-    const user = await users.getUser(userID);
+  async hasPlayablePlaylist(user) {
+    const { playlists } = this.uw;
     const playlist = await playlists.getUserPlaylist(user, user.activePlaylist);
     return playlist && playlist.size > 0;
   }
@@ -156,7 +155,7 @@ class Waitlist {
     if (await this.isCurrentDJ(user.id)) {
       throw new PermissionError('You are already currently playing.');
     }
-    if (!(await this.hasValidPlaylist(user))) {
+    if (!(await this.hasPlayablePlaylist(user))) {
       throw new EmptyPlaylistError();
     }
 
@@ -202,7 +201,7 @@ class Waitlist {
     if (await this.isCurrentDJ(user.id)) {
       throw new PermissionError('That user is currently playing.');
     }
-    if (!(await this.hasValidPlaylist(user.id))) {
+    if (!(await this.hasPlayablePlaylist(user))) {
       throw new EmptyPlaylistError();
     }
 
