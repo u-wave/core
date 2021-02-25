@@ -13,13 +13,13 @@ async function getMotd(req) {
   );
 }
 
-async function setMotd(req, ...args) {
+async function setMotd(req) {
   const { motd } = req.uwave;
   const { motd: newValue } = req.body;
 
   await motd.set(String(newValue));
 
-  return getMotd(req, ...args);
+  return getMotd(req);
 }
 
 exports.getMotd = getMotd;

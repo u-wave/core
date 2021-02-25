@@ -18,6 +18,7 @@ ajv.addSchema(require('../schemas/definitions.json'));
 function alwaysTrue() {
   return true;
 }
+alwaysTrue.errors = undefined;
 
 /**
  * @param {object} schemas

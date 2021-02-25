@@ -4,6 +4,22 @@ const mongoose = require('mongoose');
 
 const { Schema } = mongoose;
 
+/**
+ * @typedef {object} LeanMedia
+ * @prop {import('mongoose').Types.ObjectId} _id
+ * @prop {string} sourceID
+ * @prop {string} sourceType
+ * @prop {object} sourceData
+ * @prop {string} artist
+ * @prop {string} title
+ * @prop {number} duration
+ * @prop {string} thumbnail
+ * @prop {Date} createdAt
+ * @prop {Date} updatedAt
+ *
+ * @typedef {import('mongoose').Document<LeanMedia>} Media
+ */
+
 const schema = new Schema({
   sourceID: {
     type: String, max: 128, required: true, index: true,

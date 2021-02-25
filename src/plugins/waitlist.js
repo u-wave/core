@@ -337,3 +337,4 @@ async function waitlistPlugin(uw) {
 }
 
 module.exports = waitlistPlugin;
+module.exports.Waitlist = Waitlist;

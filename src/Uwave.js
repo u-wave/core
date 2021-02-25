@@ -1,12 +1,11 @@
 'use strict';
 
-const EventEmitter = require('events');
 const mongoose = require('mongoose');
 const Redis = require('ioredis');
 const debug = require('debug');
 const { isPlainObject } = require('lodash');
 const { promisify } = require('util');
-const avvio = require('avvio');
+const Avvio = require('avvio');
 
 const HttpApi = require('./HttpApi');
 const SocketServer = require('./SocketServer');
@@ -35,25 +34,7 @@ const kSources = Symbol('Media sources');
 const DEFAULT_MONGO_URL = 'mongodb://localhost:27017/uwave';
 const DEFAULT_REDIS_URL = 'redis://localhost:6379';
 
-/**
- * @typedef {import('avvio').Avvio} Avvio
- */
-
-/**
- * @prop {any} acl
- * @prop {any} bans
- * @prop {any} booth
- * @prop {any} chat
- * @prop {any} config
- * @prop {any} history
- * @prop {any} migrations
- * @prop {any} motd
- * @prop {any} passport
- * @prop {any} playlists
- * @prop {any} users
- * @prop {any} waitlist
- */
-class UwaveServer extends EventEmitter {
+class UwaveServer extends Avvio {
   /**
   * @param {object} [options]
   * @param {boolean} [options.useDefaultPlugins]
@@ -61,7 +42,36 @@ class UwaveServer extends EventEmitter {
   constructor(options = {}) {
     super();
 
-    avvio(this);
+    /* eslint-disable no-unused-expressions */
+
+    /** @type {import('./models').Models} */
+    this.models;
+    /** @type {import('./plugins/acl').Acl} */
+    this.acl;
+    /** @type {import('./plugins/bans').Bans} */
+    this.bans;
+    /** @type {import('./plugins/booth').Booth} */
+    this.booth;
+    /** @type {import('./plugins/chat').Chat} */
+    this.chat;
+    /** @type {import('./plugins/configStore').ConfigStore} */
+    this.config;
+    /** @type {import('./plugins/history').HistoryRepository} */
+    this.history;
+    /** @type {import('./plugins/migrations').Migrate} */
+    this.migrate;
+    /** @type {import('./plugins/motd').MOTD} */
+    this.motd;
+    /** @type {import('./plugins/passport').Passport} */
+    this.passport;
+    /** @type {import('./plugins/playlists').PlaylistsRepository} */
+    this.playlists;
+    /** @type {import('./plugins/users').UsersRepository} */
+    this.users;
+    /** @type {import('./plugins/waitlist').Waitlist} */
+    this.waitlist;
+
+    /* eslint-enable no-unused-expressions */
 
     /**
      * @type {Map<string, Source>}

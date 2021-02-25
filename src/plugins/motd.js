@@ -22,3 +22,4 @@ async function motdPlugin(uw) {
 }
 
 module.exports = motdPlugin;
+module.exports.MOTD = MOTD;

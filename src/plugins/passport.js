@@ -9,6 +9,10 @@ const JWTStrategy = require('../auth/JWTStrategy');
 
 const schema = require('../schemas/socialAuth.json');
 
+/**
+ * @typedef {import('../models/User').User} User
+ */
+
 class PassportPlugin extends Passport {
   constructor(uw, options) {
     super();
@@ -16,9 +20,17 @@ class PassportPlugin extends Passport {
     this.uw = uw;
     this.socialLogin = this.socialLogin.bind(this);
 
+    /**
+     * @param {User} user
+     * @returns {Promise<string>}
+     */
     function serializeUser(user) {
       return Promise.resolve(user.id);
     }
+    /**
+     * @param {string} id
+     * @returns {Promise<User>}
+     */
     function deserializeUser(id) {
       return uw.users.getUser(id);
     }
@@ -26,6 +38,11 @@ class PassportPlugin extends Passport {
     this.serializeUser(callbackify(serializeUser));
     this.deserializeUser(callbackify(deserializeUser));
 
+    /**
+     * @param {string} email
+     * @param {string} password
+     * @returns {Promise<User>}
+     */
     function localLogin(email, password) {
       return uw.users.login({ type: 'local', email, password });
     }
@@ -65,12 +82,19 @@ class PassportPlugin extends Passport {
     });
   }
 
+  /**
+   * @param {string} strategy
+   * @returns {boolean}
+   */
   supports(strategy) {
     // @ts-ignore
     // eslint-disable-next-line no-underscore-dangle
     return this._strategy(strategy) !== undefined;
   }
 
+  /**
+   * @returns {string[]}
+   */
   strategies() {
     // @ts-ignore
     // eslint-disable-next-line no-underscore-dangle
@@ -99,3 +123,4 @@ async function passportPlugin(uw, options = {}) {
 }
 
 module.exports = passportPlugin;
+module.exports.Passport = PassportPlugin;

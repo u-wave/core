@@ -5,6 +5,21 @@ const mongoose = require('mongoose');
 const { Schema } = mongoose;
 const { Types } = mongoose.Schema;
 
+/**
+ * @typedef {object} LeanPlaylist
+ * @prop {import('mongoose').Types.ObjectId} _id
+ * @prop {string} name
+ * @prop {string} description
+ * @prop {import('mongoose').Types.ObjectId} author
+ * @prop {import('mongoose').Types.ObjectId[]} media
+ * @prop {Date} createdAt
+ * @prop {Date} updatedAt
+ *
+ * @typedef {import('mongoose').Document<LeanPlaylist> & {
+ *  readonly size: number
+ * }} Playlist
+ */
+
 const schema = new Schema({
   name: {
     type: String,

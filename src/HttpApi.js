@@ -113,7 +113,7 @@ class UwaveHttpApi extends Router {
       throw new TypeError('"options.onError" must be a function.');
     }
 
-    const router = super(options);
+    super(options);
 
     this.uw = uw;
 
@@ -142,8 +142,6 @@ class UwaveHttpApi extends Router {
       .use('/search', search())
       .use('/server', server())
       .use('/users', users());
-
-    return router;
   }
 
   /**

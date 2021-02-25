@@ -7,24 +7,30 @@ const Page = require('../Page');
 const DEFAULT_PAGE_SIZE = 50;
 const MAX_PAGE_SIZE = 100;
 
+/**
+ * @typedef {import('../models').User} User
+ */
+
 class HistoryRepository {
   constructor(uw) {
     this.uw = uw;
   }
 
-  get HistoryEntry() {
-    return this.uw.model('History');
-  }
-
+  /**
+   * @param {object} filter
+   * @param {{ offset?: number, limit?: number }} [pagination]
+   */
   async getHistory(filter, pagination = {}) {
+    const { HistoryEntry } = this.uw.models;
+
     const offset = pagination.offset || 0;
     const size = clamp(
       'limit' in pagination ? pagination.limit : DEFAULT_PAGE_SIZE,
       0, MAX_PAGE_SIZE,
     );
 
-    const total = await this.HistoryEntry.where(filter).countDocuments();
-    const results = await this.HistoryEntry.where(filter)
+    const total = await HistoryEntry.where(filter).countDocuments();
+    const results = await HistoryEntry.where(filter)
       .sort({ playedAt: -1 })
       .skip(offset)
       .limit(size)
@@ -43,10 +49,17 @@ class HistoryRepository {
     });
   }
 
+  /**
+   * @param {{ offset?: number, limit?: number }} [pagination]
+   */
   getRoomHistory(pagination = {}) {
     return this.getHistory({}, pagination);
   }
 
+  /**
+   * @param {User} user
+   * @param {{ offset?: number, limit?: number }} [pagination]
+   */
   getUserHistory(user, pagination = {}) {
     return this.getHistory({ user: user._id }, pagination);
   }

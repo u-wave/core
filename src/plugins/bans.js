@@ -6,6 +6,7 @@ const Page = require('../Page');
 
 /**
  * @typedef {import('mongoose').Types.ObjectId} ObjectId
+ * @typedef {import('../models/User').User} User
  */
 
 function isValidBan(user) {
@@ -143,3 +144,4 @@ async function bans(uw) {
 }
 
 module.exports = bans;
+module.exports.Bans = Bans;

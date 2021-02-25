@@ -7,6 +7,27 @@ const { Types } = mongoose.Schema;
 
 const listOfUsers = [{ type: Types.ObjectId, ref: 'User' }];
 
+/**
+ * @typedef {object} HistoryMedia
+ * @prop {import('mongoose').Types.ObjectId} media
+ * @prop {string} artist
+ * @prop {string} title
+ * @prop {number} start
+ * @prop {number} end
+ *
+ * @typedef {object} LeanHistoryEntry
+ * @prop {import('mongoose').Types.ObjectId} _id
+ * @prop {import('mongoose').Types.ObjectId} user
+ * @prop {import('mongoose').Types.ObjectId} playlist
+ * @prop {import('mongoose').Types.ObjectId} item
+ * @prop {Date} playedAt
+ * @prop {import('mongoose').Types.ObjectId[]} upvotes
+ * @prop {import('mongoose').Types.ObjectId[]} downvotes
+ * @prop {import('mongoose').Types.ObjectId[]} favorites
+ *
+ * @typedef {import('mongoose').Document<LeanHistoryEntry>} HistoryEntry
+ */
+
 const schema = new Schema({
   user: {
     type: Types.ObjectId, ref: 'User', required: true, index: true,

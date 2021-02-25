@@ -82,13 +82,31 @@ class UsersRepository {
     return User.findById(id);
   }
 
+  /**
+   * @typedef {object} LocalLoginOptions
+   * @prop {string} email
+   * @prop {string} password
+   *
+   * @typedef {object} SocialLoginOptions
+   * @prop {object} profile
+   *
+   * @typedef {LocalLoginOptions & { type: 'local' }} DiscriminatedLocalLoginOptions
+   * @typedef {SocialLoginOptions & { type: string }} DiscriminatedSocialLoginOptions
+   *
+   * @param {DiscriminatedLocalLoginOptions | DiscriminatedSocialLoginOptions} options
+   */
   login({ type, ...params }) {
     if (type === 'local') {
+      // @ts-ignore
       return this.localLogin(params);
     }
+    // @ts-ignore
     return this.socialLogin(type, params);
   }
 
+  /**
+   * @param {LocalLoginOptions} options
+   */
   async localLogin({ email, password }) {
     const Authentication = this.uw.model('Authentication');
 
@@ -107,6 +125,10 @@ class UsersRepository {
     return auth.user;
   }
 
+  /**
+   * @param {string} type
+   * @param {SocialLoginOptions} options
+   */
   async socialLogin(type, { profile }) {
     const user = {
       type,

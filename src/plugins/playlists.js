@@ -2,14 +2,18 @@
 
 const { groupBy, shuffle } = require('lodash');
 const escapeStringRegExp = require('escape-string-regexp');
-const createDebug = require('debug');
+const debug = require('debug')('uwave:playlists');
 const { ObjectID } = require('mongoose').mongo;
 const { PlaylistNotFoundError } = require('../errors');
 const NotFoundError = require('../errors/NotFoundError');
 const Page = require('../Page');
 const routes = require('../routes/playlists');
 
-const debug = createDebug('uwave:playlists');
+/**
+ * @typedef {import('../models/User').User} User
+ * @typedef {import('../models/Playlist').Playlist} Playlist
+ * @typedef {import('../models/Media').Media} Media
+ */
 
 function isValidPlaylistItem(item) {
   return typeof item === 'object'
@@ -76,16 +80,25 @@ class PlaylistsRepository {
     return media;
   }
 
+  /**
+   * @param {User} user
+   * @param {ObjectID} id
+   * @returns {Promise<Playlist>}
+   */
   async getUserPlaylist(user, id) {
-    const Playlist = this.uw.model('Playlist');
-    const userID = typeof user === 'object' ? user.id : user;
-    const playlist = await Playlist.findOne({ _id: id, author: userID });
+    const { Playlist } = this.uw.models;
+    const playlist = await Playlist.findOne({ _id: id, author: user._id });
     if (!playlist) {
       throw new PlaylistNotFoundError({ id });
     }
     return playlist;
   }
 
+  /**
+   * @param {ObjectID} userID
+   * @param {{ name: string }} options
+   * @returns {Promise<Playlist>}
+   */
   async createPlaylist(userID, { name }) {
     const { users } = this.uw;
     const Playlist = this.uw.model('Playlist');
@@ -113,18 +126,31 @@ class PlaylistsRepository {
     return playlists;
   }
 
+  /**
+   * @param {ObjectID} playlistOrID
+   * @param {object} patch
+   * @returns {Promise<Playlist>}
+   */
   async updatePlaylist(playlistOrID, patch = {}) {
     const playlist = await this.getPlaylist(playlistOrID);
     Object.assign(playlist, patch);
     return playlist.save();
   }
 
+  /**
+   * @param {ObjectID} playlistOrID
+   * @returns {Promise<Playlist>}
+   */
   async shufflePlaylist(playlistOrID) {
     const playlist = await this.getPlaylist(playlistOrID);
     playlist.media = shuffle(playlist.media);
     return playlist.save();
   }
 
+  /**
+   * @param {ObjectID} playlistOrID
+   * @returns {Promise<{}>}
+   */
   async deletePlaylist(playlistOrID) {
     const playlist = await this.getPlaylist(playlistOrID);
 
@@ -236,8 +262,12 @@ class PlaylistsRepository {
   /**
    * Get playlists containing a particular Media.
    *
+   * @typedef {object} GetPlaylistsContainingMediaOptions
+   * @prop {ObjectID} [author]
+   * @prop {string[]} [fields]
+   *
    * @param {Media|ObjectID|string} mediaOrID
-   * @param {{ author?: ObjectID }} options
+   * @param {GetPlaylistsContainingMediaOptions} options
    * @return {Promise<Playlist[]>}
    */
   async getPlaylistsContainingMedia(mediaOrID, options = {}) {
@@ -287,8 +317,7 @@ class PlaylistsRepository {
    *   A map of stringified `Media` `ObjectID`s to the Playlist objects that contain them.
    */
   async getPlaylistsContainingAnyMedia(mediasOrIDs, options = {}) {
-    const Media = this.uw.model('Media');
-    const Playlist = this.uw.model('Playlist');
+    const { Playlist, Media } = this.uw.models;
 
     if (!Array.isArray(mediasOrIDs)) {
       throw new TypeError('playlists.getPlaylistsContainingAnyMedia: mediasOrIDs must be an array');

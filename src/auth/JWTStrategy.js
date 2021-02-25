@@ -32,7 +32,7 @@ class JWTStrategy extends Strategy {
     this.getUser = getUser;
   }
 
-  authenticate(req, options) {
+  authenticate(req) {
     this.authenticateP(req).catch((err) => {
       this.error(err);
     });

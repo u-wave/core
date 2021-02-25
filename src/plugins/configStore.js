@@ -8,6 +8,10 @@ const ValidationError = require('../errors/ValidationError');
 
 const { Schema } = mongoose;
 
+/**
+ * @typedef {import('../models/User').User} User
+ */
+
 const configSchema = new Schema({
   _id: { type: String },
 }, {
@@ -177,3 +181,4 @@ async function configStorePlugin(uw) {
 }
 
 module.exports = configStorePlugin;
+module.exports.ConfigStore = ConfigStore;

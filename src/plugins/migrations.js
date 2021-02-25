@@ -49,6 +49,10 @@ const mongooseStorage = {
   },
 };
 
+/**
+ * @typedef {() => Promise<undefined>} Migrate
+ */
+
 async function migrationsPlugin(uw) {
   const redLock = new RedLock([uw.redis]);
   uw.models.Migration = uw.mongo.model('Migration', migrationSchema);
