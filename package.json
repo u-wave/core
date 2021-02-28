@@ -1,6 +1,6 @@
 {
   "name": "u-wave-core",
-  "version": "0.4.1",
+  "version": "0.5.0-alpha.1",
   "description": "The üWave core library.",
   "license": "MIT",
   "repository": "u-wave/core",
@@ -16,7 +16,7 @@
     "u-wave-core": "bin/u-wave-core"
   },
   "engines": {
-    "node": ">= 10"
+    "node": ">= 12.20.0"
   },
   "dependencies": {
     "ajv": "^7.0.3",
