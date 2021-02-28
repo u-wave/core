@@ -36,8 +36,10 @@ class ConfigStore {
       strictTypes: true,
     });
     formats(this.ajv);
+    /* eslint-disable global-require */
     this.ajv.addMetaSchema(require('ajv/dist/refs/json-schema-draft-07.json'));
     this.ajv.addSchema(require('../schemas/definitions.json'));
+    /* eslint-enable global-require */
 
     this.emitter = new EventEmitter();
     this.registry = new Map();
