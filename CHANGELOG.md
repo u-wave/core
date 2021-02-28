@@ -4,7 +4,7 @@ All notable changes to this project will be documented in this file.
 
 This project adheres to [Semantic Versioning](http://semver.org/).
 
-## 0.5.0-alpha.0 / 28 Feb 2021
+## 0.5.0-alpha.1 / 28 Feb 2021
 
 This is an alpha release, but new servers should use this version rather than an older "stable" one.
 
