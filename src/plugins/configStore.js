@@ -99,6 +99,7 @@ class ConfigStore {
     if (!validate) return undefined;
 
     const config = (await this.load(key)) || {};
+    // Allowed to fail--just fills in defaults
     validate(config);
 
     return config;
