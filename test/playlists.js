@@ -291,7 +291,7 @@ describe('Playlists', () => {
     it('activates the playlist', async () => {
       const token = await uw.test.createTestSessionToken(user);
 
-      const firstPlaylist = await supertest(uw.server)
+      await supertest(uw.server)
         .post('/api/playlists')
         .set('Cookie', `uwsession=${token}`)
         .send({ name: 'First Playlist' })
