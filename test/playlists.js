@@ -128,7 +128,7 @@ describe('Playlists', () => {
         .expect(200);
 
       sinon.assert.match(userData.body.data, {
-        activePlaylist: secondRes.body.data._id,
+        activePlaylist: res.body.data._id,
       });
     });
   });
