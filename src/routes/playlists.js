@@ -43,13 +43,15 @@ function playlistRoutes() {
       route(controller.updatePlaylist),
     )
     // PUT /playlists/:id/rename - Rename a playlist.
-    // TODO call this /playlists/:id/name
+    // TODO should just be part of PATCH
     .put(
       '/:id/rename',
       schema(validations.renamePlaylist),
       route(controller.renamePlaylist),
     )
     // PUT /playlists/:id/activate - Set the playlist as active.
+    // Should this be part of PATCH or should we have a `PUT /playlist/active`
+    // that you can send the ID to?
     .put(
       '/:id/activate',
       route(controller.activatePlaylist),
