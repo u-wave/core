@@ -1,1 +1,7 @@
+/dev
 /example
+.eslintcache
+.env
+.github
+Dockerfile
+.dockerignore

@@ -4,9 +4,20 @@ All notable changes to this project will be documented in this file.
 
 This project adheres to [Semantic Versioning](http://semver.org/).
 
-## Unreleased
+## 0.5.0-alpha.1 / 28 Feb 2021
+
+This is an alpha release, but new servers should use this version rather than an older "stable" one.
 
 The `u-wave-http-api` package has been merged into `u-wave-core`. This package now contains both the library and the HTTP and WebSocket API for üWave servers.
+
+The minimum supported Node.js version is v12.20.0.
+
+`u-wave-core` now includes a basic CLI with some default configuration.
+
+```bash
+npm install --global u-wave-core@next
+u-wave-core --help
+```
 
 Features:
  * **Breaking:** Merge `u-wave-http-api`. (#333)
@@ -17,6 +28,7 @@ Features:
  * Add social authentication support. (#265, #385)
  * Add runtime configuration support. (#380, #408)
  * Add database migrations. (#410)
+ * Add a CLI to run a basic, default-configuration server. (#391, #418)
 
 Internal:
  * Add `uw.models` property for easier mongoose model access. (#283)
