@@ -4,6 +4,7 @@ const { groupBy, shuffle } = require('lodash');
 const escapeStringRegExp = require('escape-string-regexp');
 const createDebug = require('debug');
 const { ObjectID } = require('mongoose').mongo;
+const { PlaylistNotFoundError } = require('../errors');
 const NotFoundError = require('../errors/NotFoundError');
 const Page = require('../Page');
 const routes = require('../routes/playlists');
@@ -58,7 +59,7 @@ class PlaylistsRepository {
     }
     const playlist = await Playlist.findById(id);
     if (!playlist) {
-      throw new NotFoundError('Playlist not found.');
+      throw new PlaylistNotFoundError({ id });
     }
     return playlist;
   }
@@ -80,7 +81,7 @@ class PlaylistsRepository {
     const userID = typeof user === 'object' ? user.id : user;
     const playlist = await Playlist.findOne({ _id: id, author: userID });
     if (!playlist) {
-      throw new NotFoundError('Playlist not found.');
+      throw new PlaylistNotFoundError({ id });
     }
     return playlist;
   }
@@ -108,7 +109,7 @@ class PlaylistsRepository {
   async getUserPlaylists(user) {
     const Playlist = this.uw.model('Playlist');
     const userID = typeof user === 'object' ? user.id : user;
-    const playlists = await Playlist.where('author').eq(userID);
+    const playlists = await Playlist.where('author').eq(userID).lean();
     return playlists;
   }
 

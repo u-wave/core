@@ -17,8 +17,6 @@ const schema = new Schema({
   author: {
     type: Types.ObjectId, ref: 'User', required: true, index: true,
   },
-  shared: { type: Boolean, default: false },
-  nsfw: { type: Boolean, default: false },
   media: [{
     type: Types.ObjectId,
     ref: 'PlaylistItem',
