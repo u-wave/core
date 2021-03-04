@@ -209,6 +209,16 @@ class UwaveServer extends EventEmitter {
   }
 
   /**
+   * Register a source plugin.
+   */
+  async useSource(sourcePlugin, opts = {}) {
+    await this.use(Source.plugin, {
+      source: sourcePlugin,
+      baseOptions: opts,
+    });
+  }
+
+  /**
    * Get or register a source plugin.
    * If the first parameter is a string, returns an existing source plugin.
    * Else, adds a source plugin and returns its wrapped source plugin.
@@ -234,6 +244,10 @@ class UwaveServer extends EventEmitter {
       throw new TypeError(`Source plugin should be a function, got ${typeof sourceFactory}`);
     }
 
+    if (typeof sourceFactory === 'function' && has(sourceFactory, 'api') && sourceFactory.api >= 3) {
+      throw new TypeError('uw.source() only supports old-style source plugins.');
+    }
+
     const sourceDefinition = typeof sourceFactory === 'function'
       ? sourceFactory(this, opts)
       : sourceFactory;
@@ -243,14 +257,36 @@ class UwaveServer extends EventEmitter {
     }
     const newSource = new Source(this, sourceType, sourceDefinition);
 
-    this.#sources.set(sourceType, newSource);
+    this.insertSourceInternal(sourceType, newSource);
 
     return newSource;
   }
 
   /**
-   * @private
+   * Adds a fully wrapped source plugin. Not for external use.
+   *
+   * @param {string} sourceType
+   * @param {Source} source
    */
+  insertSourceInternal(sourceType, source) {
+    this.#sources.set(sourceType, source);
+  }
+
+  /**
+   * Removes a source plugin. Not for external use.
+   *
+   * Only source plugins using Media Source API 3 or higher can be removed.
+   *
+   * @param {string} sourceType
+   */
+  removeSourceInternal(sourceType) {
+    const source = this.#sources.get(sourceType);
+    if (this.#sources.delete(sourceType)) {
+      return source;
+    }
+    return null;
+  }
+
   configureRedis() {
     this.redis.on('error', (e) => {
       this.emit('redisError', e);
