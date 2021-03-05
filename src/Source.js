@@ -88,12 +88,10 @@ class Source {
     this.uw = uw;
     this.type = sourceType;
     this.plugin = sourcePlugin;
-
-    this.addSourceType = this.addSourceType.bind(this);
   }
 
   get apiVersion() {
-    return this.plugin.api || 1;
+    return this.plugin.api || this.plugin.constructor.api || 1;
   }
 
   /**
@@ -162,6 +160,31 @@ class Source {
       results = await this.plugin.search(query, page, ...args);
     }
     return this.addSourceType(results);
+  }
+
+  /**
+   * Get playlists for a specific user from this media source.
+   */
+  async getUserPlaylists(user, userID) {
+    if (this.apiVersion < 3 || !this.plugin.getUserPlaylists) {
+      throw new SourceNoImportError({ name: this.type });
+    }
+
+    const context = new SourceContext(this.uw, this, user);
+
+    return this.plugin.getUserPlaylists(context, userID);
+  }
+
+  /**
+   * Get playlists for a specific user from this media source.
+   */
+  async getPlaylistItems(user, playlistID) {
+    if (this.apiVersion < 3 || !this.plugin.getPlaylistItems) {
+      throw new SourceNoImportError({ name: this.type });
+    }
+
+    const context = new SourceContext(this.uw, this, user);
+    return this.plugin.getPlaylistItems(context, playlistID);
   }
 
   /**

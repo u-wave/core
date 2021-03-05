@@ -200,22 +200,26 @@ class UwaveServer extends EventEmitter {
   }
 
   /**
+   * Register a source plugin.
+   */
+  async useSource(sourcePlugin, opts = {}) {
+    /** @type {import('avvio').Avvio<this>} */
+    // @ts-ignore
+    const boot = this;
+
+    boot.use(Source.plugin, {
+      source: sourcePlugin,
+      baseOptions: opts,
+    });
+  }
+
+  /**
    * An array of registered sources.
    *
    * @type {Source[]}
    */
   get sources() {
     return [...this.#sources.values()];
-  }
-
-  /**
-   * Register a source plugin.
-   */
-  async useSource(sourcePlugin, opts = {}) {
-    await this.use(Source.plugin, {
-      source: sourcePlugin,
-      baseOptions: opts,
-    });
   }
 
   /**

@@ -16,10 +16,10 @@ function sourceRoutes() {
       schema(validations.search),
       route(controller.search),
     )
-    // GET /sources/:source/channels/:userID/playlists - Get playlists for a user on the media source.
+    // GET /sources/:source/playlists - List playlists from the media source.
     .get(
-      '/:source/channels/:userID/playlists',
-      route(controller.getChannelPlaylists),
+      '/:source/playlists',
+      route(controller.getPlaylists),
     )
     // GET /sources/:source/channels/:userID/playlists - Get items for a playlist on the media source.
     .get(

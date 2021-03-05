@@ -1,5 +1,6 @@
 'use strict';
 
+const { BadRequest } = require('http-errors');
 const {
   SourceNotFoundError,
   SourceNoImportError,
@@ -25,12 +26,21 @@ function getImportableSource(req) {
   return source;
 }
 
-async function getChannelPlaylists(req) {
+async function getPlaylists(req) {
   const uw = req.uwave;
   const source = getImportableSource(req);
-  const { userID } = req.params;
+  const {
+    userID,
+  } = req.query;
 
-  const items = await source.getUserPlaylists(userID);
+  let items;
+
+  if (userID) {
+    items = await source.getUserPlaylists(req.user, userID);
+  } else {
+    throw new BadRequest('No playlist filter provided');
+  }
+
   return toListResponse(items, {
     url: req.fullUrl,
   });
@@ -48,5 +58,5 @@ async function getPlaylistItems(req) {
 }
 
 exports.search = searchController.search;
-exports.getChannelPlaylists = getChannelPlaylists;
+exports.getPlaylists = getPlaylists;
 exports.getPlaylistItems = getPlaylistItems;
