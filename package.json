@@ -70,6 +70,7 @@
     "eslint": "^7.2.0",
     "eslint-config-airbnb-base": "^14.2.0",
     "eslint-plugin-import": "^2.20.0",
+    "eslint-plugin-node": "^11.1.0",
     "get-port": "^5.1.1",
     "mocha": "^8.0.1",
     "nodemon": "^2.0.2",

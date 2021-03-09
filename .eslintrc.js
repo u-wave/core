@@ -1,7 +1,9 @@
 'use strict';
 
 module.exports = {
-  extends: 'airbnb-base',
+  extends: ['airbnb-base', 'plugin:node/recommended'],
+
+  plugins: ['node'],
 
   parserOptions: {
     ecmaVersion: 2020,
@@ -11,6 +13,8 @@ module.exports = {
   rules: {
     // We're not transpiling
     strict: ['error', 'global'],
+
+    'node/no-unpublished-require': 'off',
 
     // MongoDB IDs
     'no-underscore-dangle': ['error', { allow: ['_id'] }],
@@ -37,4 +41,16 @@ module.exports = {
       },
     ],
   },
+
+  overrides: [
+    {
+      files: ['test/**/*.js'],
+      env: {
+        mocha: true,
+      },
+      rules: {
+        'node/no-unpublished-require': 'off',
+      },
+    },
+  ],
 };
