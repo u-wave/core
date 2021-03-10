@@ -21,7 +21,8 @@ function sourceRoutes() {
       '/:source/playlists',
       route(controller.getPlaylists),
     )
-    // GET /sources/:source/channels/:userID/playlists - Get items for a playlist on the media source.
+    // GET /sources/:source/channels/:userID/playlists - Get items for a playlist on the media
+    // source.
     .get(
       '/:source/playlists/:playlistID/media',
       route(controller.getPlaylistItems),

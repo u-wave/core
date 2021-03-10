@@ -27,7 +27,6 @@ function getImportableSource(req) {
 }
 
 async function getPlaylists(req) {
-  const uw = req.uwave;
   const source = getImportableSource(req);
   const {
     userID,
@@ -47,7 +46,6 @@ async function getPlaylists(req) {
 }
 
 async function getPlaylistItems(req) {
-  const uw = req.uwave;
   const source = getImportableSource(req);
   const { playlistID } = req.params;
 
