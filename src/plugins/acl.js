@@ -149,15 +149,13 @@ class Acl {
   }
 }
 
-async function acl(uw, opts = {}) {
+async function acl(uw) {
   uw.acl = new Acl(uw);
   uw.httpApi.use('/roles', routes());
 
-  if (opts.defaultRoles !== false) {
-    uw.after(async () => {
-      await uw.acl.maybeAddDefaultRoles();
-    });
-  }
+  uw.after(async () => {
+    await uw.acl.maybeAddDefaultRoles();
+  });
 }
 
 module.exports = acl;
