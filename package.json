@@ -74,14 +74,15 @@
     "get-port": "^5.1.1",
     "mocha": "^8.0.1",
     "nodemon": "^2.0.2",
+    "nyc": "^15.1.0",
     "recaptcha-test-keys": "^1.0.0",
     "sinon": "^9.0.0",
     "supertest": "^6.1.3"
   },
   "scripts": {
-    "test:mocha": "mocha --exit",
-    "test:lint": "eslint --cache .",
-    "test": "npm run test:mocha && npm run test:lint",
+    "lint": "eslint --cache .",
+    "test": "npm run tests-only && npm run lint",
+    "tests-only": "nyc mocha --exit",
     "start": "cross-env DEBUG=uwave:* nodemon dev/u-wave-dev-server"
   }
 }
