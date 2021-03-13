@@ -1,5 +1,5 @@
 {
-  "$schema": "http://json-schema.org/draft-07/schema",
+  "$schema": "https://json-schema.org/draft/2019-09/schema",
   "$id": "https://ns.u-wave.net/config/socialAuth.json#",
   "uw:key": "u-wave:socialAuth",
   "uw:access": "admin",
@@ -20,12 +20,14 @@
         "clientID": {
           "type": "string",
           "title": "Client ID",
-          "description": "The OAuth2 Client ID."
+          "description": "The OAuth2 Client ID.",
+          "minLength": 1
         },
         "clientSecret": {
           "type": "string",
           "title": "Client Secret",
-          "description": "The secret key."
+          "description": "The secret key.",
+          "minLength": 1
         },
         "callbackURL": {
           "type": "string",
@@ -35,8 +37,23 @@
         }
       },
       "required": ["enabled"],
-      "dependencies": {
-        "enabled": ["clientID", "clientSecret"]
+      "dependentSchemas": {
+        "enabled": {
+          "$comment": "If `enabled` is set and is true, `clientID` and `clientSecret` are both required.",
+          "oneOf": [
+            {
+              "properties": {
+                "enabled": {
+                  "const": false
+                }
+              }
+            },
+            {
+              "type": "object",
+              "required": ["clientID", "clientSecret"]
+            }
+          ]
+        }
       },
       "default": {}
     }
