@@ -72,7 +72,7 @@ function serializeError(err) {
   return [{
     status: 500,
     code: 'unknown-error',
-    title: err.message == '' ? 'Internal Server Error' : err.message,
+    title: 'Internal Server Error',
   }];
 }
 
