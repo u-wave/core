@@ -3,7 +3,7 @@
 const { clamp } = require('lodash');
 const NotFoundError = require('../errors/NotFoundError');
 const PermissionError = require('../errors/PermissionError');
-const { UserNotFoundError } = require('../errors');
+const { UserNotFoundError, EmptyPlaylistError } = require('../errors');
 const routes = require('../routes/waitlist');
 
 /**
@@ -157,7 +157,7 @@ class Waitlist {
       throw new PermissionError('You are already currently playing.');
     }
     if (!(await this.hasValidPlaylist(user))) {
-      throw new Error('You don\'t have anything to play. Please add some songs to your '
+      throw new EmptyPlaylistError('You don\'t have anything to play. Please add some songs to your '
         + 'playlist and try again.');
     }
 
@@ -204,7 +204,7 @@ class Waitlist {
       throw new PermissionError('That user is currently playing.');
     }
     if (!(await this.hasValidPlaylist(user.id))) {
-      throw new Error('That user does not have anything to play.');
+      throw new EmptyPlaylistError('That user does not have anything to play.');
     }
 
     const clampedPosition = clamp(position, 0, waitlist.length);
