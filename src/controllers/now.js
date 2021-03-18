@@ -58,7 +58,7 @@ async function getState(req) {
   const booth = getBoothData(uw);
   const waitlist = uw.waitlist.getUserIDs();
   const waitlistLocked = uw.waitlist.isLocked();
-  let activePlaylist = user ? uw.playlists.getUserPlaylist(user, user.activePlaylist) : null;
+  let activePlaylist = user && user.activePlaylist ? uw.playlists.getUserPlaylist(user, user.activePlaylist) : null;
   const playlists = user ? uw.playlists.getUserPlaylists(user) : null;
   const firstActivePlaylistItem = activePlaylist ? getFirstItem(uw, activePlaylist) : null;
   const socketToken = user ? authRegistry.createAuthToken(user) : null;
@@ -73,7 +73,7 @@ async function getState(req) {
         // playlist should never be listed as the active playlist. Most likely this is not the
         // user's fault, so we should not error out on `/api/now`. Instead, pretend they don't have
         // an active playlist at all. Clients can then let them select a new playlist to activate.
-        if (err.code === 'NOT_FOUND') {
+        if (err.code === 'NOT_FOUND' || err.code === 'playlist-not-found') {
           debug('The active playlist does not exist', err);
           return null;
         }
