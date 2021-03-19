@@ -203,7 +203,7 @@ class Waitlist {
       throw new PermissionError('That user is currently playing.');
     }
     if (!(await this.hasValidPlaylist(user.id))) {
-      throw new EmptyPlaylistError('That user does not have anything to play.');
+      throw new EmptyPlaylistError();
     }
 
     const clampedPosition = clamp(position, 0, waitlist.length);
