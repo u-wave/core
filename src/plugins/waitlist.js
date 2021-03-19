@@ -157,8 +157,7 @@ class Waitlist {
       throw new PermissionError('You are already currently playing.');
     }
     if (!(await this.hasValidPlaylist(user))) {
-      throw new EmptyPlaylistError('You don\'t have anything to play. Please add some songs to your '
-        + 'playlist and try again.');
+      throw new EmptyPlaylistError();
     }
 
     if (!moderator || user.id === moderator.id) {
