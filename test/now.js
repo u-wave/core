@@ -2,7 +2,6 @@
 
 const assert = require('assert');
 const supertest = require('supertest');
-const sinon = require('sinon');
 const createUwave = require('./utils/createUwave');
 
 describe('Now', () => {
