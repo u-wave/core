@@ -21,16 +21,25 @@ const toListResponse = require('../utils/toListResponse');
 
 const debug = createDebug('uwave:http:auth');
 
+/**
+ * @param {string} str
+ */
 function seconds(str) {
   return Math.floor(ms(str) / 1000);
 }
 
+/**
+ * @param {import('express').Request} req
+ */
 function getCurrentUser(req) {
   return toItemResponse(req.user || null, {
     url: req.fullUrl,
   });
 }
 
+/**
+ * @param {import('express').Request} req
+ */
 function getAuthStrategies(req) {
   const { passport } = req.uwave;
 

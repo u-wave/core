@@ -10,6 +10,10 @@ const PasswordError = require('../errors/PasswordError');
 /**
  * @typedef {import('../models').User} User
  */
+/**
+ * @template T
+ * @typedef {import('../types').ToDocument<T>} ToDocument
+ */
 
 function encryptPassword(password) {
   return bcrypt.hash(password, 10);
@@ -121,7 +125,7 @@ class UsersRepository {
     const { Authentication } = this.uw.models;
 
     /**
-     * @type {Authentication & { user: User }}
+     * @type {ToDocument<Authentication> & { user: User }}
      */
     const auth = await Authentication.findOne({
       email: email.toLowerCase(),
@@ -315,6 +319,9 @@ class UsersRepository {
   }
 }
 
+/**
+ * @param {import('../Uwave')} uw
+ */
 async function usersPlugin(uw) {
   uw.users = new UsersRepository(uw);
 }

@@ -99,7 +99,7 @@
     "lint": "eslint --cache .",
     "test": "npm run tests-only && npm run lint",
     "tests-only": "nyc mocha --exit",
-    "types": "tsc -p jsconfig.json",
+    "types": "tsc -p tsconfig.json",
     "start": "cross-env DEBUG=uwave:* nodemon dev/u-wave-dev-server"
   }
 }
