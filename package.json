@@ -76,6 +76,7 @@
     "@types/node": "12",
     "@types/passport": "^1.0.6",
     "@types/ratelimiter": "^3.4.1",
+    "@types/redlock": "^4.0.1",
     "@types/ws": "^7.4.0",
     "concat-stream": "^2.0.0",
     "cross-env": "^7.0.0",

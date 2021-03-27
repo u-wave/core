@@ -9,6 +9,9 @@ const routes = require('../routes/booth');
  * @typedef {import('../models').Playlist} Playlist
  * @typedef {import('../models').PlaylistItem} PlaylistItem
  * @typedef {import('../models').HistoryEntry} HistoryEntry
+ * @typedef {{ playlist: Playlist }} PopulatePlaylist
+ * @typedef {{ item: PlaylistItem }} PopulatePlaylistItem
+ * @typedef {HistoryEntry & PopulatePlaylist & PopulatePlaylistItem} PopulatedHistoryEntry
  */
 
 class PlaylistIsEmptyError extends Error {
@@ -114,7 +117,7 @@ class Booth {
   }
 
   /**
-   * @returns {Promise<HistoryEntry | null>}
+   * @returns {Promise<PopulatedHistoryEntry | null>}
    */
   async getNextEntry(opts) {
     const { HistoryEntry } = this.uw.models;
@@ -132,6 +135,7 @@ class Booth {
 
     await playlistItem.populate('media').execPopulate();
 
+    // @ts-ignore
     return new HistoryEntry({
       user,
       playlist,
@@ -216,6 +220,15 @@ class Booth {
     this.uw.publish('waitlist:update', await this.getWaitlist());
   }
 
+  /**
+   * @typedef {object} AdvanceOptions
+   * @prop {boolean} [remove]
+   * @prop {boolean} [publish]
+   *
+   * @param {AdvanceOptions} [opts]
+   * @param {import('redlock').Lock} [reuseLock]
+   * @returns {Promise<PopulatedHistoryEntry>}
+   */
   async advance(opts = {}, reuseLock = null) {
     let lock;
     try {
