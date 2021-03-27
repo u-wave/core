@@ -83,7 +83,8 @@ const userSchema = new Schema({
   minimize: false,
 });
 
-userSchema.pre('validate', /** @this {User} */ function preValidate(next) {
+userSchema.pre('validate', function preValidate(next) {
+  // @ts-ignore
   this.slug = slugify(this.username);
   next();
 });
