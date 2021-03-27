@@ -5,9 +5,13 @@ module.exports = {
 
   plugins: ['node'],
 
+  parser: '@babel/eslint-parser',
   parserOptions: {
-    ecmaVersion: 2020,
     sourceType: 'script',
+    requireConfigFile: false,
+    babelOptions: {
+      plugins: ['@babel/plugin-syntax-class-properties'],
+    },
   },
 
   rules: {

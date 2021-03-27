@@ -1,6 +1,6 @@
 'use strict';
 
-const router = require('router');
+const { Router } = require('express');
 const route = require('../route');
 const validations = require('../validations');
 const protect = require('../middleware/protect');
@@ -8,7 +8,7 @@ const schema = require('../middleware/schema');
 const controller = require('../controllers/acl');
 
 function aclRoutes() {
-  return router()
+  return Router()
     // GET /roles - List available roles.
     .get(
       '/',

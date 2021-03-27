@@ -1,11 +1,12 @@
 'use strict';
 
+const EventEmitter = require('events');
+const { promisify } = require('util');
 const mongoose = require('mongoose');
 const Redis = require('ioredis');
 const debug = require('debug');
 const { isPlainObject } = require('lodash');
-const { promisify } = require('util');
-const Avvio = require('avvio');
+const avvio = require('avvio');
 
 const HttpApi = require('./HttpApi');
 const SocketServer = require('./SocketServer');
@@ -31,7 +32,58 @@ const kSources = Symbol('Media sources');
 const DEFAULT_MONGO_URL = 'mongodb://localhost:27017/uwave';
 const DEFAULT_REDIS_URL = 'redis://localhost:6379';
 
-class UwaveServer extends Avvio {
+/**
+ * @template T
+ * @param {any} value
+ * @returns {T}
+ */
+function unsafeCast(value) {
+  return value;
+}
+
+class UwaveServer extends EventEmitter {
+  /** @type {import('http').Server} */
+  server;
+
+  /** @type {import('./models').Models} */
+  models;
+
+  /** @type {import('./plugins/acl').Acl} */
+  acl;
+
+  /** @type {import('./plugins/bans').Bans} */
+  bans;
+
+  /** @type {import('./plugins/booth').Booth} */
+  booth;
+
+  /** @type {import('./plugins/chat').Chat} */
+  chat;
+
+  /** @type {import('./plugins/configStore').ConfigStore} */
+  config;
+
+  /** @type {import('./plugins/history').HistoryRepository} */
+  history;
+
+  /** @type {import('./plugins/migrations').Migrate} */
+  migrate;
+
+  /** @type {import('./plugins/motd').MOTD} */
+  motd;
+
+  /** @type {import('./plugins/passport').Passport} */
+  passport;
+
+  /** @type {import('./plugins/playlists').PlaylistsRepository} */
+  playlists;
+
+  /** @type {import('./plugins/users').UsersRepository} */
+  users;
+
+  /** @type {import('./plugins/waitlist').Waitlist} */
+  waitlist;
+
   /**
   * @param {object} [options]
   * @param {boolean} [options.useDefaultPlugins]
@@ -39,36 +91,7 @@ class UwaveServer extends Avvio {
   constructor(options = {}) {
     super();
 
-    /* eslint-disable no-unused-expressions */
-
-    /** @type {import('./models').Models} */
-    this.models;
-    /** @type {import('./plugins/acl').Acl} */
-    this.acl;
-    /** @type {import('./plugins/bans').Bans} */
-    this.bans;
-    /** @type {import('./plugins/booth').Booth} */
-    this.booth;
-    /** @type {import('./plugins/chat').Chat} */
-    this.chat;
-    /** @type {import('./plugins/configStore').ConfigStore} */
-    this.config;
-    /** @type {import('./plugins/history').HistoryRepository} */
-    this.history;
-    /** @type {import('./plugins/migrations').Migrate} */
-    this.migrate;
-    /** @type {import('./plugins/motd').MOTD} */
-    this.motd;
-    /** @type {import('./plugins/passport').Passport} */
-    this.passport;
-    /** @type {import('./plugins/playlists').PlaylistsRepository} */
-    this.playlists;
-    /** @type {import('./plugins/users').UsersRepository} */
-    this.users;
-    /** @type {import('./plugins/waitlist').Waitlist} */
-    this.waitlist;
-
-    /* eslint-enable no-unused-expressions */
+    const boot = avvio(this);
 
     /**
      * @type {Map<string, Source>}
@@ -90,50 +113,50 @@ class UwaveServer extends Avvio {
     this.configureRedis();
     this.configureMongoose();
 
-    this.onClose(() => Promise.all([
+    boot.onClose(() => Promise.all([
       this.redis.quit(),
       this.mongo.close(),
     ]));
 
     // Wait for the connections to be set up.
-    this.use(async () => {
+    boot.use(async () => {
       this.mongoLog('waiting for mongodb...');
       await this.mongo;
     });
 
-    this.use(models);
-    this.use(migrations);
-    this.use(configStore);
+    boot.use(models);
+    boot.use(migrations);
+    boot.use(configStore);
 
-    this.use(passport, {
+    boot.use(passport, {
       secret: this.options.secret,
     });
 
     // Initial API setup
-    this.use(HttpApi.plugin, {
+    boot.use(HttpApi.plugin, {
       secret: this.options.secret,
       mailTransport: this.options.mailTransport,
       recaptcha: this.options.recaptcha,
       createPasswordResetEmail: this.options.createPasswordResetEmail,
       onError: this.options.onError,
     });
-    this.use(SocketServer.plugin, {
+    boot.use(SocketServer.plugin, {
       secret: this.options.secret,
     });
 
     if (this.options.useDefaultPlugins) {
-      this.use(acl);
-      this.use(chat);
-      this.use(motd);
-      this.use(playlists);
-      this.use(users);
-      this.use(bans);
-      this.use(history);
-      this.use(waitlist);
-      this.use(booth);
+      boot.use(acl);
+      boot.use(chat);
+      boot.use(motd);
+      boot.use(playlists);
+      boot.use(users);
+      boot.use(bans);
+      boot.use(history);
+      boot.use(waitlist);
+      boot.use(booth);
     }
 
-    this.use(HttpApi.errorHandling);
+    boot.use(HttpApi.errorHandling);
   }
 
   parseOptions(options) {
@@ -173,6 +196,10 @@ class UwaveServer extends Avvio {
     Object.assign(this.options, options);
   }
 
+  /**
+   * @param {string} name
+   * @deprecated Use `uw.models[modelName]` instead.
+   */
   model(name) {
     return this.mongo.model(name);
   }
@@ -273,7 +300,9 @@ class UwaveServer extends Avvio {
   }
 
   async listen() {
-    await this.ready();
+    /** @type {import('avvio').Avvio<this>} */
+    const boot = unsafeCast(this);
+    await boot.ready();
 
     const listen = promisify(this.server.listen);
     await listen.call(this.server, this.options.port);

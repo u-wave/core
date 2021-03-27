@@ -63,6 +63,8 @@
     "yaml": "^1.7.2"
   },
   "devDependencies": {
+    "@babel/eslint-parser": "^7.13.10",
+    "@babel/plugin-syntax-class-properties": "^7.12.13",
     "@tsconfig/node12": "^1.0.7",
     "@types/cookie-parser": "^1.4.2",
     "@types/cors": "^2.8.10",
@@ -98,7 +100,7 @@
     "lint": "eslint --cache .",
     "test": "npm run tests-only && npm run lint",
     "tests-only": "nyc mocha --exit",
-    "types": "tsc -p tsconfig.json",
+    "types": "tsc -p jsconfig.json",
     "start": "cross-env DEBUG=uwave:* nodemon dev/u-wave-dev-server"
   }
 }
