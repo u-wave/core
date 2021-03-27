@@ -215,7 +215,7 @@ async function addPlaylistItems(req) {
 
   let afterID = after;
   if (at === 'start') {
-    afterID = -1;
+    afterID = null;
   } else if (at === 'end' && playlist.size > 0) {
     afterID = playlist.media[playlist.size - 1];
   }
@@ -281,7 +281,7 @@ async function movePlaylistItems(req) {
 
   let afterID = after;
   if (at === 'start') {
-    afterID = -1;
+    afterID = null;
   } else if (at === 'end') {
     afterID = playlist.media[playlist.size - 1];
   }

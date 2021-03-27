@@ -17,6 +17,10 @@ const routes = require('../routes/playlists');
  * @typedef {{ media: Media }} PopulateMedia
  */
 
+/**
+ * @param {unknown} item
+ * @returns {boolean}
+ */
 function isValidPlaylistItem(item) {
   return typeof item === 'object'
     && typeof item.sourceType === 'string'
@@ -61,8 +65,12 @@ class PlaylistsRepository {
     this.uw = uw;
   }
 
+  /**
+   * @param {ObjectID} id
+   * @return {Promise<Playlist>}
+   */
   async getPlaylist(id) {
-    const Playlist = this.uw.model('Playlist');
+    const { Playlist } = this.uw.models;
     if (id instanceof Playlist) {
       return id;
     }
@@ -73,8 +81,12 @@ class PlaylistsRepository {
     return playlist;
   }
 
+  /**
+   * @param {ObjectID} id
+   * @return {Promise<Media>}
+   */
   async getMedia(id) {
-    const Media = this.uw.model('Media');
+    const { Media } = this.uw.models;
     if (id instanceof Media) {
       return id;
     }
@@ -122,6 +134,10 @@ class PlaylistsRepository {
     return playlist;
   }
 
+  /**
+   * @param {User} user
+   * @returns {Promise<Playlist[]>}
+   */
   async getUserPlaylists(user) {
     const Playlist = this.uw.model('Playlist');
     const userID = typeof user === 'object' ? user.id : user;
@@ -184,9 +200,14 @@ class PlaylistsRepository {
     return item;
   }
 
-  async getPlaylistItems(playlistOrID, filter = null, pagination = null) {
+  /**
+   * @param {Playlist} playlist
+   * @param {string} [filter]
+   * @param {{ offset: number, limit: number }} [pagination]
+   * @returns {Promise<Page<PlaylistItem>>}
+   */
+  async getPlaylistItems(playlist, filter = null, pagination = null) {
     const { Playlist } = this.uw.models;
-    const playlist = await this.getPlaylist(playlistOrID);
 
     /** @type {object[]} */
     const aggregate = [
@@ -272,13 +293,12 @@ class PlaylistsRepository {
    * @prop {ObjectID} [author]
    * @prop {string[]} [fields]
    *
-   * @param {Media|ObjectID|string} mediaOrID
+   * @param {ObjectID} mediaID
    * @param {GetPlaylistsContainingMediaOptions} options
    * @return {Promise<Playlist[]>}
    */
-  async getPlaylistsContainingMedia(mediaOrID, options = {}) {
+  async getPlaylistsContainingMedia(mediaID, options = {}) {
     const { Playlist } = this.uw.models;
-    const media = await this.getMedia(mediaOrID);
 
     const aggregate = [];
     if (options.author) {
@@ -293,7 +313,7 @@ class PlaylistsRepository {
         },
       },
       // check if any media entry contains the id
-      { $match: { 'media.media': media._id } },
+      { $match: { 'media.media': mediaID } },
       // reduce data sent in `media` array—this is still needed to match the result of other
       // `getPlaylists()` functions
       { $addFields: { media: '$media.media' } },
@@ -317,29 +337,17 @@ class PlaylistsRepository {
    * Get playlists that contain any of the given medias. If multiple medias are in a single
    * playlist, that playlist will be returned multiple times, keyed on the media's unique ObjectID.
    *
-   * @param {Media[]|string[]|ObjectID[]} mediasOrIDs
+   * @param {ObjectID[]} mediaIDs
    * @param {{ author?: ObjectID }} options
    * @return {Promise<Map<string, Playlist[]>>}
    *   A map of stringified `Media` `ObjectID`s to the Playlist objects that contain them.
    */
-  async getPlaylistsContainingAnyMedia(mediasOrIDs, options = {}) {
+  async getPlaylistsContainingAnyMedia(mediaIDs, options = {}) {
     const { Playlist, Media } = this.uw.models;
 
-    if (!Array.isArray(mediasOrIDs)) {
-      throw new TypeError('playlists.getPlaylistsContainingAnyMedia: mediasOrIDs must be an array');
+    if (!Array.isArray(mediaIDs)) {
+      throw new TypeError('playlists.getPlaylistsContainingAnyMedia: mediaIDs must be an array');
     }
-    const mediaIds = mediasOrIDs.map((media) => {
-      if (typeof media === 'string') {
-        return new ObjectID(media);
-      }
-      if (media instanceof ObjectID) {
-        return media;
-      }
-      if (media instanceof Media) {
-        return media._id;
-      }
-      throw new TypeError('playlists.getPlaylistsContainingAnyMedia: mediasOrIDs must contain strings, ObjectIds, or Media instances');
-    });
 
     const aggregate = [];
 
@@ -365,7 +373,7 @@ class PlaylistsRepository {
                     // Are in any of the matching playlists;
                     { $in: ['$_id', '$$itemID'] },
                     // Have a `.media` property that was listed.
-                    { $in: ['$media', mediaIds] },
+                    { $in: ['$media', mediaIDs] },
                   ],
                 },
               },
@@ -400,15 +408,16 @@ class PlaylistsRepository {
 
   /**
    * Bulk create playlist items from arbitrary sources.
+   *
+   * @param {User} user
+   * @param {unknown[]} items
    */
-  async createPlaylistItems(userID, items) {
-    const { Media, PlaylistItem, User } = this.uw.models;
+  async createPlaylistItems(user, items) {
+    const { Media, PlaylistItem } = this.uw.models;
 
     if (!items.every(isValidPlaylistItem)) {
       throw new Error('Cannot add a playlist item without a proper media source type and ID.');
     }
-
-    const user = await User.findById(userID);
 
     // Group by source so we can retrieve all unknown medias from the source in
     // one call.
@@ -453,16 +462,20 @@ class PlaylistsRepository {
 
   /**
    * Add items to a playlist.
+   *
+   * @param {Playlist} playlist
+   * @param {unknown[]} items
+   * @param {{ after?: ObjectID }} options
    */
-  async addPlaylistItems(playlistOrID, items, { after = null } = {}) {
-    const playlist = await this.getPlaylist(playlistOrID);
-    const userID = playlist.author.toString();
-    const newItems = await this.createPlaylistItems(userID, items);
+  async addPlaylistItems(playlist, items, { after = null } = {}) {
+    const { users } = this.uw;
+    const user = await users.getUser(playlist.author);
+    const newItems = await this.createPlaylistItems(user, items);
     const oldMedia = playlist.media;
-    const insertIndex = oldMedia.findIndex((item) => `${item}` === after);
+    const insertIndex = after === null ? 0 : oldMedia.findIndex((item) => item.equals(after));
     playlist.media = [
       ...oldMedia.slice(0, insertIndex + 1),
-      ...newItems,
+      ...newItems.map((item) => item._id),
       ...oldMedia.slice(insertIndex + 1),
     ];
 
@@ -486,9 +499,12 @@ class PlaylistsRepository {
     return item;
   }
 
-  async movePlaylistItems(playlistOrID, itemIDs, { afterID }) {
-    const playlist = await this.getPlaylist(playlistOrID);
-
+  /**
+   * @param {Playlist} playlist
+   * @param {ObjectID[]} itemIDs
+   * @param {{ afterID: ObjectID }} options
+   */
+  async movePlaylistItems(playlist, itemIDs, { afterID }) {
     // Use a plain array instead of a mongoose array because we need `splice()`.
     const itemsInPlaylist = [...playlist.media];
     const itemIDsInPlaylist = new Set(itemsInPlaylist.map((item) => `${item}`));
@@ -506,12 +522,15 @@ class PlaylistsRepository {
     return {};
   }
 
-  async removePlaylistItems(playlistOrID, itemsOrIDs) {
-    const PlaylistItem = this.uw.model('PlaylistItem');
-    const playlist = await this.getPlaylist(playlistOrID);
+  /**
+   * @param {Playlist} playlist
+   * @param {ObjectID[]} itemIDs
+   */
+  async removePlaylistItems(playlist, itemIDs) {
+    const { PlaylistItem } = this.uw.models;
 
     // Only remove items that are actually in this playlist.
-    const stringIDs = itemsOrIDs.map((item) => String(item));
+    const stringIDs = itemIDs.map((item) => String(item));
     const toRemove = [];
     const toKeep = [];
     playlist.media.forEach((itemID) => {
