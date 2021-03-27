@@ -17,6 +17,9 @@ const { muteUser, unmuteUser } = require('./chat');
 
 const debug = createDebug('uwave:http:users');
 
+/**
+ * @param {import('express').Request} req
+ */
 async function getUsers(req) {
   const { filter } = req.query;
   const pagination = getOffsetPagination(req.query, {
@@ -30,10 +33,12 @@ async function getUsers(req) {
 
   return toPaginatedResponse(userList, {
     baseUrl: req.fullUrl,
-    filter,
   });
 }
 
+/**
+ * @param {import('express').Request} req
+ */
 async function getUser(req) {
   const { users } = req.uwave;
   const { id: userID } = req.params;
@@ -48,6 +53,9 @@ async function getUser(req) {
   });
 }
 
+/**
+ * @param {import('express').Request} req
+ */
 async function getUserRoles(req) {
   const { acl, users } = req.uwave;
   const { id } = req.params;
@@ -64,6 +72,9 @@ async function getUserRoles(req) {
   });
 }
 
+/**
+ * @param {import('express').Request} req
+ */
 async function addUserRole(req) {
   const { user: moderator } = req;
   const { id, role } = req.params;
@@ -86,6 +97,9 @@ async function addUserRole(req) {
   });
 }
 
+/**
+ * @param {import('express').Request} req
+ */
 async function removeUserRole(req) {
   const { user: moderator } = req;
   const { id, role } = req.params;
@@ -108,6 +122,9 @@ async function removeUserRole(req) {
   });
 }
 
+/**
+ * @param {import('express').Request} req
+ */
 async function changeUsername(req) {
   const { user: moderator } = req;
   const { id } = req.params;
@@ -131,6 +148,10 @@ async function changeAvatar() {
   throw new HTTPError(500, 'Not implemented');
 }
 
+/**
+ * @param {import('../Uwave')} uw
+ * @param {import('mongodb').ObjectID} user
+ */
 async function disconnectUser(uw, user) {
   const userID = typeof user === 'object' ? `${user._id}` : user;
 
@@ -147,6 +168,9 @@ async function disconnectUser(uw, user) {
   uw.publish('user:leave', { userID });
 }
 
+/**
+ * @param {import('express').Request} req
+ */
 async function getHistory(req) {
   const { id } = req.params;
   const pagination = getOffsetPagination(req.query, {

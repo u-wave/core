@@ -17,6 +17,10 @@ const LostConnection = require('./sockets/LostConnection');
 const debug = createDebug('uwave:api:sockets');
 
 /**
+ * @typedef {import('./models').User} User
+ */
+
+/**
  * @typedef {GuestConnection | AuthedConnection | LostConnection} Connection
  */
 
@@ -150,6 +154,8 @@ class SocketServer {
 
     /**
      * Handlers for commands that come in from clients.
+     *
+     * @type {Record<string, (user: User, param: any, connection: AuthedConnection) => void>}
      */
     this.clientActions = {
       sendChat: (user, message) => {
@@ -162,7 +168,7 @@ class SocketServer {
       logout: (user, _, connection) => {
         this.replace(connection, this.createGuestConnection(connection.socket, null));
         if (!this.connection(user)) {
-          disconnectUser(this.uw, user);
+          disconnectUser(this.uw, user._id);
         }
       },
     };
@@ -471,6 +477,10 @@ class SocketServer {
 
   /**
    * Create a connection instance for an authenticated user.
+   *
+   * @param {WebSocket} socket
+   * @param {User} user
+   * @returns {AuthedConnection}
    */
   createAuthedConnection(socket, user) {
     const connection = new AuthedConnection(this.uw, socket, user);
@@ -478,7 +488,7 @@ class SocketServer {
       if (banned) {
         debug('removing connection after ban', user.id, user.username);
         this.remove(connection);
-        disconnectUser(this.uw, user);
+        disconnectUser(this.uw, user._id);
       } else {
         debug('lost connection', user.id, user.username);
         this.replace(connection, this.createLostConnection(user));
@@ -502,6 +512,9 @@ class SocketServer {
 
   /**
    * Create a connection instance for a user who disconnected.
+   *
+   * @param {User} user
+   * @returns {LostConnection}
    */
   createLostConnection(user) {
     const connection = new LostConnection(this.uw, user, this.options.timeout);
@@ -519,6 +532,8 @@ class SocketServer {
 
   /**
    * Add a connection.
+   *
+   * @param {Connection} connection
    */
   add(connection) {
     debug('adding', String(connection));
@@ -529,6 +544,8 @@ class SocketServer {
 
   /**
    * Remove a connection.
+   *
+   * @param {Connection} connection
    */
   remove(connection) {
     debug('removing', String(connection));
@@ -543,6 +560,9 @@ class SocketServer {
   /**
    * Replace a connection instance with another connection instance. Useful when
    * a connection changes "type", like GuestConnection → AuthedConnection.
+   *
+   * @param {Connection} oldConnection
+   * @param {Connection} newConnection
    */
   replace(oldConnection, newConnection) {
     this.remove(oldConnection);
@@ -553,6 +573,10 @@ class SocketServer {
    * Handle command messages coming in from Redis.
    * Some commands are intended to broadcast immediately to all connected
    * clients, but others require special action.
+   *
+   * @param {string} channel
+   * @param {string} rawCommand
+   * @return {Promise<void>}
    */
   async onServerMessage(channel, rawCommand) {
     const { command, data } = sjson.safeParse(rawCommand) || {};
@@ -571,6 +595,8 @@ class SocketServer {
 
   /**
    * Stop the socket server.
+   *
+   * @return {Promise<void>}
    */
   async destroy() {
     clearInterval(this.pinger);
