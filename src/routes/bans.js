@@ -1,12 +1,12 @@
 'use strict';
 
-const router = require('router');
+const { Router } = require('express');
 const route = require('../route');
 const protect = require('../middleware/protect');
 const controller = require('../controllers/bans');
 
 function banRoutes() {
-  return router()
+  return Router()
     .get(
       '/',
       protect('users.bans.list'),

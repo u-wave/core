@@ -1,16 +1,18 @@
 'use strict';
 
-const router = require('router');
+const { Router } = require('express');
 const route = require('../route');
 const validations = require('../validations');
 const protect = require('../middleware/protect');
 const schema = require('../middleware/schema');
 const controller = require('../controllers/authenticate');
 
-function authenticateRoutes(api, options) {
-  const { passport } = api.uw;
-
-  const auth = router()
+/**
+ * @param {import('passport').Authenticator} passport
+ * @param {object} options
+ */
+function authenticateRoutes(passport, options) {
+  const auth = Router()
     // GET /auth/ - Show current user information.
     .get(
       '/',

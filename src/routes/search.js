@@ -1,6 +1,6 @@
 'use strict';
 
-const router = require('router');
+const { Router } = require('express');
 const route = require('../route');
 const protect = require('../middleware/protect');
 const schema = require('../middleware/schema');
@@ -8,7 +8,7 @@ const controller = require('../controllers/search');
 const validations = require('../validations');
 
 function searchRoutes() {
-  return router()
+  return Router()
     .use(protect())
     // GET /search/ - Search for media across all sources.
     .get(

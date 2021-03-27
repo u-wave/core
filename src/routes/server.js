@@ -1,12 +1,12 @@
 'use strict';
 
-const router = require('router');
+const { Router } = require('express');
 const route = require('../route');
 const protect = require('../middleware/protect');
 const controller = require('../controllers/server');
 
 function serverRoutes() {
-  return router()
+  return Router()
     // GET /server/time - Show the current server time.
     .get(
       '/time',

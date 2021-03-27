@@ -8,7 +8,7 @@ const debug = require('debug');
 const { isPlainObject } = require('lodash');
 const avvio = require('avvio');
 
-const HttpApi = require('./HttpApi');
+const httpApi = require('./HttpApi');
 const SocketServer = require('./SocketServer');
 const { Source } = require('./Source');
 const { i18n } = require('./locale');
@@ -44,6 +44,9 @@ function unsafeCast(value) {
 class UwaveServer extends EventEmitter {
   /** @type {import('http').Server} */
   server;
+
+  /** @type {import('express').Application} */
+  express;
 
   /** @type {import('./models').Models} */
   models;
@@ -83,6 +86,9 @@ class UwaveServer extends EventEmitter {
 
   /** @type {import('./plugins/waitlist').Waitlist} */
   waitlist;
+
+  /** @type {import('./HttpApi').HttpApi} */
+  httpApi;
 
   /**
   * @param {object} [options]
@@ -133,7 +139,7 @@ class UwaveServer extends EventEmitter {
     });
 
     // Initial API setup
-    boot.use(HttpApi.plugin, {
+    boot.use(httpApi, {
       secret: this.options.secret,
       mailTransport: this.options.mailTransport,
       recaptcha: this.options.recaptcha,
@@ -156,7 +162,7 @@ class UwaveServer extends EventEmitter {
       boot.use(booth);
     }
 
-    boot.use(HttpApi.errorHandling);
+    boot.use(httpApi.errorHandling);
   }
 
   parseOptions(options) {
