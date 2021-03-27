@@ -1,6 +1,7 @@
 'use strict';
 
 const {
+  HttpError,
   Forbidden,
   InternalServerError,
   NotFound,
@@ -10,6 +11,9 @@ const {
 const { t } = require('../locale');
 
 class EmailError extends InternalServerError {
+  /**
+   * @param {string} message
+   */
   constructor(message) {
     super(message);
     this.name = 'EmailError';
@@ -17,8 +21,16 @@ class EmailError extends InternalServerError {
 }
 
 class APIError extends Error {
+  /** @type {number|undefined} */
+  status;
+  /** @type {string|undefined} */
+  code;
+
+  /**
+   * @param {string} message
+   */
   constructor(message) {
-    super();
+    super(message);
     Error.captureStackTrace(this);
     this.message = message;
   }
@@ -33,6 +45,9 @@ class APIError extends Error {
 }
 
 class CombinedError extends APIError {
+  /**
+   * @param {Error[]} errors
+   */
   constructor(errors) {
     super('Multiple errors');
     this.errors = errors;
@@ -40,6 +55,9 @@ class CombinedError extends APIError {
 }
 
 class PasswordError extends APIError {
+  /**
+   * @param {string} message
+   */
   constructor(message) {
     super(message);
     this.name = 'PasswordError';
@@ -47,6 +65,9 @@ class PasswordError extends APIError {
 }
 
 class TokenError extends APIError {
+  /**
+   * @param {string} message
+   */
   constructor(message) {
     super(message);
     this.name = 'TokenError';
@@ -54,6 +75,10 @@ class TokenError extends APIError {
 }
 
 class HTTPError extends APIError {
+  /**
+   * @param {number} status
+   * @param {string} message
+   */
   constructor(status, message) {
     super(message);
     this.name = 'HTTPError';
@@ -62,16 +87,29 @@ class HTTPError extends APIError {
 }
 
 class PermissionError extends Forbidden {
+  /**
+   * @param {string} message
+   */
   constructor(message) {
     super(message);
     this.name = 'PermissionError';
   }
 }
 
+/**
+ * @param {string} name
+ * @param {{
+ *   code: string,
+ *   string: string | ((data: object) => string),
+ *   base: typeof import('http-errors').HttpError,
+ * }} options
+ *
+ * @returns {new(data: object) => HttpError}
+ */
 function createErrorClass(name, {
   code = 'unknown-error',
   string,
-  base = HTTPError,
+  base = HttpError,
 }) {
   const getString = typeof string !== 'function'
     ? (() => string)

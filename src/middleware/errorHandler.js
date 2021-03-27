@@ -9,6 +9,16 @@ const {
 
 const debug = createDebug('uwave:http:error');
 
+/**
+ * @typedef {object} SerializedError
+ * @prop {number} status
+ * @prop {string} code
+ * @prop {string} title
+ */
+
+/**
+ * @param {SerializedError[]} errors
+ */
 function toErrorResponse(errors) {
   return {
     data: {},
@@ -17,6 +27,10 @@ function toErrorResponse(errors) {
   };
 }
 
+/**
+ * @param {any} err
+ * @returns {SerializedError[]}
+ */
 function serializeError(err) {
   if (err instanceof CombinedError) {
     return err.errors.reduce(
@@ -76,6 +90,10 @@ function serializeError(err) {
   }];
 }
 
+/**
+ * @param {{ onError?: (req: import('express').Request, error: Error) => void}} [options]
+ * @returns {import('express').ErrorRequestHandler}
+ */
 function errorHandler(options = {}) {
   return (errors, req, res, next) => {
     if (errors) {
