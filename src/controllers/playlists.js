@@ -11,6 +11,9 @@ const toItemResponse = require('../utils/toItemResponse');
 const toListResponse = require('../utils/toListResponse');
 const toPaginatedResponse = require('../utils/toPaginatedResponse');
 
+/**
+ * @type {import('../types').Controller}
+ */
 async function getPlaylists(req) {
   const { user } = req;
   const uw = req.uwave;
@@ -29,6 +32,9 @@ async function getPlaylists(req) {
   );
 }
 
+/**
+ * @type {import('../types').Controller}
+ */
 async function getPlaylist(req) {
   const { user } = req;
   const { playlists } = req.uwave;
@@ -46,6 +52,9 @@ async function getPlaylist(req) {
   );
 }
 
+/**
+ * @type {import('../types').Controller}
+ */
 async function createPlaylist(req) {
   const { user } = req;
   const { name, description } = req.body;
@@ -67,6 +76,9 @@ async function createPlaylist(req) {
   );
 }
 
+/**
+ * @type {import('../types').Controller}
+ */
 async function deletePlaylist(req) {
   const { user } = req;
   const { id } = req.params;
@@ -83,6 +95,9 @@ async function deletePlaylist(req) {
 }
 
 const patchableKeys = ['name', 'description'];
+/**
+ * @type {import('../types').Controller}
+ */
 async function updatePlaylist(req) {
   const { user } = req;
   const { id } = req.params;
@@ -109,6 +124,9 @@ async function updatePlaylist(req) {
   );
 }
 
+/**
+ * @type {import('../types').Controller}
+ */
 async function renamePlaylist(req) {
   const { user } = req;
   const { id } = req.params;
@@ -128,6 +146,9 @@ async function renamePlaylist(req) {
   );
 }
 
+/**
+ * @type {import('../types').Controller}
+ */
 async function activatePlaylist(req) {
   const { user } = req;
   const { playlists } = req.uwave;
@@ -144,6 +165,9 @@ async function activatePlaylist(req) {
   return toItemResponse({});
 }
 
+/**
+ * @type {import('../types').Controller}
+ */
 async function getPlaylistItems(req) {
   const { user } = req;
   const { playlists } = req.uwave;
@@ -166,6 +190,9 @@ async function getPlaylistItems(req) {
   });
 }
 
+/**
+ * @type {import('../types').Controller}
+ */
 async function addPlaylistItems(req) {
   const { user } = req;
   const { playlists } = req.uwave;
@@ -207,6 +234,9 @@ async function addPlaylistItems(req) {
   });
 }
 
+/**
+ * @type {import('../types').Controller}
+ */
 async function removePlaylistItems(req) {
   const { user } = req;
   const { playlists } = req.uwave;
@@ -231,6 +261,9 @@ async function removePlaylistItems(req) {
   });
 }
 
+/**
+ * @type {import('../types').Controller}
+ */
 async function movePlaylistItems(req) {
   const { user } = req;
   const { playlists } = req.uwave;
@@ -263,6 +296,9 @@ async function movePlaylistItems(req) {
   return toItemResponse(result, { url: req.fullUrl });
 }
 
+/**
+ * @type {import('../types').Controller}
+ */
 async function shufflePlaylistItems(req) {
   const { user } = req;
   const { playlists } = req.uwave;
@@ -278,6 +314,9 @@ async function shufflePlaylistItems(req) {
   return toItemResponse({});
 }
 
+/**
+ * @type {import('../types').Controller}
+ */
 async function getPlaylistItem(req) {
   const { user } = req;
   const { playlists } = req.uwave;
@@ -296,6 +335,9 @@ async function getPlaylistItem(req) {
   return toItemResponse(item, { url: req.fullUrl });
 }
 
+/**
+ * @type {import('../types').Controller}
+ */
 async function updatePlaylistItem(req) {
   const { user } = req;
   const { playlists } = req.uwave;
@@ -322,6 +364,9 @@ async function updatePlaylistItem(req) {
   return toItemResponse(updatedItem, { url: req.fullUrl });
 }
 
+/**
+ * @type {import('../types').Controller}
+ */
 async function removePlaylistItem(req) {
   const { user } = req;
   const { playlists } = req.uwave;

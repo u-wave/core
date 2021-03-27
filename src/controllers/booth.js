@@ -36,6 +36,9 @@ async function getBoothData(uw) {
   };
 }
 
+/**
+ * @type {import('../types').Controller}
+ */
 async function getBooth(req) {
   const uw = req.uwave;
 
@@ -60,6 +63,9 @@ async function doSkip(uw, moderatorID, userID, reason, opts = {}) {
   });
 }
 
+/**
+ * @type {import('../types').Controller}
+ */
 async function skipBooth(req) {
   const { user } = req;
   const { userID, reason, remove } = req.body;
@@ -99,6 +105,9 @@ async function skipBooth(req) {
   return toItemResponse({});
 }
 
+/**
+ * @type {import('../types').Controller}
+ */
 async function replaceBooth(req) {
   const uw = req.uwave;
   const moderatorID = req.user.id;
@@ -159,6 +168,9 @@ async function socketVote(uw, userID, direction) {
   }
 }
 
+/**
+ * @type {import('../types').Controller}
+ */
 async function getVote(req) {
   const { uwave: uw, user } = req;
   const { historyID } = req.params;
@@ -189,6 +201,9 @@ async function getVote(req) {
   return toItemResponse({ direction });
 }
 
+/**
+ * @type {import('../types').Controller}
+ */
 async function vote(req) {
   const { uwave: uw, user } = req;
   const { historyID } = req.params;
@@ -217,6 +232,9 @@ async function vote(req) {
   return toItemResponse({});
 }
 
+/**
+ * @type {import('../types').Controller}
+ */
 async function favorite(req) {
   const { user } = req;
   const { playlistID, historyID } = req.body;
@@ -264,6 +282,9 @@ async function favorite(req) {
   });
 }
 
+/**
+ * @type {import('../types').Controller}
+ */
 async function getHistory(req) {
   const filter = {};
   const pagination = getOffsetPagination(req.query, {

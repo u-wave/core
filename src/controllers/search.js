@@ -6,6 +6,9 @@ const { SourceNotFoundError } = require('../errors');
 const toListResponse = require('../utils/toListResponse');
 
 // TODO should be deprecated once the Web client uses the better single-source route.
+/**
+ * @type {import('../types').Controller}
+ */
 async function searchAll(req) {
   const { user } = req;
   const { query } = req.query;
@@ -46,6 +49,9 @@ async function updateSourceData(uw, updates) {
   await Media.bulkWrite(ops);
 }
 
+/**
+ * @type {import('../types').Controller}
+ */
 async function search(req) {
   const { user } = req;
   const { source: sourceName } = req.params;

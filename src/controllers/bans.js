@@ -5,6 +5,9 @@ const getOffsetPagination = require('../utils/getOffsetPagination');
 const toItemResponse = require('../utils/toItemResponse');
 const toPaginatedResponse = require('../utils/toPaginatedResponse');
 
+/**
+ * @type {import('../types').Controller}
+ */
 async function getBans(req) {
   const { bans } = req.uwave;
   const { filter } = req.query;
@@ -20,6 +23,9 @@ async function getBans(req) {
   });
 }
 
+/**
+ * @type {import('../types').Controller}
+ */
 async function addBan(req) {
   const { user: moderator } = req;
   const { users, bans } = req.uwave;
@@ -47,6 +53,9 @@ async function addBan(req) {
   });
 }
 
+/**
+ * @type {import('../types').Controller}
+ */
 async function removeBan(req) {
   const { user: moderator } = req;
   const { bans } = req.uwave;

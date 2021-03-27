@@ -2,6 +2,9 @@
 
 const toItemResponse = require('../utils/toItemResponse');
 
+/**
+ * @type {import('../types').Controller}
+ */
 async function getMotd(req) {
   const { motd } = req.uwave;
 
@@ -13,6 +16,9 @@ async function getMotd(req) {
   );
 }
 
+/**
+ * @type {import('../types').Controller}
+ */
 async function setMotd(req) {
   const { motd } = req.uwave;
   const { motd: newValue } = req.body;

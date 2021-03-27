@@ -2,6 +2,9 @@
 
 const toItemResponse = require('../utils/toItemResponse');
 
+/**
+ * @type {import('../types').Controller}
+ */
 async function list(req) {
   const { acl } = req.uwave;
 
@@ -12,6 +15,9 @@ async function list(req) {
   });
 }
 
+/**
+ * @type {import('../types').Controller}
+ */
 async function createRole(req, res) {
   const { name } = req.params;
   const { permissions } = req.body;
@@ -25,6 +31,9 @@ async function createRole(req, res) {
   });
 }
 
+/**
+ * @type {import('../types').Controller}
+ */
 async function deleteRole(req) {
   const { name } = req.params;
   const { acl } = req.uwave;

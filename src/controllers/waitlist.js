@@ -3,6 +3,9 @@
 const toItemResponse = require('../utils/toItemResponse');
 const toListResponse = require('../utils/toListResponse');
 
+/**
+ * @type {import('../types').Controller}
+ */
 async function getWaitlist(req) {
   const { waitlist } = req.uwave;
 
@@ -11,8 +14,12 @@ async function getWaitlist(req) {
   return toListResponse(list, { url: req.fullUrl });
 }
 
-// POST waitlist/ entry point: used both for joining the waitlist,  and for
-// adding someone else to the waitlist.
+/**
+ * POST waitlist/ entry point: used both for joining the waitlist, and for
+ * adding someone else to the waitlist.
+ *
+ * @type {import('../types').Controller}
+ */
 async function addToWaitlist(req) {
   const { user: moderator } = req;
   const { userID } = req.body;
@@ -25,6 +32,9 @@ async function addToWaitlist(req) {
   return toListResponse(updated, { url: req.fullUrl });
 }
 
+/**
+ * @type {import('../types').Controller}
+ */
 async function moveWaitlist(req) {
   const { user: moderator } = req;
   const { userID, position } = req.body;
@@ -37,6 +47,9 @@ async function moveWaitlist(req) {
   return toListResponse(updated, { url: req.fullUrl });
 }
 
+/**
+ * @type {import('../types').Controller}
+ */
 async function removeFromWaitlist(req) {
   const { user: moderator } = req;
   const { id: userID } = req.params;
@@ -49,6 +62,9 @@ async function removeFromWaitlist(req) {
   return toListResponse(updated, { url: req.fullUrl });
 }
 
+/**
+ * @type {import('../types').Controller}
+ */
 async function clearWaitlist(req) {
   const { user: moderator } = req;
   const { waitlist } = req.uwave;
@@ -60,6 +76,9 @@ async function clearWaitlist(req) {
   return toListResponse(updated, { url: req.fullUrl });
 }
 
+/**
+ * @type {import('../types').Controller}
+ */
 async function lockWaitlist(req) {
   const { user: moderator } = req;
   const { lock } = req.body;

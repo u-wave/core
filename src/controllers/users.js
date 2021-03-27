@@ -18,7 +18,7 @@ const { muteUser, unmuteUser } = require('./chat');
 const debug = createDebug('uwave:http:users');
 
 /**
- * @param {import('../types').Request} req
+ * @type {import('../types').Controller}
  */
 async function getUsers(req) {
   const { filter } = req.query;
@@ -37,7 +37,7 @@ async function getUsers(req) {
 }
 
 /**
- * @param {import('../types').Request} req
+ * @type {import('../types').Controller}
  */
 async function getUser(req) {
   const { users } = req.uwave;
@@ -54,7 +54,7 @@ async function getUser(req) {
 }
 
 /**
- * @param {import('../types').Request} req
+ * @type {import('../types').Controller}
  */
 async function getUserRoles(req) {
   const { acl, users } = req.uwave;
@@ -73,7 +73,7 @@ async function getUserRoles(req) {
 }
 
 /**
- * @param {import('../types').Request} req
+ * @type {import('../types').Controller}
  */
 async function addUserRole(req) {
   const { user: moderator } = req;
@@ -98,7 +98,7 @@ async function addUserRole(req) {
 }
 
 /**
- * @param {import('../types').Request} req
+ * @type {import('../types').Controller}
  */
 async function removeUserRole(req) {
   const { user: moderator } = req;
@@ -123,7 +123,7 @@ async function removeUserRole(req) {
 }
 
 /**
- * @param {import('../types').Request} req
+ * @type {import('../types').Controller}
  */
 async function changeUsername(req) {
   const { user: moderator } = req;
@@ -167,7 +167,7 @@ async function disconnectUser(uw, userID) {
 }
 
 /**
- * @param {import('../types').Request} req
+ * @type {import('../types').Controller}
  */
 async function getHistory(req) {
   const { id } = req.params;

@@ -45,6 +45,9 @@ async function getGuestsCount(uw) {
   return toInt(guests);
 }
 
+/**
+ * @type {import('../types').Controller}
+ */
 async function getState(req) {
   const uw = req.uwave;
   const { authRegistry } = req.uwaveHttp;

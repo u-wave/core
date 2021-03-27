@@ -6,6 +6,9 @@ const {
 } = require('../errors');
 const toItemResponse = require('../utils/toItemResponse');
 
+/**
+ * @type {import('../types').Controller}
+ */
 async function muteUser(req) {
   const { user: moderator } = req;
   const { id } = req.params;
@@ -24,6 +27,9 @@ async function muteUser(req) {
   return toItemResponse({});
 }
 
+/**
+ * @type {import('../types').Controller}
+ */
 async function unmuteUser(req) {
   const { user: moderator } = req;
   const { id } = req.params;
@@ -41,7 +47,10 @@ async function unmuteUser(req) {
   return toItemResponse({});
 }
 
-function deleteAll(req) {
+/**
+ * @type {import('../types').Controller}
+ */
+async function deleteAll(req) {
   const { user: moderator } = req;
   const { chat } = req.uwave;
 
@@ -50,7 +59,10 @@ function deleteAll(req) {
   return toItemResponse({});
 }
 
-function deleteByUser(req) {
+/**
+ * @type {import('../types').Controller}
+ */
+async function deleteByUser(req) {
   const { user: moderator } = req;
   const { chat } = req.uwave;
   const { id } = req.params;
@@ -60,7 +72,10 @@ function deleteByUser(req) {
   return toItemResponse({});
 }
 
-function deleteMessage(req) {
+/**
+ * @type {import('../types').Controller}
+ */
+async function deleteMessage(req) {
   const { user: moderator } = req;
   const { chat } = req.uwave;
   const { id } = req.params;

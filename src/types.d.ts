@@ -7,6 +7,7 @@ declare global {
   namespace Express {
     interface Request {
       uwave: import('./Uwave');
+      uwaveHttp: import('./HttpApi').HttpApi;
       fullUrl: string;
     }
   }
@@ -15,6 +16,8 @@ declare global {
 export type Request = import('express').Request & {
   user?: import('./models').User,
 };
+
+export type Controller = (req: Request, res: import('express').Response) => Promise<object>;
 
 /**
  * Utility type that returns a Document<TSchema> given a Model<Document<TSchema>>.

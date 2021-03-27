@@ -29,18 +29,18 @@ function seconds(str) {
 }
 
 /**
- * @param {import('express').Request} req
+ * @type {import('../types').Controller}
  */
-function getCurrentUser(req) {
+async function getCurrentUser(req) {
   return toItemResponse(req.user || null, {
     url: req.fullUrl,
   });
 }
 
 /**
- * @param {import('express').Request} req
+ * @type {import('../types').Controller}
  */
-function getAuthStrategies(req) {
+async function getAuthStrategies(req) {
   const { passport } = req.uwave;
 
   const strategies = passport.strategies();
@@ -211,6 +211,9 @@ async function socialLoginFinish(options, service, req, res) {
   });
 }
 
+/**
+ * @type {import('../types').Controller}
+ */
 async function getSocketToken(req) {
   const { user } = req;
   const { authRegistry } = req.uwaveHttp;
@@ -311,6 +314,9 @@ async function reset(options, req) {
   return toItemResponse({});
 }
 
+/**
+ * @type {import('../types').Controller}
+ */
 async function changePassword(req) {
   const { users, redis } = req.uwave;
   const { reset: resetToken } = req.params;
