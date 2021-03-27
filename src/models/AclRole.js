@@ -17,7 +17,6 @@ const schema = new Schema({
   roles: [{ type: String, ref: 'AclRole', index: true }],
 }, {
   collection: 'acl_roles',
-  idKey: 'name',
   minimize: true,
 });
 
