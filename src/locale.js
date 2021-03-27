@@ -2,7 +2,9 @@
 
 const fs = require('fs');
 const path = require('path');
-const i18next = require('i18next').default;
+/** @type {import('i18next').default} */
+// @ts-ignore Fixing a mismatch in the commonjs and ES module versions?
+const i18next = require('i18next');
 const YAML = require('yaml');
 
 const source = fs.readFileSync(path.join(__dirname, '../locale/en.yaml'), 'utf8');
