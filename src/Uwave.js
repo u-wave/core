@@ -41,6 +41,10 @@ function unsafeCast(value) {
   return value;
 }
 
+/**
+ * @typedef {UwaveServer & import('avvio').Server<UwaveServer>} Boot
+ */
+
 class UwaveServer extends EventEmitter {
   /** @type {import('http').Server} */
   server;

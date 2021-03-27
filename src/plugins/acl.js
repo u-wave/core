@@ -219,7 +219,7 @@ class Acl {
 }
 
 /**
- * @param {import('../Uwave')} uw
+ * @param {import('../Uwave').Boot} uw
  */
 async function acl(uw) {
   uw.acl = new Acl(uw);
