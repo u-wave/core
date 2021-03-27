@@ -11,8 +11,8 @@ const MONGO_DUPLICATE_KEY_ERROR2 = 11001;
  */
 function isDuplicateKeyError(error) {
   return 'code' in error && (
-    error.code === MONGO_DUPLICATE_KEY_ERROR ||
-    error.code === MONGO_DUPLICATE_KEY_ERROR2
+    error.code === MONGO_DUPLICATE_KEY_ERROR
+    || error.code === MONGO_DUPLICATE_KEY_ERROR2
   );
 }
 
