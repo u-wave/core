@@ -120,7 +120,7 @@ class Booth {
    * @returns {Promise<PopulatedHistoryEntry | null>}
    */
   async getNextEntry(opts) {
-    const { HistoryEntry } = this.uw.models;
+    const { HistoryEntry, PlaylistItem } = this.uw.models;
     const { playlists } = this.uw;
 
     const user = await this.getNextDJ(opts);
@@ -131,8 +131,8 @@ class Booth {
     if (playlist.size === 0) {
       throw new PlaylistIsEmptyError();
     }
-    const playlistItem = await playlists.getPlaylistItem(playlist.media[0]);
 
+    const playlistItem = await PlaylistItem.findById(playlist.media[0]);
     await playlistItem.populate('media').execPopulate();
 
     // @ts-ignore

@@ -1,6 +1,21 @@
 'use strict';
 
+/**
+ * @template TItem
+ * @template TPagination
+ */
 class Page {
+  /**
+   * @param {TItem[]} results
+   * @param {{
+   *   pageSize?: number,
+   *   filtered?: number,
+   *   total?: number,
+   *   previous?: TPagination|null,
+   *   current?: TPagination|null,
+   *   next?: TPagination|null,
+   * }} opts
+   */
   constructor(results, opts = {}) {
     this.length = results.length;
 

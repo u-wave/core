@@ -1,5 +1,6 @@
 'use strict';
 
+const assert = require('assert');
 const { UserNotFoundError } = require('../errors');
 const getOffsetPagination = require('../utils/getOffsetPagination');
 const toItemResponse = require('../utils/toItemResponse');
@@ -12,6 +13,8 @@ async function getBans(req) {
   const { bans } = req.uwave;
   const { filter } = req.query;
   const pagination = getOffsetPagination(req.query);
+
+  assert(typeof filter === 'string', 'sholud have been handled by ajv');
 
   const bansList = await bans.getBans(filter, pagination);
 

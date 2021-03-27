@@ -12,7 +12,9 @@ const routes = require('../routes/playlists');
 /**
  * @typedef {import('../models').User} User
  * @typedef {import('../models').Playlist} Playlist
+ * @typedef {import('../models').PlaylistItem} PlaylistItem
  * @typedef {import('../models').Media} Media
+ * @typedef {{ media: Media }} PopulateMedia
  */
 
 function isValidPlaylistItem(item) {
@@ -98,14 +100,12 @@ class PlaylistsRepository {
   }
 
   /**
-   * @param {ObjectID} userID
+   * @param {User} user
    * @param {{ name: string }} options
    * @returns {Promise<Playlist>}
    */
-  async createPlaylist(userID, { name }) {
-    const { users } = this.uw;
-    const Playlist = this.uw.model('Playlist');
-    const user = await users.getUser(userID);
+  async createPlaylist(user, { name }) {
+    const { Playlist } = this.uw.models;
 
     const playlist = await Playlist.create({
       name,
@@ -130,48 +130,49 @@ class PlaylistsRepository {
   }
 
   /**
-   * @param {ObjectID} playlistOrID
+   * @param {Playlist} playlist
    * @param {object} patch
    * @returns {Promise<Playlist>}
    */
-  async updatePlaylist(playlistOrID, patch = {}) {
-    const playlist = await this.getPlaylist(playlistOrID);
+  async updatePlaylist(playlist, patch = {}) {
     Object.assign(playlist, patch);
-    return playlist.save();
+    await playlist.save();
+    return playlist;
   }
 
   /**
-   * @param {ObjectID} playlistOrID
+   * @param {Playlist} playlist
    * @returns {Promise<Playlist>}
    */
-  async shufflePlaylist(playlistOrID) {
-    const playlist = await this.getPlaylist(playlistOrID);
+  async shufflePlaylist(playlist) {
     playlist.media = shuffle(playlist.media);
-    return playlist.save();
+    await playlist.save();
+    return playlist;
   }
 
   /**
-   * @param {ObjectID} playlistOrID
-   * @returns {Promise<{}>}
+   * @param {Playlist} playlist
+   * @returns {Promise<void>}
    */
-  async deletePlaylist(playlistOrID) {
-    const playlist = await this.getPlaylist(playlistOrID);
-
+  async deletePlaylist(playlist) {
     await playlist.remove();
-
-    return {};
   }
 
-  async getPlaylistItem(itemID) {
-    const PlaylistItem = this.uw.model('PlaylistItem');
+  /**
+   * @param {Playlist} playlist
+   * @param {ObjectID} itemID
+   * @returns {Promise<PlaylistItem & PopulateMedia>}
+   */
+  async getPlaylistItem(playlist, itemID) {
+    const { PlaylistItem } = this.uw.models;
 
-    let item;
-    if (itemID instanceof PlaylistItem) {
-      item = itemID;
-    } else {
-      item = await PlaylistItem.findById(itemID);
+    const playlistItemID = playlist.media.find((id) => id.equals(itemID))
+
+    if (!playlistItemID) {
+      throw new NotFoundError('Item not in playlist.');
     }
 
+    const item = await PlaylistItem.findById(playlistItemID);
     if (!item) {
       throw new NotFoundError('Playlist item not found.');
     }
@@ -401,9 +402,7 @@ class PlaylistsRepository {
    * Bulk create playlist items from arbitrary sources.
    */
   async createPlaylistItems(userID, items) {
-    const Media = this.uw.model('Media');
-    const PlaylistItem = this.uw.model('PlaylistItem');
-    const User = this.uw.model('User');
+    const { Media, PlaylistItem, User } = this.uw.models;
 
     if (!items.every(isValidPlaylistItem)) {
       throw new Error('Cannot add a playlist item without a proper media source type and ID.');
@@ -476,12 +475,15 @@ class PlaylistsRepository {
     };
   }
 
-  async updatePlaylistItem(itemOrID, patch = {}) {
-    const item = await this.getPlaylistItem(itemOrID);
-
+  /**
+   * @param {PlaylistItem} item
+   * @param {object} patch
+   * @returns {Promise<PlaylistItem>}
+   */
+  async updatePlaylistItem(item, patch = {}) {
     Object.assign(item, patch);
-
-    return item.save();
+    await item.save();
+    return item;
   }
 
   async movePlaylistItems(playlistOrID, itemIDs, { afterID }) {
