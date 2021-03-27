@@ -12,6 +12,10 @@ declare global {
   }
 }
 
+export type Request = import('express').Request & {
+  user?: import('./models').User,
+};
+
 /**
  * Utility type that returns a Document<TSchema> given a Model<Document<TSchema>>.
  */
