@@ -524,7 +524,7 @@ class SocketServer {
       // Only register that the user left if they didn't have another connection
       // still open.
       if (!this.connection(user)) {
-        disconnectUser(this.uw, user);
+        disconnectUser(this.uw, user._id);
       }
     });
     return connection;
@@ -608,7 +608,7 @@ class SocketServer {
   /**
    * Get the connection instance for a specific user.
    *
-   * @param {object|string} user The user.
+   * @param {User} user The user.
    * @return {Connection}
    */
   connection(user) {

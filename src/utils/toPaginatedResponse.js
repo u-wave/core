@@ -4,6 +4,11 @@ const url = require('url');
 const qs = require('qs');
 const toListResponse = require('./toListResponse');
 
+/**
+ * @param {string} base
+ * @param {object} query
+ * @returns {string}
+ */
 function appendQuery(base, query) {
   // eslint-disable-next-line node/no-deprecated-api
   const parsed = url.parse(base, true);
@@ -15,6 +20,10 @@ function appendQuery(base, query) {
   return `${url.format(parsed)}`;
 }
 
+/**
+ * @param {import('../Page')} page
+ * @param {{ baseUrl?: string, included?: object }} options
+ */
 function toPaginatedResponse(
   page,
   { baseUrl = '', included = {} } = {},

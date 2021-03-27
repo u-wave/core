@@ -59,6 +59,10 @@ function extractIncluded(data, included) {
   };
 }
 
+/**
+ * @param {object[]} list
+ * @param {{ url?: string, included?: object, meta?: object }} options
+ */
 function toListResponse(list, {
   meta = {},
   included = {},

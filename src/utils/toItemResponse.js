@@ -1,5 +1,9 @@
 'use strict';
 
+/**
+ * @param {object} item
+ * @param {{ url?: string, meta?: object }} options
+ */
 function toItemResponse(item, {
   url = '',
   meta = {},

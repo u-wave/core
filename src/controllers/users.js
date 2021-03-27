@@ -150,11 +150,9 @@ async function changeAvatar() {
 
 /**
  * @param {import('../Uwave')} uw
- * @param {import('mongodb').ObjectID} user
+ * @param {import('mongodb').ObjectID} userID
  */
-async function disconnectUser(uw, user) {
-  const userID = typeof user === 'object' ? `${user._id}` : user;
-
+async function disconnectUser(uw, userID) {
   await skipIfCurrentDJ(uw, userID);
 
   try {
@@ -163,9 +161,9 @@ async function disconnectUser(uw, user) {
     // Ignore
   }
 
-  await uw.redis.lrem('users', 0, userID);
+  await uw.redis.lrem('users', 0, userID.toString());
 
-  uw.publish('user:leave', { userID });
+  uw.publish('user:leave', { userID: userID.toString() });
 }
 
 /**

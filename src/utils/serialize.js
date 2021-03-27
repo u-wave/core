@@ -1,5 +1,8 @@
 'use strict';
 
+/**
+ * @param {import('../models').Playlist} model
+ */
 function serializePlaylist(model) {
   return {
     _id: model.id || model._id.toString(),

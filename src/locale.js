@@ -2,7 +2,7 @@
 
 const fs = require('fs');
 const path = require('path');
-const i18next = require('i18next');
+const i18next = require('i18next').default;
 const YAML = require('yaml');
 
 const source = fs.readFileSync(path.join(__dirname, '../locale/en.yaml'), 'utf8');

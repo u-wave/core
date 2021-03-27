@@ -1,15 +1,23 @@
 'use strict';
 
+/**
+ * @param {import('../Uwave')} uw
+ */
 function getWaitingUserIDs(uw) {
   return uw.redis.lrange('waitlist', 0, -1);
 }
 
+/**
+ * @param {import('../Uwave')} uw
+ * @param {import('mongodb').ObjectID} userID
+ */
 async function removeFromWaitlist(uw, userID) {
+  const id = userID.toString();
   const waitingIDs = await getWaitingUserIDs(uw);
-  if (waitingIDs.includes(userID)) {
-    await uw.redis.lrem('waitlist', 0, userID);
+  if (waitingIDs.includes(id)) {
+    await uw.redis.lrem('waitlist', 0, id);
     uw.publish('waitlist:leave', {
-      userID,
+      userID: id,
       waitlist: await getWaitingUserIDs(uw),
     });
   }
