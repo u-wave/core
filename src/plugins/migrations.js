@@ -2,22 +2,12 @@
 
 const path = require('path');
 const RedLock = require('redlock');
-const mongoose = require('mongoose');
 const { Umzug } = require('umzug');
 const debug = require('debug')('uwave:migrate');
-
-const { Schema } = mongoose;
 
 function log(record) {
   debug(record.event, record.name || record.path || record);
 }
-
-const migrationSchema = new Schema({
-  migrationName: { type: String, required: true },
-}, {
-  timestamps: true,
-  collection: 'migrations',
-});
 
 /**
  * Custom MongoDBStorage based on Mongoose and with timestamps.
@@ -50,7 +40,10 @@ const mongooseStorage = {
 };
 
 /**
- * @typedef {() => Promise<undefined>} Migrate
+ * @typedef {import('umzug').InputMigrations<import('../Uwave')>} MigrateOptions
+ */
+/**
+ * @typedef {(opts: MigrateOptions) => Promise<void>} Migrate
  */
 
 /**
@@ -58,7 +51,6 @@ const mongooseStorage = {
  */
 async function migrationsPlugin(uw) {
   const redLock = new RedLock([uw.redis]);
-  uw.models.Migration = uw.mongo.model('Migration', migrationSchema);
 
   async function migrate(migrations) {
     const migrator = new Umzug({
