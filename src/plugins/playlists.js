@@ -187,6 +187,7 @@ class PlaylistsRepository {
     const { Playlist } = this.uw.models;
     const playlist = await this.getPlaylist(playlistOrID);
 
+    /** @type {object[]} */
     const aggregate = [
       // find the playlist
       { $match: { _id: playlist._id } },
