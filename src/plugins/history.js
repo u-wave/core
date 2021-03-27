@@ -1,14 +1,21 @@
 'use strict';
 
 const { clamp } = require('lodash');
-
 const Page = require('../Page');
 
 const DEFAULT_PAGE_SIZE = 50;
 const MAX_PAGE_SIZE = 100;
 
 /**
+ * @typedef {import('../models/History').HistoryMedia} HistoryMedia
+ * @typedef {import('../models').HistoryEntry} HistoryEntry
  * @typedef {import('../models').User} User
+ * @typedef {import('../models').Media} Media
+ * @typedef {{ media: Media }} PopulateMedia
+ * @typedef {{ user: User }} PopulateUser
+ * @typedef {HistoryMedia & PopulateMedia} PopulatedHistoryMedia
+ * @typedef {{ media: PopulatedHistoryMedia }} PopulateHistoryMedia
+ * @typedef {HistoryEntry & PopulateUser & PopulateHistoryMedia} PopulatedHistoryEntry
  */
 
 class HistoryRepository {
@@ -22,6 +29,7 @@ class HistoryRepository {
   /**
    * @param {object} filter
    * @param {{ offset?: number, limit?: number }} [pagination]
+   * @returns {Promise<Page<PopulatedHistoryEntry, { offset?: number, limit?: number }>>}
    */
   async getHistory(filter, pagination = {}) {
     const { HistoryEntry } = this.uw.models;
@@ -48,7 +56,6 @@ class HistoryRepository {
       previous: offset > 0
         ? { offset: Math.max(offset - size, 0), limit: size }
         : null,
-      results,
     });
   }
 
@@ -68,6 +75,9 @@ class HistoryRepository {
   }
 }
 
+/**
+ * @param {import('../Uwave')}
+ */
 async function history(uw) {
   uw.history = new HistoryRepository(uw);
 }
