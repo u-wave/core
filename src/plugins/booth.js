@@ -13,7 +13,8 @@ const routes = require('../routes/booth');
  * @typedef {{ user: User }} PopulateUser
  * @typedef {{ playlist: Playlist }} PopulatePlaylist
  * @typedef {{ item: PlaylistItem }} PopulatePlaylistItem
- * @typedef {HistoryEntry & PopulateUser & PopulatePlaylist & PopulatePlaylistItem} PopulatedHistoryEntry
+ * @typedef {HistoryEntry & PopulateUser & PopulatePlaylist & PopulatePlaylistItem}
+ *     PopulatedHistoryEntry
  */
 
 class PlaylistIsEmptyError extends Error {

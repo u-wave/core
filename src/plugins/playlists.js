@@ -200,7 +200,7 @@ class PlaylistsRepository {
     const playlistItemID = playlist.media.find((id) => id.equals(itemID));
 
     if (!playlistItemID) {
-      throw new ItemNotInPlaylistError({ playlistID: playlist._id, itemID: itemID });
+      throw new ItemNotInPlaylistError({ playlistID: playlist._id, itemID });
     }
 
     const item = await PlaylistItem.findById(playlistItemID);
