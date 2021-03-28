@@ -98,14 +98,15 @@ class PermissionError extends Forbidden {
 }
 
 /**
+ * @template {import('i18next').StringMap} TData
  * @param {string} name
  * @param {{
  *   code: string,
- *   string: string | ((data: object) => string),
+ *   string: string | ((data: TData) => string),
  *   base: typeof import('http-errors').HttpError,
  * }} options
  *
- * @returns {new(data: object) => HttpError}
+ * @returns {new(data?: TData) => HttpError}
  */
 function createErrorClass(name, {
   code = 'unknown-error',
@@ -117,7 +118,8 @@ function createErrorClass(name, {
     : string;
 
   return class extends base {
-    constructor(data = {}) {
+    /** @param {TData} [data] */
+    constructor(data) {
       const i18nKey = getString(data);
       super(t(i18nKey, data));
       this.name = name;
@@ -141,7 +143,7 @@ const RateLimitError = createErrorClass('RateLimitError', {
 const NameChangeRateLimitError = createErrorClass('NameChangeRateLimitError', {
   code: 'too-many-requests',
   string: 'errors.tooManyNameChanges',
-  base: RateLimitError,
+  base: TooManyRequests,
 });
 
 const InvalidEmailError = createErrorClass('InvalidEmailError', {

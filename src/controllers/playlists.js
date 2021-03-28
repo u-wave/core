@@ -467,7 +467,7 @@ async function removePlaylistItem(req) {
 
   const playlist = await playlists.getUserPlaylist(user, new ObjectID(id));
   if (!playlist) {
-    throw new PlaylistNotFoundError('Playlist not found.');
+    throw new PlaylistNotFoundError({ id });
   }
 
   const result = await playlists.removePlaylistItems(playlist, [new ObjectID(itemID)]);
