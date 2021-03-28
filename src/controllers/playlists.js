@@ -16,18 +16,23 @@ const toPaginatedResponse = require('../utils/toPaginatedResponse');
 const { ObjectId } = mongoose.Types;
 
 /**
- * @type {import('../types').Controller}
+ * @typedef {object} GetPlaylistsQuery
+ * @prop {string} contains
+ */
+
+/**
+ * @type {import('../types').Controller<{}, GetPlaylistsQuery>}
  */
 async function getPlaylists(req) {
   const { user } = req;
   const uw = req.uwave;
   const { contains } = req.query;
 
-  assert(typeof contains === 'string', 'checked by ajv');
-
   let playlists;
   if (contains) {
-    playlists = await uw.playlists.getPlaylistsContainingMedia(contains, { author: user._id });
+    const containsID = new ObjectId(contains);
+
+    playlists = await uw.playlists.getPlaylistsContainingMedia(containsID, { author: user._id });
   } else {
     playlists = await uw.playlists.getUserPlaylists(user);
   }
@@ -39,7 +44,12 @@ async function getPlaylists(req) {
 }
 
 /**
- * @type {import('../types').Controller}
+ * @typedef {object} GetPlaylistParams
+ * @prop {string} id
+ */
+
+/**
+ * @type {import('../types').Controller<GetPlaylistParams>}
  */
 async function getPlaylist(req) {
   const { user } = req;
@@ -59,7 +69,12 @@ async function getPlaylist(req) {
 }
 
 /**
- * @type {import('../types').Controller}
+ * @typedef {object} CreatePlaylistBody
+ * @prop {string} name
+ */
+
+/**
+ * @type {import('../types').Controller<{}, {}, CreatePlaylistBody>}
  */
 async function createPlaylist(req) {
   const { user } = req;
@@ -82,7 +97,12 @@ async function createPlaylist(req) {
 }
 
 /**
- * @type {import('../types').Controller}
+ * @typedef {object} DeletePlaylistParams
+ * @prop {string} id
+ */
+
+/**
+ * @type {import('../types').Controller<DeletePlaylistParams>}
  */
 async function deletePlaylist(req) {
   const { user } = req;
@@ -100,8 +120,16 @@ async function deletePlaylist(req) {
 }
 
 const patchableKeys = ['name', 'description'];
+
 /**
- * @type {import('../types').Controller}
+ * @typedef {object} UpdatePlaylistParams
+ * @prop {string} id
+ *
+ * @typedef {Record<string, string>} UpdatePlaylistBody
+ */
+
+/**
+ * @type {import('../types').Controller<UpdatePlaylistParams, {}, UpdatePlaylistBody>}
  */
 async function updatePlaylist(req) {
   const { user } = req;
@@ -130,7 +158,15 @@ async function updatePlaylist(req) {
 }
 
 /**
- * @type {import('../types').Controller}
+ * @typedef {object} RenamePlaylistParams
+ * @prop {string} id
+ *
+ * @typedef {object} RenamePlaylistBody
+ * @prop {string} name
+ */
+
+/**
+ * @type {import('../types').Controller<RenamePlaylistParams, {}, RenamePlaylistBody>}
  */
 async function renamePlaylist(req) {
   const { user } = req;
@@ -152,7 +188,12 @@ async function renamePlaylist(req) {
 }
 
 /**
- * @type {import('../types').Controller}
+ * @typedef {object} ActivatePlaylistParams
+ * @prop {string} id
+ */
+
+/**
+ * @type {import('../types').Controller<ActivatePlaylistParams>}
  */
 async function activatePlaylist(req) {
   const { user } = req;
@@ -171,7 +212,12 @@ async function activatePlaylist(req) {
 }
 
 /**
- * @type {import('../types').Controller}
+ * @typedef {object} GetPlaylistItemsParams
+ * @prop {string} id
+ */
+
+/**
+ * @type {import('../types').Controller<GetPlaylistItemsParams>}
  */
 async function getPlaylistItems(req) {
   const { user } = req;
@@ -196,7 +242,22 @@ async function getPlaylistItems(req) {
 }
 
 /**
- * @type {import('../types').Controller}
+ * @typedef {object} AddPlaylistItemsParams
+ * @prop {string} id
+ *
+ * @typedef {object} AtPosition
+ * @prop {'start'|'end'} at
+ * @prop {undefined} after
+ *
+ * @typedef {object} AfterPosition
+ * @prop {undefined} at
+ * @prop {string|-1} after
+ *
+ * @typedef {{ items: string[] } & (AtPosition | AfterPosition)} AddPlaylistItemsBody
+ */
+
+/**
+ * @type {import('../types').Controller<AddPlaylistItemsParams, {}, AddPlaylistItemsBody>}
  */
 async function addPlaylistItems(req) {
   const { user } = req;
@@ -204,20 +265,18 @@ async function addPlaylistItems(req) {
   const { id } = req.params;
   const { at, after, items } = req.body;
 
-  if (!Array.isArray(items)) {
-    throw new HTTPError(422, 'Expected "items" to be an array.');
-  }
-
   const playlist = await playlists.getUserPlaylist(user, new ObjectId(id));
   if (!playlist) {
     throw new PlaylistNotFoundError({ id });
   }
 
-  let afterID = after;
+  let afterID = null;
   if (at === 'start') {
     afterID = null;
-  } else if (at === 'end' && playlist.size > 0) {
+  } else if (at === 'end' || after === -1) {
     afterID = playlist.media[playlist.size - 1];
+  } else {
+    afterID = new ObjectId(after);
   }
 
   const {
@@ -235,24 +294,28 @@ async function addPlaylistItems(req) {
 }
 
 /**
- * @type {import('../types').Controller}
+ * @typedef {object} RemovePlaylistItemsParams
+ * @prop {string} id
+ *
+ * @typedef {object} RemovePlaylistItemsBody
+ * @prop {string[]} items
+ */
+
+/**
+ * @type {import('../types').Controller<RemovePlaylistItemsParams, {}, RemovePlaylistItemsBody>}
  */
 async function removePlaylistItems(req) {
   const { user } = req;
   const { playlists } = req.uwave;
   const { id } = req.params;
-  const items = req.query.items || req.body.items;
-
-  if (!Array.isArray(items)) {
-    throw new HTTPError(422, 'Expected "items" to be an array');
-  }
+  const { items } = req.body;
 
   const playlist = await playlists.getUserPlaylist(user, new ObjectId(id));
   if (!playlist) {
     throw new PlaylistNotFoundError({ id });
   }
 
-  await playlists.removePlaylistItems(playlist, items);
+  await playlists.removePlaylistItems(playlist, items.map((item) => new ObjectId(item)));
 
   return toItemResponse({}, {
     meta: {
@@ -262,7 +325,14 @@ async function removePlaylistItems(req) {
 }
 
 /**
- * @type {import('../types').Controller}
+ * @typedef {object} MovePlaylistItemsParams
+ * @prop {string} id
+ *
+ * @typedef {{ items: string[] } & (AtPosition | AfterPosition)} MovePlaylistItemsBody
+ */
+
+/**
+ * @type {import('../types').Controller<MovePlaylistItemsParams, {}, MovePlaylistItemsBody>}
  */
 async function movePlaylistItems(req) {
   const { user } = req;
@@ -270,29 +340,33 @@ async function movePlaylistItems(req) {
   const { id } = req.params;
   const { at, after, items } = req.body;
 
-  if (!Array.isArray(items)) {
-    throw new HTTPError(422, 'Expected "items" to be an array');
-  }
-
   const playlist = await playlists.getUserPlaylist(user, new ObjectId(id));
   if (!playlist) {
     throw new PlaylistNotFoundError({ id });
   }
 
-  let afterID = after;
+  let afterID = null;
   if (at === 'start') {
     afterID = null;
-  } else if (at === 'end') {
+  } else if (at === 'end' || after === -1) {
     afterID = playlist.media[playlist.size - 1];
+  } else {
+    afterID = new ObjectId(after);
   }
 
-  const result = await playlists.movePlaylistItems(playlist, items, { afterID });
+  const itemIDs = items.map((item) => new ObjectId(item));
+  const result = await playlists.movePlaylistItems(playlist, itemIDs, { afterID });
 
   return toItemResponse(result, { url: req.fullUrl });
 }
 
 /**
- * @type {import('../types').Controller}
+ * @typedef {object} ShufflePlaylistItemsParams
+ * @prop {string} id
+ */
+
+/**
+ * @type {import('../types').Controller<ShufflePlaylistItemsParams>}
  */
 async function shufflePlaylistItems(req) {
   const { user } = req;
@@ -310,7 +384,13 @@ async function shufflePlaylistItems(req) {
 }
 
 /**
- * @type {import('../types').Controller}
+ * @typedef {object} GetPlaylistItemParams
+ * @prop {string} id
+ * @prop {string} itemID
+ */
+
+/**
+ * @type {import('../types').Controller<GetPlaylistItemParams>}
  */
 async function getPlaylistItem(req) {
   const { user } = req;
@@ -331,7 +411,19 @@ async function getPlaylistItem(req) {
 }
 
 /**
- * @type {import('../types').Controller}
+ * @typedef {object} UpdatePlaylistItemParams
+ * @prop {string} id
+ * @prop {string} itemID
+ *
+ * @typedef {object} UpdatePlaylistItemBody
+ * @prop {string} [artist]
+ * @prop {string} [title]
+ * @prop {number} [start]
+ * @prop {number} [end]
+ */
+
+/**
+ * @type {import('../types').Controller<UpdatePlaylistItemParams, {}, UpdatePlaylistItemBody>}
  */
 async function updatePlaylistItem(req) {
   const { user } = req;
@@ -360,7 +452,13 @@ async function updatePlaylistItem(req) {
 }
 
 /**
- * @type {import('../types').Controller}
+ * @typedef {object} RemovePlaylistItemParams
+ * @prop {string} id
+ * @prop {string} itemID
+ */
+
+/**
+ * @type {import('../types').Controller<RemovePlaylistItemParams>}
  */
 async function removePlaylistItem(req) {
   const { user } = req;
@@ -372,7 +470,7 @@ async function removePlaylistItem(req) {
     throw new PlaylistNotFoundError('Playlist not found.');
   }
 
-  const result = await playlists.removePlaylistItems(playlist, [itemID]);
+  const result = await playlists.removePlaylistItems(playlist, [new ObjectId(itemID)]);
 
   return toItemResponse(result, { url: req.fullUrl });
 }
