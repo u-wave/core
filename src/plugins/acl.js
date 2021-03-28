@@ -92,6 +92,7 @@ class Acl {
    * @param {string[]} names
    * @param {{ create?: boolean }} [options]
    * @returns {Promise<AclRole[]>}
+   * @private
    */
   async getAclRoles(names, options = {}) {
     const { AclRole } = this.uw.models;
@@ -109,22 +110,22 @@ class Acl {
   }
 
   /**
-   * @param {import('mongodb').ObjectID} userID
-   * @returns {Promise<User>}
+   * @returns {Promise<Record<string, string[]>>}
    */
-  getAclUser(userID) {
-    return this.uw.users.getUser(userID);
-  }
-
   async getAllRoles() {
     const { AclRole } = this.uw.models;
 
+    /** @type {AclRole[]} */
     const roles = await AclRole.find().lean();
     return roles.reduce((map, role) => Object.assign(map, {
       [role._id]: role.roles,
     }), {});
   }
 
+  /**
+   * @param {string} name
+   * @param {string[]} permissions
+   */
   async createRole(name, permissions) {
     const { AclRole } = this.uw.models;
 
@@ -142,6 +143,9 @@ class Acl {
     };
   }
 
+  /**
+   * @param {string} name
+   */
   async deleteRole(name) {
     const { AclRole } = this.uw.models;
 
