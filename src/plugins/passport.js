@@ -7,8 +7,6 @@ const { callbackify } = require('util');
 const debug = require('debug')('uwave:passport');
 const JWTStrategy = require('../auth/JWTStrategy');
 
-/** @type {import('json-schema').JSONSchema7} */
-// @ts-ignore
 const schema = require('../schemas/socialAuth.json');
 
 /**

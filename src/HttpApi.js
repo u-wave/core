@@ -28,8 +28,6 @@ const errorHandler = require('./middleware/errorHandler');
 const AuthRegistry = require('./AuthRegistry');
 const matchOrigin = require('./utils/matchOrigin');
 
-/** @type {import('json-schema').JSONSchema7} */
-// @ts-ignore
 const optionsSchema = require('./schemas/httpApi.json');
 
 function defaultCreatePasswordResetEmail({ token, requestUrl }) {

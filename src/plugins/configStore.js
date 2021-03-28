@@ -84,7 +84,7 @@ class ConfigStore {
    * Add a config group.
    *
    * @param {string} key - The name of the config group.
-   * @param {import('json-schema').JSONSchema7} schema - The JSON schema that the settings must
+   * @param {import('ajv').SchemaObject} schema - The JSON schema that the settings must
    *     follow.
    * @public
    */
@@ -152,7 +152,7 @@ class ConfigStore {
   }
 
   /**
-   * @returns {import('json-schema').JSONSchema7}
+   * @returns {import('ajv').SchemaObject}
    */
   getSchema() {
     const properties = Object.create(null);
