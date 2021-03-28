@@ -9,8 +9,11 @@ const Page = require('../Page');
  * @typedef {import('../models/User').User} User
  */
 
+/**
+ * @param {User} user
+ */
 function isValidBan(user) {
-  return !!(user.banned && user.banned.expiresAt > Date.now());
+  return !!(user.banned && +user.banned.expiresAt > Date.now());
 }
 
 class Bans {
@@ -61,6 +64,7 @@ class Bans {
 
     const total = await User.find().where(queryFilter).countDocuments();
 
+    /** @type {import('../models/User').LeanUser[]} */
     const bannedUsers = await User.find()
       .where(queryFilter)
       .skip(offset)
@@ -71,8 +75,10 @@ class Bans {
     const results = bannedUsers.map((user) => {
       const ban = user.banned;
       delete user.banned; // eslint-disable-line no-param-reassign
-      ban.user = user;
-      return ban;
+      return {
+        ...ban,
+        user,
+      };
     });
 
     return new Page(results, {
@@ -87,6 +93,14 @@ class Bans {
     });
   }
 
+  /**
+   * @param {string} userID
+   * @param {object} options
+   * @param {number} options.duration
+   * @param {User} options.moderator
+   * @param {boolean} [options.permanent]
+   * @param {string} [options.reason]
+   */
   async ban(userID, {
     duration, moderator, permanent = false, reason = '',
   }) {
@@ -101,8 +115,8 @@ class Bans {
 
     user.banned = {
       duration: permanent ? -1 : duration,
-      expiresAt: permanent ? 0 : Date.now() + duration,
-      moderator: typeof moderator === 'object' ? moderator._id : moderator,
+      expiresAt: permanent ? null : new Date(Date.now() + duration),
+      moderator: moderator._id,
       reason,
     };
 
@@ -111,15 +125,22 @@ class Bans {
 
     this.uw.publish('user:ban', {
       userID: user.id,
+      // @ts-ignore `moderator.id` is made available by the `execPopulate()`
+      // call above.
       moderatorID: user.banned.moderator.id,
       duration: user.banned.duration,
-      expiresAt: user.banned.expiresAt,
+      expiresAt: +user.banned.expiresAt,
       permanent,
     });
 
     return user.banned;
   }
 
+  /**
+   * @param {string} userID
+   * @param {object} options
+   * @param {User} options.moderator
+   */
   async unban(userID, { moderator }) {
     const { users } = this.uw;
 
@@ -141,6 +162,9 @@ class Bans {
   }
 }
 
+/**
+ * @param {import('../Uwave')} uw
+ */
 async function bans(uw) {
   uw.bans = new Bans(uw); // eslint-disable-line no-param-reassign
 }
