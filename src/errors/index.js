@@ -23,6 +23,7 @@ class EmailError extends InternalServerError {
 class APIError extends Error {
   /** @type {number|undefined} */
   status;
+
   /** @type {string|undefined} */
   code;
 

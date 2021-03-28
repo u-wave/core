@@ -1,6 +1,5 @@
 'use strict';
 
-const assert = require('assert');
 const mongoose = require('mongoose');
 const {
   HTTPError,

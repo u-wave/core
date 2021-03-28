@@ -3,13 +3,13 @@
 const { groupBy, shuffle } = require('lodash');
 const escapeStringRegExp = require('escape-string-regexp');
 const debug = require('debug')('uwave:playlists');
-const { ObjectID } = require('mongoose').mongo;
 const { PlaylistNotFoundError } = require('../errors');
 const NotFoundError = require('../errors/NotFoundError');
 const Page = require('../Page');
 const routes = require('../routes/playlists');
 
 /**
+ * @typedef {import('mongodb').ObjectID} ObjectID
  * @typedef {import('../models').User} User
  * @typedef {import('../models').Playlist} Playlist
  * @typedef {import('../models').PlaylistItem} PlaylistItem
@@ -158,6 +158,7 @@ class PlaylistsRepository {
    * @param {object} patch
    * @returns {Promise<Playlist>}
    */
+  // eslint-disable-next-line class-methods-use-this
   async updatePlaylist(playlist, patch = {}) {
     Object.assign(playlist, patch);
     await playlist.save();
@@ -168,6 +169,7 @@ class PlaylistsRepository {
    * @param {Playlist} playlist
    * @returns {Promise<Playlist>}
    */
+  // eslint-disable-next-line class-methods-use-this
   async shufflePlaylist(playlist) {
     playlist.media = shuffle(playlist.media);
     await playlist.save();
@@ -178,6 +180,7 @@ class PlaylistsRepository {
    * @param {Playlist} playlist
    * @returns {Promise<void>}
    */
+  // eslint-disable-next-line class-methods-use-this
   async deletePlaylist(playlist) {
     await playlist.remove();
   }
@@ -190,7 +193,7 @@ class PlaylistsRepository {
   async getPlaylistItem(playlist, itemID) {
     const { PlaylistItem } = this.uw.models;
 
-    const playlistItemID = playlist.media.find((id) => id.equals(itemID))
+    const playlistItemID = playlist.media.find((id) => id.equals(itemID));
 
     if (!playlistItemID) {
       throw new NotFoundError('Item not in playlist.');
@@ -351,11 +354,7 @@ class PlaylistsRepository {
    *   A map of stringified `Media` `ObjectID`s to the Playlist objects that contain them.
    */
   async getPlaylistsContainingAnyMedia(mediaIDs, options = {}) {
-    const { Playlist, Media } = this.uw.models;
-
-    if (!Array.isArray(mediaIDs)) {
-      throw new TypeError('playlists.getPlaylistsContainingAnyMedia: mediaIDs must be an array');
-    }
+    const { Playlist } = this.uw.models;
 
     const aggregate = [];
 
@@ -501,6 +500,7 @@ class PlaylistsRepository {
    * @param {object} patch
    * @returns {Promise<PlaylistItem>}
    */
+  // eslint-disable-next-line class-methods-use-this
   async updatePlaylistItem(item, patch = {}) {
     Object.assign(item, patch);
     await item.save();
@@ -512,6 +512,7 @@ class PlaylistsRepository {
    * @param {ObjectID[]} itemIDs
    * @param {{ afterID: ObjectID }} options
    */
+  // eslint-disable-next-line class-methods-use-this
   async movePlaylistItems(playlist, itemIDs, { afterID }) {
     // Use a plain array instead of a mongoose array because we need `splice()`.
     const itemsInPlaylist = [...playlist.media];
@@ -520,9 +521,9 @@ class PlaylistsRepository {
     const itemIDsToInsert = itemIDs.filter((id) => itemIDsInPlaylist.has(`${id}`));
 
     // Remove the items that we are about to move.
-    const newMedia = itemsInPlaylist.filter((item) =>
+    const newMedia = itemsInPlaylist.filter((item) => (
       itemIDsToInsert.every((insert) => !insert.equals(item))
-    );
+    ));
     // Reinsert items at their new position.
     const insertIndex = newMedia.findIndex((item) => item.equals(afterID));
     newMedia.splice(insertIndex + 1, 0, ...itemIDsToInsert);
