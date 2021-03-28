@@ -62,6 +62,7 @@
     "yaml": "^1.7.2"
   },
   "devDependencies": {
+    "@babel/core": "^7.13.13",
     "@babel/eslint-parser": "^7.13.10",
     "@babel/plugin-syntax-class-properties": "^7.12.13",
     "@tsconfig/node12": "^1.0.7",
