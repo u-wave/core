@@ -8,6 +8,10 @@ declare global {
     interface Request {
       uwave: import('./Uwave');
       uwaveHttp: import('./HttpApi').HttpApi;
+      /**
+       * Only available while social signup is in progress.
+       */
+      pendingUser?: import('./models').User;
       fullUrl: string;
     }
   }

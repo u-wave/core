@@ -1,20 +1,30 @@
 'use strict';
 
 const { Strategy } = require('passport');
-const { promisify } = require('util');
 const jwt = require('jsonwebtoken');
 const { PermissionError } = require('../errors');
 
-const jwtVerify = promisify(jwt.verify);
+/**
+ * @typedef {import('../models').User} User
+ */
 
+/**
+ * @param {Record<string, string>} cookies
+ */
 function getCookieToken(cookies) {
   return cookies && cookies.uwsession;
 }
 
+/**
+ * @param {import('qs').ParsedQs} query
+ */
 function getQueryToken(query) {
-  return query && query.token;
+  return query && typeof query.token === 'string' ? query.token : null;
 }
 
+/**
+ * @param {import('http').IncomingHttpHeaders} headers
+ */
 function getHeaderToken(headers) {
   if (headers.authorization) {
     const parts = headers.authorization.split(' ');
@@ -25,19 +35,37 @@ function getHeaderToken(headers) {
   return null;
 }
 
+/**
+ * @param {string|object} obj
+ * @returns {boolean}
+ */
+function isUserIDToken(obj) {
+  return typeof obj === 'object' && obj !== null && typeof obj.id === 'string';
+}
+
 class JWTStrategy extends Strategy {
+  /**
+   * @param {string} secret
+   * @param {(claim: { id: string }) => Promise<User>} getUser
+   */
   constructor(secret, getUser) {
     super();
     this.secret = secret;
     this.getUser = getUser;
   }
 
+  /**
+   * @param {import('express').Request} req
+   */
   authenticate(req) {
     this.authenticateP(req).catch((err) => {
       this.error(err);
     });
   }
 
+  /**
+   * @param {import('express').Request} req
+   */
   async authenticateP(req) {
     const { bans } = req.uwave;
 
@@ -50,16 +78,20 @@ class JWTStrategy extends Strategy {
 
     let value;
     try {
-      value = await jwtVerify(token, this.secret);
+      value = jwt.verify(token, this.secret);
     } catch (e) {
       return this.pass();
     }
 
-    if (!value) {
+    if (!isUserIDToken(value)) {
       return this.pass();
     }
 
-    const user = await this.getUser(value);
+    /** @type {{ id: string }} */
+    // @ts-ignore
+    const content = value;
+
+    const user = await this.getUser(content);
     if (!user) {
       return this.pass();
     }

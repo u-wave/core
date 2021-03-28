@@ -2,10 +2,10 @@
 
 const { URLSearchParams } = require('url');
 const cookie = require('cookie');
-const createDebug = require('debug');
+const debug = require('debug')('uwave:http:auth');
 const jwt = require('jsonwebtoken');
 const randomString = require('random-string');
-const fetch = require('node-fetch');
+const fetch = require('node-fetch').default;
 const ms = require('ms');
 const htmlescape = require('htmlescape');
 const {
@@ -19,7 +19,17 @@ const beautifyDuplicateKeyError = require('../utils/beautifyDuplicateKeyError');
 const toItemResponse = require('../utils/toItemResponse');
 const toListResponse = require('../utils/toListResponse');
 
-const debug = createDebug('uwave:http:auth');
+/**
+ * @typedef {object} AuthenticateOptions
+ * @prop {string|Buffer} secret
+ * @prop {string} [origin]
+ * @prop {import('nodemailer').Transport} [mailTransport]
+ * @prop {{ secret: string }} [recaptcha]
+ * @prop {(options: { token: string, requestUrl: string }) =>
+ *   import('nodemailer').SendMailOptions} createPasswordResetEmail
+ * @prop {boolean} [cookieSecure]
+ * @prop {string} [cookiePath]
+ */
 
 /**
  * @param {string} str
@@ -51,6 +61,12 @@ async function getAuthStrategies(req) {
   );
 }
 
+/**
+ * @param {import('express').Response} res
+ * @param {import('../HttpApi').HttpApi} api
+ * @param {import('../models').User} user
+ * @param {AuthenticateOptions & { session: 'cookie' | 'token' }} options
+ */
 async function refreshSession(res, api, user, options) {
   const token = await jwt.sign(
     { id: user.id },
@@ -77,6 +93,8 @@ async function refreshSession(res, api, user, options) {
 /**
  * The login controller is called once a user has logged in successfully using Passport;
  * we only have to assign the JWT.
+ *
+ * @param {AuthenticateOptions} options
  */
 async function login(options, req, res) {
   const { user } = req;
@@ -115,6 +133,9 @@ async function getSocialAvatar(uw, user, service) {
   return null;
 }
 
+/**
+ * @param {AuthenticateOptions} options
+ */
 async function socialLoginCallback(options, service, req, res) {
   const { user } = req;
   const { bans, locale } = req.uwave;
@@ -169,6 +190,9 @@ async function socialLoginCallback(options, service, req, res) {
   `);
 }
 
+/**
+ * @param {AuthenticateOptions} options
+ */
 async function socialLoginFinish(options, service, req, res) {
   const { pendingUser: user } = req;
   const sessionType = req.query.session === 'cookie' ? 'cookie' : 'token';
@@ -225,6 +249,10 @@ async function getSocketToken(req) {
   });
 }
 
+/**
+ * @param {string} responseString
+ * @param {AuthenticateOptions} options
+ */
 async function verifyCaptcha(responseString, options) {
   if (!options.recaptcha) {
     debug('ReCaptcha validation is disabled');
@@ -258,6 +286,9 @@ async function verifyCaptcha(responseString, options) {
   return null;
 }
 
+/**
+ * @param {AuthenticateOptions} options
+ */
 async function register(options, req) {
   const { users } = req.uwave;
   const {
@@ -283,6 +314,9 @@ async function register(options, req) {
   }
 }
 
+/**
+ * @param {AuthenticateOptions} options
+ */
 async function reset(options, req) {
   const uw = req.uwave;
   const { Authentication } = uw.models;
@@ -344,6 +378,9 @@ async function changePassword(req) {
   });
 }
 
+/**
+ * @param {AuthenticateOptions} options
+ */
 async function logout(options, req, res) {
   const { user, cookies } = req;
   const { cookieSecure, cookiePath } = options;

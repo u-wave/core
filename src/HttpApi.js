@@ -30,6 +30,10 @@ const matchOrigin = require('./utils/matchOrigin');
 
 const optionsSchema = require('./schemas/httpApi.json');
 
+/**
+ * @param {{ token: string, requestUrl: string }} options
+ * @returns {import('nodemailer').SendMailOptions}
+ */
 function defaultCreatePasswordResetEmail({ token, requestUrl }) {
   const parsed = new URL(requestUrl);
   const { hostname } = parsed;
@@ -51,7 +55,18 @@ function defaultCreatePasswordResetEmail({ token, requestUrl }) {
  */
 
 /**
+ * @typedef {object} HttpApiOptions
+ * @prop {string|Buffer} secret
+ * @prop {(error: Error) => void} [onError]
+ * @prop {{ secret: string }} [recaptcha]
+ * @prop {import('nodemailer').Transport} [mailTransport]
+ * @prop {(options: { token: string, requestUrl: string }) =>
+ *   import('nodemailer').SendMailOptions} [createPasswordResetEmail]
+ */
+
+/**
  * @param {import('./Uwave')} uw
+ * @param {HttpApiOptions} options
  */
 async function httpApi(uw, options) {
   if (!options.secret) {

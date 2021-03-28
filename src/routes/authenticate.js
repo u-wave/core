@@ -9,7 +9,7 @@ const controller = require('../controllers/authenticate');
 
 /**
  * @param {import('passport').Authenticator} passport
- * @param {object} options
+ * @param {import('../controllers/authenticate').AuthenticateOptions} options
  */
 function authenticateRoutes(passport, options) {
   const auth = Router()
