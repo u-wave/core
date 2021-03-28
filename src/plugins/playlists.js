@@ -519,9 +519,12 @@ class PlaylistsRepository {
     // Only attempt to move items that are actually in the playlist.
     const itemIDsToInsert = itemIDs.filter((id) => itemIDsInPlaylist.has(`${id}`));
 
-    const newMedia = itemsInPlaylist.filter((item) => !itemIDsToInsert.includes(`${item}`));
+    // Remove the items that we are about to move.
+    const newMedia = itemsInPlaylist.filter((item) =>
+      itemIDsToInsert.every((insert) => !insert.equals(item))
+    );
     // Reinsert items at their new position.
-    const insertIndex = newMedia.findIndex((item) => `${item}` === `${afterID}`);
+    const insertIndex = newMedia.findIndex((item) => item.equals(afterID));
     newMedia.splice(insertIndex + 1, 0, ...itemIDsToInsert);
     playlist.media = newMedia;
 
