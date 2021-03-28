@@ -194,8 +194,17 @@ async function socialLoginCallback(service, req, res) {
 }
 
 /**
+ * @typedef {object} SocialLoginFinishQuery
+ * @prop {'cookie'|'token'} [session]
+ *
+ * @typedef {object} SocialLoginFinishBody
+ * @prop {string} username
+ * @prop {string} avatar
+ */
+
+/**
  * @param {string} service
- * @param {import('../types').Request} req
+ * @param {import('../types').Request<{}, SocialLoginFinishQuery, SocialLoginFinishBody>} req
  * @param {import('express').Response} res
  */
 async function socialLoginFinish(service, req, res) {
