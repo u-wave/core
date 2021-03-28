@@ -176,7 +176,7 @@ class SocketServer {
         socketVote(this.uw, user.id, direction);
       },
       logout: (user, _, connection) => {
-        this.replace(connection, this.createGuestConnection(connection.socket, null));
+        this.replace(connection, this.createGuestConnection(connection.socket));
         if (!this.connection(user)) {
           disconnectUser(this.uw, user._id);
         }
