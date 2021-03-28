@@ -12,6 +12,10 @@ declare global {
        * Only available while social signup is in progress.
        */
       pendingUser?: import('./models').User;
+      /**
+       * Only available in specific authentication routes.
+       */
+      authOptions?: import('./controllers/authenticate').AuthenticateOptions;
       fullUrl: string;
     }
   }

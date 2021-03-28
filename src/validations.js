@@ -17,6 +17,7 @@ exports.register = {
         type: 'string',
         minLength: 6,
       },
+      grecaptcha: { type: 'string' },
     },
     required: ['email', 'username', 'password'],
   },

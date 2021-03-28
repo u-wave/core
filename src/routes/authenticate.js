@@ -8,6 +8,17 @@ const schema = require('../middleware/schema');
 const controller = require('../controllers/authenticate');
 
 /**
+ * @param {import('../controllers/authenticate').AuthenticateOptions} options
+ * @returns {import('express').RequestHandler}
+ */
+function withOptions(options) {
+  return (req, res, next) => {
+    req.authOptions = options;
+    next();
+  };
+}
+
+/**
  * @param {import('passport').Authenticator} passport
  * @param {import('../controllers/authenticate').AuthenticateOptions} options
  */
@@ -27,14 +38,16 @@ function authenticateRoutes(passport, options) {
     .post(
       '/register',
       schema(validations.register),
-      route(controller.register.bind(null, options)),
+      withOptions(options),
+      route(controller.register),
     )
     // POST /auth/login - Log in as an existing user.
     .post(
       '/login',
       schema(validations.login),
       passport.authenticate('local', { failWithError: true }),
-      route(controller.login.bind(null, options)),
+      withOptions(options),
+      route(controller.login),
     )
     // GET /auth/socket - Obtain an authentication token for the WebSocket server.
     .get(
@@ -46,13 +59,15 @@ function authenticateRoutes(passport, options) {
     .delete(
       '/',
       protect(),
-      route(controller.logout.bind(null, options)),
+      withOptions(options),
+      route(controller.logout),
     )
     // POST /auth/password/reset - Request a password reset.
     .post(
       '/password/reset',
       schema(validations.requestPasswordReset),
-      route(controller.reset.bind(null, options)),
+      withOptions(options),
+      route(controller.reset),
     )
     // POST /auth/password/reset/:reset - Change the password using a reset token.
     .post(
@@ -69,30 +84,35 @@ function authenticateRoutes(passport, options) {
     .get(
       '/service/google',
       passport.authenticate('google'),
-      route(controller.login.bind(null, options)),
+      withOptions(options),
+      route(controller.login),
     )
     // GET /auth/service/google/callback - Finish a social login using Google.
     .get(
       '/service/google/callback',
       passport.authenticate('google'),
-      route(controller.socialLoginCallback.bind(null, options)),
+      withOptions(options),
+      route(controller.socialLoginCallback.bind(null, 'google')),
     )
     // GET /auth/service/google - Initiate a social login using Google.
     .get(
       '/service/google',
       passport.authenticate('google'),
-      route(controller.login.bind(null, options, 'google')),
+      withOptions(options),
+      route(controller.login.bind(null, 'google')),
     )
     // GET /auth/service/google/callback - Receive social login data from Google.
     .get(
       '/service/google/callback',
       passport.authenticate('google'),
-      route(controller.socialLoginCallback.bind(null, options, 'google')),
+      withOptions(options),
+      route(controller.socialLoginCallback.bind(null, 'google')),
     )
     // POST /auth/service/google/finish - Finish creating an account with Google.
     .post(
       '/service/google/finish',
-      route(controller.socialLoginFinish.bind(null, options, 'google')),
+      withOptions(options),
+      route(controller.socialLoginFinish.bind(null, 'google')),
     );
 
   return auth;

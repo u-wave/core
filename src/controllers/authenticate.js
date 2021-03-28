@@ -94,9 +94,10 @@ async function refreshSession(res, api, user, options) {
  * The login controller is called once a user has logged in successfully using Passport;
  * we only have to assign the JWT.
  *
- * @param {AuthenticateOptions} options
+ * @type {import('../types').Controller}
  */
-async function login(options, req, res) {
+async function login(req, res) {
+  const options = req.authOptions;
   const { user } = req;
   const { session } = req.query;
   const { bans } = req.uwave;
@@ -134,12 +135,14 @@ async function getSocialAvatar(uw, user, service) {
 }
 
 /**
- * @param {AuthenticateOptions} options
+ * @param {string} service
+ * @param {import('../types').Request} req
+ * @param {import('express').Response} res
  */
-async function socialLoginCallback(options, service, req, res) {
+async function socialLoginCallback(service, req, res) {
   const { user } = req;
   const { bans, locale } = req.uwave;
-  const { origin } = options;
+  const { origin } = req.authOptions;
 
   if (await bans.isBanned(user)) {
     throw new PermissionError('You have been banned.');
@@ -171,7 +174,7 @@ async function socialLoginCallback(options, service, req, res) {
   `;
 
   await refreshSession(res, req.uwaveHttp, user, {
-    ...options,
+    ...req.authOptions,
     session: 'cookie',
   });
 
@@ -191,9 +194,12 @@ async function socialLoginCallback(options, service, req, res) {
 }
 
 /**
- * @param {AuthenticateOptions} options
+ * @param {string} service
+ * @param {import('../types').Request} req
+ * @param {import('express').Response} res
  */
-async function socialLoginFinish(options, service, req, res) {
+async function socialLoginFinish(service, req, res) {
+  const options = req.authOptions;
   const { pendingUser: user } = req;
   const sessionType = req.query.session === 'cookie' ? 'cookie' : 'token';
   const { bans } = req.uwave;
@@ -287,9 +293,17 @@ async function verifyCaptcha(responseString, options) {
 }
 
 /**
- * @param {AuthenticateOptions} options
+ * @typedef {object} RegisterBody
+ * @prop {string} email
+ * @prop {string} username
+ * @prop {string} password
+ * @prop {string} [grecaptcha]
  */
-async function register(options, req) {
+
+/**
+ * @type {import('../types').Controller<{}, {}, RegisterBody>}
+ */
+async function register(req) {
   const { users } = req.uwave;
   const {
     grecaptcha, email, username, password,
@@ -300,7 +314,7 @@ async function register(options, req) {
   }
 
   try {
-    await verifyCaptcha(grecaptcha, options);
+    await verifyCaptcha(grecaptcha, req.authOptions);
 
     const user = await users.createUser({
       email,
@@ -315,13 +329,18 @@ async function register(options, req) {
 }
 
 /**
- * @param {AuthenticateOptions} options
+ * @typedef {object} RequestPasswordResetBody
+ * @prop {string} email
  */
-async function reset(options, req) {
+
+/**
+ * @type {import('../types').Controller<{}, {}, RequestPasswordResetBody>}
+ */
+async function reset(req) {
   const uw = req.uwave;
   const { Authentication } = uw.models;
   const { email } = req.body;
-  const { mailTransport, createPasswordResetEmail } = options;
+  const { mailTransport, createPasswordResetEmail } = req.authOptions;
 
   const auth = await Authentication.findOne({
     email: email.toLowerCase(),
@@ -379,11 +398,11 @@ async function changePassword(req) {
 }
 
 /**
- * @param {AuthenticateOptions} options
+ * @type {import('../types').Controller}
  */
-async function logout(options, req, res) {
+async function logout(req, res) {
   const { user, cookies } = req;
-  const { cookieSecure, cookiePath } = options;
+  const { cookieSecure, cookiePath } = req.authOptions;
   const uw = req.uwave;
 
   uw.publish('user:logout', {
