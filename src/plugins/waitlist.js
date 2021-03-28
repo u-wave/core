@@ -13,17 +13,13 @@ const {
 const routes = require('../routes/waitlist');
 
 /**
- * @typedef {import('../Uwave')} Uwave
- */
-
-/**
- * @typedef {object} User
+ * @typedef {import('../models').User} User
  */
 
 /**
  * @param {string[]} waitlist
  * @param {string} userID
- * @return {boolean}
+ * @returns {boolean}
  */
 function isInWaitlist(waitlist, userID) {
   return waitlist.some((waitingID) => waitingID === userID);
@@ -31,7 +27,7 @@ function isInWaitlist(waitlist, userID) {
 
 class Waitlist {
   /**
-   * @param {Uwave} uw
+   * @param {import('../Uwave')} uw
    */
   constructor(uw) {
     this.uw = uw;
@@ -53,7 +49,7 @@ class Waitlist {
 
   /**
    * @param {string} userID
-   * @return {Promise<boolean>}
+   * @returns {Promise<boolean>}
    * @private
    */
   async isCurrentDJ(userID) {
@@ -63,7 +59,7 @@ class Waitlist {
 
   /**
    * @param {User} user
-   * @return {Promise<boolean>}
+   * @returns {Promise<boolean>}
    * @private
    */
   async hasPlayablePlaylist(user) {
@@ -73,14 +69,14 @@ class Waitlist {
   }
 
   /**
-   * @return {Promise<boolean>}
+   * @returns {Promise<boolean>}
    */
   isLocked() {
     return this.uw.redis.get('waitlist:lock').then(Boolean);
   }
 
   /**
-   * @return {Promise<string[]>}
+   * @returns {Promise<string[]>}
    */
   getUserIDs() {
     return this.uw.redis.lrange('waitlist', 0, -1);
@@ -89,7 +85,8 @@ class Waitlist {
   /**
    * POST waitlist/ handler for joining the waitlist.
    *
-   * @return {Promise<string[]>}
+   * @param {User} user
+   * @returns {Promise<string[]>}
    * @private
    */
   async doJoinWaitlist(user) {
@@ -108,7 +105,9 @@ class Waitlist {
   /**
    * POST waitlist/ handler for adding a (different) user to the waitlist.
    *
-   * @return {Promise<string[]>}
+   * @param {User} user
+   * @param {{ moderator: User, waitlist: string[], position: number }} options
+   * @returns {Promise<string[]>}
    * @private
    */
   async doAddToWaitlist(user, { moderator, waitlist, position }) {
@@ -139,7 +138,7 @@ class Waitlist {
    *
    * @param {string} userID
    * @param {{moderator?: User}} [options]
-   * @return {Promise<void>}
+   * @returns {Promise<void>}
    */
   async addUser(userID, { moderator } = {}) {
     const { acl, users } = this.uw;
@@ -187,7 +186,7 @@ class Waitlist {
    * @param {string} userID
    * @param {number} position
    * @param {{moderator?: User}} [options]
-   * @return {Promise<void>}
+   * @returns {Promise<void>}
    */
   async moveUser(userID, position, { moderator } = {}) {
     const { users } = this.uw;
@@ -237,7 +236,7 @@ class Waitlist {
   /**
    * @param {string} userID
    * @param {{moderator?: User}} [options]
-   * @return {Promise<void>}
+   * @returns {Promise<void>}
    */
   async removeUser(userID, { moderator } = {}) {
     const { acl, users } = this.uw;
@@ -274,7 +273,7 @@ class Waitlist {
 
   /**
    * @param {{moderator: User}} options
-   * @return {Promise<void>}
+   * @returns {Promise<void>}
    */
   async clear({ moderator }) {
     await this.uw.redis.del('waitlist');
@@ -292,7 +291,7 @@ class Waitlist {
   /**
    * @param {boolean} lock
    * @param {User} moderator
-   * @return {Promise<void>}
+   * @returns {Promise<void>}
    * @private
    */
   async lockWaitlist(lock, moderator) {
@@ -316,7 +315,7 @@ class Waitlist {
 
   /**
    * @param {{moderator: User}} options
-   * @return {Promise<void>}
+   * @returns {Promise<void>}
    */
   lock({ moderator }) {
     return this.lockWaitlist(true, moderator);
@@ -324,7 +323,7 @@ class Waitlist {
 
   /**
    * @param {{moderator: User}} options
-   * @return {Promise<void>}
+   * @returns {Promise<void>}
    */
   unlock({ moderator }) {
     return this.lockWaitlist(false, moderator);
@@ -332,7 +331,8 @@ class Waitlist {
 }
 
 /**
- * @return {Promise<void>}
+ * @param {import('../Uwave')} uw
+ * @returns {Promise<void>}
  */
 async function waitlistPlugin(uw) {
   uw.waitlist = new Waitlist(uw); // eslint-disable-line no-param-reassign
