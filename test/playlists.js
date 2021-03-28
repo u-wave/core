@@ -19,7 +19,7 @@ describe('Playlists', () => {
     it('requires authentication', async () => {
       await supertest(uw.server)
         .get('/api/playlists')
-        .expect(403);
+        .expect(401);
     });
 
     it('shows all playlists for a user', async () => {
@@ -52,7 +52,7 @@ describe('Playlists', () => {
     it('requires authentication', async () => {
       await supertest(uw.server)
         .post('/api/playlists')
-        .expect(403);
+        .expect(401);
     });
 
     it('validates input', async () => {
@@ -139,7 +139,7 @@ describe('Playlists', () => {
 
       await supertest(uw.server)
         .patch(`/api/playlists/${fakeID}`)
-        .expect(403);
+        .expect(401);
     });
 
     it('validates input', async () => {
@@ -215,7 +215,7 @@ describe('Playlists', () => {
 
       await supertest(uw.server)
         .put(`/api/playlists/${fakeID}/rename`)
-        .expect(403);
+        .expect(401);
     });
 
     it('validates input', async () => {
@@ -285,7 +285,7 @@ describe('Playlists', () => {
 
       await supertest(uw.server)
         .put(`/api/playlists/${fakeID}/activate`)
-        .expect(403);
+        .expect(401);
     });
 
     it('activates the playlist', async () => {

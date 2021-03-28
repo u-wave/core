@@ -21,7 +21,7 @@ describe('Booth', () => {
       await supertest(uw.server)
         .put(`/api/booth/${historyID}/vote`)
         .send({ direction: 1 })
-        .expect(403);
+        .expect(401);
     });
 
     it('validates input', async () => {

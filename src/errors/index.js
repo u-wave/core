@@ -2,11 +2,13 @@
 
 const {
   HttpError,
+  BadRequest,
   Forbidden,
-  InternalServerError,
+  Unauthorized,
   NotFound,
   TooManyRequests,
   UnprocessableEntity,
+  InternalServerError,
 } = require('http-errors');
 const { t } = require('../locale');
 
@@ -87,16 +89,6 @@ class HTTPError extends APIError {
   }
 }
 
-class PermissionError extends Forbidden {
-  /**
-   * @param {string} message
-   */
-  constructor(message) {
-    super(message);
-    this.name = 'PermissionError';
-  }
-}
-
 /**
  * @template {import('i18next').StringMap} TData
  * @param {string} name
@@ -133,6 +125,18 @@ function createErrorClass(name, {
     }
   };
 }
+
+const PermissionError = createErrorClass('PermissionError', {
+  code: 'forbidden',
+  string: 'errors.genericPermission',
+  base: Forbidden,
+});
+
+const LoginRequiredError = createErrorClass('LoginRequiredError', {
+  code: 'forbidden',
+  string: 'errors.loginRequired',
+  base: Unauthorized,
+});
 
 const RateLimitError = createErrorClass('RateLimitError', {
   code: 'too-many-requests',
@@ -182,6 +186,18 @@ const HistoryEntryNotFoundError = createErrorClass('HistoryEntryNotFoundError', 
   base: NotFound,
 });
 
+const MediaNotFoundError = createErrorClass('MediaNotFoundError', {
+  code: 'media-not-found',
+  string: 'errors.mediaNotFound',
+  base: NotFound,
+});
+
+const ItemNotInPlaylistError = createErrorClass('ItemNotInPlaylistError', {
+  code: 'playlist-item-not-found',
+  string: 'errors.itemNotInPlaylist',
+  base: NotFound,
+});
+
 const CannotSelfFavoriteError = createErrorClass('CannotSelfFavoriteError', {
   code: 'no-self-favorite',
   string: 'errors.noSelfFavorite',
@@ -212,6 +228,30 @@ const EmptyPlaylistError = createErrorClass('EmptyPlaylistError', {
   base: Forbidden,
 });
 
+const WaitlistLockedError = createErrorClass('WaitlistLockedError', {
+  code: 'waitlist-locked',
+  string: 'errors.waitlistLocked',
+  base: Forbidden,
+});
+
+const AlreadyInWaitlistError = createErrorClass('AlreadyInWaitlistError', {
+  code: 'already-in-waitlist',
+  string: 'errors.alreadyInWaitlist',
+  base: Forbidden,
+});
+
+const UserNotInWaitlistError = createErrorClass('UserNotInWaitlistError', {
+  code: 'not-in-waitlist',
+  string: 'errors.userNotInWaitlist',
+  base: NotFound,
+});
+
+const UserIsPlayingError = createErrorClass('UserIsPlayingError', {
+  code: 'user-is-playing',
+  string: 'errors.userIsPlaying',
+  base: BadRequest,
+});
+
 exports.EmailError = EmailError;
 exports.APIError = APIError;
 exports.CombinedError = CombinedError;
@@ -219,6 +259,7 @@ exports.PasswordError = PasswordError;
 exports.TokenError = TokenError;
 exports.HTTPError = HTTPError;
 exports.PermissionError = PermissionError;
+exports.LoginRequiredError = LoginRequiredError;
 exports.RateLimitError = RateLimitError;
 exports.NameChangeRateLimitError = NameChangeRateLimitError;
 exports.InvalidEmailError = InvalidEmailError;
@@ -227,8 +268,14 @@ exports.UserNotFoundError = UserNotFoundError;
 exports.PlaylistNotFoundError = PlaylistNotFoundError;
 exports.PlaylistItemNotFoundError = PlaylistItemNotFoundError;
 exports.HistoryEntryNotFoundError = HistoryEntryNotFoundError;
+exports.MediaNotFoundError = MediaNotFoundError;
+exports.ItemNotInPlaylistError = ItemNotInPlaylistError;
 exports.CannotSelfFavoriteError = CannotSelfFavoriteError;
 exports.CannotSelfMuteError = CannotSelfMuteError;
 exports.SourceNotFoundError = SourceNotFoundError;
 exports.SourceNoImportError = SourceNoImportError;
 exports.EmptyPlaylistError = EmptyPlaylistError;
+exports.WaitlistLockedError = WaitlistLockedError;
+exports.AlreadyInWaitlistError = AlreadyInWaitlistError;
+exports.UserNotInWaitlistError = UserNotInWaitlistError;
+exports.UserIsPlayingError = UserIsPlayingError;

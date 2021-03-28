@@ -2,6 +2,9 @@
 
 const { clamp } = require('lodash');
 const escapeStringRegExp = require('escape-string-regexp');
+const {
+  UserNotFoundError,
+} = require('../errors');
 const Page = require('../Page');
 
 /**
@@ -107,7 +110,9 @@ class Bans {
     const { users } = this.uw;
 
     const user = await users.getUser(userID);
-    if (!user) throw new Error('User not found.');
+    if (!user) {
+      throw new UserNotFoundError({ id: userID });
+    }
 
     if (duration <= 0 && !permanent) {
       throw new Error('Ban duration should be at least 0ms.');
@@ -146,7 +151,7 @@ class Bans {
 
     const user = await users.getUser(userID);
     if (!user) {
-      throw new Error('User not found.');
+      throw new UserNotFoundError({ id: userID });
     }
     if (!user.banned) {
       throw new Error(`User "${user.username}" is not banned.`);

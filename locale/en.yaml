@@ -4,16 +4,24 @@ uwave:
     closeThisWindow: You can now close this window.
   errors:
     tooManyRequests: 'Rate limit exceeded, retry in {{retryAfter}}.'
+    loginRequired: 'You must be logged in to do this.'
+    genericPermission: 'You do not have permission to do that.'
     invalidEmail: The email address is not formatted correctly.
     invalidUsername: Invalid username. Names must be 3 to 32 characters long and must not contain spaces.
     userNotFound: User not found.
     playlistNotFound: Playlist not found.
     playlistItemNotFound: Playlist item not found.
+    ItemNotInPlaylist: Item not in playlist.
     emptyPlaylist: You don't have anything to play. Please add some songs to your playlist and try again.
     historyEntryNotFound: History entry not found.
+    mediaNotFound: Media object not found.
     noSelfFavorite: "You can't favorite your own plays."
     noSelfMute: "You can't mute yourself."
     noSelfUnmute: "You can't unmute yourself."
     sourceNotFound: 'Source "{{name}}" not found.'
     sourceNoImport: 'Source "{{name}}" does not support importing.'
     tooManyNameChanges: 'You can only change your username five times per hour. Try again in {{retryAfter}}.'
+    waitlistLocked: 'The waitlist is locked. Only staff can join.'
+    alreadyInWaitlist: 'You are already in the waitlist.'
+    userNotInWaitlist: 'That user is not in the waitlist.'
+    userIsPlaying: 'That user is currently playing.'

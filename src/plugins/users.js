@@ -85,6 +85,7 @@ class UsersRepository {
 
   /**
    * @param {import('mongodb').ObjectID|string|User} id
+   * @returns {Promise<User>}
    */
   getUser(id) {
     const { User } = this.uw.models;

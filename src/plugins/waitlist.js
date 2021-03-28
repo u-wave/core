@@ -1,9 +1,15 @@
 'use strict';
 
 const { clamp } = require('lodash');
-const NotFoundError = require('../errors/NotFoundError');
-const PermissionError = require('../errors/PermissionError');
-const { UserNotFoundError, EmptyPlaylistError } = require('../errors');
+const {
+  PermissionError,
+  UserNotFoundError,
+  EmptyPlaylistError,
+  WaitlistLockedError,
+  AlreadyInWaitlistError,
+  UserNotInWaitlistError,
+  UserIsPlayingError,
+} = require('../errors');
 const routes = require('../routes/waitlist');
 
 /**
@@ -143,17 +149,15 @@ class Waitlist {
 
     const canForceJoin = await acl.isAllowed(user, 'waitlist.join.locked');
     if (!canForceJoin && await this.isLocked()) {
-      throw new PermissionError('The waitlist is locked. Only staff can join.', {
-        requiredRole: 'waitlist.join.locked',
-      });
+      throw new WaitlistLockedError();
     }
 
     let waitlist = await this.getUserIDs();
     if (isInWaitlist(waitlist, user.id)) {
-      throw new PermissionError('You are already in the waitlist.');
+      throw new AlreadyInWaitlistError();
     }
     if (await this.isCurrentDJ(user.id)) {
-      throw new PermissionError('You are already currently playing.');
+      throw new AlreadyInWaitlistError();
     }
     if (!(await this.hasPlayablePlaylist(user))) {
       throw new EmptyPlaylistError();
@@ -163,7 +167,7 @@ class Waitlist {
       waitlist = await this.doJoinWaitlist(user);
     } else {
       if (!(await acl.isAllowed(moderator, 'waitlist.add'))) {
-        throw new PermissionError('You cannot add someone else to the waitlist.', {
+        throw new PermissionError({
           requiredRole: 'waitlist.add',
         });
       }
@@ -196,10 +200,10 @@ class Waitlist {
     let waitlist = await this.getUserIDs();
 
     if (!isInWaitlist(waitlist, user.id)) {
-      throw new PermissionError('That user is not in the waitlist.');
+      throw new UserNotInWaitlistError({ id: user.id });
     }
     if (await this.isCurrentDJ(user.id)) {
-      throw new PermissionError('That user is currently playing.');
+      throw new UserIsPlayingError({ id: user.id });
     }
     if (!(await this.hasPlayablePlaylist(user))) {
       throw new EmptyPlaylistError();
@@ -241,14 +245,14 @@ class Waitlist {
 
     const isRemoving = moderator && user.id !== moderator.id;
     if (isRemoving && !(await acl.isAllowed(moderator, 'waitlist.remove'))) {
-      throw new PermissionError('You need to be a moderator to do this.', {
+      throw new PermissionError({
         requiredRole: 'waitlist.remove',
       });
     }
 
     let waitlist = await this.getUserIDs();
     if (!isInWaitlist(waitlist, user.id)) {
-      throw new NotFoundError('That user is not in the waitlist.');
+      throw new UserNotInWaitlistError({ id: user.id });
     }
 
     await this.uw.redis.lrem('waitlist', 0, user.id);

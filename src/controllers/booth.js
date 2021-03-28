@@ -2,7 +2,6 @@
 
 const mongoose = require('mongoose');
 const {
-  CombinedError,
   HTTPError,
   PermissionError,
   HistoryEntryNotFoundError,
@@ -114,12 +113,8 @@ async function skipBooth(req) {
     return toItemResponse({});
   }
 
-  const errors = [];
   if (!await acl.isAllowed(user, 'booth.skip.other')) {
-    errors.push(new PermissionError('You need to be a moderator to do this'));
-  }
-  if (errors.length > 0) {
-    throw new CombinedError(errors);
+    throw new PermissionError({ requiredRole: 'booth.skip.other' });
   }
 
   await doSkip(req.uwave, user.id, userID, reason, opts);

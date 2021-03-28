@@ -3,8 +3,12 @@
 const { groupBy, shuffle } = require('lodash');
 const escapeStringRegExp = require('escape-string-regexp');
 const debug = require('debug')('uwave:playlists');
-const { PlaylistNotFoundError } = require('../errors');
-const NotFoundError = require('../errors/NotFoundError');
+const {
+  PlaylistNotFoundError,
+  PlaylistItemNotFoundError,
+  ItemNotInPlaylistError,
+  MediaNotFoundError,
+} = require('../errors');
 const Page = require('../Page');
 const routes = require('../routes/playlists');
 
@@ -100,7 +104,7 @@ class PlaylistsRepository {
     }
     const media = await Media.findById(id);
     if (!media) {
-      throw new NotFoundError('Media not found.');
+      throw new MediaNotFoundError({ id });
     }
     return media;
   }
@@ -196,12 +200,12 @@ class PlaylistsRepository {
     const playlistItemID = playlist.media.find((id) => id.equals(itemID));
 
     if (!playlistItemID) {
-      throw new NotFoundError('Item not in playlist.');
+      throw new ItemNotInPlaylistError({ playlistID: playlist._id, itemID: itemID });
     }
 
     const item = await PlaylistItem.findById(playlistItemID);
     if (!item) {
-      throw new NotFoundError('Playlist item not found.');
+      throw new PlaylistItemNotFoundError({ id: playlistItemID });
     }
 
     if (!item.populated('media')) {
