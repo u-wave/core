@@ -29,13 +29,13 @@ class HistoryRepository {
   /**
    * @param {object} filter
    * @param {{ offset?: number, limit?: number }} [pagination]
-   * @returns {Promise<Page<PopulatedHistoryEntry, { offset?: number, limit?: number }>>}
+   * @returns {Promise<Page<PopulatedHistoryEntry, { offset: number, limit: number }>>}
    */
   async getHistory(filter, pagination = {}) {
     const { HistoryEntry } = this.uw.models;
 
     const offset = pagination.offset || 0;
-    const size = clamp(
+    const limit = clamp(
       'limit' in pagination ? pagination.limit : DEFAULT_PAGE_SIZE,
       0, MAX_PAGE_SIZE,
     );
@@ -44,17 +44,17 @@ class HistoryRepository {
     const results = await HistoryEntry.where(filter)
       .sort({ playedAt: -1 })
       .skip(offset)
-      .limit(size)
+      .limit(limit)
       .populate('media.media user');
 
     return new Page(results, {
       pageSize: pagination ? pagination.limit : null,
       filtered: total,
       total,
-      current: { offset, limit: size },
-      next: pagination ? { offset: offset + size, limit: size } : null,
+      current: { offset, limit },
+      next: pagination ? { offset: offset + limit, limit } : null,
       previous: offset > 0
-        ? { offset: Math.max(offset - size, 0), limit: size }
+        ? { offset: Math.max(offset - limit, 0), limit }
         : null,
     });
   }

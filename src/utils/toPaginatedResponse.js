@@ -16,17 +16,19 @@ function appendQuery(base, query) {
     ...parsed.query,
     ...query,
   });
-  parsed.query = null;
+  parsed.query = {};
   return `${url.format(parsed)}`;
 }
 
 /**
- * @param {import('../Page')} page
- * @param {{ baseUrl?: string, included?: object }} options
+ * @template {any} TItem
+ * @template {{ offset: number }} TPagination
+ * @param {import('../Page')<TItem, TPagination>} page
+ * @param {{ baseUrl?: string, included?: toListResponse.IncludedOptions }} options
  */
 function toPaginatedResponse(
   page,
-  { baseUrl = '', included = {} } = {},
+  { baseUrl = '', included } = {},
 ) {
   return Object.assign(toListResponse(page.data, {
     included,

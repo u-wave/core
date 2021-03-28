@@ -11,12 +11,12 @@ class Page {
    *   pageSize?: number,
    *   filtered?: number,
    *   total?: number,
+   *   current: TPagination,
    *   previous?: TPagination|null,
-   *   current?: TPagination|null,
    *   next?: TPagination|null,
    * }} opts
    */
-  constructor(results, opts = {}) {
+  constructor(results, opts) {
     this.length = results.length;
 
     this.data = results;

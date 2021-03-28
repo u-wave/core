@@ -472,7 +472,12 @@ class PlaylistsRepository {
    *
    * @param {Playlist} playlist
    * @param {PlaylistItemDesc[]} items
-   * @param {{ after?: ObjectID }} options
+   * @param {{ after?: ObjectID|null }} options
+   * @returns {Promise<{
+   *   added: PlaylistItem[],
+   *   afterID: ObjectID|null,
+   *   playlistSize: number,
+   * }>}
    */
   async addPlaylistItems(playlist, items, { after = null } = {}) {
     const { users } = this.uw;
