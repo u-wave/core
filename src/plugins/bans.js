@@ -97,23 +97,16 @@ class Bans {
   }
 
   /**
-   * @param {string} userID
+   * @param {User} user
    * @param {object} options
    * @param {number} options.duration
    * @param {User} options.moderator
    * @param {boolean} [options.permanent]
    * @param {string} [options.reason]
    */
-  async ban(userID, {
+  async ban(user, {
     duration, moderator, permanent = false, reason = '',
   }) {
-    const { users } = this.uw;
-
-    const user = await users.getUser(userID);
-    if (!user) {
-      throw new UserNotFoundError({ id: userID });
-    }
-
     if (duration <= 0 && !permanent) {
       throw new Error('Ban duration should be at least 0ms.');
     }
