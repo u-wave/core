@@ -18,7 +18,12 @@ const { muteUser, unmuteUser } = require('./chat');
 const debug = createDebug('uwave:http:users');
 
 /**
- * @type {import('../types').Controller}
+ * @typedef {object} GetUsersQuery
+ * @prop {string} filter
+ */
+
+/**
+ * @type {import('../types').Controller<{}, GetUsersQuery>}
  */
 async function getUsers(req) {
   const { filter } = req.query;
@@ -37,7 +42,12 @@ async function getUsers(req) {
 }
 
 /**
- * @type {import('../types').Controller}
+ * @typedef {object} GetUserParams
+ * @prop {string} id
+ */
+
+/**
+ * @type {import('../types').Controller<GetUserParams>}
  */
 async function getUser(req) {
   const { users } = req.uwave;
@@ -54,7 +64,12 @@ async function getUser(req) {
 }
 
 /**
- * @type {import('../types').Controller}
+ * @typedef {object} GetUserRolesParams
+ * @prop {string} id
+ */
+
+/**
+ * @type {import('../types').Controller<GetUserRolesParams>}
  */
 async function getUserRoles(req) {
   const { acl, users } = req.uwave;
@@ -73,7 +88,13 @@ async function getUserRoles(req) {
 }
 
 /**
- * @type {import('../types').Controller}
+ * @typedef {object} AddUserRoleParams
+ * @prop {string} id
+ * @prop {string} role
+ */
+
+/**
+ * @type {import('../types').Controller<AddUserRoleParams>}
  */
 async function addUserRole(req) {
   const { user: moderator } = req;
@@ -98,7 +119,13 @@ async function addUserRole(req) {
 }
 
 /**
- * @type {import('../types').Controller}
+ * @typedef {object} RemoveUserRoleParams
+ * @prop {string} id
+ * @prop {string} role
+ */
+
+/**
+ * @type {import('../types').Controller<RemoveUserRoleParams>}
  */
 async function removeUserRole(req) {
   const { user: moderator } = req;
@@ -123,7 +150,15 @@ async function removeUserRole(req) {
 }
 
 /**
- * @type {import('../types').Controller}
+ * @typedef {object} ChangeUsernameParams
+ * @prop {string} id
+ *
+ * @typedef {object} ChangeUsernameBody
+ * @prop {string} username
+ */
+
+/**
+ * @type {import('../types').Controller<ChangeUsernameParams, {}, ChangeUsernameBody>}
  */
 async function changeUsername(req) {
   const { user: moderator } = req;
@@ -167,7 +202,12 @@ async function disconnectUser(uw, userID) {
 }
 
 /**
- * @type {import('../types').Controller}
+ * @typedef {object} GetHistoryParams
+ * @prop {string} id
+ */
+
+/**
+ * @type {import('../types').Controller<GetHistoryParams>}
  */
 async function getHistory(req) {
   const { id } = req.params;
