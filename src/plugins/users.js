@@ -14,10 +14,16 @@ const { IncorrectPasswordError, UserNotFoundError } = require('../errors');
  * @typedef {import('../types').ToDocument<T>} ToDocument
  */
 
+/**
+ * @param {string} password
+ */
 function encryptPassword(password) {
   return bcrypt.hash(password, 10);
 }
 
+/**
+ * @param {User} user
+ */
 function getDefaultAvatar(user) {
   return `https://sigil.u-wave.net/${user.id}`;
 }
@@ -30,20 +36,17 @@ class UsersRepository {
     this.uw = uw;
   }
 
-  async getUsers(filter = null, page = {}) {
+  /**
+   * @param {string} [filter]
+   * @param {{ offset?: number, limit?: number }} [pagination]
+   */
+  async getUsers(filter = null, pagination = {}) {
     const { User } = this.uw.models;
-
-    if (filter && (typeof filter.offset === 'number' || typeof filter.limit === 'number')) {
-      page = filter; // eslint-disable-line no-param-reassign
-      filter = null; // eslint-disable-line no-param-reassign
-    }
-
-    debug('getUsers', filter, page);
 
     const {
       offset = 0,
       limit = 50,
-    } = page;
+    } = pagination;
 
     const query = User.find()
       .skip(offset)
@@ -51,7 +54,6 @@ class UsersRepository {
     let queryFilter = null;
 
     if (filter) {
-      if (typeof filter !== 'string') throw new TypeError('User filter must be a string');
       queryFilter = {
         username: new RegExp(escapeStringRegExp(filter)),
       };
@@ -100,7 +102,7 @@ class UsersRepository {
    * @prop {string} password
    *
    * @typedef {object} SocialLoginOptions
-   * @prop {object} profile
+   * @prop {import('passport').Profile} profile
    *
    * @typedef {LocalLoginOptions & { type: 'local' }} DiscriminatedLocalLoginOptions
    * @typedef {SocialLoginOptions & { type: string }} DiscriminatedSocialLoginOptions
@@ -157,7 +159,14 @@ class UsersRepository {
     return this.uw.users.findOrCreateSocialUser(user);
   }
 
-  /*
+  /**
+   * @typedef {object} FindOrCreateSocialUserOptions
+   * @prop {string} type
+   * @prop {string} id
+   * @prop {string} username
+   * @prop {string} avatar]
+   *
+   * @param {FindOrCreateSocialUserOptions} options
    * @returns {Promise<User>}
    */
   async findOrCreateSocialUser({
@@ -217,7 +226,8 @@ class UsersRepository {
     return auth.user;
   }
 
-  /*
+  /**
+   * @param {{ username: string, email: string, password: string }} props
    * @returns {Promise<User>}
    */
   async createUser({
@@ -266,6 +276,10 @@ class UsersRepository {
     return user;
   }
 
+  /**
+   * @param {import('mongodb').ObjectID} id
+   * @param {string} password
+   */
   async updatePassword(id, password) {
     const { Authentication } = this.uw.models;
 
@@ -286,14 +300,20 @@ class UsersRepository {
     }
   }
 
-  async updateUser(id, update = {}, opts = {}) {
+  /**
+   * @param {import('mongodb').ObjectID|string} id
+   * @param {Record<string, string>} update
+   * @param {{ moderator?: User }} [options]
+   */
+  async updateUser(id, update = {}, options = {}) {
     const user = await this.getUser(id);
     if (!user) throw new UserNotFoundError({ id });
 
     debug('update user', user.id, user.username, update);
 
-    const moderator = opts && opts.moderator && await this.getUser(opts.moderator);
+    const moderator = options && options.moderator;
 
+    /** @type {Record<string, string>} */
     const old = {};
     Object.keys(update).forEach((key) => {
       old[key] = user[key];
