@@ -5,9 +5,12 @@ uwave:
   errors:
     tooManyRequests: 'Rate limit exceeded, retry in {{retryAfter}}.'
     loginRequired: 'You must be logged in to do this.'
+    banned: 'You have been banned.'
     genericPermission: 'You do not have permission to do that.'
     invalidEmail: The email address is not formatted correctly.
     invalidUsername: Invalid username. Names must be 3 to 32 characters long and must not contain spaces.
+    recaptchaFailed: 'ReCaptcha validation failed, please try again.'
+    invalidResetToken: That reset token is invalid. Please double-check your reset token or request a new password reset.
     userNotFound: User not found.
     playlistNotFound: Playlist not found.
     playlistItemNotFound: Playlist item not found.

@@ -1,6 +1,6 @@
 'use strict';
 
-const { PermissionError } = require('../errors');
+const { BadRequest } = require('http-errors');
 const wrapMiddleware = require('../utils/wrapMiddleware');
 
 function requireActiveConnection() {
@@ -12,7 +12,7 @@ function requireActiveConnection() {
   return wrapMiddleware(async (req) => {
     const connected = await isConnected(req.uwave, req.user);
     if (!connected) {
-      throw new PermissionError('You need to be logged in and connected to do this.');
+      throw new BadRequest('You need to be logged in and connected to do this.');
     }
   });
 }

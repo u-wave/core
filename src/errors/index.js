@@ -67,16 +67,6 @@ class PasswordError extends APIError {
   }
 }
 
-class TokenError extends APIError {
-  /**
-   * @param {string} message
-   */
-  constructor(message) {
-    super(message);
-    this.name = 'TokenError';
-  }
-}
-
 class HTTPError extends APIError {
   /**
    * @param {number} status
@@ -138,6 +128,12 @@ const LoginRequiredError = createErrorClass('LoginRequiredError', {
   base: Unauthorized,
 });
 
+const BannedError = createErrorClass('BannedError', {
+  code: 'banned',
+  string: 'errors.banned',
+  base: Forbidden,
+});
+
 const RateLimitError = createErrorClass('RateLimitError', {
   code: 'too-many-requests',
   string: 'errors.tooManyRequests',
@@ -159,6 +155,18 @@ const InvalidEmailError = createErrorClass('InvalidEmailError', {
 const InvalidUsernameError = createErrorClass('InvalidUsernameError', {
   code: 'invalid-username',
   string: 'errors.invalidUsername',
+  base: UnprocessableEntity,
+});
+
+const ReCaptchaError = createErrorClass('ReCaptchaError', {
+  code: 'recaptcha-failed',
+  string: 'errors.recaptchaFailed',
+  base: BadRequest,
+});
+
+const InvalidResetTokenError = createErrorClass('InvalidResetTokenError', {
+  code: 'invalid-reset-token',
+  string: 'errors.invalidResetToken',
   base: UnprocessableEntity,
 });
 
@@ -256,14 +264,16 @@ exports.EmailError = EmailError;
 exports.APIError = APIError;
 exports.CombinedError = CombinedError;
 exports.PasswordError = PasswordError;
-exports.TokenError = TokenError;
 exports.HTTPError = HTTPError;
 exports.PermissionError = PermissionError;
 exports.LoginRequiredError = LoginRequiredError;
+exports.BannedError = BannedError;
 exports.RateLimitError = RateLimitError;
 exports.NameChangeRateLimitError = NameChangeRateLimitError;
 exports.InvalidEmailError = InvalidEmailError;
 exports.InvalidUsernameError = InvalidUsernameError;
+exports.InvalidResetTokenError = InvalidResetTokenError;
+exports.ReCaptchaError = ReCaptchaError;
 exports.UserNotFoundError = UserNotFoundError;
 exports.PlaylistNotFoundError = PlaylistNotFoundError;
 exports.PlaylistItemNotFoundError = PlaylistItemNotFoundError;

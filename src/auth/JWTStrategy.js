@@ -2,7 +2,7 @@
 
 const { Strategy } = require('passport');
 const jwt = require('jsonwebtoken');
-const { PermissionError } = require('../errors');
+const { BannedError } = require('../errors');
 
 /**
  * @typedef {import('../models').User} User
@@ -102,7 +102,7 @@ class JWTStrategy extends Strategy {
     }
 
     if (await bans.isBanned(user)) {
-      throw new PermissionError('You have been banned');
+      throw new BannedError();
     }
 
     return this.success(user);

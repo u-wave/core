@@ -8,10 +8,11 @@ const randomString = require('random-string');
 const fetch = require('node-fetch').default;
 const ms = require('ms');
 const htmlescape = require('htmlescape');
+const { BadRequest } = require('http-errors');
 const {
-  HTTPError,
-  PermissionError,
-  TokenError,
+  BannedError,
+  ReCaptchaError,
+  InvalidResetTokenError,
   UserNotFoundError,
 } = require('../errors');
 const sendEmail = require('../email');
@@ -105,7 +106,7 @@ async function login(req, res) {
   const sessionType = session === 'cookie' ? 'cookie' : 'token';
 
   if (await bans.isBanned(user)) {
-    throw new PermissionError('You have been banned.');
+    throw new BannedError();
   }
 
   const { token, socketToken } = await refreshSession(res, req.uwaveHttp, user, {
@@ -145,7 +146,7 @@ async function socialLoginCallback(service, req, res) {
   const { origin } = req.authOptions;
 
   if (await bans.isBanned(user)) {
-    throw new PermissionError('You have been banned.');
+    throw new BannedError();
   }
 
   let activationData = { pending: false };
@@ -214,11 +215,13 @@ async function socialLoginFinish(service, req, res) {
   const { bans } = req.uwave;
 
   if (!user) {
-    throw new PermissionError('Must have a pending user account.');
+    // Should never happen so not putting much effort into
+    // localising the error message.
+    throw new BadRequest('This account has already been set up');
   }
 
   if (await bans.isBanned(user)) {
-    throw new PermissionError('You have been banned.');
+    throw new BannedError();
   }
 
   const { username, avatar } = req.body;
@@ -274,7 +277,7 @@ async function verifyCaptcha(responseString, options) {
     return null;
   }
   if (!responseString) {
-    throw new Error('ReCaptcha validation failed. Please try again.');
+    throw new ReCaptchaError();
   }
 
   debug('recaptcha: sending siteverify request');
@@ -293,7 +296,7 @@ async function verifyCaptcha(responseString, options) {
 
   if (!body.success) {
     debug('recaptcha: validation failure', body);
-    throw new Error('ReCaptcha validation failed. Please try again.');
+    throw new ReCaptchaError();
   } else {
     debug('recaptcha: ok');
   }
@@ -317,10 +320,6 @@ async function register(req) {
   const {
     grecaptcha, email, username, password,
   } = req.body;
-
-  if (/\s/.test(username)) {
-    throw new HTTPError(400, 'Usernames can\'t contain spaces.');
-  }
 
   try {
     await verifyCaptcha(grecaptcha, req.authOptions);
@@ -386,8 +385,7 @@ async function changePassword(req) {
 
   const userId = await redis.get(`reset:${resetToken}`);
   if (!userId) {
-    throw new TokenError('That reset token is invalid. Please double-check your reset '
-      + 'token or request a new password reset.');
+    throw new InvalidResetTokenError();
   }
 
   const user = await users.getUser(userId);

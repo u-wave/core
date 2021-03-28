@@ -103,7 +103,7 @@ async function addUserRole(req) {
 
   const selfHasRole = await acl.isAllowed(moderator, role);
   if (!selfHasRole) {
-    throw new PermissionError('You cannot assign roles you do not have');
+    throw new PermissionError({ requiredRole: role });
   }
 
   const user = await users.getUser(id);
@@ -134,7 +134,7 @@ async function removeUserRole(req) {
 
   const selfHasRole = await acl.isAllowed(moderator, role);
   if (!selfHasRole) {
-    throw new PermissionError('You cannot remove roles you do not have');
+    throw new PermissionError({ requiredRole: role });
   }
 
   const user = await users.getUser(id);
