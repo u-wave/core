@@ -15,10 +15,15 @@ async function getWaitlist(req) {
 }
 
 /**
+ * @typedef {object} AddToWaitlistBody
+ * @prop {string} userID
+ */
+
+/**
  * POST waitlist/ entry point: used both for joining the waitlist, and for
  * adding someone else to the waitlist.
  *
- * @type {import('../types').Controller}
+ * @type {import('../types').Controller<{}, {}, AddToWaitlistBody>}
  */
 async function addToWaitlist(req) {
   const { user: moderator } = req;
@@ -33,7 +38,13 @@ async function addToWaitlist(req) {
 }
 
 /**
- * @type {import('../types').Controller}
+ * @typedef {object} MoveWaitlistBody
+ * @prop {string} userID
+ * @prop {number} position
+ */
+
+/**
+ * @type {import('../types').Controller<{}, {}, MoveWaitlistBody>}
  */
 async function moveWaitlist(req) {
   const { user: moderator } = req;
@@ -48,7 +59,12 @@ async function moveWaitlist(req) {
 }
 
 /**
- * @type {import('../types').Controller}
+ * @typedef {object} RemoveFromWaitlistParams
+ * @prop {string} id
+ */
+
+/**
+ * @type {import('../types').Controller<RemoveFromWaitlistParams>}
  */
 async function removeFromWaitlist(req) {
   const { user: moderator } = req;
@@ -77,7 +93,12 @@ async function clearWaitlist(req) {
 }
 
 /**
- * @type {import('../types').Controller}
+ * @typedef {object} LockWaitlistBody
+ * @prop {boolean} lock
+ */
+
+/**
+ * @type {import('../types').Controller<{}, {}, LockWaitlistBody>}
  */
 async function lockWaitlist(req) {
   const { user: moderator } = req;
