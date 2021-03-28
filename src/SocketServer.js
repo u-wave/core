@@ -148,8 +148,8 @@ class SocketServer {
     this.wss.on('error', (error) => {
       this.onError(error);
     });
-    this.wss.on('connection', (socket, req) => {
-      this.onSocketConnected(socket, req);
+    this.wss.on('connection', (socket) => {
+      this.onSocketConnected(socket);
     });
 
     this.pinger = setInterval(() => {
@@ -430,15 +430,14 @@ class SocketServer {
 
   /**
    * @param {import('ws')} socket
-   * @param {import('http').IncomingMessage} req
    */
-  onSocketConnected(socket, req) {
+  onSocketConnected(socket) {
     debug('new connection');
 
     socket.on('error', (error) => {
       this.onSocketError(socket, error);
     });
-    this.add(this.createGuestConnection(socket, req));
+    this.add(this.createGuestConnection(socket));
   }
 
   /**
@@ -475,10 +474,9 @@ class SocketServer {
    * Create a connection instance for an unauthenticated user.
    *
    * @param {import('ws')} socket
-   * @param {import('http').IncomingMessage} req
    */
-  createGuestConnection(socket, req) {
-    const connection = new GuestConnection(this.uw, socket, req, {
+  createGuestConnection(socket) {
+    const connection = new GuestConnection(this.uw, socket, {
       authRegistry: this.authRegistry,
     });
     connection.on('close', () => {
