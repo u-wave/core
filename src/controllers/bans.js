@@ -7,14 +7,17 @@ const toItemResponse = require('../utils/toItemResponse');
 const toPaginatedResponse = require('../utils/toPaginatedResponse');
 
 /**
- * @type {import('../types').Controller}
+ * @typedef {object} GetBansQuery
+ * @prop {string} filter
+ */
+
+/**
+ * @type {import('../types').Controller<{}, GetBansQuery>}
  */
 async function getBans(req) {
   const { bans } = req.uwave;
   const { filter } = req.query;
   const pagination = getOffsetPagination(req.query);
-
-  assert(typeof filter === 'string', 'sholud have been handled by ajv');
 
   const bansList = await bans.getBans(filter, pagination);
 
@@ -27,7 +30,15 @@ async function getBans(req) {
 }
 
 /**
- * @type {import('../types').Controller}
+ * @typedef {object} AddBanBody
+ * @prop {number} [duration]
+ * @prop {string} userID
+ * @prop {boolean} [permanent]
+ * @prop {string} [reason]
+ */
+
+/**
+ * @type {import('../types').Controller<{}, {}, AddBanBody>}
  */
 async function addBan(req) {
   const { user: moderator } = req;
@@ -57,7 +68,12 @@ async function addBan(req) {
 }
 
 /**
- * @type {import('../types').Controller}
+ * @typedef {object} RemoveBanParams
+ * @prop {string} userID
+ */
+
+/**
+ * @type {import('../types').Controller<RemoveBanParams>}
  */
 async function removeBan(req) {
   const { user: moderator } = req;

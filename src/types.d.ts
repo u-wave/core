@@ -13,11 +13,19 @@ declare global {
   }
 }
 
-export type Request = import('express').Request & {
+export type Request<
+  TParams = Record<string, string>,
+  TQuery = import('qs').ParsedQS,
+  TBody = import('type-fest').JsonObject,
+> = import('express').Request<TParams, any, TBody, TQuery, {}> & {
   user?: import('./models').User,
 };
 
-export type Controller = (req: Request, res: import('express').Response) => Promise<object>;
+export type Controller<
+  TParams = Record<string, string>,
+  TQuery = import('qs').ParsedQS,
+  TBody = import('type-fest').JsonObject,
+> = (req: Request<TParams, TQuery, TBody>, res: import('express').Response) => Promise<object>;
 
 /**
  * Utility type that returns a Document<TSchema> given a Model<Document<TSchema>>.

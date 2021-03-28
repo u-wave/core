@@ -76,7 +76,7 @@ class HistoryRepository {
 }
 
 /**
- * @param {import('../Uwave')}
+ * @param {import('../Uwave')} uw
  */
 async function history(uw) {
   uw.history = new HistoryRepository(uw);

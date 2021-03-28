@@ -16,7 +16,15 @@ async function list(req) {
 }
 
 /**
- * @type {import('../types').Controller}
+ * @typedef {object} CreateRoleParams
+ * @prop {string} name
+ *
+ * @typedef {object} CreateRoleBody
+ * @prop {string[]} permissions
+ */
+
+/**
+ * @type {import('../types').Controller<CreateRoleParams, {}, CreateRoleBody>}
  */
 async function createRole(req, res) {
   const { name } = req.params;
