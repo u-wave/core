@@ -35,7 +35,7 @@ async function getBoothData(uw) {
   return {
     historyID: historyEntry.id,
     playlistID: `${historyEntry.playlist}`,
-    playedAt: Date.parse(historyEntry.playedAt),
+    playedAt: historyEntry.playedAt,
     userID: `${historyEntry.user}`,
     media: historyEntry.media,
     stats,

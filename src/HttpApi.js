@@ -131,6 +131,7 @@ async function httpApi(uw, options) {
     },
   }));
 
+  /** @type {import('cors').CorsOptions} */
   const corsOptions = {
     origin(origin, callback) {
       callback(null, matchOrigin(origin, runtimeOptions.allowedOrigins));
@@ -142,6 +143,9 @@ async function httpApi(uw, options) {
   uw.express.use('/v1', cors(corsOptions), uw.httpApi);
 }
 
+/**
+ * @param {import('./Uwave')} uw
+ */
 async function errorHandling(uw) {
   debug('after');
   uw.httpApi.use(errorHandler());

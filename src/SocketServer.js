@@ -60,12 +60,20 @@ Alternatively, you can provide a port for the socket server to listen on:
   `);
 }
 
+/**
+ * @param {object} object
+ * @param {string} property
+ */
 function has(object, property) {
   return Object.prototype.hasOwnProperty.call(object, property);
 }
 
 class SocketServer {
-  static async plugin(uw, options = {}) {
+  /**
+   * @param {import('./Uwave').Boot} uw
+   * @param {{ secret: string }} options
+   */
+  static async plugin(uw, options) {
     uw.socketServer = new SocketServer(uw, {
       secret: options.secret,
       server: uw.server,
@@ -109,9 +117,11 @@ class SocketServer {
     this.uw = uw;
     this.redisSubscription = uw.redis.duplicate();
 
+    /** @type {Connection[]} */
     this.connections = [];
 
     this.options = {
+      /** @type {(socket?: import('ws'), err: Error) => void} */
       onError: (socket, err) => {
         throw err;
       },
@@ -394,7 +404,7 @@ class SocketServer {
        */
       'http-api:socket:close': (userID) => {
         this.connections.forEach((connection) => {
-          if (connection.user && connection.user.id === userID) {
+          if ('user' in connection && connection.user.id === userID) {
             connection.close();
           }
         });
@@ -411,12 +421,17 @@ class SocketServer {
     const userIDs = await this.uw.redis.lrange('users', 0, -1);
     const disconnectedIDs = userIDs.filter((userID) => !this.connection(userID));
 
+    /** @type {User[]} */
     const disconnectedUsers = await User.where('_id').in(disconnectedIDs);
     disconnectedUsers.forEach((user) => {
       this.add(this.createLostConnection(user));
     });
   }
 
+  /**
+   * @param {import('ws')} socket
+   * @param {import('http').IncomingMessage} req
+   */
   onSocketConnected(socket, req) {
     debug('new connection');
 
@@ -426,12 +441,19 @@ class SocketServer {
     this.add(this.createGuestConnection(socket, req));
   }
 
+  /**
+   * @param {import('ws')} socket
+   * @param {Error} error
+   */
   onSocketError(socket, error) {
     debug('socket error:', error);
 
     this.options.onError(socket, error);
   }
 
+  /**
+   * @param {Error} error
+   */
   onError(error) {
     debug('server error:', error);
 
@@ -440,6 +462,8 @@ class SocketServer {
 
   /**
    * Get a LostConnection for a user, if one exists.
+   *
+   * @param {User} user
    */
   getLostConnection(user) {
     return this.connections.find((connection) => (
@@ -449,6 +473,9 @@ class SocketServer {
 
   /**
    * Create a connection instance for an unauthenticated user.
+   *
+   * @param {import('ws')} socket
+   * @param {import('http').IncomingMessage} req
    */
   createGuestConnection(socket, req) {
     const connection = new GuestConnection(this.uw, socket, req, {
@@ -608,17 +635,17 @@ class SocketServer {
   /**
    * Get the connection instance for a specific user.
    *
-   * @param {User} user The user.
+   * @param {User|string} user The user.
    * @return {Connection}
    */
   connection(user) {
     const userID = typeof user === 'object' ? user.id : user;
-    return this.connections.find((connection) => connection.user && connection.user.id === userID);
+    return this.connections.find((connection) => 'user' in connection && connection.user.id === userID);
   }
 
   ping() {
     this.connections.forEach((connection) => {
-      if (connection.socket) {
+      if ('socket' in connection) {
         connection.ping();
       }
     });
@@ -650,7 +677,7 @@ class SocketServer {
     const userID = typeof user === 'object' ? user.id : user;
 
     this.connections.forEach((connection) => {
-      if (connection.user && connection.user.id === userID) {
+      if ('user' in connection && connection.user.id === userID) {
         connection.send(command, data);
       }
     });

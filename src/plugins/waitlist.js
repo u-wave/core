@@ -293,7 +293,7 @@ class Waitlist {
    */
   async lockWaitlist(lock, moderator) {
     if (lock) {
-      await this.uw.redis.set('waitlist:lock', lock);
+      await this.uw.redis.set('waitlist:lock', String(lock));
     } else {
       await this.uw.redis.del('waitlist:lock');
     }

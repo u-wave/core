@@ -12,7 +12,6 @@ const toItemResponse = require('../utils/toItemResponse');
 const toListResponse = require('../utils/toListResponse');
 const toPaginatedResponse = require('../utils/toPaginatedResponse');
 
-
 /**
  * @typedef {object} GetPlaylistsQuery
  * @prop {string} contains

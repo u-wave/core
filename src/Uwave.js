@@ -46,6 +46,9 @@ function unsafeCast(value) {
  */
 
 class UwaveServer extends EventEmitter {
+  /** @type {import('ioredis').Redis} */
+  redis;
+
   /** @type {import('http').Server} */
   server;
 
@@ -93,6 +96,9 @@ class UwaveServer extends EventEmitter {
 
   /** @type {import('./HttpApi').HttpApi} */
   httpApi;
+
+  /** @type {import('./SocketServer')} */
+  socketServer;
 
   /**
   * @param {object} [options]

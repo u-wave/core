@@ -6,12 +6,14 @@ const createDebug = require('debug');
 const routes = require('../routes/booth');
 
 /**
+ * @typedef {import('../models').User} User
  * @typedef {import('../models').Playlist} Playlist
  * @typedef {import('../models').PlaylistItem} PlaylistItem
  * @typedef {import('../models').HistoryEntry} HistoryEntry
+ * @typedef {{ user: User }} PopulateUser
  * @typedef {{ playlist: Playlist }} PopulatePlaylist
  * @typedef {{ item: PlaylistItem }} PopulatePlaylistItem
- * @typedef {HistoryEntry & PopulatePlaylist & PopulatePlaylistItem} PopulatedHistoryEntry
+ * @typedef {HistoryEntry & PopulateUser & PopulatePlaylist & PopulatePlaylistItem} PopulatedHistoryEntry
  */
 
 class PlaylistIsEmptyError extends Error {
@@ -66,14 +68,17 @@ class Booth {
     this.maybeStop();
   }
 
+  /**
+   * @returns {Promise<HistoryEntry>}
+   */
   async getCurrentEntry() {
-    const History = this.uw.model('History');
+    const { HistoryEntry } = this.uw.models;
     const historyID = await this.uw.redis.get('booth:historyID');
     if (!historyID) {
       return null;
     }
 
-    return History.findById(historyID);
+    return HistoryEntry.findById(historyID);
   }
 
   async getCurrentVoteStats() {
@@ -95,6 +100,9 @@ class Booth {
     return voteStats;
   }
 
+  /**
+   * @param {HistoryEntry} entry
+   */
   async saveStats(entry) {
     const stats = await this.getCurrentVoteStats();
 
@@ -102,10 +110,14 @@ class Booth {
     return entry.save();
   }
 
-  async getNextDJ(opts) {
-    const User = this.uw.model('User');
+  /**
+   * @param {{ remove?: boolean }} options
+   * @returns {Promise<User|null>}
+   */
+  async getNextDJ(options) {
+    const { User } = this.uw.models;
     let userID = await this.uw.redis.lindex('waitlist', 0);
-    if (!userID && !opts.remove) {
+    if (!userID && !options.remove) {
       // If the waitlist is empty, the current DJ will play again immediately.
       userID = await this.uw.redis.get('booth:currentDJ');
     }
@@ -117,13 +129,14 @@ class Booth {
   }
 
   /**
+   * @param {{ remove?: boolean }} options
    * @returns {Promise<PopulatedHistoryEntry | null>}
    */
-  async getNextEntry(opts) {
+  async getNextEntry(options) {
     const { HistoryEntry, PlaylistItem } = this.uw.models;
     const { playlists } = this.uw;
 
-    const user = await this.getNextDJ(opts);
+    const user = await this.getNextDJ(options);
     if (!user) {
       return null;
     }
@@ -150,31 +163,38 @@ class Booth {
     });
   }
 
-  async cycleWaitlist(previous, opts) {
+  /**
+   * @param {HistoryEntry} previous
+   * @param {{ remove?: boolean }} options
+   */
+  async cycleWaitlist(previous, options) {
     const waitlistLen = await this.uw.redis.llen('waitlist');
     if (waitlistLen > 0) {
       await this.uw.redis.lpop('waitlist');
-      if (previous && !opts.remove) {
+      if (previous && !options.remove) {
         // The previous DJ should only be added to the waitlist again if it was
         // not empty. If it was empty, the previous DJ is already in the booth.
-        await this.uw.redis.rpush('waitlist', previous.user);
+        await this.uw.redis.rpush('waitlist', previous.user.toString());
       }
     }
   }
 
   clear() {
-    return this.uw.redis.del([
+    return this.uw.redis.del(
       'booth:historyID',
       'booth:currentDJ',
       'booth:upvotes',
       'booth:downvotes',
       'booth:favorites',
-    ]);
+    );
   }
 
+  /**
+   * @param {PopulatedHistoryEntry} next
+   */
   update(next) {
     return this.uw.redis.multi()
-      .del(['booth:upvotes', 'booth:downvotes', 'booth:favorites'])
+      .del('booth:upvotes', 'booth:downvotes', 'booth:favorites')
       .set('booth:historyID', next.id)
       .set('booth:currentDJ', next.user.id)
       .exec();
@@ -187,6 +207,9 @@ class Booth {
     }
   }
 
+  /**
+   * @param {PopulatedHistoryEntry} entry
+   */
   play(entry) {
     this.maybeStop();
     this.timeout = setTimeout(
