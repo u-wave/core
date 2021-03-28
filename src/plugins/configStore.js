@@ -28,29 +28,32 @@ const configSchema = new Schema({
  * check that the configuration is correct.
  */
 class ConfigStore {
+  #ajv;
+
+  #emitter = new EventEmitter();
+
+  #registry = new Map();
+
   /**
    * @param {import('mongoose').Connection} mongo
    */
   constructor(mongo) {
     this.ConfigModel = mongo.model('ConfigStore', configSchema);
-    this.ajv = new Ajv({
+    this.#ajv = new Ajv({
       useDefaults: true,
       // Allow unknown keywords (`uw:xyz`)
       strict: false,
       strictTypes: true,
     });
-    formats(this.ajv);
+    formats(this.#ajv);
     /* eslint-disable global-require */
-    this.ajv.addMetaSchema(require('ajv/dist/refs/json-schema-draft-07.json'));
-    this.ajv.addSchema(require('../schemas/definitions.json'));
+    this.#ajv.addMetaSchema(require('ajv/dist/refs/json-schema-draft-07.json'));
+    this.#ajv.addSchema(require('../schemas/definitions.json'));
     /* eslint-enable global-require */
 
-    this.emitter = new EventEmitter();
-    this.registry = new Map();
-
-    this.on = this.emitter.on.bind(this);
-    this.off = this.emitter.removeListener.bind(this);
-    this.emit = this.emitter.emit.bind(this);
+    this.on = this.#emitter.on.bind(this);
+    this.off = this.#emitter.removeListener.bind(this);
+    this.emit = this.#emitter.emit.bind(this);
   }
 
   /**
@@ -89,7 +92,7 @@ class ConfigStore {
    * @public
    */
   register(key, schema) {
-    this.registry.set(key, this.ajv.compile(schema));
+    this.#registry.set(key, this.#ajv.compile(schema));
   }
 
   /**
@@ -101,7 +104,7 @@ class ConfigStore {
    * @public
    */
   async get(key) {
-    const validate = this.registry.get(key);
+    const validate = this.#registry.get(key);
     if (!validate) return undefined;
 
     const config = (await this.load(key)) || {};
@@ -122,10 +125,10 @@ class ConfigStore {
    * @public
    */
   async set(key, settings, { user } = {}) {
-    const validate = this.registry.get(key);
+    const validate = this.#registry.get(key);
     if (validate) {
       if (!validate(settings)) {
-        throw new ValidationError(validate.errors, this.ajv);
+        throw new ValidationError(validate.errors, this.#ajv);
       }
     }
 
@@ -142,7 +145,7 @@ class ConfigStore {
   async getAllConfig() {
     const all = await this.ConfigModel.find();
     const object = Object.create(null);
-    for (const [key, validate] of this.registry.entries()) {
+    for (const [key, validate] of this.#registry.entries()) {
       const model = all.find((m) => m._id === key);
       object[key] = model ? model.toJSON() : {};
       delete object[key]._id;
@@ -157,7 +160,7 @@ class ConfigStore {
   getSchema() {
     const properties = Object.create(null);
     const required = [];
-    for (const [key, validate] of this.registry.entries()) {
+    for (const [key, validate] of this.#registry.entries()) {
       properties[key] = validate.schema;
       required.push(key);
     }
@@ -170,6 +173,9 @@ class ConfigStore {
   }
 }
 
+/**
+ * @param {import('../Uwave')} uw
+ */
 async function configStorePlugin(uw) {
   uw.config = new ConfigStore(uw.mongo);
   uw.config.on('set', (key, value, user) => {
