@@ -3,6 +3,7 @@
 const ms = require('ms');
 const RedLock = require('redlock');
 const createDebug = require('debug');
+const { EmptyPlaylistError } = require('../errors');
 const routes = require('../routes/booth');
 
 /**
@@ -16,13 +17,6 @@ const routes = require('../routes/booth');
  * @typedef {HistoryEntry & PopulateUser & PopulatePlaylist & PopulatePlaylistItem}
  *     PopulatedHistoryEntry
  */
-
-class PlaylistIsEmptyError extends Error {
-  constructor(message) {
-    super(message);
-    this.code = 'PLAYLIST_IS_EMPTY';
-  }
-}
 
 const debug = createDebug('uwave:advance');
 
@@ -143,7 +137,7 @@ class Booth {
     }
     const playlist = await playlists.getUserPlaylist(user, user.activePlaylist);
     if (playlist.size === 0) {
-      throw new PlaylistIsEmptyError();
+      throw new EmptyPlaylistError();
     }
 
     const playlistItem = await PlaylistItem.findById(playlist.media[0]);
