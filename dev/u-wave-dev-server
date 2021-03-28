@@ -79,7 +79,6 @@ async function start() {
 
   await uw.listen(port);
   console.log(`Now listening on ${port}`);
-  console.log(uw.prettyPrint());
 }
 
 start().catch((error) => {
