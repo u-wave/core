@@ -4,8 +4,7 @@ const bcrypt = require('bcryptjs');
 const debug = require('debug')('uwave:users');
 const escapeStringRegExp = require('escape-string-regexp');
 const Page = require('../Page');
-const { UserNotFoundError } = require('../errors');
-const PasswordError = require('../errors/PasswordError');
+const { IncorrectPasswordError, UserNotFoundError } = require('../errors');
 
 /**
  * @typedef {import('../models').User} User
@@ -137,7 +136,7 @@ class UsersRepository {
 
     const correct = await bcrypt.compare(password, auth.hash);
     if (!correct) {
-      throw new PasswordError('That password is incorrect.');
+      throw new IncorrectPasswordError();
     }
 
     return auth.user;

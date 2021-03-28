@@ -57,16 +57,6 @@ class CombinedError extends APIError {
   }
 }
 
-class PasswordError extends APIError {
-  /**
-   * @param {string} message
-   */
-  constructor(message) {
-    super(message);
-    this.name = 'PasswordError';
-  }
-}
-
 class HTTPError extends APIError {
   /**
    * @param {number} status
@@ -161,6 +151,12 @@ const InvalidUsernameError = createErrorClass('InvalidUsernameError', {
 const ReCaptchaError = createErrorClass('ReCaptchaError', {
   code: 'recaptcha-failed',
   string: 'errors.recaptchaFailed',
+  base: BadRequest,
+});
+
+const IncorrectPasswordError = createErrorClass('IncorrectPasswordError', {
+  code: 'incorrect-password',
+  string: 'errors.incorrectPassword',
   base: BadRequest,
 });
 
@@ -263,7 +259,6 @@ const UserIsPlayingError = createErrorClass('UserIsPlayingError', {
 exports.EmailError = EmailError;
 exports.APIError = APIError;
 exports.CombinedError = CombinedError;
-exports.PasswordError = PasswordError;
 exports.HTTPError = HTTPError;
 exports.PermissionError = PermissionError;
 exports.LoginRequiredError = LoginRequiredError;
@@ -274,6 +269,7 @@ exports.InvalidEmailError = InvalidEmailError;
 exports.InvalidUsernameError = InvalidUsernameError;
 exports.InvalidResetTokenError = InvalidResetTokenError;
 exports.ReCaptchaError = ReCaptchaError;
+exports.IncorrectPasswordError = IncorrectPasswordError;
 exports.UserNotFoundError = UserNotFoundError;
 exports.PlaylistNotFoundError = PlaylistNotFoundError;
 exports.PlaylistItemNotFoundError = PlaylistItemNotFoundError;
