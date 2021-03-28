@@ -68,7 +68,7 @@ async function getAuthStrategies(req) {
  * @param {AuthenticateOptions & { session: 'cookie' | 'token' }} options
  */
 async function refreshSession(res, api, user, options) {
-  const token = await jwt.sign(
+  const token = jwt.sign(
     { id: user.id },
     options.secret,
     { expiresIn: '31d' },
