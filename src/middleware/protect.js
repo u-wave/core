@@ -4,7 +4,7 @@ const { LoginRequiredError, PermissionError } = require('../errors');
 const wrapMiddleware = require('../utils/wrapMiddleware');
 
 /**
- * @param {string} role
+ * @param {string} [role]
  */
 function protect(role) {
   return wrapMiddleware(async (req) => {
