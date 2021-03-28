@@ -8,10 +8,12 @@ const { escapeRegExp } = require('lodash');
  * @returns {(arg: TArg) => TRet}
  */
 function memoize(fn) {
+  /** @type {TArg} */
   let lastArg;
+  /** @type {TRet} */
   let lastReturn;
   return (arg) => {
-    if (arg !== lastArg) {
+    if (arg !== lastArg || lastArg === undefined) {
       lastArg = arg;
       lastReturn = fn(arg);
     }
