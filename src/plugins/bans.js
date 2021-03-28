@@ -84,7 +84,6 @@ class Bans {
       previous: offset > 0
         ? { offset: Math.max(offset - size, 0), limit: size }
         : null,
-      results,
     });
   }
 
