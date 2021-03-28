@@ -5,14 +5,24 @@ const RedLock = require('redlock');
 const { Umzug } = require('umzug');
 const debug = require('debug')('uwave:migrate');
 
+/**
+ * @type {import('umzug').LogFn}
+ */
 function log(record) {
   debug(record.event, record.name || record.path || record);
 }
 
 /**
+ * @typedef {import('../Uwave')} Uwave
+ */
+
+/**
  * Custom MongoDBStorage based on Mongoose and with timestamps.
  */
 const mongooseStorage = {
+  /**
+   * @param {import('umzug').MigrationParams<Uwave>} params
+   */
   async logMigration({ name, context: uw }) {
     const { Migration } = uw.models;
 
@@ -21,6 +31,9 @@ const mongooseStorage = {
     });
   },
 
+  /**
+   * @param {import('umzug').MigrationParams<Uwave>} params
+   */
   async unlogMigration({ name, context: uw }) {
     const { Migration } = uw.models;
 
@@ -29,9 +42,13 @@ const mongooseStorage = {
     });
   },
 
+  /**
+   * @param {import('umzug').MigrationParams<Uwave>} params
+   */
   async executed({ context: uw }) {
     const { Migration } = uw.models;
 
+    /** @type {{ migrationName: string }[]} */
     const documents = await Migration.find({})
       .select({ migrationName: 1 })
       .lean();
@@ -41,8 +58,6 @@ const mongooseStorage = {
 
 /**
  * @typedef {import('umzug').InputMigrations<import('../Uwave')>} MigrateOptions
- */
-/**
  * @typedef {(opts: MigrateOptions) => Promise<void>} Migrate
  */
 
@@ -52,6 +67,7 @@ const mongooseStorage = {
 async function migrationsPlugin(uw) {
   const redLock = new RedLock([uw.redis]);
 
+  /** @type {Migrate} */
   async function migrate(migrations) {
     const migrator = new Umzug({
       migrations,
