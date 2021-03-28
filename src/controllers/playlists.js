@@ -242,6 +242,8 @@ async function getPlaylistItems(req) {
 }
 
 /**
+ * @typedef {import('../plugins/playlists').PlaylistItemDesc} PlaylistItemDesc
+ *
  * @typedef {object} AddPlaylistItemsParams
  * @prop {string} id
  *
@@ -253,7 +255,7 @@ async function getPlaylistItems(req) {
  * @prop {undefined} at
  * @prop {string|-1} after
  *
- * @typedef {{ items: string[] } & (AtPosition | AfterPosition)} AddPlaylistItemsBody
+ * @typedef {{ items: PlaylistItemDesc[] } & (AtPosition | AfterPosition)} AddPlaylistItemsBody
  */
 
 /**

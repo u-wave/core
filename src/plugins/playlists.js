@@ -18,7 +18,15 @@ const routes = require('../routes/playlists');
  */
 
 /**
- * @param {unknown} item
+ * @typedef {object} PlaylistItemDesc
+ * @prop {string} sourceType
+ * @prop {string|number} sourceID
+ * @prop {string} artist
+ * @prop {string} title
+ */
+
+/**
+ * @param {PlaylistItemDesc} item
  * @returns {boolean}
  */
 function isValidPlaylistItem(item) {
@@ -410,7 +418,7 @@ class PlaylistsRepository {
    * Bulk create playlist items from arbitrary sources.
    *
    * @param {User} user
-   * @param {unknown[]} items
+   * @param {PlaylistItemDesc[]} items
    */
   async createPlaylistItems(user, items) {
     const { Media, PlaylistItem } = this.uw.models;
@@ -426,7 +434,7 @@ class PlaylistsRepository {
     const promises = Object.entries(itemsBySourceType).map(async ([sourceType, sourceItems]) => {
       const knownMedias = await Media.find({
         sourceType,
-        sourceID: { $in: sourceItems.map((item) => item.sourceID) },
+        sourceID: { $in: sourceItems.map((item) => String(item.sourceID)) },
       });
 
       const knownMediaIDs = new Set();
@@ -464,7 +472,7 @@ class PlaylistsRepository {
    * Add items to a playlist.
    *
    * @param {Playlist} playlist
-   * @param {unknown[]} items
+   * @param {PlaylistItemDesc[]} items
    * @param {{ after?: ObjectID }} options
    */
   async addPlaylistItems(playlist, items, { after = null } = {}) {
