@@ -117,6 +117,7 @@ class Booth {
    */
   async getNextDJ(options) {
     const { User } = this.uw.models;
+    /** @type {string|null} */
     let userID = await this.uw.redis.lindex('waitlist', 0);
     if (!userID && !options.remove) {
       // If the waitlist is empty, the current DJ will play again immediately.
