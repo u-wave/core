@@ -8,7 +8,7 @@ const {
 const Page = require('../Page');
 
 /**
- * @typedef {import('mongodb').ObjectID} ObjectId
+ * @typedef {import('mongodb').ObjectID} ObjectID
  * @typedef {import('../models/User').User} User
  */
 
@@ -23,7 +23,7 @@ function isValidBan(user) {
   if (!user.banned.expiresAt) {
     return true;
   }
-  return user.banned.expiresAt.getTime() <= Date.now();
+  return user.banned.expiresAt.getTime() > Date.now();
 }
 
 class Bans {
@@ -37,7 +37,7 @@ class Bans {
   /**
    * Check whether a user is currently banned.
    *
-   * @param {string|ObjectId|User} userID A user object or ID.
+   * @param {string|ObjectID|User} userID A user object or ID.
    */
   async isBanned(userID) {
     const { users } = this.uw;
