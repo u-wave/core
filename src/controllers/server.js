@@ -12,7 +12,7 @@ async function getServerTime(req) {
 }
 
 /**
- * @type {import('../types').Controller}
+ * @type {import('../types').AuthenticatedController}
  */
 async function getAllConfig(req) {
   const { config } = req.uwave;
@@ -26,7 +26,7 @@ async function getAllConfig(req) {
 }
 
 /**
- * @type {import('../types').Controller}
+ * @type {import('../types').AuthenticatedController}
  */
 async function getConfig(req) {
   const { config } = req.uwave;
@@ -44,7 +44,7 @@ async function getConfig(req) {
 }
 
 /**
- * @type {import('../types').Controller}
+ * @type {import('../types').AuthenticatedController}
  */
 async function updateConfig(req) {
   const { config } = req.uwave;

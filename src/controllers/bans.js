@@ -11,7 +11,7 @@ const toPaginatedResponse = require('../utils/toPaginatedResponse');
  */
 
 /**
- * @type {import('../types').Controller<{}, GetBansQuery>}
+ * @type {import('../types').AuthenticatedController<{}, GetBansQuery>}
  */
 async function getBans(req) {
   const { bans } = req.uwave;
@@ -37,7 +37,7 @@ async function getBans(req) {
  */
 
 /**
- * @type {import('../types').Controller<{}, {}, AddBanBody>}
+ * @type {import('../types').AuthenticatedController<{}, {}, AddBanBody>}
  */
 async function addBan(req) {
   const { user: moderator } = req;
@@ -72,7 +72,7 @@ async function addBan(req) {
  */
 
 /**
- * @type {import('../types').Controller<RemoveBanParams>}
+ * @type {import('../types').AuthenticatedController<RemoveBanParams>}
  */
 async function removeBan(req) {
   const { user: moderator } = req;

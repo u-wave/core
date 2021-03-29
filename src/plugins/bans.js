@@ -16,7 +16,14 @@ const Page = require('../Page');
  * @param {User} user
  */
 function isValidBan(user) {
-  return !!(user.banned && +user.banned.expiresAt > Date.now());
+  if (!user.banned) {
+    return false;
+  }
+  // Permanent ban.
+  if (!user.banned.expiresAt) {
+    return true;
+  }
+  return user.banned.expiresAt.getTime() <= Date.now();
 }
 
 class Bans {
@@ -111,12 +118,13 @@ class Bans {
       throw new Error('Ban duration should be at least 0ms.');
     }
 
-    user.banned = {
+    const banned = {
       duration: permanent ? -1 : duration,
-      expiresAt: permanent ? null : new Date(Date.now() + duration),
+      expiresAt: permanent ? undefined : new Date(Date.now() + duration),
       moderator: moderator._id,
       reason,
     };
+    user.banned = banned;
 
     await user.save();
     await user.populate('banned.moderator').execPopulate();
@@ -124,13 +132,13 @@ class Bans {
     this.uw.publish('user:ban', {
       userID: user.id,
       moderatorID: moderator.id,
-      duration: user.banned.duration,
-      expiresAt: permanent ? null :  user.banned.expiresAt.getTime(),
+      duration: banned.duration,
+      expiresAt: banned.expiresAt ? banned.expiresAt.getTime() : null,
       permanent,
     });
 
     return {
-      ...user.banned,
+      ...banned,
       moderator,
     };
   }

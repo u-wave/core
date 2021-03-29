@@ -27,6 +27,8 @@ const routes = require('../routes/playlists');
  * @prop {string|number} sourceID
  * @prop {string} artist
  * @prop {string} title
+ * @prop {number} [start]
+ * @prop {number} [end]
  */
 
 /**
@@ -41,6 +43,9 @@ function isValidPlaylistItem(item) {
 
 /**
  * Calculate valid start/end times for a playlist item.
+ * 
+ * @param {PlaylistItemDesc} item
+ * @param {Media} media
  */
 function getStartEnd(item, media) {
   let { start, end } = item;
@@ -57,6 +62,10 @@ function getStartEnd(item, media) {
   return { start, end };
 }
 
+/**
+ * @param {PlaylistItemDesc} itemProps
+ * @param {Media} media
+ */
 function toPlaylistItem(itemProps, media) {
   const { artist, title } = itemProps;
   const { start, end } = getStartEnd(itemProps, media);
@@ -435,20 +444,23 @@ class PlaylistsRepository {
     const itemsBySourceType = groupBy(items, 'sourceType');
     const playlistItems = [];
     const promises = Object.entries(itemsBySourceType).map(async ([sourceType, sourceItems]) => {
+      /** @type {Media[]} */
       const knownMedias = await Media.find({
         sourceType,
         sourceID: { $in: sourceItems.map((item) => String(item.sourceID)) },
       });
 
+      /** @type {Set<string>} */
       const knownMediaIDs = new Set();
       knownMedias.forEach((knownMedia) => {
         knownMediaIDs.add(knownMedia.sourceID);
       });
 
+      /** @type {string[]} */
       const unknownMediaIDs = [];
       sourceItems.forEach((item) => {
         if (!knownMediaIDs.has(String(item.sourceID))) {
-          unknownMediaIDs.push(item.sourceID);
+          unknownMediaIDs.push(String(item.sourceID));
         }
       });
 
@@ -459,10 +471,13 @@ class PlaylistsRepository {
         allMedias = allMedias.concat(await Media.create(unknownMedias));
       }
 
-      const itemsWithMedia = sourceItems.map((item) => toPlaylistItem(
-        item,
-        allMedias.find((media) => media.sourceID === String(item.sourceID)),
-      ));
+      const itemsWithMedia = sourceItems.map((item) => {
+        const media = allMedias.find((media) => media.sourceID === String(item.sourceID));
+        if (!media) {
+          throw new MediaNotFoundError({ sourceType: item.sourceType, sourceID: item.sourceID });
+        }
+        return toPlaylistItem(item, media);
+      });
       playlistItems.push(...itemsWithMedia);
     });
 

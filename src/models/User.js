@@ -10,7 +10,7 @@ const { Types } = mongoose.Schema;
  * @typedef {object} LeanBanned
  * @prop {import('mongodb').ObjectID} moderator
  * @prop {number} duration
- * @prop {Date} expiresAt
+ * @prop {Date} [expiresAt]
  * @prop {string} reason
  */
 

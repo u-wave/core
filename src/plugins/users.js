@@ -127,12 +127,12 @@ class UsersRepository {
     const { Authentication } = this.uw.models;
 
     /**
-     * @type {ToDocument<Authentication> & { user: User }}
+     * @type {import('../models').Authentication & { user: User }}
      */
     const auth = await Authentication.findOne({
       email: email.toLowerCase(),
     }).populate('user').exec();
-    if (!auth) {
+    if (!auth || !auth.hash) {
       throw new UserNotFoundError({ email });
     }
 
@@ -154,7 +154,7 @@ class UsersRepository {
       type,
       id: profile.id,
       username: profile.displayName,
-      avatar: profile.photos && profile.photos.length > 0 ? profile.photos[0].value : null,
+      avatar: profile.photos && profile.photos.length > 0 ? profile.photos[0].value : undefined,
     };
     return this.uw.users.findOrCreateSocialUser(user);
   }

@@ -54,7 +54,7 @@ async function getBooth(req) {
 
 /**
  * @param {import('../Uwave')} uw
- * @returns {Promise<string>}
+ * @returns {Promise<string|null>}
  */
 function getCurrentDJ(uw) {
   return uw.redis.get('booth:currentDJ');
@@ -62,9 +62,9 @@ function getCurrentDJ(uw) {
 
 /**
  * @param {import('../Uwave')} uw
- * @param {string} moderatorID
+ * @param {string|null} moderatorID - `null` if a user is skipping their own turn.
  * @param {string} userID
- * @param {string} reason
+ * @param {string|null} reason
  * @param {{ remove?: boolean }} [opts]
  */
 async function doSkip(uw, moderatorID, userID, reason, opts = {}) {
@@ -92,7 +92,7 @@ async function doSkip(uw, moderatorID, userID, reason, opts = {}) {
  */
 
 /**
- * @type {import('../types').Controller<{}, {}, SkipBoothBody>}
+ * @type {import('../types').AuthenticatedController<{}, {}, SkipBoothBody>}
  */
 async function skipBooth(req) {
   const { user } = req;
@@ -128,7 +128,7 @@ async function skipBooth(req) {
  */
 
 /**
- * @type {import('../types').Controller<{}, {}, ReplaceBoothBody>}
+ * @type {import('../types').AuthenticatedController<{}, {}, ReplaceBoothBody>}
  */
 async function replaceBooth(req) {
   const uw = req.uwave;
@@ -207,7 +207,7 @@ async function socketVote(uw, userID, direction) {
  */
 
 /**
- * @type {import('../types').Controller<GetVoteParams>}
+ * @type {import('../types').AuthenticatedController<GetVoteParams>}
  */
 async function getVote(req) {
   const { uwave: uw, user } = req;
@@ -248,7 +248,7 @@ async function getVote(req) {
  */
 
 /**
- * @type {import('../types').Controller<VoteParams, {}, VoteBody>}
+ * @type {import('../types').AuthenticatedController<VoteParams, {}, VoteBody>}
  */
 async function vote(req) {
   const { uwave: uw, user } = req;
@@ -285,7 +285,7 @@ async function vote(req) {
  */
 
 /**
- * @type {import('../types').Controller<{}, {}, FavoriteBody>}
+ * @type {import('../types').AuthenticatedController<{}, {}, FavoriteBody>}
  */
 async function favorite(req) {
   const { user } = req;

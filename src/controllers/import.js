@@ -28,7 +28,7 @@ const mergeImportParameters = (req) => ({
 });
 
 /**
- * @type {import('../types').Controller}
+ * @type {import('../types').AuthenticatedController}
  */
 async function importAction(req) {
   const source = getImportableSource(req);

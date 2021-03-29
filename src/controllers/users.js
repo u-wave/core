@@ -23,7 +23,7 @@ const debug = createDebug('uwave:http:users');
  */
 
 /**
- * @type {import('../types').Controller<{}, GetUsersQuery>}
+ * @type {import('../types').AuthenticatedController<{}, GetUsersQuery>}
  */
 async function getUsers(req) {
   const { filter } = req.query;
@@ -94,7 +94,7 @@ async function getUserRoles(req) {
  */
 
 /**
- * @type {import('../types').Controller<AddUserRoleParams>}
+ * @type {import('../types').AuthenticatedController<AddUserRoleParams>}
  */
 async function addUserRole(req) {
   const { user: moderator } = req;
@@ -125,7 +125,7 @@ async function addUserRole(req) {
  */
 
 /**
- * @type {import('../types').Controller<RemoveUserRoleParams>}
+ * @type {import('../types').AuthenticatedController<RemoveUserRoleParams>}
  */
 async function removeUserRole(req) {
   const { user: moderator } = req;
@@ -158,7 +158,7 @@ async function removeUserRole(req) {
  */
 
 /**
- * @type {import('../types').Controller<ChangeUsernameParams, {}, ChangeUsernameBody>}
+ * @type {import('../types').AuthenticatedController<ChangeUsernameParams, {}, ChangeUsernameBody>}
  */
 async function changeUsername(req) {
   const { user: moderator } = req;

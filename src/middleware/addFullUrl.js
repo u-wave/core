@@ -1,5 +1,8 @@
 'use strict';
 
+/**
+ * @returns {import('express').RequestHandler}
+ */
 function addFullUrl() {
   return (req, res, next) => {
     Object.defineProperty(req, 'fullUrl', {

@@ -21,20 +21,37 @@ declare global {
   }
 }
 
+type DefaultParams = Record<string, string>;
+type DefaultQuery = import('qs').ParsedQS;
+type DefaultBody = import('type-fest').JsonObject;
+
 export type Request<
-  TParams = Record<string, string>,
-  TQuery = import('qs').ParsedQS,
-  TBody = import('type-fest').JsonObject,
+  TParams = DefaultParams,
+  TQuery = DefaultQuery,
+  TBody = DefaultBody,
 > = import('express').Request<TParams, any, TBody, TQuery, {}> & {
   user?: import('./models').User,
 };
 
 export type Controller<
-  TParams = Record<string, string>,
-  TQuery = import('qs').ParsedQS,
-  TBody = import('type-fest').JsonObject,
+  TParams = DefaultParams,
+  TQuery = DefaultQuery,
+  TBody = DefaultBody,
 > = (req: Request<TParams, TQuery, TBody>, res: import('express').Response) => Promise<object>;
 
+export type AuthenticatedRequest<
+  TParams = DefaultParams,
+  TQuery = DefaultQuery,
+  TBody = DefaultBody,
+> = Request<TParams, any, TBody, TQuery, {}> & {
+  user: import('./models').User,
+};
+
+export type AuthenticatedController<
+  TParams = DefaultParams,
+  TQuery = DefaultQuery,
+  TBody = DefaultBody,
+> = (req: AuthenticatedRequest<TParams, TQuery, TBody>, res: import('express').Response) => Promise<object>;
 /**
  * Utility type that returns a Document<TSchema> given a Model<Document<TSchema>>.
  */

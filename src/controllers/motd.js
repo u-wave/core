@@ -17,7 +17,7 @@ async function getMotd(req) {
 }
 
 /**
- * @type {import('../types').Controller}
+ * @type {import('../types').AuthenticatedController}
  */
 async function setMotd(req) {
   const { motd } = req.uwave;

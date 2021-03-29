@@ -95,7 +95,7 @@ async function refreshSession(res, api, user, options) {
  * The login controller is called once a user has logged in successfully using Passport;
  * we only have to assign the JWT.
  *
- * @type {import('../types').Controller}
+ * @type {import('../types').AuthenticatedController}
  */
 async function login(req, res) {
   const options = req.authOptions;
@@ -137,7 +137,7 @@ async function getSocialAvatar(uw, user, service) {
 
 /**
  * @param {string} service
- * @param {import('../types').Request} req
+ * @param {import('../types').AuthenticatedRequest} req
  * @param {import('express').Response} res
  */
 async function socialLoginCallback(service, req, res) {
@@ -254,7 +254,7 @@ async function socialLoginFinish(service, req, res) {
 }
 
 /**
- * @type {import('../types').Controller}
+ * @type {import('../types').AuthenticatedController}
  */
 async function getSocketToken(req) {
   const { user } = req;
@@ -413,7 +413,7 @@ async function changePassword(req) {
 }
 
 /**
- * @type {import('../types').Controller}
+ * @type {import('../types').AuthenticatedController}
  */
 async function logout(req, res) {
   const { user, cookies } = req;
