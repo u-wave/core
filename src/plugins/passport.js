@@ -74,7 +74,7 @@ class PassportPlugin extends Passport {
   /**
    * @param {string} accessToken
    * @param {string} refreshToken
-   * @param {{ provider: string }} profile
+   * @param {import('passport').Profile} profile
    * @returns {Promise<User>}
    * @private
    */

@@ -376,7 +376,15 @@ async function reset(req) {
 }
 
 /**
- * @type {import('../types').Controller}
+ * @typedef {object} ChangePasswordParams
+ * @prop {string} reset
+ *
+ * @typedef {object} ChangePasswordBody
+ * @prop {string} password
+ */
+
+/**
+ * @type {import('../types').Controller<ChangePasswordParams, {}, ChangePasswordBody>}
  */
 async function changePassword(req) {
   const { users, redis } = req.uwave;
