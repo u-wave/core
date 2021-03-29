@@ -6,15 +6,14 @@ const sjson = require('secure-json-parse');
 const WebSocket = require('ws');
 const Ajv = require('ajv').default;
 const ms = require('ms');
-const createDebug = require('debug');
+const debug = require('debug')('uwave:api:sockets');
 const { socketVote } = require('./controllers/booth');
 const { disconnectUser } = require('./controllers/users');
 const AuthRegistry = require('./AuthRegistry');
 const GuestConnection = require('./sockets/GuestConnection');
 const AuthedConnection = require('./sockets/AuthedConnection');
 const LostConnection = require('./sockets/LostConnection');
-
-const debug = createDebug('uwave:api:sockets');
+const { serializeUser } = require('./utils/serialize');
 
 /**
  * @typedef {import('./models').User} User
@@ -133,7 +132,7 @@ class SocketServer {
 
     this.wss = new WebSocket.Server({
       server: options.server,
-      port: options.server ? null : options.port,
+      port: options.server ? undefined : options.port,
       clientTracking: false,
     });
 
@@ -367,7 +366,7 @@ class SocketServer {
         const { users, redis } = this.uw;
         const user = await users.getUser(userID);
         await redis.rpush('users', user.id);
-        this.broadcast('join', user.toJSON());
+        this.broadcast('join', serializeUser(user));
       },
       /**
        * Broadcast that a user left the server.
@@ -456,7 +455,7 @@ class SocketServer {
   onError(error) {
     debug('server error:', error);
 
-    this.options.onError(null, error);
+    this.options.onError(undefined, error);
   }
 
   /**
@@ -634,7 +633,7 @@ class SocketServer {
    * Get the connection instance for a specific user.
    *
    * @param {User|string} user The user.
-   * @return {Connection}
+   * @return {Connection|undefined}
    */
   connection(user) {
     const userID = typeof user === 'object' ? user.id : user;
@@ -653,7 +652,7 @@ class SocketServer {
    * Broadcast a command to all connected clients.
    *
    * @param {string} command Command name.
-   * @param {*} data Command data.
+   * @param {import('type-fest').JsonValue} data Command data.
    */
   broadcast(command, data) {
     debug('broadcast', command, data);
@@ -669,7 +668,7 @@ class SocketServer {
    *
    * @param {Object|string} user User or user ID to send the command to.
    * @param {string} command Command name.
-   * @param {*} data Command data.
+   * @param {import('type-fest').JsonValue} data Command data.
    */
   sendTo(user, command, data) {
     const userID = typeof user === 'object' ? user.id : user;

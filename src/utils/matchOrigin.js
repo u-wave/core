@@ -37,12 +37,15 @@ const getAllowedOriginsRegExp = memoize((allowedOrigins) => {
 });
 
 /**
- * @param {string} origin
+ * @param {string|undefined} origin
  * @param {string[]} allowedOrigins
  * @returns {boolean}
  */
 function matchOrigin(origin, allowedOrigins) {
   if (allowedOrigins.length === 0) {
+    return false;
+  }
+  if (!origin) {
     return false;
   }
 
