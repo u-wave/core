@@ -36,7 +36,7 @@ class HistoryRepository {
 
     const offset = pagination.offset || 0;
     const limit = clamp(
-      'limit' in pagination ? pagination.limit : DEFAULT_PAGE_SIZE,
+      typeof pagination.limit === 'number' ? pagination.limit : DEFAULT_PAGE_SIZE,
       0, MAX_PAGE_SIZE,
     );
 
@@ -48,14 +48,14 @@ class HistoryRepository {
       .populate('media.media user');
 
     return new Page(results, {
-      pageSize: pagination ? pagination.limit : null,
+      pageSize: pagination ? pagination.limit : undefined,
       filtered: total,
       total,
       current: { offset, limit },
-      next: pagination ? { offset: offset + limit, limit } : null,
+      next: pagination ? { offset: offset + limit, limit } : undefined,
       previous: offset > 0
         ? { offset: Math.max(offset - limit, 0), limit }
-        : null,
+        : undefined,
     });
   }
 

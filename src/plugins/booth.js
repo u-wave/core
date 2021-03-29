@@ -26,30 +26,34 @@ const debug = createDebug('uwave:advance');
  */
 async function cyclePlaylist(playlist) {
   const item = playlist.media.shift();
-  playlist.media.push(item);
+  if (item !== undefined) {
+    playlist.media.push(item);
+  }
   await playlist.save();
 }
 
 class Booth {
+  #timeout = null;
+
+  #locker;
+
   /**
    * @param {import('../Uwave')} uw
    */
   constructor(uw) {
     this.uw = uw;
-    this.timeout = null;
+    this.#locker = new RedLock([this.uw.redis]);
   }
 
   async onStart() {
-    this.locker = new RedLock([this.uw.redis]);
-
     const current = await this.getCurrentEntry();
-    if (current && this.timeout === null) {
+    if (current && this.#timeout === null) {
       // Restart the advance timer after a server restart, if a track was
       // playing before the server restarted.
       const duration = (current.media.end - current.media.start) * ms('1 second');
       const endTime = Number(current.playedAt) + duration;
       if (endTime > Date.now()) {
-        this.timeout = setTimeout(
+        this.#timeout = setTimeout(
           () => this.advance(),
           endTime - Date.now(),
         );
@@ -64,7 +68,7 @@ class Booth {
   }
 
   /**
-   * @returns {Promise<HistoryEntry>}
+   * @returns {Promise<HistoryEntry | null>}
    */
   async getCurrentEntry() {
     const { HistoryEntry } = this.uw.models;
@@ -97,6 +101,7 @@ class Booth {
 
   /**
    * @param {HistoryEntry} entry
+   * @private
    */
   async saveStats(entry) {
     const stats = await this.getCurrentVoteStats();
@@ -108,6 +113,7 @@ class Booth {
   /**
    * @param {{ remove?: boolean }} options
    * @returns {Promise<User|null>}
+   * @private
    */
   async getNextDJ(options) {
     const { User } = this.uw.models;
@@ -126,13 +132,14 @@ class Booth {
   /**
    * @param {{ remove?: boolean }} options
    * @returns {Promise<PopulatedHistoryEntry | null>}
+   * @private
    */
   async getNextEntry(options) {
     const { HistoryEntry, PlaylistItem } = this.uw.models;
     const { playlists } = this.uw;
 
     const user = await this.getNextDJ(options);
-    if (!user) {
+    if (!user || !user.activePlaylist) {
       return null;
     }
     const playlist = await playlists.getUserPlaylist(user, user.activePlaylist);
@@ -159,8 +166,9 @@ class Booth {
   }
 
   /**
-   * @param {HistoryEntry} previous
+   * @param {HistoryEntry|null} previous
    * @param {{ remove?: boolean }} options
+   * @private
    */
   async cycleWaitlist(previous, options) {
     const waitlistLen = await this.uw.redis.llen('waitlist');
@@ -186,6 +194,7 @@ class Booth {
 
   /**
    * @param {PopulatedHistoryEntry} next
+   * @private
    */
   update(next) {
     return this.uw.redis.multi()
@@ -195,29 +204,40 @@ class Booth {
       .exec();
   }
 
+  /**
+   * @private
+   */
   maybeStop() {
-    if (this.timeout) {
-      clearTimeout(this.timeout);
-      this.timeout = null;
+    if (this.#timeout) {
+      clearTimeout(this.#timeout);
+      this.#timeout = null;
     }
   }
 
   /**
    * @param {PopulatedHistoryEntry} entry
+   * @private
    */
   play(entry) {
     this.maybeStop();
-    this.timeout = setTimeout(
+    this.#timeout = setTimeout(
       () => this.advance(),
       (entry.media.end - entry.media.start) * ms('1 second'),
     );
     return entry;
   }
 
+  /**
+   * @private
+   */
   getWaitlist() {
     return this.uw.redis.lrange('waitlist', 0, -1);
   }
 
+  /**
+   * @param {PopulatedHistoryEntry|null} next
+   * @private
+   */
   async publish(next) {
     if (next) {
       this.uw.publish('advance:complete', {
@@ -225,8 +245,11 @@ class Booth {
         userID: next.user.id,
         playlistID: next.playlist.id,
         itemID: next.item.id,
-        media: next.media,
-        playedAt: next.playedAt,
+        media: {
+          ...next.media,
+          media: next.media.media.toString(),
+        },
+        playedAt: next.playedAt.getTime(),
       });
       this.uw.publish('playlist:cycle', {
         userID: next.user.id,
@@ -245,15 +268,15 @@ class Booth {
    *
    * @param {AdvanceOptions} [opts]
    * @param {import('redlock').Lock} [reuseLock]
-   * @returns {Promise<PopulatedHistoryEntry>}
+   * @returns {Promise<PopulatedHistoryEntry|null>}
    */
-  async advance(opts = {}, reuseLock = null) {
+  async advance(opts = {}, reuseLock = undefined) {
     let lock;
     try {
       if (reuseLock) {
         lock = await reuseLock.extend(ms('2 seconds'));
       } else {
-        lock = await this.locker.lock('booth:advancing', ms('2 seconds'));
+        lock = await this.#locker.lock('booth:advancing', ms('2 seconds'));
       }
     } catch (err) {
       throw new Error('Another advance is still in progress.');

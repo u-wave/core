@@ -64,6 +64,10 @@ class Waitlist {
    */
   async hasPlayablePlaylist(user) {
     const { playlists } = this.uw;
+    if (!user.activePlaylist) {
+      return false;
+    }
+
     const playlist = await playlists.getUserPlaylist(user, user.activePlaylist);
     return playlist && playlist.size > 0;
   }
@@ -185,10 +189,10 @@ class Waitlist {
   /**
    * @param {string} userID
    * @param {number} position
-   * @param {{moderator?: User}} [options]
+   * @param {{moderator: User}} options
    * @returns {Promise<void>}
    */
-  async moveUser(userID, position, { moderator } = {}) {
+  async moveUser(userID, position, { moderator }) {
     const { users } = this.uw;
 
     const user = await users.getUser(userID.toLowerCase());
@@ -235,10 +239,10 @@ class Waitlist {
 
   /**
    * @param {string} userID
-   * @param {{moderator?: User}} [options]
+   * @param {{moderator: User}} options
    * @returns {Promise<void>}
    */
-  async removeUser(userID, { moderator } = {}) {
+  async removeUser(userID, { moderator }) {
     const { acl, users } = this.uw;
     const user = await users.getUser(userID);
 

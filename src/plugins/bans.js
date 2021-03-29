@@ -42,11 +42,11 @@ class Bans {
   /**
    * List banned users.
    *
-   * @param {string} filter Optional filter to search for usernames.
-   * @param {object} pagination A pagination object.
+   * @param {string} [filter] Optional filter to search for usernames.
+   * @param {object} [pagination] A pagination object.
    * @return {Promise<Page>}
    */
-  async getBans(filter = null, pagination = {}) {
+  async getBans(filter, pagination = {}) {
     const User = this.uw.model('User');
 
     const offset = pagination.offset || 0;
@@ -123,15 +123,16 @@ class Bans {
 
     this.uw.publish('user:ban', {
       userID: user.id,
-      // @ts-ignore `moderator.id` is made available by the `execPopulate()`
-      // call above.
-      moderatorID: user.banned.moderator.id,
+      moderatorID: moderator.id,
       duration: user.banned.duration,
-      expiresAt: +user.banned.expiresAt,
+      expiresAt: permanent ? null :  user.banned.expiresAt.getTime(),
       permanent,
     });
 
-    return user.banned;
+    return {
+      ...user.banned,
+      moderator,
+    };
   }
 
   /**
@@ -150,7 +151,7 @@ class Bans {
       throw new Error(`User "${user.username}" is not banned.`);
     }
 
-    user.banned = null;
+    user.banned = undefined;
     await user.save();
 
     this.uw.publish('user:unban', {

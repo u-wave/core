@@ -221,7 +221,7 @@ class PlaylistsRepository {
    * @param {{ offset: number, limit: number }} [pagination]
    * @returns {Promise<Page<PlaylistItem>>}
    */
-  async getPlaylistItems(playlist, filter = null, pagination = null) {
+  async getPlaylistItems(playlist, filter, pagination) {
     const { Playlist } = this.uw.models;
 
     /** @type {object[]} */
@@ -284,7 +284,7 @@ class PlaylistsRepository {
 
     // `items` is the same shape as a PlaylistItem instance!
     return new Page(items, {
-      pageSize: pagination ? pagination.limit : null,
+      pageSize: pagination ? pagination.limit : undefined,
       // `count` can be the empty array if the playlist has no items
       filtered: count.length === 1 ? count[0].filtered : playlist.media.length,
       total: playlist.media.length,
@@ -293,11 +293,11 @@ class PlaylistsRepository {
       next: pagination ? {
         offset: pagination.offset + pagination.limit,
         limit: pagination.limit,
-      } : null,
+      } : undefined,
       previous: pagination ? {
         offset: Math.max(pagination.offset - pagination.limit, 0),
         limit: pagination.limit,
-      } : null,
+      } : undefined,
     });
   }
 

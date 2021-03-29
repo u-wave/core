@@ -26,7 +26,7 @@ class GuestConnection extends EventEmitter {
 
     this.events.on('message', (token) => {
       this.attemptAuth(token).then(() => {
-        this.send('authenticated', undefined);
+        this.send('authenticated');
       }).catch((error) => {
         this.send('error', error.message);
       });
@@ -70,7 +70,7 @@ class GuestConnection extends EventEmitter {
 
   /**
    * @param {string} command
-   * @param {import('type-fest').JsonValue} data
+   * @param {import('type-fest').JsonValue} [data]
    */
   send(command, data) {
     this.socket.send(JSON.stringify({ command, data }));

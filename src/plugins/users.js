@@ -40,7 +40,7 @@ class UsersRepository {
    * @param {string} [filter]
    * @param {{ offset?: number, limit?: number }} [pagination]
    */
-  async getUsers(filter = null, pagination = {}) {
+  async getUsers(filter, pagination = {}) {
     const { User } = this.uw.models;
 
     const {
@@ -154,7 +154,7 @@ class UsersRepository {
       type,
       id: profile.id,
       username: profile.displayName,
-      avatar: profile.photos.length > 0 ? profile.photos[0].value : null,
+      avatar: profile.photos && profile.photos.length > 0 ? profile.photos[0].value : null,
     };
     return this.uw.users.findOrCreateSocialUser(user);
   }
@@ -164,7 +164,7 @@ class UsersRepository {
    * @prop {string} type
    * @prop {string} id
    * @prop {string} username
-   * @prop {string} avatar]
+   * @prop {string} [avatar]
    *
    * @param {FindOrCreateSocialUserOptions} options
    * @returns {Promise<User>}
