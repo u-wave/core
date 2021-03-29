@@ -3,6 +3,7 @@
   "compilerOptions": {
     "strict": false,
     "strictBindCallApply": true,
+    "strictNullChecks": true,
     "allowJs": true,
     "checkJs": true,
     "resolveJsonModule": true,

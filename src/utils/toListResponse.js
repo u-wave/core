@@ -84,7 +84,11 @@ function toListResponse(list, {
   included,
   url,
 } = {}) {
-  let props = { data: list, included: null };
+  let props = {
+    data: list,
+    /** @type {ListResponse['included']} */
+    included: undefined,
+  };
   if (included) {
     props = extractIncluded(list, included);
   }
