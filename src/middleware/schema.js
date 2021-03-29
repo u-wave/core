@@ -22,9 +22,10 @@ alwaysTrue.errors = undefined;
 
 /**
  * @param {object} schemas
- * @prop {object} [schemas.body]
- * @prop {object} [schemas.params]
- * @prop {object} [schemas.query]
+ * @prop {import('ajv').SchemaObject} [schemas.body]
+ * @prop {import('ajv').SchemaObject} [schemas.params]
+ * @prop {import('ajv').SchemaObject} [schemas.query]
+ * @returns {import('express').RequestHandler}
  */
 function schema({ body, params, query }) {
   const validateBody = body ? ajv.compile(body) : alwaysTrue;
