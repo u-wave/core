@@ -33,10 +33,7 @@ function toErrorResponse(errors) {
  */
 function serializeError(err) {
   if (err instanceof CombinedError) {
-    return err.errors.reduce(
-      (errors, one) => errors.concat(serializeError(one)),
-      [],
-    );
+    return err.errors.flatMap((error) => serializeError(error));
   }
 
   debug(err);
