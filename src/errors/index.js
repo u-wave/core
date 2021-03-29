@@ -92,6 +92,8 @@ function createErrorClass(name, {
   return class extends base {
     /** @param {TData} [data] */
     constructor(data) {
+      // @ts-ignore This is actually unsafe but the generic TData type
+      // is hard to express correctly in JSDoc.
       const i18nKey = getString(data);
       super(t(i18nKey, data));
       this.name = name;

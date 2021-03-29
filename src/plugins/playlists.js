@@ -43,7 +43,7 @@ function isValidPlaylistItem(item) {
 
 /**
  * Calculate valid start/end times for a playlist item.
- * 
+ *
  * @param {PlaylistItemDesc} item
  * @param {Media} media
  */

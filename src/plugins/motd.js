@@ -14,11 +14,18 @@ class MOTD {
     return this.uw.redis.get('motd');
   }
 
-  set(motd) {
-    return this.uw.redis.set('motd', motd);
+  /**
+   * @param {string} motd
+   * @returns {Promise<void>}
+   */
+  async set(motd) {
+    await this.uw.redis.set('motd', motd);
   }
 }
 
+/**
+ * @param {import('../Uwave')} uw
+ */
 async function motdPlugin(uw) {
   uw.motd = new MOTD(uw);
   uw.httpApi.use('/motd', routes());
