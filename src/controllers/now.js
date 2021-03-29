@@ -2,7 +2,10 @@
 
 const debug = require('debug')('uwave:http-api:now');
 const { getBoothData } = require('./booth');
-const { serializePlaylist } = require('../utils/serialize');
+const {
+  serializePlaylist,
+  serializeUser,
+} = require('../utils/serialize');
 
 async function getFirstItem(uw, activePlaylist) {
   try {
@@ -37,7 +40,7 @@ async function getOnlineUsers(uw) {
     })
     .lean();
 
-  return users;
+  return users.map(serializeUser);
 }
 
 async function getGuestsCount(uw) {
@@ -88,7 +91,7 @@ async function getState(req) {
 
   const stateShape = {
     motd,
-    user,
+    user: user ? serializeUser(user) : null,
     users,
     guests,
     roles,
