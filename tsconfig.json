@@ -2,6 +2,7 @@
   "extends": "@tsconfig/node12/tsconfig.json",
   "compilerOptions": {
     "strict": false,
+    "strictBindCallApply": true,
     "allowJs": true,
     "checkJs": true,
     "resolveJsonModule": true,

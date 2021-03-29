@@ -99,7 +99,7 @@ function authenticateRoutes(passport, options) {
       '/service/google',
       passport.authenticate('google'),
       withOptions(options),
-      route(controller.login.bind(null, 'google')),
+      route(controller.login),
     )
     // GET /auth/service/google/callback - Receive social login data from Google.
     .get(
