@@ -30,6 +30,9 @@ const toListResponse = require('../utils/toListResponse');
  *   import('nodemailer').SendMailOptions} createPasswordResetEmail
  * @prop {boolean} [cookieSecure]
  * @prop {string} [cookiePath]
+ *
+ * @typedef {object} WithAuthOptions
+ * @prop {AuthenticateOptions} authOptions
  */
 
 /**
@@ -95,7 +98,8 @@ async function refreshSession(res, api, user, options) {
  * The login controller is called once a user has logged in successfully using Passport;
  * we only have to assign the JWT.
  *
- * @type {import('../types').AuthenticatedController}
+ * @param {import('../types').AuthenticatedRequest<{}, {}, {}> & WithAuthOptions} req
+ * @param {import('express').Response} res
  */
 async function login(req, res) {
   const options = req.authOptions;
@@ -137,7 +141,7 @@ async function getSocialAvatar(uw, user, service) {
 
 /**
  * @param {string} service
- * @param {import('../types').AuthenticatedRequest} req
+ * @param {import('../types').AuthenticatedRequest & WithAuthOptions} req
  * @param {import('express').Response} res
  */
 async function socialLoginCallback(service, req, res) {
@@ -205,7 +209,8 @@ async function socialLoginCallback(service, req, res) {
 
 /**
  * @param {string} service
- * @param {import('../types').Request<{}, SocialLoginFinishQuery, SocialLoginFinishBody>} req
+ * @param {import('../types').Request<{}, SocialLoginFinishQuery, SocialLoginFinishBody> &
+ *         WithAuthOptions} req
  * @param {import('express').Response} res
  */
 async function socialLoginFinish(service, req, res) {
@@ -269,17 +274,9 @@ async function getSocketToken(req) {
 
 /**
  * @param {string} responseString
- * @param {AuthenticateOptions} options
+ * @param {Required<AuthenticateOptions>['recaptcha']} options
  */
 async function verifyCaptcha(responseString, options) {
-  if (!options.recaptcha) {
-    debug('ReCaptcha validation is disabled');
-    return null;
-  }
-  if (!responseString) {
-    throw new ReCaptchaError();
-  }
-
   debug('recaptcha: sending siteverify request');
   const response = await fetch('https://www.google.com/recaptcha/api/siteverify', {
     method: 'post',
@@ -289,7 +286,7 @@ async function verifyCaptcha(responseString, options) {
     },
     body: new URLSearchParams({
       response: responseString,
-      secret: options.recaptcha.secret,
+      secret: options.secret,
     }),
   });
   const body = await response.json();
@@ -300,8 +297,6 @@ async function verifyCaptcha(responseString, options) {
   } else {
     debug('recaptcha: ok');
   }
-
-  return null;
 }
 
 /**
@@ -313,7 +308,7 @@ async function verifyCaptcha(responseString, options) {
  */
 
 /**
- * @type {import('../types').Controller<{}, {}, RegisterBody>}
+ * @param {import('../types').Request<{}, {}, RegisterBody> & WithAuthOptions} req
  */
 async function register(req) {
   const { users } = req.uwave;
@@ -322,7 +317,13 @@ async function register(req) {
   } = req.body;
 
   try {
-    await verifyCaptcha(grecaptcha, req.authOptions);
+    if (req.authOptions.recaptcha) {
+      if (grecaptcha) {
+        await verifyCaptcha(grecaptcha, req.authOptions.recaptcha);
+      } else {
+        throw new ReCaptchaError();
+      }
+    }
 
     const user = await users.createUser({
       email,
@@ -342,7 +343,7 @@ async function register(req) {
  */
 
 /**
- * @type {import('../types').Controller<{}, {}, RequestPasswordResetBody>}
+ * @param {import('../types').Request<{}, {}, RequestPasswordResetBody> & WithAuthOptions} req
  */
 async function reset(req) {
   const uw = req.uwave;
@@ -413,7 +414,7 @@ async function changePassword(req) {
 }
 
 /**
- * @type {import('../types').AuthenticatedController}
+ * @param {import('../types').AuthenticatedRequest<{}, {}, {}> & WithAuthOptions} req
  */
 async function logout(req, res) {
   const { user, cookies } = req;

@@ -25,6 +25,9 @@ type DefaultParams = Record<string, string>;
 type DefaultQuery = import('qs').ParsedQS;
 type DefaultBody = import('type-fest').JsonObject;
 
+/**
+ * A possibly unauthenticated HTTP API request.
+ */
 export type Request<
   TParams = DefaultParams,
   TQuery = DefaultQuery,
@@ -33,12 +36,18 @@ export type Request<
   user?: import('./models').User,
 };
 
+/**
+ * A controller function that does not require authentication.
+ */
 export type Controller<
   TParams = DefaultParams,
   TQuery = DefaultQuery,
   TBody = DefaultBody,
 > = (req: Request<TParams, TQuery, TBody>, res: import('express').Response) => Promise<object>;
 
+/**
+ * An authenticated HTTP API request.
+ */
 export type AuthenticatedRequest<
   TParams = DefaultParams,
   TQuery = DefaultQuery,
@@ -47,11 +56,15 @@ export type AuthenticatedRequest<
   user: import('./models').User,
 };
 
+/**
+ * A controller function that requires authentication.
+ */
 export type AuthenticatedController<
   TParams = DefaultParams,
   TQuery = DefaultQuery,
   TBody = DefaultBody,
 > = (req: AuthenticatedRequest<TParams, TQuery, TBody>, res: import('express').Response) => Promise<object>;
+
 /**
  * Utility type that returns a Document<TSchema> given a Model<Document<TSchema>>.
  */
