@@ -256,7 +256,8 @@ async function getPlaylistItems(req) {
  */
 
 /**
- * @type {import('../types').AuthenticatedController<AddPlaylistItemsParams, {}, AddPlaylistItemsBody>}
+ * @type {import('../types').AuthenticatedController<
+ *     AddPlaylistItemsParams, {}, AddPlaylistItemsBody>}
  */
 async function addPlaylistItems(req) {
   const { user } = req;
@@ -302,7 +303,8 @@ async function addPlaylistItems(req) {
  */
 
 /**
- * @type {import('../types').AuthenticatedController<RemovePlaylistItemsParams, {}, RemovePlaylistItemsBody>}
+ * @type {import('../types').AuthenticatedController<
+ *     RemovePlaylistItemsParams, {}, RemovePlaylistItemsBody>}
  */
 async function removePlaylistItems(req) {
   const { user } = req;
@@ -332,7 +334,8 @@ async function removePlaylistItems(req) {
  */
 
 /**
- * @type {import('../types').AuthenticatedController<MovePlaylistItemsParams, {}, MovePlaylistItemsBody>}
+ * @type {import('../types').AuthenticatedController<
+ *     MovePlaylistItemsParams, {}, MovePlaylistItemsBody>}
  */
 async function movePlaylistItems(req) {
   const { user } = req;
@@ -423,7 +426,8 @@ async function getPlaylistItem(req) {
  */
 
 /**
- * @type {import('../types').AuthenticatedController<UpdatePlaylistItemParams, {}, UpdatePlaylistItemBody>}
+ * @type {import('../types').AuthenticatedController<
+ *     UpdatePlaylistItemParams, {}, UpdatePlaylistItemBody>}
  */
 async function updatePlaylistItem(req) {
   const { user } = req;

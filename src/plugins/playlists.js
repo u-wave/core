@@ -472,7 +472,7 @@ class PlaylistsRepository {
       }
 
       const itemsWithMedia = sourceItems.map((item) => {
-        const media = allMedias.find((media) => media.sourceID === String(item.sourceID));
+        const media = allMedias.find((compare) => compare.sourceID === String(item.sourceID));
         if (!media) {
           throw new MediaNotFoundError({ sourceType: item.sourceType, sourceID: item.sourceID });
         }
