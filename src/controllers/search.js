@@ -105,6 +105,7 @@ async function search(req) {
   searchResults.forEach((result) => {
     const media = mediaBySourceID.get(String(result.sourceID));
     if (media) {
+      // @ts-ignore
       result.inPlaylists = playlistsByMediaID.get(media._id.toString());
     }
   });

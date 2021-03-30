@@ -82,7 +82,7 @@ async function createPlaylist(req) {
     name,
   });
 
-  const activeID = user.activePlaylist.toString();
+  const activeID = user.activePlaylist ? user.activePlaylist.toString() : undefined;
 
   return toItemResponse(
     serializePlaylist(playlist),
@@ -290,7 +290,10 @@ async function addPlaylistItems(req) {
     included: {
       media: ['media'],
     },
-    meta: { afterID: actualAfterID.toString(), playlistSize },
+    meta: {
+      afterID: actualAfterID ? actualAfterID.toString() : null,
+      playlistSize,
+    },
   });
 }
 

@@ -117,6 +117,8 @@ async function skipBooth(req) {
     throw new PermissionError({ requiredRole: 'booth.skip.other' });
   }
 
+  // @ts-ignore pretending like `userID` is definitely defined here
+  // TODO I think the typescript error is actually correct so we should fix this
   await doSkip(req.uwave, user.id, userID, reason, opts);
 
   return toItemResponse({});

@@ -98,7 +98,10 @@ async function refreshSession(res, api, user, options) {
  * The login controller is called once a user has logged in successfully using Passport;
  * we only have to assign the JWT.
  *
- * @param {import('../types').AuthenticatedRequest<{}, {}, {}> & WithAuthOptions} req
+ * @typedef {object} LoginQuery
+ * @prop {'cookie'|'token'} [session]
+ *
+ * @param {import('../types').AuthenticatedRequest<{}, LoginQuery, {}> & WithAuthOptions} req
  * @param {import('express').Response} res
  */
 async function login(req, res) {
@@ -126,11 +129,17 @@ async function login(req, res) {
   });
 }
 
+/**
+ * @param {import('../Uwave')} uw
+ * @param {import('../models').User} user
+ * @param {string} service
+ */
 async function getSocialAvatar(uw, user, service) {
-  const Authentication = uw.model('Authentication');
+  const { Authentication } = uw.models;
 
+  /** @type {import('../models').Authentication?} */
   const auth = await Authentication.findOne({
-    user,
+    user: user._id,
     type: service,
   });
   if (auth && auth.avatar) {

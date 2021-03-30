@@ -46,6 +46,7 @@ export type ServerActionParameters = {
   },
   'booth:favorite': {
     userID: string,
+    playlistID: string,
   },
   'playlist:cycle': {
     userID: string,

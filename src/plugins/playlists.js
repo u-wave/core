@@ -496,7 +496,7 @@ class PlaylistsRepository {
    * @param {{ after?: ObjectID|null }} options
    * @returns {Promise<{
    *   added: PlaylistItem[],
-   *   afterID: ObjectID|null,
+   *   afterID: ObjectID?,
    *   playlistSize: number,
    * }>}
    */
@@ -536,7 +536,7 @@ class PlaylistsRepository {
   /**
    * @param {Playlist} playlist
    * @param {ObjectID[]} itemIDs
-   * @param {{ afterID: ObjectID }} options
+   * @param {{ afterID: ObjectID? }} options
    */
   // eslint-disable-next-line class-methods-use-this
   async movePlaylistItems(playlist, itemIDs, { afterID }) {
@@ -551,7 +551,9 @@ class PlaylistsRepository {
       itemIDsToInsert.every((insert) => !insert.equals(item))
     ));
     // Reinsert items at their new position.
-    const insertIndex = newMedia.findIndex((item) => item.equals(afterID));
+    const insertIndex = afterID
+      ? newMedia.findIndex((item) => item.equals(afterID))
+      : -1;
     newMedia.splice(insertIndex + 1, 0, ...itemIDsToInsert);
     playlist.media = newMedia;
 
