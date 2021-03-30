@@ -179,6 +179,9 @@ async function changeUsername(req) {
   }
 }
 
+/**
+ * @returns {Promise<import('type-fest').JsonObject>}
+ */
 async function changeAvatar() {
   throw new HTTPError(500, 'Not implemented');
 }

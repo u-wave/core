@@ -438,6 +438,9 @@ async function logout(req, res) {
   return toItemResponse({});
 }
 
+/**
+ * @returns {Promise<import('type-fest').JsonObject>}
+ */
 async function removeSession() {
   throw new Error('Unimplemented');
 }
