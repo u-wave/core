@@ -1,6 +1,6 @@
 'use strict';
 
-const { clamp } = require('lodash');
+const { clamp, omit } = require('lodash');
 const escapeStringRegExp = require('escape-string-regexp');
 const {
   UserNotFoundError,
@@ -9,7 +9,10 @@ const Page = require('../Page');
 
 /**
  * @typedef {import('mongodb').ObjectID} ObjectID
- * @typedef {import('../models/User').User} User
+ * @typedef {import('../models').User} User
+ * @typedef {import('../models/User').LeanUser} LeanUser
+ * @typedef {import('../models/User').LeanBanned} LeanBanned
+ * @typedef {LeanBanned & { user: Omit<LeanUser, 'banned'> }} Ban
  */
 
 /**
@@ -50,15 +53,15 @@ class Bans {
    * List banned users.
    *
    * @param {string} [filter] Optional filter to search for usernames.
-   * @param {object} [pagination] A pagination object.
-   * @return {Promise<Page>}
+   * @param {{ offset?: number, limit?: number }} [pagination] A pagination object.
+   * @return {Promise<Page<Ban, { offset: number, limit: number }>>}
    */
   async getBans(filter, pagination = {}) {
-    const User = this.uw.model('User');
+    const { User } = this.uw.models;
 
     const offset = pagination.offset || 0;
     const size = clamp(
-      'limit' in pagination ? pagination.limit : 50,
+      pagination.limit ?? 50,
       0, 100,
     );
 
@@ -74,7 +77,7 @@ class Bans {
 
     const total = await User.find().where(queryFilter).countDocuments();
 
-    /** @type {import('../models/User').LeanUser[]} */
+    /** @type {(import('../models/User').LeanUser & { banned: LeanBanned })[]} */
     const bannedUsers = await User.find()
       .where(queryFilter)
       .skip(offset)
@@ -83,20 +86,19 @@ class Bans {
       .lean();
 
     const results = bannedUsers.map((user) => {
-      const ban = user.banned;
-      delete user.banned; // eslint-disable-line no-param-reassign
+      /***/
       return {
-        ...ban,
-        user,
+        ...user.banned,
+        user: omit(user, ['banned']),
       };
     });
 
     return new Page(results, {
-      pageSize: pagination ? pagination.limit : null,
+      pageSize: pagination ? pagination.limit : undefined,
       filtered: total,
       total,
       current: { offset, limit: size },
-      next: pagination ? { offset: offset + size, limit: size } : null,
+      next: pagination ? { offset: offset + size, limit: size } : undefined,
       previous: offset > 0
         ? { offset: Math.max(offset - size, 0), limit: size }
         : null,
