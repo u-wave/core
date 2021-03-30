@@ -90,9 +90,8 @@ async function httpApi(uw, options) {
 
   uw.config.register(optionsSchema['uw:key'], optionsSchema);
 
-  /**
-   * @type {HttpApiSettings}
-   */
+  /** @type {HttpApiSettings} */
+  // @ts-ignore get() always returns a validated object here
   let runtimeOptions = await uw.config.get(optionsSchema['uw:key']);
   uw.config.on('set', (key, value) => {
     if (key === 'u-wave:api') {
@@ -155,7 +154,7 @@ async function httpApi(uw, options) {
 async function errorHandling(uw) {
   debug('after');
   uw.httpApi.use(errorHandler());
-  uw.express.use((error, req, res, next) => {
+  uw.express.use(/** @type {import('express').ErrorRequestHandler} */ (error, req, res, next) => {
     debug(error);
     next(error);
   });
