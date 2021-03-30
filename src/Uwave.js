@@ -212,14 +212,6 @@ class UwaveServer extends EventEmitter {
   }
 
   /**
-   * @param {string} name
-   * @deprecated Use `uw.models[modelName]` instead.
-   */
-  model(name) {
-    return this.mongo.model(name);
-  }
-
-  /**
    * An array of registered sources.
    *
    * @type {Source[]}
