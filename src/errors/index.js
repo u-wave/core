@@ -12,16 +12,6 @@ const {
 } = require('http-errors');
 const { t } = require('../locale');
 
-class EmailError extends InternalServerError {
-  /**
-   * @param {string} message
-   */
-  constructor(message) {
-    super(message);
-    this.name = 'EmailError';
-  }
-}
-
 class APIError extends Error {
   /** @type {number|undefined} */
   status;
@@ -258,7 +248,6 @@ const UserIsPlayingError = createErrorClass('UserIsPlayingError', {
   base: BadRequest,
 });
 
-exports.EmailError = EmailError;
 exports.APIError = APIError;
 exports.CombinedError = CombinedError;
 exports.HTTPError = HTTPError;

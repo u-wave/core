@@ -1,6 +1,12 @@
 'use strict';
 
+/**
+ * @deprecated
+ */
 class UwaveError extends Error {
+  /**
+   * @param {string} message
+   */
   constructor(message) {
     super(message);
     /**
