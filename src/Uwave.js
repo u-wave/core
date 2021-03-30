@@ -27,8 +27,6 @@ const waitlist = require('./plugins/waitlist');
 const passport = require('./plugins/passport');
 const migrations = require('./plugins/migrations');
 
-const kSources = Symbol('Media sources');
-
 const DEFAULT_MONGO_URL = 'mongodb://localhost:27017/uwave';
 const DEFAULT_REDIS_URL = 'redis://localhost:6379';
 
@@ -101,6 +99,11 @@ class UwaveServer extends EventEmitter {
   socketServer;
 
   /**
+   * @type {Map<string, Source>}
+   */
+  #sources = new Map();
+
+  /**
   * @param {object} [options]
   * @param {boolean} [options.useDefaultPlugins]
   */
@@ -108,11 +111,6 @@ class UwaveServer extends EventEmitter {
     super();
 
     const boot = avvio(this);
-
-    /**
-     * @type {Map<string, Source>}
-     */
-    this[kSources] = new Map();
 
     this.locale = i18n.cloneInstance();
 
@@ -224,7 +222,7 @@ class UwaveServer extends EventEmitter {
    * An array of registered sources.
    */
   get sources() {
-    return [...this[kSources].values()];
+    return [...this.#sources.values()];
   }
 
   /**
@@ -241,7 +239,7 @@ class UwaveServer extends EventEmitter {
    */
   source(sourcePlugin, opts = {}) {
     if (arguments.length === 1 && typeof sourcePlugin === 'string') { // eslint-disable-line prefer-rest-params
-      return this[kSources].get(sourcePlugin);
+      return this.#sources.get(sourcePlugin);
     }
 
     const sourceFactory = sourcePlugin.default || sourcePlugin;
@@ -259,7 +257,7 @@ class UwaveServer extends EventEmitter {
     }
     const newSource = new Source(this, sourceType, sourceDefinition);
 
-    this[kSources].set(sourceType, newSource);
+    this.#sources.set(sourceType, newSource);
 
     return newSource;
   }
