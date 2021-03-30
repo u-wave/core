@@ -55,13 +55,16 @@ function defaultCreatePasswordResetEmail({ token, requestUrl }) {
  */
 
 /**
- * @typedef {object} HttpApiOptions
+ * @typedef {object} HttpApiOptions - Static options for the HTTP API.
  * @prop {string|Buffer} secret
  * @prop {(error: Error) => void} [onError]
  * @prop {{ secret: string }} [recaptcha]
  * @prop {import('nodemailer').Transport} [mailTransport]
  * @prop {(options: { token: string, requestUrl: string }) =>
  *   import('nodemailer').SendMailOptions} [createPasswordResetEmail]
+ *
+ * @typedef {object} HttpApiSettings - Runtime options for the HTTP API.
+ * @prop {string[]} allowedOrigins
  */
 
 /**
@@ -87,6 +90,9 @@ async function httpApi(uw, options) {
 
   uw.config.register(optionsSchema['uw:key'], optionsSchema);
 
+  /**
+   * @type {HttpApiSettings}
+   */
   let runtimeOptions = await uw.config.get(optionsSchema['uw:key']);
   uw.config.on('set', (key, value) => {
     if (key === 'u-wave:api') {

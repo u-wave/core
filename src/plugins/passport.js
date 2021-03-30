@@ -11,11 +11,25 @@ const schema = require('../schemas/socialAuth.json');
 
 /**
  * @typedef {import('../models/User').User} User
+ *
+ * @typedef {{
+ *   callbackURL?: string,
+ * } & ({
+ *   enabled: false,
+ * } | {
+ *   enabled: true,
+ *   clientID: string,
+ *   clientSecret: string,
+ * })} GoogleOptions
+ *
+ * @typedef {object} SocialAuthOptions
+ * @prop {GoogleOptions} google
  */
 
 class PassportPlugin extends Passport {
   /**
    * @param {import('../Uwave')} uw
+   * @param {{ secret: string }} options
    */
   constructor(uw, options) {
     super();
@@ -105,6 +119,9 @@ class PassportPlugin extends Passport {
       .filter((strategy) => strategy !== 'session' && strategy !== 'jwt');
   }
 
+  /**
+   * @param {SocialAuthOptions} settings
+   */
   applyAuthStrategies(settings) {
     debug('reapplying settings');
     this.unuse('google');
@@ -120,7 +137,11 @@ class PassportPlugin extends Passport {
   }
 }
 
-async function passportPlugin(uw, options = {}) {
+/**
+ * @param {import('../Uwave')} uw
+ * @param {{ secret: string }} options
+ */
+async function passportPlugin(uw, options) {
   debug('setup');
   uw.passport = new PassportPlugin(uw, options);
 }
