@@ -93,6 +93,7 @@ class Source {
    *
    * @param {User} user
    * @param {string} id
+   * @returns {Promise<PlaylistItemDesc?>}
    */
   getOne(user, id) {
     return this.get(user, [id])
@@ -104,6 +105,7 @@ class Source {
    *
    * @param {User} user
    * @param {string[]} ids
+   * @returns {Promise<PlaylistItemDesc[]>}
    */
   async get(user, ids) {
     let items;
@@ -123,8 +125,9 @@ class Source {
    * @template {object} TPagination
    * @param {User} user
    * @param {string} query
-   * @param {TPagination} page
-   * @param {unknown[]} args
+   * @param {TPagination} [page]
+   * @param {unknown[]} [args]
+   * @returns {Promise<PlaylistItemDesc[]>}
    */
   async search(user, query, page, ...args) {
     let results;

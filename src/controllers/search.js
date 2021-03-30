@@ -32,6 +32,10 @@ async function searchAll(req) {
   return combinedResults;
 }
 
+/**
+ * @param {import('../Uwave')} uw
+ * @param {Map<string, Record<string, unknown>>} updates
+ */
 async function updateSourceData(uw, updates) {
   const { Media } = uw.models;
   const ops = [];
@@ -76,11 +80,13 @@ async function search(req) {
   // features in the source implementation.
   const mediasNeedSourceDataUpdate = new Map();
 
+  /** @type {import('../models').Media[]}*/
   const mediasInSearchResults = await Media.find({
     sourceType: sourceName,
     sourceID: { $in: Array.from(searchResultsByID.keys()) },
   });
 
+  /** @type {Map<string, import('../models').Media>}*/
   const mediaBySourceID = new Map();
   mediasInSearchResults.forEach((media) => {
     mediaBySourceID.set(media.sourceID, media);
@@ -97,7 +103,7 @@ async function search(req) {
   );
 
   searchResults.forEach((result) => {
-    const media = mediaBySourceID.get(result.sourceID);
+    const media = mediaBySourceID.get(String(result.sourceID));
     if (media) {
       result.inPlaylists = playlistsByMediaID.get(media._id.toString());
     }

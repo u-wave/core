@@ -220,6 +220,8 @@ class UwaveServer extends EventEmitter {
 
   /**
    * An array of registered sources.
+   *
+   * @type {Source[]}
    */
   get sources() {
     return [...this.#sources.values()];
