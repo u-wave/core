@@ -42,7 +42,6 @@ function unsafeCast(value) {
 /**
  * @typedef {UwaveServer & avvio.Server<UwaveServer>} Boot
  * @typedef {{
- *   useDefaultPlugins?: boolean,
  *   port?: number,
  *   mongo?: string | { url: string } & mongoose.ConnectOptions | mongoose.Connection,
  *   redis?: string | Redis.Redis | { port: number, host: string, options: Redis.RedisOptions },
@@ -120,7 +119,6 @@ class UwaveServer extends EventEmitter {
     this.locale = i18n.cloneInstance();
 
     this.options = {
-      useDefaultPlugins: true,
       ...options,
     };
 
@@ -195,17 +193,15 @@ class UwaveServer extends EventEmitter {
       secret: this.options.secret,
     });
 
-    if (this.options.useDefaultPlugins) {
-      boot.use(acl);
-      boot.use(chat);
-      boot.use(motd);
-      boot.use(playlists);
-      boot.use(users);
-      boot.use(bans);
-      boot.use(history);
-      boot.use(waitlist);
-      boot.use(booth);
-    }
+    boot.use(acl);
+    boot.use(chat);
+    boot.use(motd);
+    boot.use(playlists);
+    boot.use(users);
+    boot.use(bans);
+    boot.use(history);
+    boot.use(waitlist);
+    boot.use(booth);
 
     boot.use(httpApi.errorHandling);
   }
