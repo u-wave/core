@@ -19,6 +19,9 @@ const { Types } = mongoose.Schema;
  *    Authentication
  */
 
+/**
+ * @type {import('mongoose').Schema<Authentication, import('mongoose').Model<Authentication>>}
+ */
 const schema = new Schema({
   user: { type: Types.ObjectId, ref: 'User', index: true },
   type: { type: String, required: true, default: 'local' },

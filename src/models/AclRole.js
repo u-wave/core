@@ -12,6 +12,9 @@ const { Schema } = mongoose;
  * @typedef {import('mongoose').Document<LeanAclRole["_id"]> & LeanAclRole} AclRole
  */
 
+/**
+ * @type {import('mongoose').Schema<AclRole, import('mongoose').Model<AclRole>>}
+ */
 const schema = new Schema({
   _id: String,
   roles: [{ type: String, ref: 'AclRole', index: true }],

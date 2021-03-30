@@ -14,6 +14,9 @@ const { Schema } = mongoose;
  * @typedef {import('mongoose').Document<LeanMigration["_id"]> & LeanMigration} Migration
  */
 
+/**
+ * @type {import('mongoose').Schema<Migration, import('mongoose').Model<Migration>>}
+ */
 const schema = new Schema({
   migrationName: { type: String, required: true },
 }, {

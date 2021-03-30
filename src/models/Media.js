@@ -20,6 +20,9 @@ const { Schema } = mongoose;
  * @typedef {import('mongoose').Document<LeanMedia["_id"]> & LeanMedia} Media
  */
 
+/**
+ * @type {import('mongoose').Schema<Media, import('mongoose').Model<Media>>}
+ */
 const schema = new Schema({
   sourceID: {
     type: String, max: 128, required: true, index: true,

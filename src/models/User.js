@@ -39,6 +39,9 @@ const bannedSchema = new Schema({
   reason: { type: String, default: '' },
 });
 
+/**
+ * @type {import('mongoose').Schema<User, import('mongoose').Model<User>>}
+ */
 const userSchema = new Schema({
   username: {
     type: String,

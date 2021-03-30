@@ -19,6 +19,9 @@ const { Types } = mongoose.Schema;
  * @typedef {import('mongoose').Document<LeanPlaylistItem["_id"]> & LeanPlaylistItem} PlaylistItem
  */
 
+/**
+ * @type {import('mongoose').Schema<PlaylistItem, import('mongoose').Model<PlaylistItem>>}
+ */
 const schema = new Schema({
   media: {
     type: Types.ObjectId,

@@ -20,6 +20,9 @@ const { Types } = mongoose.Schema;
  * }} Playlist
  */
 
+/**
+ * @type {import('mongoose').Schema<Playlist, import('mongoose').Model<Playlist>>}
+ */
 const schema = new Schema({
   name: {
     type: String,
