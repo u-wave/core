@@ -38,11 +38,15 @@ class PassportPlugin extends Passport {
     this.socialLogin = this.socialLogin.bind(this);
 
     /**
-     * @param {User} user
+     * @param {Express.User} user
      * @returns {Promise<string>}
      */
     function serializeUser(user) {
-      return Promise.resolve(user.id);
+      /** @type {string} */
+      // @ts-ignore `user` is actually an instance of the User model
+      // but we can't express that
+      const userID = user.id;
+      return Promise.resolve(userID);
     }
     /**
      * @param {string} id
