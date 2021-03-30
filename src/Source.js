@@ -126,7 +126,7 @@ class Source {
    * @param {User} user
    * @param {string} query
    * @param {TPagination} [page]
-   * @param {unknown[]} [args]
+   * @param {unknown[]} args
    * @returns {Promise<PlaylistItemDesc[]>}
    */
   async search(user, query, page, ...args) {
