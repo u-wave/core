@@ -46,16 +46,6 @@ function serializeError(err) {
       title: err.message,
     }];
   }
-  if (err.isJoi) {
-    return err.details.map((error) => ({
-      status: 400,
-      code: error.type,
-      title: error.message,
-      source: {
-        path: error.path,
-      },
-    }));
-  }
   if (err.name === 'ValidationError') {
     return Object.values(err.errors).map((error) => ({
       status: 400,
