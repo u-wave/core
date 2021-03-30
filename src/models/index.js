@@ -30,6 +30,9 @@ const userSchema = require('./User');
  * }} Models
  */
 
+/**
+ * @param {import('../Uwave')} uw
+ */
 async function models(uw) {
   uw.models = {
     AclRole: uw.mongo.model('AclRole', aclRoleSchema),

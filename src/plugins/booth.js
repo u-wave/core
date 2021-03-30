@@ -33,6 +33,7 @@ async function cyclePlaylist(playlist) {
 }
 
 class Booth {
+  /** @type {ReturnType<typeof setTimeout>|null} */
   #timeout = null;
 
   #locker;
@@ -337,6 +338,9 @@ class Booth {
   }
 }
 
+/**
+ * @param {import('../Uwave').Boot} uw
+ */
 async function boothPlugin(uw) {
   uw.booth = new Booth(uw);
   uw.httpApi.use('/booth', routes());

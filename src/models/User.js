@@ -48,6 +48,7 @@ const userSchema = new Schema({
     required: true,
     unique: true,
     index: true,
+    /** @type {(name: string) => string} */
     set: (name) => name.normalize('NFKC'),
   },
   language: {

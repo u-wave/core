@@ -44,11 +44,13 @@ const schema = new Schema({
     artist: {
       type: String,
       index: true,
+      /** @type {(name: string) => string} */
       set: (artist) => artist.normalize('NFKC'),
     },
     title: {
       type: String,
       index: true,
+      /** @type {(name: string) => string} */
       set: (title) => title.normalize('NFKC'),
     },
     start: { type: Number, default: 0 },

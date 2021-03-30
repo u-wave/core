@@ -105,6 +105,8 @@ class Chat {
   delete(filter, options = {}) {
     const deletion = {
       filter: typeof filter === 'string' ? { id: filter } : filter,
+      /** @type {string|undefined} */
+      moderatorID: undefined,
     };
 
     if (options.moderator) {

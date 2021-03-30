@@ -3,6 +3,10 @@
 const UwaveError = require('./UwaveError');
 
 class ValidationError extends UwaveError {
+  /**
+   * @param {any} errors
+   * @param {import('ajv').default} ajv
+   */
   constructor(errors, ajv) {
     const message = ajv ? ajv.errorsText(errors) : 'Validation failed';
     super(message);

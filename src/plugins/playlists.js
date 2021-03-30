@@ -226,9 +226,9 @@ class PlaylistsRepository {
 
   /**
    * @param {Playlist} playlist
-   * @param {string} [filter]
-   * @param {{ offset: number, limit: number }} [pagination]
-   * @returns {Promise<Page<PlaylistItem>>}
+   * @param {string|undefined} filter
+   * @param {{ offset: number, limit: number }} pagination
+   * @returns {Promise<Page<PlaylistItem, { offset: number, limit: number }>>}
    */
   async getPlaylistItems(playlist, filter, pagination) {
     const { Playlist } = this.uw.models;
@@ -263,14 +263,11 @@ class PlaylistsRepository {
     const aggregateCount = [
       { $count: 'filtered' },
     ];
-    const aggregateItems = [];
-
-    if (pagination) {
-      aggregateItems.push(
-        { $skip: pagination.offset },
-        { $limit: pagination.limit },
-      );
-    }
+    /** @type {object[]} */
+    const aggregateItems = [
+      { $skip: pagination.offset },
+      { $limit: pagination.limit },
+    ];
 
     // look up the media items after this is all filtered down
     aggregateItems.push(
@@ -293,20 +290,20 @@ class PlaylistsRepository {
 
     // `items` is the same shape as a PlaylistItem instance!
     return new Page(items, {
-      pageSize: pagination ? pagination.limit : undefined,
+      pageSize: pagination.limit,
       // `count` can be the empty array if the playlist has no items
       filtered: count.length === 1 ? count[0].filtered : playlist.media.length,
       total: playlist.media.length,
 
       current: pagination,
-      next: pagination ? {
+      next: {
         offset: pagination.offset + pagination.limit,
         limit: pagination.limit,
-      } : undefined,
-      previous: pagination ? {
+      },
+      previous: {
         offset: Math.max(pagination.offset - pagination.limit, 0),
         limit: pagination.limit,
-      } : undefined,
+      },
     });
   }
 
@@ -344,6 +341,7 @@ class PlaylistsRepository {
     );
 
     if (options.fields) {
+      /** @type {Record<string, 1>} */
       const fields = {};
       options.fields.forEach((fieldName) => {
         fields[fieldName] = 1;
@@ -442,6 +440,9 @@ class PlaylistsRepository {
     // Group by source so we can retrieve all unknown medias from the source in
     // one call.
     const itemsBySourceType = groupBy(items, 'sourceType');
+    /**
+     * @type {{ media: Media, artist: string, title: string, start: number, end: number }[]}
+     */
     const playlistItems = [];
     const promises = Object.entries(itemsBySourceType).map(async ([sourceType, sourceItems]) => {
       /** @type {Media[]} */
@@ -566,11 +567,13 @@ class PlaylistsRepository {
     const { PlaylistItem } = this.uw.models;
 
     // Only remove items that are actually in this playlist.
-    const stringIDs = itemIDs.map((item) => String(item));
+    const stringIDs = new Set(itemIDs.map((item) => String(item)));
+    /** @type {ObjectID[]} */
     const toRemove = [];
+    /** @type {ObjectID[]} */
     const toKeep = [];
     playlist.media.forEach((itemID) => {
-      if (stringIDs.indexOf(`${itemID}`) !== -1) {
+      if (stringIDs.has(`${itemID}`)) {
         toRemove.push(itemID);
       } else {
         toKeep.push(itemID);
@@ -585,6 +588,9 @@ class PlaylistsRepository {
   }
 }
 
+/**
+ * @param {import('../Uwave')} uw
+ */
 async function playlistsPlugin(uw) {
   uw.playlists = new PlaylistsRepository(uw);
   uw.httpApi.use('/playlists', routes());

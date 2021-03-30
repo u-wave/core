@@ -71,7 +71,7 @@ class ConfigStore {
 
   /**
    * @param {string} key
-   * @returns {Promise<object>}
+   * @returns {Promise<object|null>}
    * @private
    */
   async load(key) {

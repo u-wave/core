@@ -32,12 +32,14 @@ const schema = new Schema({
     type: String,
     max: 128,
     required: true,
+    /** @type {(name: string) => string} */
     set: (artist) => artist.normalize('NFKC'),
   },
   title: {
     type: String,
     max: 128,
     required: true,
+    /** @type {(name: string) => string} */
     set: (title) => title.normalize('NFKC'),
   },
   duration: { type: Number, min: 0, default: 0 },

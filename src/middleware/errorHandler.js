@@ -14,6 +14,7 @@ const debug = createDebug('uwave:http:error');
  * @prop {number} status
  * @prop {string} code
  * @prop {string} title
+ * @prop {string} [source]
  */
 
 /**

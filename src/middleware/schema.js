@@ -21,10 +21,12 @@ function alwaysTrue() {
 alwaysTrue.errors = undefined;
 
 /**
- * @param {object} schemas
- * @prop {import('ajv').SchemaObject} [schemas.body]
- * @prop {import('ajv').SchemaObject} [schemas.params]
- * @prop {import('ajv').SchemaObject} [schemas.query]
+ * @typedef {object} Schemas
+ * @prop {import('ajv').SchemaObject} [body]
+ * @prop {import('ajv').SchemaObject} [params]
+ * @prop {import('ajv').SchemaObject} [query]
+ *
+ * @param {Schemas} schemas
  * @returns {import('express').RequestHandler}
  */
 function schema({ body, params, query }) {

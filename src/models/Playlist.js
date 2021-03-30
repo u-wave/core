@@ -26,6 +26,7 @@ const schema = new Schema({
     min: 0,
     max: 128,
     required: true,
+    /** @type {(name: string) => string} */
     set: (name) => name.normalize('NFKC'),
   },
   description: { type: String, min: 0, max: 512 },

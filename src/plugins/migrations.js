@@ -43,7 +43,7 @@ const mongooseStorage = {
   },
 
   /**
-   * @param {import('umzug').MigrationParams<Uwave>} params
+   * @param {{ context: Uwave }} params
    */
   async executed({ context: uw }) {
     const { Migration } = uw.models;

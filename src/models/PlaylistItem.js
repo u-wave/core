@@ -31,6 +31,7 @@ const schema = new Schema({
     max: 128,
     required: true,
     index: true,
+    /** @type {(name: string) => string} */
     set: (artist) => artist.normalize('NFKC'),
   },
   title: {
@@ -38,6 +39,7 @@ const schema = new Schema({
     max: 128,
     required: true,
     index: true,
+    /** @type {(name: string) => string} */
     set: (title) => title.normalize('NFKC'),
   },
   start: { type: Number, min: 0, default: 0 },
