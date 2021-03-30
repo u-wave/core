@@ -4,6 +4,7 @@
     "strict": false,
     "strictBindCallApply": true,
     "strictNullChecks": true,
+    "noImplicitThis": true,
     "allowJs": true,
     "checkJs": true,
     "resolveJsonModule": true,
