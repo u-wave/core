@@ -52,7 +52,7 @@ export type AuthenticatedRequest<
   TParams = DefaultParams,
   TQuery = DefaultQuery,
   TBody = DefaultBody,
-> = Request<TParams, any, TBody, TQuery, {}> & {
+> = Request<TParams, TQuery, TBody> & {
   user: import('./models').User,
 };
 
