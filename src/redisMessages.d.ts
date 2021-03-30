@@ -15,6 +15,10 @@ export type ServerActionParameters = {
     moderatorID: string | null,
     reason: string | null,
   },
+  'booth:replace': {
+    userID: string,
+    moderatorID: string | null,
+  },
 
   'chat:message': {},
   'chat:delete': {
@@ -98,8 +102,9 @@ export type ServerActionParameters = {
     old: Record<string, string>,
     new: Record<string, string>,
   },
-  'user:join': { userID: string, },
-  'user:leave': { userID: string, },
+  'user:join': { userID: string },
+  'user:leave': { userID: string },
+  'user:logout': { userID: string },
   'user:ban': {
     userID: string,
     moderatorID: string,
