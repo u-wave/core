@@ -11,8 +11,11 @@ const { zip } = require('lodash');
 
 const rxObjectID = /^[0-9a-f]{24}$/;
 
+// Cannot use `@type {import('umzug').MigrationFn<import('../Uwave')>}`
+// due to https://github.com/microsoft/TypeScript/issues/43160
+
 /**
- * @type {import('umzug').MigrationFn<import('../Uwave')>}
+ * @param {import('umzug').MigrationParams<import('../Uwave')>} params
  */
 async function up({ context: uw }) {
   const { User } = uw.models;
@@ -47,7 +50,7 @@ async function up({ context: uw }) {
 }
 
 /**
- * @type {import('umzug').MigrationFn<import('../Uwave')>}
+ * @param {import('umzug').MigrationParams<import('../Uwave')>} params
  */
 async function down({ context: uw }) {
   const { User } = uw.models;
