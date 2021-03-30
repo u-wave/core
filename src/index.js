@@ -6,7 +6,7 @@ const SocketServer = require('./SocketServer');
 const UwaveError = require('./errors/UwaveError');
 
 /**
- * @param {ConstructorParameters<Uwave>[0]} opts
+ * @param {object} opts
  */
 module.exports = function uwave(opts) {
   return new Uwave(opts);

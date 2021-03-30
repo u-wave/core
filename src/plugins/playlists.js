@@ -467,6 +467,7 @@ class PlaylistsRepository {
 
       let allMedias = knownMedias;
       if (unknownMediaIDs.length > 0) {
+        // @ts-ignore
         const unknownMedias = await this.uw.source(sourceType)
           .get(user, unknownMediaIDs);
         allMedias = allMedias.concat(await Media.create(unknownMedias));
