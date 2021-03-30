@@ -11,6 +11,10 @@ const {
  * @typedef {Record<string, string[]>} IncludedOptions
  */
 
+/**
+ * @param {any[]} data
+ * @param {IncludedOptions} included
+ */
 function extractIncluded(data, included) {
   const includedTypes = Object.keys(included);
   if (includedTypes.length === 0) {
@@ -20,13 +24,19 @@ function extractIncluded(data, included) {
     };
   }
 
+  /** @type {Record<string, any[]>} */
   const includeds = includedTypes.reduce(
     (map, typeName) => Object.assign(map, { [typeName]: [] }),
     {},
   );
 
+  /** @type {Set<string>} */
   const had = new Set();
 
+  /**
+   * @param {string} type
+   * @param {{ _id: string }} item
+   */
   function include(type, item) {
     if (!had.has(type + item._id)) {
       includeds[type].push(item);
@@ -34,6 +44,7 @@ function extractIncluded(data, included) {
     }
   }
 
+  /** @type {any[]} */
   const resultData = [];
   data.forEach((initialItem) => {
     let item = isPlainObject(initialItem) ? initialItem : initialItem.toJSON();
