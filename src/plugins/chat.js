@@ -100,18 +100,13 @@ class Chat {
 
   /**
    * @param {{ id: string } | { userID: string } | {}} filter
-   * @param {{ moderator?: User }} [options]
+   * @param {{ moderator: User }} options
    */
-  delete(filter, options = {}) {
+  delete(filter, options) {
     const deletion = {
       filter: typeof filter === 'string' ? { id: filter } : filter,
-      /** @type {string|undefined} */
-      moderatorID: undefined,
+      moderatorID: options.moderator.id,
     };
-
-    if (options.moderator) {
-      deletion.moderatorID = options.moderator.id;
-    }
 
     this.uw.publish('chat:delete', deletion);
   }

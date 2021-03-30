@@ -303,8 +303,10 @@ class UwaveServer extends EventEmitter {
 
   /**
    * Publish an event to the üWave channel.
-   * @param {string} command
-   * @param {import('type-fest').JsonValue} data
+   *
+   * @template {keyof import('./redisMessages').ServerActionParameters} CommandName
+   * @param {CommandName} command
+   * @param {import('./redisMessages').ServerActionParameters[CommandName]} data
    */
   publish(command, data) {
     this.redis.publish('uwave', JSON.stringify({

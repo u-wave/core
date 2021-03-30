@@ -164,7 +164,7 @@ class SocketServer {
     /**
      * Handlers for commands that come in from clients.
      *
-     * @type {Record<string, (user: User, param: any, connection: AuthedConnection) => void>}
+     * @type {import('./socketMessages').ClientActions}
      */
     this.clientActions = {
       sendChat: (user, message) => {
@@ -194,6 +194,8 @@ class SocketServer {
 
     /**
      * Handlers for commands that come in from the server side.
+     *
+     * @type {import('./redisMessages').ServerActions}
      */
     this.serverActions = {
       /**
@@ -230,12 +232,12 @@ class SocketServer {
        * user, or be empty to delete all messages.
        */
       'chat:delete': ({ moderatorID, filter }) => {
-        if (filter.id) {
+        if ('id' in filter) {
           this.broadcast('chatDeleteByID', {
             moderatorID,
             _id: filter.id,
           });
-        } else if (filter.userID) {
+        } else if ('userID' in filter) {
           this.broadcast('chatDeleteByUser', {
             moderatorID,
             userID: filter.userID,
