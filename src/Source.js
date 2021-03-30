@@ -1,9 +1,20 @@
 'use strict';
 
 /**
+ * @typedef {import('./models').User} User
+ * @typedef {import('./models').Playlist} Playlist
+ * @typedef {import('./plugins/playlists').PlaylistItemDesc} PlaylistItemDesc
+ */
+
+/**
  * Data holder for things that source plugins may require.
  */
 class SourceContext {
+  /**
+   * @param {import('./Uwave')} uw
+   * @param {Source} source
+   * @param {User} user
+   */
   constructor(uw, source, user) {
     this.uw = uw;
     this.source = source;
@@ -22,9 +33,9 @@ class ImportContext extends SourceContext {
   /**
    * Create a playlist for the current user.
    *
-   * @param {String} name Playlist name.
-   * @param {Object|Array} itemOrItems Playlist items.
-   * @return Playlist model.
+   * @param {string} name Playlist name.
+   * @param {Omit<PlaylistItemDesc, 'sourceType'>[]} itemOrItems Playlist items.
+   * @returns {Promise<Playlist>} Playlist model.
    */
   async createPlaylist(name, itemOrItems) {
     const playlist = await this.uw.playlists.createPlaylist(this.user, { name });
@@ -44,6 +55,11 @@ class ImportContext extends SourceContext {
  * Wrapper around source plugins with some more convenient aliases.
  */
 class Source {
+  /**
+   * @param {import('./Uwave')} uw
+   * @param {string} sourceType
+   * @param {any} sourcePlugin
+   */
   constructor(uw, sourceType, sourcePlugin) {
     this.uw = uw;
     this.type = sourceType;
@@ -61,6 +77,9 @@ class Source {
    *
    * Media items can provide their own sourceType, too, so media sources can
    * aggregate items from different source types.
+   *
+   * @param {Omit<PlaylistItemDesc, 'sourceType'>[]} items
+   * @returns {PlaylistItemDesc[]}
    */
   addSourceType(items) {
     return items.map((item) => ({
@@ -71,6 +90,9 @@ class Source {
 
   /**
    * Find a single media item by ID.
+   *
+   * @param {User} user
+   * @param {string} id
    */
   getOne(user, id) {
     return this.get(user, [id])
@@ -79,6 +101,9 @@ class Source {
 
   /**
    * Find several media items by ID.
+   *
+   * @param {User} user
+   * @param {string[]} ids
    */
   async get(user, ids) {
     let items;
@@ -94,6 +119,12 @@ class Source {
   /**
    * Search this media source for items. Parameters can really be anything, but
    * will usually include a search string `query` and a page identifier `page`.
+   *
+   * @template {object} TPagination
+   * @param {User} user
+   * @param {string} query
+   * @param {TPagination} page
+   * @param {unknown[]} args
    */
   async search(user, query, page, ...args) {
     let results;
@@ -110,6 +141,9 @@ class Source {
    * Import *something* from this media source. Because media sources can
    * provide wildly different imports, üWave trusts clients to know what they're
    * doing.
+   *
+   * @param {User} user
+   * @param {unknown[]} args
    */
   'import'(user, ...args) {
     const importContext = new ImportContext(this.uw, this, user);
