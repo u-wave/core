@@ -7,11 +7,15 @@ const {
   serializeUser,
 } = require('../utils/serialize');
 
+/**
+ * @param {import('../Uwave')} uw
+ * @param {Promise<import('../models').Playlist | null>} activePlaylist
+ */
 async function getFirstItem(uw, activePlaylist) {
   try {
     const playlist = await activePlaylist;
     if (playlist && playlist.size > 0) {
-      const item = await uw.playlists.getPlaylistItem(playlist.media[0]);
+      const item = await uw.playlists.getPlaylistItem(playlist, playlist.media[0]);
       return item;
     }
   } catch (e) {
@@ -20,12 +24,18 @@ async function getFirstItem(uw, activePlaylist) {
   return null;
 }
 
+/**
+ * @param {unknown} str
+ */
 function toInt(str) {
   if (typeof str !== 'string') return 0;
   if (!/^\d+$/.test(str)) return 0;
   return parseInt(str, 10);
 }
 
+/**
+ * @param {import('../Uwave')} uw
+ */
 async function getOnlineUsers(uw) {
   const { User } = uw.models;
 
@@ -43,6 +53,9 @@ async function getOnlineUsers(uw) {
   return users.map(serializeUser);
 }
 
+/**
+ * @param {import('../Uwave')} uw
+ */
 async function getGuestsCount(uw) {
   const guests = await uw.redis.get('http-api:guests');
   return toInt(guests);
