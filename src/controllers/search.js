@@ -80,13 +80,13 @@ async function search(req) {
   // features in the source implementation.
   const mediasNeedSourceDataUpdate = new Map();
 
-  /** @type {import('../models').Media[]}*/
+  /** @type {import('../models').Media[]} */
   const mediasInSearchResults = await Media.find({
     sourceType: sourceName,
     sourceID: { $in: Array.from(searchResultsByID.keys()) },
   });
 
-  /** @type {Map<string, import('../models').Media>}*/
+  /** @type {Map<string, import('../models').Media>} */
   const mediaBySourceID = new Map();
   mediasInSearchResults.forEach((media) => {
     mediaBySourceID.set(media.sourceID, media);

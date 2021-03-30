@@ -8,7 +8,6 @@ const {
   NotFound,
   TooManyRequests,
   UnprocessableEntity,
-  InternalServerError,
 } = require('http-errors');
 const { t } = require('../locale');
 

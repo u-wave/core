@@ -157,7 +157,6 @@ class UwaveServer extends EventEmitter {
       this.redis = new Redis(DEFAULT_REDIS_URL, { lazyConnect: true });
     }
 
-
     this.log = debug('uwave:core');
     this.mongoLog = debug('uwave:core:mongo');
     this.redisLog = debug('uwave:core:redis');

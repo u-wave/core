@@ -85,13 +85,10 @@ class Bans {
       .populate('banned.moderator')
       .lean();
 
-    const results = bannedUsers.map((user) => {
-      /***/
-      return {
-        ...user.banned,
-        user: omit(user, ['banned']),
-      };
-    });
+    const results = bannedUsers.map((user) => ({
+      ...user.banned,
+      user: omit(user, ['banned']),
+    }));
 
     return new Page(results, {
       pageSize: pagination ? pagination.limit : undefined,
