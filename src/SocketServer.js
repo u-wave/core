@@ -668,7 +668,7 @@ class SocketServer {
   /**
    * Send a command to a single user.
    *
-   * @param {Object|string} user User or user ID to send the command to.
+   * @param {User|string} user User or user ID to send the command to.
    * @param {string} command Command name.
    * @param {import('type-fest').JsonValue} data Command data.
    */
