@@ -98,7 +98,7 @@ async function search(req) {
   });
 
   const playlistsByMediaID = await uw.playlists.getPlaylistsContainingAnyMedia(
-    mediasInSearchResults,
+    mediasInSearchResults.map((media) => media._id),
     { author: user._id },
   );
 
