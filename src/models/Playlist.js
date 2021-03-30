@@ -49,7 +49,7 @@ const schema = new Schema({
   minimize: false,
 });
 
-schema.virtual('size').get(function size() {
+schema.virtual('size').get(/** @this {Playlist} */ function size() {
   return this.media.length;
 });
 
