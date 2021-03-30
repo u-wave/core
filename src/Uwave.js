@@ -53,54 +53,71 @@ class UwaveServer extends EventEmitter {
   redis;
 
   /** @type {import('http').Server} */
+  // @ts-ignore TS2564 Definitely assigned in a plugin
   server;
 
   /** @type {import('express').Application} */
+  // @ts-ignore TS2564 Definitely assigned in a plugin
   express;
 
   /** @type {import('./models').Models} */
+  // @ts-ignore TS2564 Definitely assigned in a plugin
   models;
 
   /** @type {import('./plugins/acl').Acl} */
+  // @ts-ignore TS2564 Definitely assigned in a plugin
   acl;
 
   /** @type {import('./plugins/bans').Bans} */
+  // @ts-ignore TS2564 Definitely assigned in a plugin
   bans;
 
   /** @type {import('./plugins/booth').Booth} */
+  // @ts-ignore TS2564 Definitely assigned in a plugin
   booth;
 
   /** @type {import('./plugins/chat').Chat} */
+  // @ts-ignore TS2564 Definitely assigned in a plugin
   chat;
 
   /** @type {import('./plugins/configStore').ConfigStore} */
+  // @ts-ignore TS2564 Definitely assigned in a plugin
   config;
 
   /** @type {import('./plugins/history').HistoryRepository} */
+  // @ts-ignore TS2564 Definitely assigned in a plugin
   history;
 
   /** @type {import('./plugins/migrations').Migrate} */
+  // @ts-ignore TS2564 Definitely assigned in a plugin
   migrate;
 
   /** @type {import('./plugins/motd').MOTD} */
+  // @ts-ignore TS2564 Definitely assigned in a plugin
   motd;
 
   /** @type {import('./plugins/passport').Passport} */
+  // @ts-ignore TS2564 Definitely assigned in a plugin
   passport;
 
   /** @type {import('./plugins/playlists').PlaylistsRepository} */
+  // @ts-ignore TS2564 Definitely assigned in a plugin
   playlists;
 
   /** @type {import('./plugins/users').UsersRepository} */
+  // @ts-ignore TS2564 Definitely assigned in a plugin
   users;
 
   /** @type {import('./plugins/waitlist').Waitlist} */
+  // @ts-ignore TS2564 Definitely assigned in a plugin
   waitlist;
 
   /** @type {import('./HttpApi').HttpApi} */
+  // @ts-ignore TS2564 Definitely assigned in a plugin
   httpApi;
 
   /** @type {import('./SocketServer')} */
+  // @ts-ignore TS2564 Definitely assigned in a plugin
   socketServer;
 
   /**
