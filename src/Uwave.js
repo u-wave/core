@@ -40,11 +40,17 @@ function unsafeCast(value) {
 }
 
 /**
- * @typedef {UwaveServer & import('avvio').Server<UwaveServer>} Boot
+ * @typedef {UwaveServer & avvio.Server<UwaveServer>} Boot
+ * @typedef {{
+ *   useDefaultPlugins?: boolean,
+ *   port?: number,
+ *   mongo?: string | { url: string } & mongoose.ConnectOptions | mongoose.Connection,
+ *   redis?: string | Redis.Redis | { port: number, host: string, options: Redis.RedisOptions },
+ * } & httpApi.HttpApiOptions} Options
  */
 
 class UwaveServer extends EventEmitter {
-  /** @type {import('ioredis').Redis} */
+  /** @type {Redis.Redis} */
   redis;
 
   /** @type {import('http').Server} */
@@ -104,10 +110,9 @@ class UwaveServer extends EventEmitter {
   #sources = new Map();
 
   /**
-  * @param {object} [options]
-  * @param {boolean} [options.useDefaultPlugins]
+  * @param {Options} options
   */
-  constructor(options = {}) {
+  constructor(options) {
     super();
 
     const boot = avvio(this);
@@ -116,9 +121,42 @@ class UwaveServer extends EventEmitter {
 
     this.options = {
       useDefaultPlugins: true,
+      ...options,
     };
 
-    this.parseOptions(options);
+    const defaultMongoOptions = {
+      useNewUrlParser: true,
+      useCreateIndex: true,
+      useFindAndModify: false,
+      useUnifiedTopology: true,
+    };
+
+    if (typeof options.mongo === 'string') {
+      this.mongo = mongoose.createConnection(options.mongo, defaultMongoOptions);
+    } else if (options.mongo instanceof mongoose.Connection) {
+      this.mongo = options.mongo;
+    } else if (options.mongo && isPlainObject(options.mongo)) {
+      this.mongo = mongoose.createConnection(options.mongo.url, {
+        ...defaultMongoOptions,
+        ...options.mongo,
+      });
+    } else {
+      this.mongo = mongoose.createConnection(DEFAULT_MONGO_URL, defaultMongoOptions);
+    }
+
+    if (typeof options.redis === 'string') {
+      this.redis = new Redis(options.redis, { lazyConnect: true });
+    } else if (options.redis instanceof Redis) {
+      this.redis = options.redis;
+    } else if (options.redis && isPlainObject(options.redis)) {
+      this.redis = new Redis(options.redis.port, options.redis.host, {
+        ...options.redis.options,
+        lazyConnect: true,
+      });
+    } else {
+      this.redis = new Redis(DEFAULT_REDIS_URL, { lazyConnect: true });
+    }
+
 
     this.log = debug('uwave:core');
     this.mongoLog = debug('uwave:core:mongo');
@@ -171,43 +209,6 @@ class UwaveServer extends EventEmitter {
     }
 
     boot.use(httpApi.errorHandling);
-  }
-
-  parseOptions(options) {
-    const defaultOptions = {
-      useNewUrlParser: true,
-      useCreateIndex: true,
-      useFindAndModify: false,
-      useUnifiedTopology: true,
-    };
-
-    if (typeof options.mongo === 'string') {
-      this.mongo = mongoose.createConnection(options.mongo, defaultOptions);
-    } else if (isPlainObject(options.mongo)) {
-      this.mongo = mongoose.createConnection({
-        ...defaultOptions,
-        ...options.mongo,
-      });
-    } else if (options.mongo instanceof mongoose.Connection) {
-      this.mongo = options.mongo;
-    } else {
-      this.mongo = mongoose.createConnection(DEFAULT_MONGO_URL, defaultOptions);
-    }
-
-    if (typeof options.redis === 'string') {
-      this.redis = new Redis(options.redis, { lazyConnect: true });
-    } else if (isPlainObject(options.redis)) {
-      this.redis = new Redis(options.redis.port, options.redis.host, {
-        ...options.redis.options,
-        lazyConnect: true,
-      });
-    } else if (options.redis instanceof Redis) {
-      this.redis = options.redis;
-    } else {
-      this.redis = new Redis(DEFAULT_REDIS_URL, { lazyConnect: true });
-    }
-
-    Object.assign(this.options, options);
   }
 
   /**

@@ -3,10 +3,9 @@
 const Uwave = require('./Uwave');
 const HttpApi = require('./HttpApi');
 const SocketServer = require('./SocketServer');
-const UwaveError = require('./errors/UwaveError');
 
 /**
- * @param {object} opts
+ * @param {Uwave.Options} opts
  */
 module.exports = function uwave(opts) {
   return new Uwave(opts);
@@ -14,7 +13,6 @@ module.exports = function uwave(opts) {
 
 Object.assign(module.exports, {
   Uwave,
-  UwaveError,
   HttpApi,
   SocketServer,
 });
