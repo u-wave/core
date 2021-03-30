@@ -162,6 +162,9 @@ async function socialLoginCallback(service, req, res) {
     throw new BannedError();
   }
 
+  /**
+   * @type {{ pending: boolean, id?: string, type?: string, avatars?: Record<string, string> }}
+   */
   let activationData = { pending: false };
   if (user.pendingActivation) {
     const socialAvatar = await getSocialAvatar(req.uwave, user, service);
@@ -175,6 +178,8 @@ async function socialLoginCallback(service, req, res) {
       type: service,
     };
     if (socialAvatar) {
+      // @ts-ignore we literally just defined it
+      // TODO rewrite this with object spreading or something
       activationData.avatars[service] = socialAvatar;
     }
   }
@@ -424,6 +429,7 @@ async function changePassword(req) {
 
 /**
  * @param {import('../types').AuthenticatedRequest<{}, {}, {}> & WithAuthOptions} req
+ * @param {import('express').Response} res
  */
 async function logout(req, res) {
   const { user, cookies } = req;

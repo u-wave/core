@@ -6,6 +6,9 @@ const {
   APIError,
 } = require('../errors');
 
+/**
+ * @param {import('../types').Request} req
+ */
 const getImportableSource = (req) => {
   const uw = req.uwave;
   const { source: sourceName } = req.params;
@@ -21,6 +24,9 @@ const getImportableSource = (req) => {
   return source;
 };
 
+/**
+ * @param {import('../types').Request} req
+ */
 const mergeImportParameters = (req) => ({
   ...req.query,
   ...req.body,

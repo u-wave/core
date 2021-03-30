@@ -1,7 +1,7 @@
 'use strict';
 
 /**
- * @param {object} item
+ * @param {object?} item
  * @param {{ url?: string, meta?: object }} options
  */
 function toItemResponse(item, {

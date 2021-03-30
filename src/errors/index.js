@@ -29,6 +29,8 @@ class APIError extends Error {
 
   /**
    * Hack to force other Error instances to be public.
+   *
+   * @param {Error} error
    */
   static wrap(error) {
     Object.setPrototypeOf(error, APIError.prototype);

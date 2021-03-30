@@ -24,6 +24,7 @@ async function searchAll(req) {
 
   const searchResults = await Promise.all(searches);
 
+  /** @type {Record<string, import('../plugins/playlists').PlaylistItemDesc[]>} */
   const combinedResults = {};
   sourceNames.forEach((name, index) => {
     combinedResults[name] = searchResults[index];
