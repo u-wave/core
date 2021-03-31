@@ -20,6 +20,7 @@ jobs:
   types:
     name: Types
     runs-on: ubuntu-latest
+    steps:
       - name: Checkout sources
         uses: actions/checkout@v2
       - name: Install Node.js
