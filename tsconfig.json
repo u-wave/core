@@ -9,6 +9,7 @@
     "checkJs": true,
     "resolveJsonModule": true,
     "outDir": "types",
+    "composite": true,
     "declaration": true,
     "emitDeclarationOnly": true
   },
@@ -18,7 +19,8 @@
     "src/socketMessages.d.ts",
     "src/secure-json-parse.d.ts",
     "src/ultron.d.ts",
-    "src/**/*.js"
+    "src/**/*.js",
+    "src/schemas/*.json"
   ],
   "exclude": [
     "node_modules"
