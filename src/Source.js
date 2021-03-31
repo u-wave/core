@@ -21,7 +21,7 @@ const { SourceNoImportError } = require('./errors');
  *   context: SourceContext,
  *   query: string,
  *   page: unknown,
- *   ...args: unknown[],
+ *   ...args: unknown[]
  * ) => Promise<PlaylistItemDesc[]>} search
  * @prop {(context: ImportContext, ...args: unknown[]) => Promise<unknown>} [import]
  *
