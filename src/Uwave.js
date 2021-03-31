@@ -334,7 +334,7 @@ class UwaveServer extends EventEmitter {
     const boot = unsafeCast(this);
     await boot.ready();
 
-    /** @type {(this: import('net').Server, port: number) => Promise<void>} */
+    /** @type {(this: import('net').Server, port?: number) => Promise<void>} */
     const listen = promisify(this.server.listen);
     await listen.call(this.server, this.options.port);
   }

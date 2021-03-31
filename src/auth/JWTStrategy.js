@@ -45,7 +45,7 @@ function isUserIDToken(obj) {
 
 class JWTStrategy extends Strategy {
   /**
-   * @param {string} secret
+   * @param {Buffer|string} secret
    * @param {(claim: { id: string }) => Promise<User>} getUser
    */
   constructor(secret, getUser) {

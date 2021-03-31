@@ -61,7 +61,7 @@ Alternatively, you can provide a port for the socket server to listen on:
 
 /**
  * @param {object} object
- * @param {string} property
+ * @param {PropertyKey} property
  */
 function has(object, property) {
   return Object.prototype.hasOwnProperty.call(object, property);
@@ -70,7 +70,7 @@ function has(object, property) {
 class SocketServer {
   /**
    * @param {import('./Uwave').Boot} uw
-   * @param {{ secret: string }} options
+   * @param {{ secret: Buffer|string }} options
    */
   static async plugin(uw, options) {
     uw.socketServer = new SocketServer(uw, {
@@ -94,7 +94,7 @@ class SocketServer {
    * @param {object} options Socket server options.
    * @param {number} [options.timeout] Time in seconds to wait for disconnected
    *     users to reconnect before removing them.
-   * @param {string} options.secret
+   * @param {Buffer|string} options.secret
    * @param {import('http').Server | import('https').Server} [options.server]
    * @param {number} [options.port]
    */
@@ -520,19 +520,25 @@ class SocketServer {
         this.replace(connection, this.createLostConnection(user));
       }
     });
-    connection.on('command', (command, data) => {
-      debug('command', user.id, user.username, command, data);
-      if (has(this.clientActions, command)) {
-        // Ignore incorrect input
-        const validate = this.clientActionSchemas.get(command);
-        if (validate && !validate(data)) {
-          return;
-        }
+    connection.on('command',
+      /**
+       * @param {string} command
+       * @param {import('type-fest').JsonValue} data
+       */
+      (command, data) => {
+        debug('command', user.id, user.username, command, data);
+        if (has(this.clientActions, command)) {
+          // Ignore incorrect input
+          const validate = this.clientActionSchemas.get(command);
+          if (validate && !validate(data)) {
+            return;
+          }
 
-        const action = this.clientActions[command];
-        action(user, data, connection);
-      }
-    });
+          // @ts-ignore TS7053 Can't actually statically check the command name here
+          const action = this.clientActions[command];
+          action(user, data, connection);
+        }
+      });
     return connection;
   }
 
@@ -605,7 +611,14 @@ class SocketServer {
    * @return {Promise<void>}
    */
   async onServerMessage(channel, rawCommand) {
-    const { command, data } = sjson.safeParse(rawCommand) || {};
+    /**
+     * @type {{ command: string, data: import('type-fest').JsonValue }|undefined}
+     */
+    const json = sjson.safeParse(rawCommand);
+    if (!json) {
+      return;
+    }
+    const { command, data } = json;
 
     debug(channel, command, data);
 
@@ -613,6 +626,7 @@ class SocketServer {
       this.broadcast(command, data);
     } else if (channel === 'uwave') {
       if (has(this.serverActions, command)) {
+        // @ts-ignore TS7053 Can't actually statically check the command name here
         const action = this.serverActions[command];
         action(data);
       }

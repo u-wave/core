@@ -29,7 +29,7 @@ const schema = require('../schemas/socialAuth.json');
 class PassportPlugin extends Passport {
   /**
    * @param {import('../Uwave')} uw
-   * @param {{ secret: string }} options
+   * @param {{ secret: Buffer|string }} options
    */
   constructor(uw, options) {
     super();
@@ -143,7 +143,7 @@ class PassportPlugin extends Passport {
 
 /**
  * @param {import('../Uwave')} uw
- * @param {{ secret: string }} options
+ * @param {{ secret: Buffer|string }} options
  */
 async function passportPlugin(uw, options) {
   debug('setup');
