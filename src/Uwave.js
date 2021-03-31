@@ -31,6 +31,10 @@ const DEFAULT_MONGO_URL = 'mongodb://localhost:27017/uwave';
 const DEFAULT_REDIS_URL = 'redis://localhost:6379';
 
 /**
+ * @typedef {import('./Source').SourcePlugin} SourcePlugin
+ */
+
+/**
  * @template T
  * @param {any} value
  * @returns {T}
@@ -237,7 +241,11 @@ class UwaveServer extends EventEmitter {
    * If the first parameter is a string, returns an existing source plugin.
    * Else, adds a source plugin and returns its wrapped source plugin.
    *
-   * @param {string|Function|Object} sourcePlugin Source name or definition.
+   * @typedef {((uw: UwaveServer, opts: object) => SourcePlugin)} SourcePluginFactory
+   * @typedef {SourcePlugin | SourcePluginFactory} ToSourcePlugin
+   *
+   * @param {string | Omit<ToSourcePlugin, 'default'> | { default: ToSourcePlugin }} sourcePlugin
+   *     Source name or definition.
    *     When a string: Source type name.
    *     Used to signal where a given media item originated from.
    *     When a function or object: Source plugin or plugin factory.
@@ -245,17 +253,16 @@ class UwaveServer extends EventEmitter {
    *     a source plugin factory was passed to `sourcePlugin`.
    */
   source(sourcePlugin, opts = {}) {
-    if (arguments.length === 1 && typeof sourcePlugin === 'string') { // eslint-disable-line prefer-rest-params
+    if (typeof sourcePlugin === 'string') { // eslint-disable-line prefer-rest-params
       return this.#sources.get(sourcePlugin);
     }
 
-    const sourceFactory = sourcePlugin.default || sourcePlugin;
-    const type = typeof sourceFactory;
-    if (type !== 'function' && type !== 'object') {
-      throw new TypeError(`Source plugin should be a function, got ${type}`);
+    const sourceFactory = 'default' in sourcePlugin && sourcePlugin.default ? sourcePlugin.default : sourcePlugin;
+    if (typeof sourceFactory !== 'function' && typeof sourceFactory !== 'object') {
+      throw new TypeError(`Source plugin should be a function, got ${typeof sourceFactory}`);
     }
 
-    const sourceDefinition = type === 'function'
+    const sourceDefinition = typeof sourceFactory === 'function'
       ? sourceFactory(this, opts)
       : sourceFactory;
     const sourceType = sourceDefinition.name;

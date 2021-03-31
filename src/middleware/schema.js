@@ -15,10 +15,11 @@ addFormats(ajv);
 ajv.addMetaSchema(require('ajv/dist/refs/json-schema-draft-07.json'));
 ajv.addSchema(require('../schemas/definitions.json'));
 
+/** @type {import('ajv').ValidateFunction<unknown>} */
 function alwaysTrue() {
   return true;
 }
-alwaysTrue.errors = undefined;
+alwaysTrue.errors = null;
 
 /**
  * @typedef {object} Schemas

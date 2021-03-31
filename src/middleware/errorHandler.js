@@ -61,6 +61,7 @@ function serializeError(err) {
     }];
   }
   if (err.expose) {
+    /** @type {SerializedError} */
     const apiError = {
       status: err.status || 400,
       code: err.code,

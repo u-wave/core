@@ -1,9 +1,31 @@
 'use strict';
 
+const { SourceNoImportError } = require('./errors');
+
 /**
  * @typedef {import('./models').User} User
  * @typedef {import('./models').Playlist} Playlist
  * @typedef {import('./plugins/playlists').PlaylistItemDesc} PlaylistItemDesc
+ */
+
+/**
+ * @typedef {object} SourcePluginV1
+ * @prop {undefined|1} api
+ * @prop {(ids: string[]) => Promise<PlaylistItemDesc[]>} get
+ * @prop {(query: string, page: unknown, ...args: unknown[]) => Promise<PlaylistItemDesc[]>} search
+ *
+ * @typedef {object} SourcePluginV2
+ * @prop {2} api
+ * @prop {(context: SourceContext, ids: string[]) => Promise<PlaylistItemDesc[]>} get
+ * @prop {(
+ *   context: SourceContext,
+ *   query: string,
+ *   page: unknown,
+ *   ...args: unknown[],
+ * ) => Promise<PlaylistItemDesc[]>} search
+ * @prop {(context: ImportContext, ...args: unknown[]) => Promise<unknown>} [import]
+ *
+ * @typedef {SourcePluginV1 | SourcePluginV2} SourcePlugin
  */
 
 /**
@@ -58,7 +80,7 @@ class Source {
   /**
    * @param {import('./Uwave')} uw
    * @param {string} sourceType
-   * @param {any} sourcePlugin
+   * @param {SourcePlugin} sourcePlugin
    */
   constructor(uw, sourceType, sourcePlugin) {
     this.uw = uw;
@@ -109,7 +131,7 @@ class Source {
    */
   async get(user, ids) {
     let items;
-    if (this.apiVersion > 1) {
+    if (this.plugin.api === 2) {
       const context = new SourceContext(this.uw, this, user);
       items = await this.plugin.get(context, ids);
     } else {
@@ -131,7 +153,7 @@ class Source {
    */
   async search(user, query, page, ...args) {
     let results;
-    if (this.apiVersion > 1) {
+    if (this.plugin.api === 2) {
       const context = new SourceContext(this.uw, this, user);
       results = await this.plugin.search(context, query, page, ...args);
     } else {
@@ -150,7 +172,10 @@ class Source {
    */
   'import'(user, ...args) {
     const importContext = new ImportContext(this.uw, this, user);
-    return this.plugin.import(importContext, ...args);
+    if (this.plugin.api === 2 && this.plugin.import != null) {
+      return this.plugin.import(importContext, ...args);
+    }
+    throw new SourceNoImportError({ name: this.type });
   }
 }
 
