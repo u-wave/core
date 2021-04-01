@@ -60,8 +60,10 @@ Alternatively, you can provide a port for the socket server to listen on:
 }
 
 /**
- * @param {object} object
+ * @template {object} T
+ * @param {T} object
  * @param {PropertyKey} property
+ * @returns {property is keyof T}
  */
 function has(object, property) {
   return Object.prototype.hasOwnProperty.call(object, property);
@@ -534,7 +536,6 @@ class SocketServer {
             return;
           }
 
-          // @ts-ignore TS7053 Can't actually statically check the command name here
           const action = this.clientActions[command];
           action(user, data, connection);
         }
@@ -626,7 +627,6 @@ class SocketServer {
       this.broadcast(command, data);
     } else if (channel === 'uwave') {
       if (has(this.serverActions, command)) {
-        // @ts-ignore TS7053 Can't actually statically check the command name here
         const action = this.serverActions[command];
         action(data);
       }
