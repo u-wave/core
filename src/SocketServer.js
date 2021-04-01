@@ -418,6 +418,7 @@ class SocketServer {
   /**
    * Create `LostConnection`s for every user that's known to be online, but that
    * is not currently connected to the socket server.
+   * @private
    */
   async initLostConnections() {
     const { User } = this.uw.models;
@@ -433,6 +434,7 @@ class SocketServer {
 
   /**
    * @param {import('ws')} socket
+   * @private
    */
   onSocketConnected(socket) {
     debug('new connection');
@@ -446,6 +448,7 @@ class SocketServer {
   /**
    * @param {import('ws')} socket
    * @param {Error} error
+   * @private
    */
   onSocketError(socket, error) {
     debug('socket error:', error);
@@ -455,6 +458,7 @@ class SocketServer {
 
   /**
    * @param {Error} error
+   * @private
    */
   onError(error) {
     debug('server error:', error);
@@ -466,6 +470,7 @@ class SocketServer {
    * Get a LostConnection for a user, if one exists.
    *
    * @param {User} user
+   * @private
    */
   getLostConnection(user) {
     return this.connections.find((connection) => (
@@ -477,6 +482,7 @@ class SocketServer {
    * Create a connection instance for an unauthenticated user.
    *
    * @param {import('ws')} socket
+   * @private
    */
   createGuestConnection(socket) {
     const connection = new GuestConnection(this.uw, socket, {
@@ -509,6 +515,7 @@ class SocketServer {
    * @param {WebSocket} socket
    * @param {User} user
    * @returns {AuthedConnection}
+   * @private
    */
   createAuthedConnection(socket, user) {
     const connection = new AuthedConnection(this.uw, socket, user);
@@ -548,6 +555,7 @@ class SocketServer {
    *
    * @param {User} user
    * @returns {LostConnection}
+   * @private
    */
   createLostConnection(user) {
     const connection = new LostConnection(this.uw, user, this.options.timeout);
@@ -567,6 +575,7 @@ class SocketServer {
    * Add a connection.
    *
    * @param {Connection} connection
+   * @private
    */
   add(connection) {
     debug('adding', String(connection));
@@ -579,6 +588,7 @@ class SocketServer {
    * Remove a connection.
    *
    * @param {Connection} connection
+   * @private
    */
   remove(connection) {
     debug('removing', String(connection));
@@ -596,6 +606,7 @@ class SocketServer {
    *
    * @param {Connection} oldConnection
    * @param {Connection} newConnection
+   * @private
    */
   replace(oldConnection, newConnection) {
     this.remove(oldConnection);
@@ -610,6 +621,7 @@ class SocketServer {
    * @param {string} channel
    * @param {string} rawCommand
    * @return {Promise<void>}
+   * @private
    */
   async onServerMessage(channel, rawCommand) {
     /**
