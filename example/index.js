@@ -13,6 +13,8 @@ const secret = Buffer.from(process.env.SECRET, 'hex');
 const uw = uwave({
   port,
   secret,
+  // This has to be disabled so the headers do not get added to the web client too.
+  helmet: false,
 });
 
 uw.use(async () => {
