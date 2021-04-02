@@ -1,7 +1,10 @@
 'use strict';
 
+const { once } = require('events');
 const mongoose = require('mongoose');
 const delay = require('delay');
+
+const IN_PROGRESS_ERROR = 12586;
 
 module.exports = async function deleteDatabase(url) {
   const defaultOptions = {
@@ -12,17 +15,21 @@ module.exports = async function deleteDatabase(url) {
   };
 
   const mongo = mongoose.createConnection(url, defaultOptions);
+  await once(mongo, 'connected');
 
-  /* eslint-disable no-await-in-loop */
-  for (let i = 0; i < 10; i += 1) {
+  for (let i = 0; i < 50; i += 1) {
     try {
       await mongo.dropDatabase();
       break;
     } catch (error) {
-      await delay(100);
+      if (error.code === IN_PROGRESS_ERROR) {
+        console.log('database op in progress...waiting');
+        await delay(100);
+      } else {
+        throw error;
+      }
     }
   }
-  /* eslint-enable no-await-in-loop */
 
   await mongo.close();
 };
