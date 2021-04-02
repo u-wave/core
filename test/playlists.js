@@ -1,7 +1,10 @@
 'use strict';
 
+const assert = require('assert');
+const { inspect } = require('util');
 const supertest = require('supertest');
 const sinon = require('sinon');
+const randomString = require('random-string');
 const createUwave = require('./utils/createUwave');
 
 describe('Playlists', () => {
@@ -10,6 +13,23 @@ describe('Playlists', () => {
   beforeEach(async () => {
     uw = await createUwave('acl');
     user = await uw.test.createUser();
+
+    uw.source({
+      name: 'test-source',
+      api: 2,
+      async get(context, ids) {
+        return ids.map((id) => ({
+          sourceID: id,
+          artist: `artist ${id}`,
+          title: `title ${id}`,
+          start: 0,
+          end: 60,
+        }));
+      },
+      async search() {
+        throw new Error('unimplemented');
+      },
+    });
   });
   afterEach(async () => {
     await uw.destroy();
@@ -320,7 +340,97 @@ describe('Playlists', () => {
     });
   });
 
-  describe.skip('GET /playlists/:id/media', () => {});
+  describe.only('GET /playlists/:id/media', () => {
+    function assertItemsAndIncludedMedia(body) {
+      for (const item of body.data) {
+        sinon.assert.match(item, {
+          artist: sinon.match.string,
+          title: sinon.match.string,
+          start: sinon.match.number,
+          end: sinon.match.number,
+          media: sinon.match.string,
+        });
+
+        assert(
+          body.included.media.find((includedMedia) => includedMedia._id === item.media),
+          `missing media referenced by item ${inspect(item)}`,
+        );
+      }
+    }
+
+    const TEST_PLAYLIST_SIZE = 200;
+    let playlist;
+    beforeEach(async () => {
+      playlist = await uw.playlists.createPlaylist(user, { name: 'Test Playlist' });
+      const itemIDs = [];
+      for (let i = 0; i < TEST_PLAYLIST_SIZE; i += 1) {
+        itemIDs.push(randomString(6));
+      }
+      const items = await uw.source('test-source').get(user, itemIDs);
+      await uw.playlists.addPlaylistItems(playlist, items);
+    });
+
+    it('requires authentication', async () => {
+      const fakeID = '603e43b12d46ab05a8946a23';
+
+      await supertest(uw.server)
+        .get(`/api/playlists/${fakeID}/media`)
+        .expect(401);
+    });
+
+    it('returns playlist items', async () => {
+      const token = await uw.test.createTestSessionToken(user);
+
+      const res = await supertest(uw.server)
+        .get(`/api/playlists/${playlist.id}/media`)
+        .set('Cookie', `uwsession=${token}`)
+        .send()
+        .expect(200);
+
+      sinon.assert.match(res.body, {
+        meta: {
+          included: {
+            media: ['media'],
+          },
+          // Default page size
+          offset: 0,
+          pageSize: 100,
+          // Playlist size
+          total: TEST_PLAYLIST_SIZE,
+        },
+      });
+      assert.strictEqual(res.body.data.length, 100);
+
+      assertItemsAndIncludedMedia(res.body);
+    });
+
+    it('paginates', async () => {
+      const token = await uw.test.createTestSessionToken(user);
+
+      const page4 = await supertest(uw.server)
+        .get(`/api/playlists/${playlist.id}/media?page[offset]=40&page[limit]=10`)
+        .set('Cookie', `uwsession=${token}`)
+        .send()
+        .expect(200);
+
+      const page5 = await supertest(uw.server)
+        .get(`/api/playlists/${playlist.id}/media?page[offset]=50&page[limit]=10`)
+        .set('Cookie', `uwsession=${token}`)
+        .send()
+        .expect(200);
+
+      sinon.assert.match(page4.body.meta, { offset: 40, pageSize: 10 });
+      sinon.assert.match(page5.body.meta, { offset: 50, pageSize: 10 });
+      assert.strictEqual(page4.body.data.length, 10);
+      assert.strictEqual(page5.body.data.length, 10);
+
+      assert.notDeepStrictEqual(page4.body.data, page5.body.data, 'should return different items');
+
+      assertItemsAndIncludedMedia(page4.body);
+      assertItemsAndIncludedMedia(page5.body);
+    });
+  });
+
   describe.skip('POST /playlists/:id/media', () => {});
   describe.skip('DELETE /playlists/:id/media', () => {});
   describe.skip('PUT /playlists/:id/move', () => {});

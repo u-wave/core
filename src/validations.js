@@ -318,11 +318,16 @@ exports.renamePlaylist = {
 exports.getPlaylistItems = {
   params: playlistParams,
   query: {
-    oneOf: [
-      { $ref: 'https://ns.u-wave.net/schemas/definitions.json#/definitions/Pagination' },
-      { $ref: 'https://ns.u-wave.net/schemas/definitions.json#/definitions/LegacyPagination' },
-      true,
-    ],
+    type: 'object',
+    if: {
+      properties: { page: true },
+    },
+    then: {
+      oneOf: [
+        { $ref: 'https://ns.u-wave.net/schemas/definitions.json#/definitions/Pagination' },
+        { $ref: 'https://ns.u-wave.net/schemas/definitions.json#/definitions/LegacyPagination' },
+      ],
+    },
   },
 };
 
