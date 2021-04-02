@@ -57,6 +57,7 @@ function defaultCreatePasswordResetEmail({ token, requestUrl }) {
 /**
  * @typedef {object} HttpApiOptions - Static options for the HTTP API.
  * @prop {string|Buffer} secret
+ * @prop {boolean} [helmet]
  * @prop {(error: Error) => void} [onError]
  * @prop {{ secret: string }} [recaptcha]
  * @prop {import('nodemailer').Transport} [mailTransport]
@@ -130,11 +131,13 @@ async function httpApi(uw, options) {
 
   uw.express = express();
   uw.server = http.createServer(uw.express);
-  uw.express.use(helmet({
-    referrerPolicy: {
-      policy: ['origin-when-cross-origin'],
-    },
-  }));
+  if (options.helmet !== false) {
+    uw.express.use(helmet({
+      referrerPolicy: {
+        policy: ['origin-when-cross-origin'],
+      },
+    }));
+  }
 
   /** @type {import('cors').CorsOptions} */
   const corsOptions = {

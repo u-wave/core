@@ -5,3 +5,5 @@
 .github
 Dockerfile
 .dockerignore
+coverage
+.nyc_output
