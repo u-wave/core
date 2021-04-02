@@ -4,6 +4,14 @@ All notable changes to this project will be documented in this file.
 
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## 0.5.0-alpha.3 / 02 April 2021
+
+This is an alpha release, but new servers should use this version rather than an older "stable" one.
+
+Bugfixes:
+* Show error message when trying to join the waitlist with an empty playlist. (#438)
+* Fix `/api/now` error if user has no playlist. (#439)
+
 ## 0.5.0-alpha.2 / 13 May 2021
 
 This is an alpha release, but new servers should use this version rather than an older "stable" one.
