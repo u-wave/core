@@ -724,8 +724,43 @@ describe('Playlists', () => {
     });
   });
 
+  describe('POST /playlists/:id/shuffle', () => {
+    let playlist;
+    beforeEach(async () => {
+      playlist = await uw.playlists.createPlaylist(user, { name: 'Test Playlist' });
+      const insertItems = await generateItems(20);
+      await uw.playlists.addPlaylistItems(playlist, insertItems, { at: 'start' });
+    });
+
+    it('requires authentication', async () => {
+      await supertest(uw.server)
+        .post(`/api/playlists/${playlist.id}/shuffle`)
+        .expect(401);
+    });
+
+    it('returns Not Found for other people\'s playlists', async () => {
+      const otherUser = await uw.test.createUser();
+      const token = await uw.test.createTestSessionToken(otherUser);
+
+      await supertest(uw.server)
+        .post(`/api/playlists/${playlist.id}/shuffle`)
+        .set('Cookie', `uwsession=${token}`)
+        .expect(404);
+    });
+
+    it('does not crash', async () => {
+      const token = await uw.test.createTestSessionToken(user);
+
+      await supertest(uw.server)
+        .post(`/api/playlists/${playlist.id}/shuffle`)
+        .set('Cookie', `uwsession=${token}`)
+        .expect(200);
+
+      // We can't do much more to test this since the shuffle is random
+    });
+  });
+
   describe.skip('DELETE /playlists/:id/media', () => {});
-  describe.skip('POST /playlists/:id/shuffle', () => {});
   describe.skip('GET /playlists/:id/media/:itemID', () => {});
   describe.skip('PUT /playlists/:id/media/:itemID', () => {});
   describe.skip('DELETE /playlists/:id/media/:itemID', () => {});

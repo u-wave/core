@@ -22,7 +22,7 @@ async function getBans(req) {
 
   return toPaginatedResponse(bansList, {
     included: {
-      user: ['user'],
+      user: ['user', 'moderator'],
     },
     baseUrl: req.fullUrl,
   });
