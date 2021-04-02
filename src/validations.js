@@ -413,6 +413,7 @@ exports.movePlaylistItems = {
           after: {
             oneOf: [
               { $ref: 'https://ns.u-wave.net/schemas/definitions.json#/definitions/ObjectID' },
+              { const: null },
               { const: -1 },
             ],
           },
