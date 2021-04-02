@@ -15,7 +15,7 @@ uwave:
     userNotFound: User not found.
     playlistNotFound: Playlist not found.
     playlistItemNotFound: Playlist item not found.
-    ItemNotInPlaylist: Item not in playlist.
+    itemNotInPlaylist: Item not in playlist.
     emptyPlaylist: You don't have anything to play. Please add some songs to your playlist and try again.
     historyEntryNotFound: History entry not found.
     mediaNotFound: Media object not found.
