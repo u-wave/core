@@ -7,9 +7,36 @@ const sinon = require('sinon');
 const randomString = require('random-string');
 const createUwave = require('./utils/createUwave');
 
+function assertItemsAndIncludedMedia(body) {
+  for (const item of body.data) {
+    sinon.assert.match(item, {
+      artist: sinon.match.string,
+      title: sinon.match.string,
+      start: sinon.match.number,
+      end: sinon.match.number,
+      media: sinon.match.string,
+    });
+
+    assert(
+      body.included.media.find((includedMedia) => includedMedia._id === item.media),
+      `missing media referenced by item ${inspect(item)}`,
+    );
+  }
+}
+
 describe('Playlists', () => {
   let user;
   let uw;
+
+  async function generateItems(size) {
+    const itemIDs = [];
+    for (let i = 0; i < size; i += 1) {
+      itemIDs.push(randomString(6));
+    }
+    const items = await uw.source('test-source').get(user, itemIDs);
+    return items;
+  }
+
   beforeEach(async () => {
     uw = await createUwave('acl');
     user = await uw.test.createUser();
@@ -340,42 +367,28 @@ describe('Playlists', () => {
     });
   });
 
-  describe.only('GET /playlists/:id/media', () => {
-    function assertItemsAndIncludedMedia(body) {
-      for (const item of body.data) {
-        sinon.assert.match(item, {
-          artist: sinon.match.string,
-          title: sinon.match.string,
-          start: sinon.match.number,
-          end: sinon.match.number,
-          media: sinon.match.string,
-        });
-
-        assert(
-          body.included.media.find((includedMedia) => includedMedia._id === item.media),
-          `missing media referenced by item ${inspect(item)}`,
-        );
-      }
-    }
-
-    const TEST_PLAYLIST_SIZE = 200;
+  describe('GET /playlists/:id/media', () => {
     let playlist;
     beforeEach(async () => {
       playlist = await uw.playlists.createPlaylist(user, { name: 'Test Playlist' });
-      const itemIDs = [];
-      for (let i = 0; i < TEST_PLAYLIST_SIZE; i += 1) {
-        itemIDs.push(randomString(6));
-      }
-      const items = await uw.source('test-source').get(user, itemIDs);
+      const items = await generateItems(200);
       await uw.playlists.addPlaylistItems(playlist, items);
     });
 
     it('requires authentication', async () => {
-      const fakeID = '603e43b12d46ab05a8946a23';
+      await supertest(uw.server)
+        .get(`/api/playlists/${playlist.id}/media`)
+        .expect(401);
+    });
+
+    it('returns Not Found for other people\'s playlists', async () => {
+      const otherUser = await uw.test.createUser();
+      const token = await uw.test.createTestSessionToken(otherUser);
 
       await supertest(uw.server)
-        .get(`/api/playlists/${fakeID}/media`)
-        .expect(401);
+        .get(`/api/playlists/${playlist.id}/media`)
+        .set('Cookie', `uwsession=${token}`)
+        .expect(404);
     });
 
     it('returns playlist items', async () => {
@@ -396,7 +409,7 @@ describe('Playlists', () => {
           offset: 0,
           pageSize: 100,
           // Playlist size
-          total: TEST_PLAYLIST_SIZE,
+          total: 200,
         },
       });
       assert.strictEqual(res.body.data.length, 100);
@@ -431,7 +444,147 @@ describe('Playlists', () => {
     });
   });
 
-  describe.skip('POST /playlists/:id/media', () => {});
+  describe('POST /playlists/:id/media', () => {
+    let playlist;
+    beforeEach(async () => {
+      playlist = await uw.playlists.createPlaylist(user, { name: 'Test Playlist' });
+    });
+
+    it('requires authentication', async () => {
+      await supertest(uw.server)
+        .post(`/api/playlists/${playlist.id}/media`)
+        .expect(401);
+    });
+
+    it('validates input', async () => {
+      const token = await uw.test.createTestSessionToken(user);
+
+      // `items` must be an array
+      await supertest(uw.server)
+        .post(`/api/playlists/${playlist.id}/media`)
+        .set('Cookie', `uwsession=${token}`)
+        .send({ items: { not: 'an array' }, at: 'start' })
+        .expect(400);
+
+      // `items` must have the right shape
+      await supertest(uw.server)
+        .post(`/api/playlists/${playlist.id}/media`)
+        .set('Cookie', `uwsession=${token}`)
+        .send({ items: [{ __proto__: {} }], at: 'start' })
+        .expect(400);
+
+      await supertest(uw.server)
+        .post(`/api/playlists/${playlist.id}/media`)
+        .set('Cookie', `uwsession=${token}`)
+        .send({ items: [{ sourceType: 'garbage', noSourceID: '' }], at: 'start' })
+        .expect(400);
+
+      // `after` must be a string
+      await supertest(uw.server)
+        .post(`/api/playlists/${playlist.id}/media`)
+        .set('Cookie', `uwsession=${token}`)
+        .send({ items: [], after: 0 })
+        .expect(400);
+
+      // `after` can be -1 to support old clients
+      await supertest(uw.server)
+        .post(`/api/playlists/${playlist.id}/media`)
+        .set('Cookie', `uwsession=${token}`)
+        .send({ items: [], after: -1 })
+        .expect(200);
+
+      // `after: null` is the same as `at: 'start'`
+      await supertest(uw.server)
+        .post(`/api/playlists/${playlist.id}/media`)
+        .set('Cookie', `uwsession=${token}`)
+        .send({ items: [], after: null })
+        .expect(200);
+
+      await supertest(uw.server)
+        .post(`/api/playlists/${playlist.id}/media`)
+        .set('Cookie', `uwsession=${token}`)
+        .send({ items: [], at: 'start' })
+        .expect(200);
+
+      await supertest(uw.server)
+        .post(`/api/playlists/${playlist.id}/media`)
+        .set('Cookie', `uwsession=${token}`)
+        .send({ items: [], at: 'end' })
+        .expect(200);
+
+      await supertest(uw.server)
+        .post(`/api/playlists/${playlist.id}/media`)
+        .set('Cookie', `uwsession=${token}`)
+        .send({ items: [], at: 'middle' })
+        .expect(400);
+    });
+
+    it('returns Not Found for other people\'s playlists', async () => {
+      const otherUser = await uw.test.createUser();
+      const token = await uw.test.createTestSessionToken(otherUser);
+
+      await supertest(uw.server)
+        .post(`/api/playlists/${playlist.id}/media`)
+        .set('Cookie', `uwsession=${token}`)
+        .send({ items: [], at: 'start' })
+        .expect(404);
+    });
+
+    it('adds items at the start', async () => {
+      const token = await uw.test.createTestSessionToken(user);
+
+      const firstItems = await generateItems(20);
+      const res = await supertest(uw.server)
+        .post(`/api/playlists/${playlist.id}/media`)
+        .set('Cookie', `uwsession=${token}`)
+        .send({ items: firstItems, at: 'start' })
+        .expect(200);
+
+      sinon.assert.match(res.body.meta, {
+        afterID: null,
+        playlistSize: 20,
+      });
+      assert.strictEqual(res.body.data.length, 20, 'returns the newly added items');
+      assertItemsAndIncludedMedia(res.body);
+
+      const secondItems = await generateItems(20);
+      const res2 = await supertest(uw.server)
+        .post(`/api/playlists/${playlist.id}/media`)
+        .set('Cookie', `uwsession=${token}`)
+        .send({ items: secondItems, after: null })
+        .expect(200);
+
+      sinon.assert.match(res2.body.meta, {
+        afterID: null,
+        playlistSize: 40,
+      });
+      assert.strictEqual(res2.body.data.length, 20, 'returns the newly added items');
+      assertItemsAndIncludedMedia(res2.body);
+    });
+
+    it('inserts items `after` an existing item', async () => {
+      const initialItems = await generateItems(20);
+      const { added } = await uw.playlists.addPlaylistItems(playlist, initialItems, { at: 'start' });
+
+      const token = await uw.test.createTestSessionToken(user);
+
+      const middleItem = added[9];
+      const insertItems = await generateItems(5);
+      const res2 = await supertest(uw.server)
+        .post(`/api/playlists/${playlist.id}/media`)
+        .set('Cookie', `uwsession=${token}`)
+        .send({ items: insertItems, after: middleItem._id })
+        .expect(200);
+
+      sinon.assert.match(res2.body.meta, {
+        afterID: middleItem.id,
+        playlistSize: 25,
+      });
+      assert.strictEqual(res2.body.data.length, 5, 'returns the newly added items');
+      assertItemsAndIncludedMedia(res2.body);
+    });
+  });
+
   describe.skip('DELETE /playlists/:id/media', () => {});
   describe.skip('PUT /playlists/:id/move', () => {});
   describe.skip('POST /playlists/:id/shuffle', () => {});

@@ -276,7 +276,7 @@ async function addPlaylistItems(req) {
     afterID = null;
   } else if (at === 'end' || after === -1) {
     afterID = playlist.media[playlist.size - 1];
-  } else {
+  } else if (after !== null) {
     afterID = new ObjectID(after);
   }
 
@@ -356,7 +356,7 @@ async function movePlaylistItems(req) {
     afterID = null;
   } else if (at === 'end' || after === -1) {
     afterID = playlist.media[playlist.size - 1];
-  } else {
+  } else if (after !== null) {
     afterID = new ObjectID(after);
   }
 

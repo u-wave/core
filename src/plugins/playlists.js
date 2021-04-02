@@ -485,6 +485,9 @@ class PlaylistsRepository {
 
     await Promise.all(promises);
 
+    if (playlistItems.length === 0) {
+      return [];
+    }
     return PlaylistItem.create(playlistItems);
   }
 
