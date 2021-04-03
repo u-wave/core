@@ -19,8 +19,8 @@
     "node": ">= 12.20.0"
   },
   "dependencies": {
-    "ajv": "^7.0.3",
-    "ajv-formats": "^1.5.1",
+    "ajv": "^8.0.5",
+    "ajv-formats": "^2.0.2",
     "avvio": "^7.2.0",
     "bcryptjs": "^2.4.3",
     "body-parser": "^1.19.0",
