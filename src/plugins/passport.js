@@ -22,7 +22,7 @@ const schema = require('../schemas/socialAuth.json');
  *   clientSecret: string,
  * })} GoogleOptions
  *
- * @typedef {object} SocialAuthOptions
+ * @typedef {object} SocialAuthSettings
  * @prop {GoogleOptions} google
  */
 
@@ -35,7 +35,6 @@ class PassportPlugin extends Passport {
     super();
 
     this.uw = uw;
-    this.socialLogin = this.socialLogin.bind(this);
 
     /**
      * @param {Express.User} user
@@ -81,12 +80,21 @@ class PassportPlugin extends Passport {
         this.applyAuthStrategies(settings);
       }
     });
+  }
 
-    uw.config.get(schema['uw:key'])
-      .then((settings) => this.applyAuthStrategies(settings))
-      .catch((err) => {
-        debug('social auth setup error', err);
-      });
+  /**
+   * Must be called once on boot.
+   */
+  async loadRuntimeConfiguration() {
+    /** @type {SocialAuthSettings} */
+    // @ts-ignore `get()` returns a validated object with default values populated
+    const settings = await this.uw.config.get(schema['uw:key']);
+    try {
+      this.applyAuthStrategies(settings);
+    } catch (error) {
+      // The schema doesn't _quite_ protect against all possible misconfiguration
+      debug('applying social auth settings failed', error);
+    }
   }
 
   /**
@@ -124,7 +132,8 @@ class PassportPlugin extends Passport {
   }
 
   /**
-   * @param {SocialAuthOptions} settings
+   * @param {SocialAuthSettings} settings
+   * @private
    */
   applyAuthStrategies(settings) {
     debug('reapplying settings');
@@ -136,7 +145,7 @@ class PassportPlugin extends Passport {
         callbackURL: '/auth/service/google/callback',
         ...settings.google,
         scope: ['profile'],
-      }, callbackify(this.socialLogin)));
+      }, callbackify(this.socialLogin.bind(this))));
     }
   }
 }
@@ -148,6 +157,7 @@ class PassportPlugin extends Passport {
 async function passportPlugin(uw, options) {
   debug('setup');
   uw.passport = new PassportPlugin(uw, options);
+  await uw.passport.loadRuntimeConfiguration();
 }
 
 module.exports = passportPlugin;
