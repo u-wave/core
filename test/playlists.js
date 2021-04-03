@@ -760,7 +760,106 @@ describe('Playlists', () => {
     });
   });
 
-  describe.skip('DELETE /playlists/:id/media', () => {});
+  describe('DELETE /playlists/:id/media', () => {
+    let playlist;
+    let playlistItems;
+    beforeEach(async () => {
+      playlist = await uw.playlists.createPlaylist(user, { name: 'Test Playlist' });
+      const insertItems = await generateItems(20);
+      const { added } = await uw.playlists.addPlaylistItems(playlist, insertItems, { at: 'start' });
+      playlistItems = added;
+    });
+
+    it('requires authentication', async () => {
+      await supertest(uw.server)
+        .delete(`/api/playlists/${playlist.id}/media`)
+        .expect(401);
+    });
+
+    it('validates input', async () => {
+      const token = await uw.test.createTestSessionToken(user);
+
+      // `items` must be an array of object IDs
+      await supertest(uw.server)
+        .delete(`/api/playlists/${playlist.id}/media`)
+        .set('Cookie', `uwsession=${token}`)
+        .send({ items: { not: 'an array' } })
+        .expect(400);
+
+      await supertest(uw.server)
+        .delete(`/api/playlists/${playlist.id}/media`)
+        .set('Cookie', `uwsession=${token}`)
+        .send({ items: [{ not: 'an id' }] })
+        .expect(400);
+
+      await supertest(uw.server)
+        .delete(`/api/playlists/${playlist.id}/media`)
+        .set('Cookie', `uwsession=${token}`)
+        .send({ items: [playlistItems[1].id] })
+        .expect(200);
+    });
+
+    it('returns Not Found for other people\'s playlists', async () => {
+      const otherUser = await uw.test.createUser();
+      const token = await uw.test.createTestSessionToken(otherUser);
+
+      await supertest(uw.server)
+        .delete(`/api/playlists/${playlist.id}/media`)
+        .set('Cookie', `uwsession=${token}`)
+        .send({ items: [] })
+        .expect(404);
+    });
+
+    it('removes items', async () => {
+      const token = await uw.test.createTestSessionToken(user);
+
+      const itemsToRemove = playlistItems.slice(5, 10).map((item) => item.id);
+
+      await supertest(uw.server)
+        .delete(`/api/playlists/${playlist.id}/media`)
+        .set('Cookie', `uwsession=${token}`)
+        .send({ items: itemsToRemove })
+        .expect(200);
+
+      const res = await supertest(uw.server)
+        .get(`/api/playlists/${playlist.id}/media`)
+        .set('Cookie', `uwsession=${token}`)
+        .expect(200);
+
+      assert.strictEqual(res.body.meta.total, 15, 'should have fewer elements remaining');
+
+      const remainingIDs = res.body.data.map((item) => item._id);
+      assert(
+        itemsToRemove.every((removedID) => !remainingIDs.includes(removedID)),
+        'should not contain removed item IDs',
+      );
+    });
+
+    it('ignores garbage item IDs', async () => {
+      const token = await uw.test.createTestSessionToken(user);
+
+      const realItems = playlistItems.slice(15).map((item) => item.id);
+      const itemsToRemove = [
+        '604cee7e2d46ab05a8947ce2',
+        ...realItems,
+        '56fb09bd2268cb6678186df3',
+      ];
+
+      await supertest(uw.server)
+        .delete(`/api/playlists/${playlist.id}/media`)
+        .set('Cookie', `uwsession=${token}`)
+        .send({ items: itemsToRemove })
+        .expect(200);
+
+      const res = await supertest(uw.server)
+        .get(`/api/playlists/${playlist.id}/media`)
+        .set('Cookie', `uwsession=${token}`)
+        .expect(200);
+
+      assert.strictEqual(res.body.meta.total, 15, 'should have fewer elements remaining');
+    });
+  });
+
   describe.skip('GET /playlists/:id/media/:itemID', () => {});
   describe.skip('PUT /playlists/:id/media/:itemID', () => {});
   describe.skip('DELETE /playlists/:id/media/:itemID', () => {});
