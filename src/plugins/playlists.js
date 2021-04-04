@@ -588,7 +588,7 @@ class PlaylistsRepository {
 
     playlist.media = toKeep;
     await playlist.save();
-    await PlaylistItem.remove({ _id: { $in: toRemove } });
+    await PlaylistItem.deleteMany({ _id: { $in: toRemove } });
 
     return {};
   }
