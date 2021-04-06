@@ -51,7 +51,7 @@
     "random-string": "^0.2.0",
     "ratelimiter": "^3.4.0",
     "redlock": "^4.1.0",
-    "secure-json-parse": "^2.1.0",
+    "secure-json-parse": "^2.4.0",
     "transliteration": "^2.1.11",
     "u-wave-announce": "^0.5.1",
     "u-wave-source-soundcloud": "^2.0.0",

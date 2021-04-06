@@ -17,7 +17,6 @@
     "src/types.d.ts",
     "src/redisMessages.d.ts",
     "src/socketMessages.d.ts",
-    "src/secure-json-parse.d.ts",
     "src/ultron.d.ts",
     "src/**/*.js",
     "src/schemas/*.json"
