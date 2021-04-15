@@ -325,6 +325,8 @@ class UsersRepository {
     // Take updated keys from the Model again,
     // as it may apply things like Unicode normalization on the values.
     Object.keys(update).forEach((key) => {
+      // @ts-ignore Infeasible to statically check properties here
+      // Hopefully the caller took care
       update[key] = user[key];
     });
 
