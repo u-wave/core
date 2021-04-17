@@ -11,7 +11,3 @@ export type ClientActionParameters = {
 export type ClientActions = {
   [Name in keyof ClientActionParameters]: (user: User, parameter: ClientActionParameters[Name], connection: AuthedConnection) => void
 };
-
-export type Broadcasts = {
-  [name: string]: JsonValue,
-};

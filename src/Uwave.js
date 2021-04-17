@@ -35,15 +35,6 @@ const DEFAULT_REDIS_URL = 'redis://localhost:6379';
  */
 
 /**
- * @template T
- * @param {any} value
- * @returns {T}
- */
-function unsafeCast(value) {
-  return value;
-}
-
-/**
  * @typedef {UwaveServer & avvio.Server<UwaveServer>} Boot
  * @typedef {{
  *   port?: number,
@@ -277,6 +268,9 @@ class UwaveServer extends EventEmitter {
     return newSource;
   }
 
+  /**
+   * @private
+   */
   configureRedis() {
     this.redis.on('error', (e) => {
       this.emit('redisError', e);
@@ -294,6 +288,9 @@ class UwaveServer extends EventEmitter {
     });
   }
 
+  /**
+   * @private
+   */
   configureMongoose() {
     this.mongo.on('error', (e) => {
       this.mongoLog(e);
@@ -332,7 +329,8 @@ class UwaveServer extends EventEmitter {
 
   async listen() {
     /** @type {import('avvio').Avvio<this>} */
-    const boot = unsafeCast(this);
+    // @ts-ignore
+    const boot = this;
     await boot.ready();
 
     /** @type {(this: import('net').Server, port?: number) => Promise<void>} */
