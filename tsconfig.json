@@ -9,7 +9,6 @@
     "checkJs": true,
     "resolveJsonModule": true,
     "outDir": "types",
-    "composite": true,
     "declaration": true,
     "emitDeclarationOnly": true
   },
