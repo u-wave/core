@@ -4,6 +4,16 @@ All notable changes to this project will be documented in this file.
 
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## 0.5.0-alpha.4 / 15 April 2021
+
+This is an alpha release, but new servers should use this version rather than an older "stable" one.
+
+Features:
+ * Add `helmet: false` option to disable CSP headers. This is necessary when running the API server and web client in the same Express app.
+
+Internal:
+ * Upgrade `ajv` to v8.
+
 ## 0.5.0-alpha.3 / 02 April 2021
 
 This is an alpha release, but new servers should use this version rather than an older "stable" one.
