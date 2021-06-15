@@ -10,16 +10,23 @@ class MOTD {
     this.uw = uw;
   }
 
+  /**
+   * @returns {Promise<string | null>}
+   */
   get() {
     return this.uw.redis.get('motd');
   }
 
   /**
-   * @param {string} motd
+   * @param {string|null} motd
    * @returns {Promise<void>}
    */
   async set(motd) {
-    await this.uw.redis.set('motd', motd);
+    if (motd) {
+      await this.uw.redis.set('motd', motd);
+    } else {
+      await this.uw.redis.del('motd');
+    }
   }
 }
 
