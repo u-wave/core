@@ -8,7 +8,7 @@
     "u-wave-core": "u-wave/core#default",
     "u-wave-source-soundcloud": "2.0.0",
     "u-wave-source-youtube": "1.3.0",
-    "u-wave-web": "1.11.3"
+    "u-wave-web": "2.0.0-alpha.1"
   },
   "scripts": {
     "start": "node index.js"

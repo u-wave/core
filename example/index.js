@@ -1,7 +1,7 @@
 import process from 'process';
 import { Buffer } from 'buffer';
 import uwave from 'u-wave-core';
-import createWebClient from 'u-wave-web/middleware.js';
+import createWebClient from 'u-wave-web/middleware';
 import youTubeSource from 'u-wave-source-youtube';
 import soundCloudSource from 'u-wave-source-soundcloud';
 import dotenv from 'dotenv';
