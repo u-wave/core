@@ -11,6 +11,12 @@
     "Renée Kooi <renee@kooi.me>"
   ],
   "main": "src/index.js",
+  "exports": {
+    ".": {
+      "import": "./src/index.mjs",
+      "default": "./src/index.js"
+    }
+  },
   "type": "commonjs",
   "bin": {
     "u-wave-core": "bin/u-wave-core"
