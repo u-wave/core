@@ -6,11 +6,17 @@
 
 'use strict';
 
-const { ObjectId } = require('mongoose').mongo;
+const { ObjectID } = require('mongoose').mongo;
 const { zip } = require('lodash');
 
-const rxObjectId = /^[0-9a-f]{24}$/;
+const rxObjectID = /^[0-9a-f]{24}$/;
 
+// Cannot use `@type {import('umzug').MigrationFn<import('../Uwave')>}`
+// due to https://github.com/microsoft/TypeScript/issues/43160
+
+/**
+ * @param {import('umzug').MigrationParams<import('../Uwave')>} params
+ */
 async function up({ context: uw }) {
   const { User } = uw.models;
 
@@ -23,16 +29,16 @@ async function up({ context: uw }) {
     const values = await uw.redis.mget(keys);
     for (const [key, playlistID] of zip(keys, values)) {
       const userID = key.replace(/^playlist:/, '');
-      if (!rxObjectId.test(userID) || !rxObjectId.test(playlistID)) {
+      if (!playlistID || !rxObjectID.test(userID) || !rxObjectID.test(playlistID)) {
         // must be corrupt if it isn't an object ID.
         continue;
       }
 
       ops.push({
         updateOne: {
-          filter: { _id: new ObjectId(userID) },
+          filter: { _id: new ObjectID(userID) },
           update: {
-            $set: { activePlaylist: new ObjectId(playlistID) },
+            $set: { activePlaylist: new ObjectID(playlistID) },
           },
         },
       });
@@ -43,6 +49,9 @@ async function up({ context: uw }) {
   await User.bulkWrite(ops);
 }
 
+/**
+ * @param {import('umzug').MigrationParams<import('../Uwave')>} params
+ */
 async function down({ context: uw }) {
   const { User } = uw.models;
 

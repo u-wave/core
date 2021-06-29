@@ -5,9 +5,16 @@ module.exports = {
 
   plugins: ['node'],
 
+  // We don't use babel for transpiling, but we do use features
+  // supported by Node.js that the default eslint parser does not
+  // yet understand.
+  parser: '@babel/eslint-parser',
   parserOptions: {
-    ecmaVersion: 2020,
     sourceType: 'script',
+    requireConfigFile: false,
+    babelOptions: {
+      plugins: ['@babel/plugin-syntax-class-properties'],
+    },
   },
 
   rules: {

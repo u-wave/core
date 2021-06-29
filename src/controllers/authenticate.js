@@ -2,16 +2,17 @@
 
 const { URLSearchParams } = require('url');
 const cookie = require('cookie');
-const createDebug = require('debug');
+const debug = require('debug')('uwave:http:auth');
 const jwt = require('jsonwebtoken');
 const randomString = require('random-string');
-const fetch = require('node-fetch');
+const fetch = require('node-fetch').default;
 const ms = require('ms');
 const htmlescape = require('htmlescape');
+const { BadRequest } = require('http-errors');
 const {
-  HTTPError,
-  PermissionError,
-  TokenError,
+  BannedError,
+  ReCaptchaError,
+  InvalidResetTokenError,
   UserNotFoundError,
 } = require('../errors');
 const sendEmail = require('../email');
@@ -19,19 +20,41 @@ const beautifyDuplicateKeyError = require('../utils/beautifyDuplicateKeyError');
 const toItemResponse = require('../utils/toItemResponse');
 const toListResponse = require('../utils/toListResponse');
 
-const debug = createDebug('uwave:http:auth');
+/**
+ * @typedef {object} AuthenticateOptions
+ * @prop {string|Buffer} secret
+ * @prop {string} [origin]
+ * @prop {import('nodemailer').Transport} [mailTransport]
+ * @prop {{ secret: string }} [recaptcha]
+ * @prop {(options: { token: string, requestUrl: string }) =>
+ *   import('nodemailer').SendMailOptions} createPasswordResetEmail
+ * @prop {boolean} [cookieSecure]
+ * @prop {string} [cookiePath]
+ *
+ * @typedef {object} WithAuthOptions
+ * @prop {AuthenticateOptions} authOptions
+ */
 
+/**
+ * @param {string} str
+ */
 function seconds(str) {
   return Math.floor(ms(str) / 1000);
 }
 
-function getCurrentUser(req) {
+/**
+ * @type {import('../types').Controller}
+ */
+async function getCurrentUser(req) {
   return toItemResponse(req.user || null, {
     url: req.fullUrl,
   });
 }
 
-function getAuthStrategies(req) {
+/**
+ * @type {import('../types').Controller}
+ */
+async function getAuthStrategies(req) {
   const { passport } = req.uwave;
 
   const strategies = passport.strategies();
@@ -42,8 +65,14 @@ function getAuthStrategies(req) {
   );
 }
 
+/**
+ * @param {import('express').Response} res
+ * @param {import('../HttpApi').HttpApi} api
+ * @param {import('../models').User} user
+ * @param {AuthenticateOptions & { session: 'cookie' | 'token' }} options
+ */
 async function refreshSession(res, api, user, options) {
-  const token = await jwt.sign(
+  const token = jwt.sign(
     { id: user.id },
     options.secret,
     { expiresIn: '31d' },
@@ -68,8 +97,15 @@ async function refreshSession(res, api, user, options) {
 /**
  * The login controller is called once a user has logged in successfully using Passport;
  * we only have to assign the JWT.
+ *
+ * @typedef {object} LoginQuery
+ * @prop {'cookie'|'token'} [session]
+ *
+ * @param {import('../types').AuthenticatedRequest<{}, LoginQuery, {}> & WithAuthOptions} req
+ * @param {import('express').Response} res
  */
-async function login(options, req, res) {
+async function login(req, res) {
+  const options = req.authOptions;
   const { user } = req;
   const { session } = req.query;
   const { bans } = req.uwave;
@@ -77,7 +113,7 @@ async function login(options, req, res) {
   const sessionType = session === 'cookie' ? 'cookie' : 'token';
 
   if (await bans.isBanned(user)) {
-    throw new PermissionError('You have been banned.');
+    throw new BannedError();
   }
 
   const { token, socketToken } = await refreshSession(res, req.uwaveHttp, user, {
@@ -93,11 +129,17 @@ async function login(options, req, res) {
   });
 }
 
+/**
+ * @param {import('../Uwave')} uw
+ * @param {import('../models').User} user
+ * @param {string} service
+ */
 async function getSocialAvatar(uw, user, service) {
-  const Authentication = uw.model('Authentication');
+  const { Authentication } = uw.models;
 
+  /** @type {import('../models').Authentication?} */
   const auth = await Authentication.findOne({
-    user,
+    user: user._id,
     type: service,
   });
   if (auth && auth.avatar) {
@@ -106,15 +148,23 @@ async function getSocialAvatar(uw, user, service) {
   return null;
 }
 
-async function socialLoginCallback(options, service, req, res) {
+/**
+ * @param {string} service
+ * @param {import('../types').AuthenticatedRequest & WithAuthOptions} req
+ * @param {import('express').Response} res
+ */
+async function socialLoginCallback(service, req, res) {
   const { user } = req;
   const { bans, locale } = req.uwave;
-  const { origin } = options;
+  const { origin } = req.authOptions;
 
   if (await bans.isBanned(user)) {
-    throw new PermissionError('You have been banned.');
+    throw new BannedError();
   }
 
+  /**
+   * @type {{ pending: boolean, id?: string, type?: string, avatars?: Record<string, string> }}
+   */
   let activationData = { pending: false };
   if (user.pendingActivation) {
     const socialAvatar = await getSocialAvatar(req.uwave, user, service);
@@ -128,6 +178,8 @@ async function socialLoginCallback(options, service, req, res) {
       type: service,
     };
     if (socialAvatar) {
+      // @ts-ignore we literally just defined it
+      // TODO rewrite this with object spreading or something
       activationData.avatars[service] = socialAvatar;
     }
   }
@@ -141,7 +193,7 @@ async function socialLoginCallback(options, service, req, res) {
   `;
 
   await refreshSession(res, req.uwaveHttp, user, {
-    ...options,
+    ...req.authOptions,
     session: 'cookie',
   });
 
@@ -160,17 +212,35 @@ async function socialLoginCallback(options, service, req, res) {
   `);
 }
 
-async function socialLoginFinish(options, service, req, res) {
+/**
+ * @typedef {object} SocialLoginFinishQuery
+ * @prop {'cookie'|'token'} [session]
+ *
+ * @typedef {object} SocialLoginFinishBody
+ * @prop {string} username
+ * @prop {string} avatar
+ */
+
+/**
+ * @param {string} service
+ * @param {import('../types').Request<{}, SocialLoginFinishQuery, SocialLoginFinishBody> &
+ *         WithAuthOptions} req
+ * @param {import('express').Response} res
+ */
+async function socialLoginFinish(service, req, res) {
+  const options = req.authOptions;
   const { pendingUser: user } = req;
   const sessionType = req.query.session === 'cookie' ? 'cookie' : 'token';
   const { bans } = req.uwave;
 
   if (!user) {
-    throw new PermissionError('Must have a pending user account.');
+    // Should never happen so not putting much effort into
+    // localising the error message.
+    throw new BadRequest('This account has already been set up');
   }
 
   if (await bans.isBanned(user)) {
-    throw new PermissionError('You have been banned.');
+    throw new BannedError();
   }
 
   const { username, avatar } = req.body;
@@ -202,6 +272,9 @@ async function socialLoginFinish(options, service, req, res) {
   });
 }
 
+/**
+ * @type {import('../types').AuthenticatedController}
+ */
 async function getSocketToken(req) {
   const { user } = req;
   const { authRegistry } = req.uwaveHttp;
@@ -213,15 +286,11 @@ async function getSocketToken(req) {
   });
 }
 
+/**
+ * @param {string} responseString
+ * @param {Required<AuthenticateOptions>['recaptcha']} options
+ */
 async function verifyCaptcha(responseString, options) {
-  if (!options.recaptcha) {
-    debug('ReCaptcha validation is disabled');
-    return null;
-  }
-  if (!responseString) {
-    throw new Error('ReCaptcha validation failed. Please try again.');
-  }
-
   debug('recaptcha: sending siteverify request');
   const response = await fetch('https://www.google.com/recaptcha/api/siteverify', {
     method: 'post',
@@ -231,33 +300,44 @@ async function verifyCaptcha(responseString, options) {
     },
     body: new URLSearchParams({
       response: responseString,
-      secret: options.recaptcha.secret,
+      secret: options.secret,
     }),
   });
   const body = await response.json();
 
   if (!body.success) {
     debug('recaptcha: validation failure', body);
-    throw new Error('ReCaptcha validation failed. Please try again.');
+    throw new ReCaptchaError();
   } else {
     debug('recaptcha: ok');
   }
-
-  return null;
 }
 
-async function register(options, req) {
+/**
+ * @typedef {object} RegisterBody
+ * @prop {string} email
+ * @prop {string} username
+ * @prop {string} password
+ * @prop {string} [grecaptcha]
+ */
+
+/**
+ * @param {import('../types').Request<{}, {}, RegisterBody> & WithAuthOptions} req
+ */
+async function register(req) {
   const { users } = req.uwave;
   const {
     grecaptcha, email, username, password,
   } = req.body;
 
-  if (/\s/.test(username)) {
-    throw new HTTPError(400, 'Usernames can\'t contain spaces.');
-  }
-
   try {
-    await verifyCaptcha(grecaptcha, options);
+    if (req.authOptions.recaptcha) {
+      if (grecaptcha) {
+        await verifyCaptcha(grecaptcha, req.authOptions.recaptcha);
+      } else {
+        throw new ReCaptchaError();
+      }
+    }
 
     const user = await users.createUser({
       email,
@@ -271,11 +351,19 @@ async function register(options, req) {
   }
 }
 
-async function reset(options, req) {
+/**
+ * @typedef {object} RequestPasswordResetBody
+ * @prop {string} email
+ */
+
+/**
+ * @param {import('../types').Request<{}, {}, RequestPasswordResetBody> & WithAuthOptions} req
+ */
+async function reset(req) {
   const uw = req.uwave;
   const { Authentication } = uw.models;
   const { email } = req.body;
-  const { mailTransport, createPasswordResetEmail } = options;
+  const { mailTransport, createPasswordResetEmail } = req.authOptions;
 
   const auth = await Authentication.findOne({
     email: email.toLowerCase(),
@@ -302,6 +390,17 @@ async function reset(options, req) {
   return toItemResponse({});
 }
 
+/**
+ * @typedef {object} ChangePasswordParams
+ * @prop {string} reset
+ *
+ * @typedef {object} ChangePasswordBody
+ * @prop {string} password
+ */
+
+/**
+ * @type {import('../types').Controller<ChangePasswordParams, {}, ChangePasswordBody>}
+ */
 async function changePassword(req) {
   const { users, redis } = req.uwave;
   const { reset: resetToken } = req.params;
@@ -309,8 +408,7 @@ async function changePassword(req) {
 
   const userId = await redis.get(`reset:${resetToken}`);
   if (!userId) {
-    throw new TokenError('That reset token is invalid. Please double-check your reset '
-      + 'token or request a new password reset.');
+    throw new InvalidResetTokenError();
   }
 
   const user = await users.getUser(userId);
@@ -329,9 +427,13 @@ async function changePassword(req) {
   });
 }
 
-async function logout(options, req, res) {
+/**
+ * @param {import('../types').AuthenticatedRequest<{}, {}, {}> & WithAuthOptions} req
+ * @param {import('express').Response} res
+ */
+async function logout(req, res) {
   const { user, cookies } = req;
-  const { cookieSecure, cookiePath } = options;
+  const { cookieSecure, cookiePath } = req.authOptions;
   const uw = req.uwave;
 
   uw.publish('user:logout', {
@@ -351,6 +453,9 @@ async function logout(options, req, res) {
   return toItemResponse({});
 }
 
+/**
+ * @returns {Promise<import('type-fest').JsonObject>}
+ */
 async function removeSession() {
   throw new Error('Unimplemented');
 }

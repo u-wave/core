@@ -3,6 +3,9 @@
 const toItemResponse = require('../utils/toItemResponse');
 const toListResponse = require('../utils/toListResponse');
 
+/**
+ * @type {import('../types').Controller}
+ */
 async function getWaitlist(req) {
   const { waitlist } = req.uwave;
 
@@ -11,8 +14,17 @@ async function getWaitlist(req) {
   return toListResponse(list, { url: req.fullUrl });
 }
 
-// POST waitlist/ entry point: used both for joining the waitlist,  and for
-// adding someone else to the waitlist.
+/**
+ * @typedef {object} AddToWaitlistBody
+ * @prop {string} userID
+ */
+
+/**
+ * POST waitlist/ entry point: used both for joining the waitlist, and for
+ * adding someone else to the waitlist.
+ *
+ * @type {import('../types').AuthenticatedController<{}, {}, AddToWaitlistBody>}
+ */
 async function addToWaitlist(req) {
   const { user: moderator } = req;
   const { userID } = req.body;
@@ -25,6 +37,15 @@ async function addToWaitlist(req) {
   return toListResponse(updated, { url: req.fullUrl });
 }
 
+/**
+ * @typedef {object} MoveWaitlistBody
+ * @prop {string} userID
+ * @prop {number} position
+ */
+
+/**
+ * @type {import('../types').AuthenticatedController<{}, {}, MoveWaitlistBody>}
+ */
 async function moveWaitlist(req) {
   const { user: moderator } = req;
   const { userID, position } = req.body;
@@ -37,6 +58,14 @@ async function moveWaitlist(req) {
   return toListResponse(updated, { url: req.fullUrl });
 }
 
+/**
+ * @typedef {object} RemoveFromWaitlistParams
+ * @prop {string} id
+ */
+
+/**
+ * @type {import('../types').AuthenticatedController<RemoveFromWaitlistParams>}
+ */
 async function removeFromWaitlist(req) {
   const { user: moderator } = req;
   const { id: userID } = req.params;
@@ -49,6 +78,9 @@ async function removeFromWaitlist(req) {
   return toListResponse(updated, { url: req.fullUrl });
 }
 
+/**
+ * @type {import('../types').AuthenticatedController}
+ */
 async function clearWaitlist(req) {
   const { user: moderator } = req;
   const { waitlist } = req.uwave;
@@ -60,6 +92,14 @@ async function clearWaitlist(req) {
   return toListResponse(updated, { url: req.fullUrl });
 }
 
+/**
+ * @typedef {object} LockWaitlistBody
+ * @prop {boolean} lock
+ */
+
+/**
+ * @type {import('../types').AuthenticatedController<{}, {}, LockWaitlistBody>}
+ */
 async function lockWaitlist(req) {
   const { user: moderator } = req;
   const { lock } = req.body;

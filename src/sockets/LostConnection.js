@@ -6,6 +6,10 @@ const createDebug = require('debug');
 const debug = createDebug('uwave:api:sockets:lost');
 
 class LostConnection extends EventEmitter {
+  /**
+   * @param {import('../Uwave')} uw
+   * @param {import('../models').User} user
+   */
   constructor(uw, user, timeout = 30) {
     super();
     this.uw = uw;
@@ -37,6 +41,9 @@ class LostConnection extends EventEmitter {
       .exec();
   }
 
+  /**
+   * @param {number} timeout
+   */
   setTimeout(timeout) {
     this.removeTimer = setTimeout(() => {
       this.close();
@@ -44,6 +51,10 @@ class LostConnection extends EventEmitter {
     }, timeout * 1000);
   }
 
+  /**
+   * @param {string} command
+   * @param {import('type-fest').JsonValue} data
+   */
   send(command, data) {
     debug('queueing', command, data);
 
@@ -59,7 +70,9 @@ class LostConnection extends EventEmitter {
   }
 
   removed() {
-    clearTimeout(this.removeTimer);
+    if (this.removeTimer) {
+      clearTimeout(this.removeTimer);
+    }
   }
 
   toString() {

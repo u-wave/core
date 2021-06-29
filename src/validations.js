@@ -17,6 +17,7 @@ exports.register = {
         type: 'string',
         minLength: 6,
       },
+      grecaptcha: { type: 'string' },
     },
     required: ['email', 'username', 'password'],
   },
@@ -317,11 +318,16 @@ exports.renamePlaylist = {
 exports.getPlaylistItems = {
   params: playlistParams,
   query: {
-    oneOf: [
-      { $ref: 'https://ns.u-wave.net/schemas/definitions.json#/definitions/Pagination' },
-      { $ref: 'https://ns.u-wave.net/schemas/definitions.json#/definitions/LegacyPagination' },
-      true,
-    ],
+    type: 'object',
+    if: {
+      properties: { page: true },
+    },
+    then: {
+      oneOf: [
+        { $ref: 'https://ns.u-wave.net/schemas/definitions.json#/definitions/Pagination' },
+        { $ref: 'https://ns.u-wave.net/schemas/definitions.json#/definitions/LegacyPagination' },
+      ],
+    },
   },
 };
 
@@ -407,6 +413,7 @@ exports.movePlaylistItems = {
           after: {
             oneOf: [
               { $ref: 'https://ns.u-wave.net/schemas/definitions.json#/definitions/ObjectID' },
+              { const: null },
               { const: -1 },
             ],
           },

@@ -6,6 +6,17 @@ const {
 } = require('../errors');
 const toItemResponse = require('../utils/toItemResponse');
 
+/**
+ * @typedef {object} MuteUserParams
+ * @prop {string} id
+ *
+ * @typedef {object} MuteUserBody
+ * @prop {number} time
+ */
+
+/**
+ * @type {import('../types').AuthenticatedController<MuteUserParams, {}, MuteUserBody>}
+ */
 async function muteUser(req) {
   const { user: moderator } = req;
   const { id } = req.params;
@@ -24,6 +35,14 @@ async function muteUser(req) {
   return toItemResponse({});
 }
 
+/**
+ * @typedef {object} UnmuteUserParams
+ * @prop {string} id
+ */
+
+/**
+ * @type {import('../types').AuthenticatedController<UnmuteUserParams>}
+ */
 async function unmuteUser(req) {
   const { user: moderator } = req;
   const { id } = req.params;
@@ -41,7 +60,10 @@ async function unmuteUser(req) {
   return toItemResponse({});
 }
 
-function deleteAll(req) {
+/**
+ * @type {import('../types').AuthenticatedController}
+ */
+async function deleteAll(req) {
   const { user: moderator } = req;
   const { chat } = req.uwave;
 
@@ -50,7 +72,15 @@ function deleteAll(req) {
   return toItemResponse({});
 }
 
-function deleteByUser(req) {
+/**
+ * @typedef {object} DeleteByUserParams
+ * @prop {string} id
+ */
+
+/**
+ * @type {import('../types').AuthenticatedController<DeleteByUserParams>}
+ */
+async function deleteByUser(req) {
   const { user: moderator } = req;
   const { chat } = req.uwave;
   const { id } = req.params;
@@ -60,7 +90,15 @@ function deleteByUser(req) {
   return toItemResponse({});
 }
 
-function deleteMessage(req) {
+/**
+ * @typedef {object} DeleteMessageParams
+ * @prop {string} id
+ */
+
+/**
+ * @type {import('../types').AuthenticatedController<DeleteMessageParams>}
+ */
+async function deleteMessage(req) {
   const { user: moderator } = req;
   const { chat } = req.uwave;
   const { id } = req.params;

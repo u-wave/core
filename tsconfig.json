@@ -1,0 +1,26 @@
+{
+  "extends": "@tsconfig/node12/tsconfig.json",
+  "compilerOptions": {
+    "strict": false,
+    "strictBindCallApply": true,
+    "strictNullChecks": true,
+    "noImplicitThis": true,
+    "allowJs": true,
+    "checkJs": true,
+    "resolveJsonModule": true,
+    "outDir": "types",
+    "declaration": true,
+    "emitDeclarationOnly": true
+  },
+  "include": [
+    "src/types.d.ts",
+    "src/redisMessages.d.ts",
+    "src/socketMessages.d.ts",
+    "src/ultron.d.ts",
+    "src/**/*.js",
+    "src/schemas/*.json"
+  ],
+  "exclude": [
+    "node_modules"
+  ]
+}

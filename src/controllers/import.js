@@ -6,6 +6,9 @@ const {
   APIError,
 } = require('../errors');
 
+/**
+ * @param {import('../types').Request} req
+ */
 const getImportableSource = (req) => {
   const uw = req.uwave;
   const { source: sourceName } = req.params;
@@ -21,12 +24,18 @@ const getImportableSource = (req) => {
   return source;
 };
 
+/**
+ * @param {import('../types').Request} req
+ */
 const mergeImportParameters = (req) => ({
   ...req.query,
   ...req.body,
   ...req.params,
 });
 
+/**
+ * @type {import('../types').AuthenticatedController}
+ */
 async function importAction(req) {
   const source = getImportableSource(req);
 
@@ -35,6 +44,8 @@ async function importAction(req) {
   try {
     const response = await source.import(req.user, opts);
 
+    // @ts-ignore this YOLO implementation is going to change after this PR:
+    // https://github.com/u-wave/core/pull/436
     return response;
   } catch (err) {
     throw APIError.wrap(err);

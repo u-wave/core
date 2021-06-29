@@ -10,10 +10,9 @@ class GuestConnection extends EventEmitter {
   /**
    * @param {import('../Uwave')} uw
    * @param {import('ws')} socket
-   * @param {unknown} req
    * @param {{ authRegistry: import('../AuthRegistry') }} options
    */
-  constructor(uw, socket, req, options) {
+  constructor(uw, socket, options) {
     super();
     this.uw = uw;
     this.socket = socket;
@@ -36,6 +35,9 @@ class GuestConnection extends EventEmitter {
     this.lastMessage = Date.now();
   }
 
+  /**
+   * @param {string} token
+   */
   async attemptAuth(token) {
     const { bans, users } = this.uw;
     const { authRegistry } = this.options;
@@ -59,10 +61,17 @@ class GuestConnection extends EventEmitter {
     this.emit('authenticate', userModel);
   }
 
+  /**
+   * @param {import('../models').User} user
+   */
   isReconnect(user) {
     return this.uw.redis.exists(`http-api:disconnected:${user.id}`);
   }
 
+  /**
+   * @param {string} command
+   * @param {import('type-fest').JsonValue} [data]
+   */
   send(command, data) {
     this.socket.send(JSON.stringify({ command, data }));
     this.lastMessage = Date.now();

@@ -3,40 +3,58 @@
 const ms = require('ms');
 const RedLock = require('redlock');
 const createDebug = require('debug');
+const { EmptyPlaylistError } = require('../errors');
 const routes = require('../routes/booth');
 
-class PlaylistIsEmptyError extends Error {
-  constructor(message) {
-    super(message);
-    this.code = 'PLAYLIST_IS_EMPTY';
-  }
-}
+/**
+ * @typedef {import('../models').User} User
+ * @typedef {import('../models').Playlist} Playlist
+ * @typedef {import('../models').PlaylistItem} PlaylistItem
+ * @typedef {import('../models').HistoryEntry} HistoryEntry
+ * @typedef {{ user: User }} PopulateUser
+ * @typedef {{ playlist: Playlist }} PopulatePlaylist
+ * @typedef {{ item: PlaylistItem }} PopulatePlaylistItem
+ * @typedef {HistoryEntry & PopulateUser & PopulatePlaylist & PopulatePlaylistItem}
+ *     PopulatedHistoryEntry
+ */
 
 const debug = createDebug('uwave:advance');
 
-function cyclePlaylist(playlist) {
+/**
+ * @param {Playlist} playlist
+ * @returns {Promise<void>}
+ */
+async function cyclePlaylist(playlist) {
   const item = playlist.media.shift();
-  playlist.media.push(item);
-  return playlist.save();
+  if (item !== undefined) {
+    playlist.media.push(item);
+  }
+  await playlist.save();
 }
 
 class Booth {
+  /** @type {ReturnType<typeof setTimeout>|null} */
+  #timeout = null;
+
+  #locker;
+
+  /**
+   * @param {import('../Uwave')} uw
+   */
   constructor(uw) {
     this.uw = uw;
-    this.timeout = null;
+    this.#locker = new RedLock([this.uw.redis]);
   }
 
   async onStart() {
-    this.locker = new RedLock([this.uw.redis]);
-
     const current = await this.getCurrentEntry();
-    if (current && this.timeout === null) {
+    if (current && this.#timeout === null) {
       // Restart the advance timer after a server restart, if a track was
       // playing before the server restarted.
       const duration = (current.media.end - current.media.start) * ms('1 second');
       const endTime = Number(current.playedAt) + duration;
       if (endTime > Date.now()) {
-        this.timeout = setTimeout(
+        this.#timeout = setTimeout(
           () => this.advance(),
           endTime - Date.now(),
         );
@@ -50,14 +68,17 @@ class Booth {
     this.maybeStop();
   }
 
+  /**
+   * @returns {Promise<HistoryEntry | null>}
+   */
   async getCurrentEntry() {
-    const History = this.uw.model('History');
+    const { HistoryEntry } = this.uw.models;
     const historyID = await this.uw.redis.get('booth:historyID');
     if (!historyID) {
       return null;
     }
 
-    return History.findById(historyID);
+    return HistoryEntry.findById(historyID);
   }
 
   async getCurrentVoteStats() {
@@ -79,6 +100,10 @@ class Booth {
     return voteStats;
   }
 
+  /**
+   * @param {HistoryEntry} entry
+   * @private
+   */
   async saveStats(entry) {
     const stats = await this.getCurrentVoteStats();
 
@@ -86,10 +111,16 @@ class Booth {
     return entry.save();
   }
 
-  async getNextDJ(opts) {
-    const User = this.uw.model('User');
+  /**
+   * @param {{ remove?: boolean }} options
+   * @returns {Promise<User|null>}
+   * @private
+   */
+  async getNextDJ(options) {
+    const { User } = this.uw.models;
+    /** @type {string|null} */
     let userID = await this.uw.redis.lindex('waitlist', 0);
-    if (!userID && !opts.remove) {
+    if (!userID && !options.remove) {
       // If the waitlist is empty, the current DJ will play again immediately.
       userID = await this.uw.redis.get('booth:currentDJ');
     }
@@ -100,22 +131,28 @@ class Booth {
     return User.findById(userID);
   }
 
-  async getNextEntry(opts) {
-    const { HistoryEntry } = this.uw.models;
+  /**
+   * @param {{ remove?: boolean }} options
+   * @returns {Promise<PopulatedHistoryEntry | null>}
+   * @private
+   */
+  async getNextEntry(options) {
+    const { HistoryEntry, PlaylistItem } = this.uw.models;
     const { playlists } = this.uw;
 
-    const user = await this.getNextDJ(opts);
-    if (!user) {
+    const user = await this.getNextDJ(options);
+    if (!user || !user.activePlaylist) {
       return null;
     }
     const playlist = await playlists.getUserPlaylist(user, user.activePlaylist);
     if (playlist.size === 0) {
-      throw new PlaylistIsEmptyError();
+      throw new EmptyPlaylistError();
     }
-    const playlistItem = await playlists.getPlaylistItem(playlist.media[0]);
 
+    const playlistItem = await PlaylistItem.findById(playlist.media[0]);
     await playlistItem.populate('media').execPopulate();
 
+    // @ts-ignore
     return new HistoryEntry({
       user,
       playlist,
@@ -130,56 +167,79 @@ class Booth {
     });
   }
 
-  async cycleWaitlist(previous, opts) {
+  /**
+   * @param {HistoryEntry|null} previous
+   * @param {{ remove?: boolean }} options
+   * @private
+   */
+  async cycleWaitlist(previous, options) {
     const waitlistLen = await this.uw.redis.llen('waitlist');
     if (waitlistLen > 0) {
       await this.uw.redis.lpop('waitlist');
-      if (previous && !opts.remove) {
+      if (previous && !options.remove) {
         // The previous DJ should only be added to the waitlist again if it was
         // not empty. If it was empty, the previous DJ is already in the booth.
-        await this.uw.redis.rpush('waitlist', previous.user);
+        await this.uw.redis.rpush('waitlist', previous.user.toString());
       }
     }
   }
 
   clear() {
-    return this.uw.redis.del([
+    return this.uw.redis.del(
       'booth:historyID',
       'booth:currentDJ',
       'booth:upvotes',
       'booth:downvotes',
       'booth:favorites',
-    ]);
+    );
   }
 
+  /**
+   * @param {PopulatedHistoryEntry} next
+   * @private
+   */
   update(next) {
     return this.uw.redis.multi()
-      .del(['booth:upvotes', 'booth:downvotes', 'booth:favorites'])
+      .del('booth:upvotes', 'booth:downvotes', 'booth:favorites')
       .set('booth:historyID', next.id)
       .set('booth:currentDJ', next.user.id)
       .exec();
   }
 
+  /**
+   * @private
+   */
   maybeStop() {
-    if (this.timeout) {
-      clearTimeout(this.timeout);
-      this.timeout = null;
+    if (this.#timeout) {
+      clearTimeout(this.#timeout);
+      this.#timeout = null;
     }
   }
 
+  /**
+   * @param {PopulatedHistoryEntry} entry
+   * @private
+   */
   play(entry) {
     this.maybeStop();
-    this.timeout = setTimeout(
+    this.#timeout = setTimeout(
       () => this.advance(),
       (entry.media.end - entry.media.start) * ms('1 second'),
     );
     return entry;
   }
 
+  /**
+   * @private
+   */
   getWaitlist() {
     return this.uw.redis.lrange('waitlist', 0, -1);
   }
 
+  /**
+   * @param {PopulatedHistoryEntry|null} next
+   * @private
+   */
   async publish(next) {
     if (next) {
       this.uw.publish('advance:complete', {
@@ -187,8 +247,11 @@ class Booth {
         userID: next.user.id,
         playlistID: next.playlist.id,
         itemID: next.item.id,
-        media: next.media,
-        playedAt: next.playedAt,
+        media: {
+          ...next.media,
+          media: next.media.media.toString(),
+        },
+        playedAt: next.playedAt.getTime(),
       });
       this.uw.publish('playlist:cycle', {
         userID: next.user.id,
@@ -200,13 +263,22 @@ class Booth {
     this.uw.publish('waitlist:update', await this.getWaitlist());
   }
 
-  async advance(opts = {}, reuseLock = null) {
+  /**
+   * @typedef {object} AdvanceOptions
+   * @prop {boolean} [remove]
+   * @prop {boolean} [publish]
+   *
+   * @param {AdvanceOptions} [opts]
+   * @param {import('redlock').Lock} [reuseLock]
+   * @returns {Promise<PopulatedHistoryEntry|null>}
+   */
+  async advance(opts = {}, reuseLock = undefined) {
     let lock;
     try {
       if (reuseLock) {
         lock = await reuseLock.extend(ms('2 seconds'));
       } else {
-        lock = await this.locker.lock('booth:advancing', ms('2 seconds'));
+        lock = await this.#locker.lock('booth:advancing', ms('2 seconds'));
       }
     } catch (err) {
       throw new Error('Another advance is still in progress.');
@@ -266,6 +338,9 @@ class Booth {
   }
 }
 
+/**
+ * @param {import('../Uwave').Boot} uw
+ */
 async function boothPlugin(uw) {
   uw.booth = new Booth(uw);
   uw.httpApi.use('/booth', routes());

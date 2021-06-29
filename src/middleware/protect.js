@@ -1,17 +1,20 @@
 'use strict';
 
-const { PermissionError } = require('../errors');
+const { LoginRequiredError, PermissionError } = require('../errors');
 const wrapMiddleware = require('../utils/wrapMiddleware');
 
+/**
+ * @param {string} [role]
+ */
 function protect(role) {
   return wrapMiddleware(async (req) => {
     const { acl } = req.uwave;
 
     if (!req.user) {
-      throw new PermissionError('You must be logged in to do this');
+      throw new LoginRequiredError();
     }
     if (role && !(await acl.isAllowed(req.user, role))) {
-      throw new PermissionError(`You must have the '${role}' role to do this.`);
+      throw new PermissionError({ requiredRole: role });
     }
   });
 }

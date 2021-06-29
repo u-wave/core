@@ -1,9 +1,42 @@
 'use strict';
 
+const { SourceNoImportError } = require('./errors');
+
+/**
+ * @typedef {import('./models').User} User
+ * @typedef {import('./models').Playlist} Playlist
+ * @typedef {import('./plugins/playlists').PlaylistItemDesc} PlaylistItemDesc
+ */
+
+/**
+ * @typedef {object} SourcePluginV1
+ * @prop {undefined|1} api
+ * @prop {(ids: string[]) => Promise<PlaylistItemDesc[]>} get
+ * @prop {(query: string, page: unknown, ...args: unknown[]) => Promise<PlaylistItemDesc[]>} search
+ *
+ * @typedef {object} SourcePluginV2
+ * @prop {2} api
+ * @prop {(context: SourceContext, ids: string[]) => Promise<PlaylistItemDesc[]>} get
+ * @prop {(
+ *   context: SourceContext,
+ *   query: string,
+ *   page: unknown,
+ *   ...args: unknown[]
+ * ) => Promise<PlaylistItemDesc[]>} search
+ * @prop {(context: ImportContext, ...args: unknown[]) => Promise<unknown>} [import]
+ *
+ * @typedef {SourcePluginV1 | SourcePluginV2} SourcePlugin
+ */
+
 /**
  * Data holder for things that source plugins may require.
  */
 class SourceContext {
+  /**
+   * @param {import('./Uwave')} uw
+   * @param {Source} source
+   * @param {User} user
+   */
   constructor(uw, source, user) {
     this.uw = uw;
     this.source = source;
@@ -22,9 +55,9 @@ class ImportContext extends SourceContext {
   /**
    * Create a playlist for the current user.
    *
-   * @param {String} name Playlist name.
-   * @param {Object|Array} itemOrItems Playlist items.
-   * @return Playlist model.
+   * @param {string} name Playlist name.
+   * @param {Omit<PlaylistItemDesc, 'sourceType'>[]} itemOrItems Playlist items.
+   * @returns {Promise<Playlist>} Playlist model.
    */
   async createPlaylist(name, itemOrItems) {
     const playlist = await this.uw.playlists.createPlaylist(this.user, { name });
@@ -44,6 +77,11 @@ class ImportContext extends SourceContext {
  * Wrapper around source plugins with some more convenient aliases.
  */
 class Source {
+  /**
+   * @param {import('./Uwave')} uw
+   * @param {string} sourceType
+   * @param {SourcePlugin} sourcePlugin
+   */
   constructor(uw, sourceType, sourcePlugin) {
     this.uw = uw;
     this.type = sourceType;
@@ -61,6 +99,9 @@ class Source {
    *
    * Media items can provide their own sourceType, too, so media sources can
    * aggregate items from different source types.
+   *
+   * @param {Omit<PlaylistItemDesc, 'sourceType'>[]} items
+   * @returns {PlaylistItemDesc[]}
    */
   addSourceType(items) {
     return items.map((item) => ({
@@ -71,6 +112,10 @@ class Source {
 
   /**
    * Find a single media item by ID.
+   *
+   * @param {User} user
+   * @param {string} id
+   * @returns {Promise<PlaylistItemDesc?>}
    */
   getOne(user, id) {
     return this.get(user, [id])
@@ -79,10 +124,14 @@ class Source {
 
   /**
    * Find several media items by ID.
+   *
+   * @param {User} user
+   * @param {string[]} ids
+   * @returns {Promise<PlaylistItemDesc[]>}
    */
   async get(user, ids) {
     let items;
-    if (this.apiVersion > 1) {
+    if (this.plugin.api === 2) {
       const context = new SourceContext(this.uw, this, user);
       items = await this.plugin.get(context, ids);
     } else {
@@ -94,10 +143,17 @@ class Source {
   /**
    * Search this media source for items. Parameters can really be anything, but
    * will usually include a search string `query` and a page identifier `page`.
+   *
+   * @template {object} TPagination
+   * @param {User} user
+   * @param {string} query
+   * @param {TPagination} [page]
+   * @param {unknown[]} args
+   * @returns {Promise<PlaylistItemDesc[]>}
    */
   async search(user, query, page, ...args) {
     let results;
-    if (this.apiVersion > 1) {
+    if (this.plugin.api === 2) {
       const context = new SourceContext(this.uw, this, user);
       results = await this.plugin.search(context, query, page, ...args);
     } else {
@@ -110,10 +166,16 @@ class Source {
    * Import *something* from this media source. Because media sources can
    * provide wildly different imports, üWave trusts clients to know what they're
    * doing.
+   *
+   * @param {User} user
+   * @param {unknown[]} args
    */
   'import'(user, ...args) {
     const importContext = new ImportContext(this.uw, this, user);
-    return this.plugin.import(importContext, ...args);
+    if (this.plugin.api === 2 && this.plugin.import != null) {
+      return this.plugin.import(importContext, ...args);
+    }
+    throw new SourceNoImportError({ name: this.type });
   }
 }
 

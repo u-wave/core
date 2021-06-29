@@ -47,7 +47,7 @@ async function start() {
     timeout: 10,
   });
 
-  uw.use(async (uw) => {
+  uw.use(async function configureExpress(uw) {
     uw.express.set('json spaces', 2);
   });
 
@@ -64,7 +64,7 @@ async function start() {
     seed: Buffer.from('8286a5e55c62d93a042b8c56c8face52c05354c288807d941751f0e9060c2ded', 'hex'),
   });
 
-  uw.use(async (uw) => {
+  uw.use(async function configureSources(uw) {
     if (process.env.YOUTUBE_API_KEY) {
       uw.source(ytSource,  {
         key: process.env.YOUTUBE_API_KEY,

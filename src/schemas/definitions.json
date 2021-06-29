@@ -17,18 +17,21 @@
       "properties": {
         "page": {
           "type": "object",
+          "$comment": "This schema is used for validating query strings, so all the properties are strings",
           "properties": {
-            "offset": { "type": "integer", "minimum": 0 },
-            "limit": { "type": "integer", "minimum": 0 }
+            "offset": { "type": "string", "pattern": "^\\d+$" },
+            "limit": { "type": "string", "pattern": "^\\d+$" }
           }
         }
-      }
+      },
+      "required": ["page"]
     },
     "LegacyPagination": {
       "type": "object",
+      "$comment": "This schema is used for validating query strings, so all the properties are strings",
       "properties": {
-        "page": { "type": "integer", "minimum": 0 },
-        "limit": { "type": "integer", "minimum": 0 }
+        "page": { "type": "string", "pattern": "^\\d+$" },
+        "limit": { "type": "string", "pattern": "^\\d+$" }
       }
     }
   }

@@ -5,16 +5,22 @@ const { HTTPError } = require('../errors');
 const MONGO_DUPLICATE_KEY_ERROR = 11000;
 const MONGO_DUPLICATE_KEY_ERROR2 = 11001;
 
+/**
+ * @param {Error | import('mongodb').MongoError} error
+ * @returns {boolean}
+ */
 function isDuplicateKeyError(error) {
-  return error.code === MONGO_DUPLICATE_KEY_ERROR
-    || error.code === MONGO_DUPLICATE_KEY_ERROR2;
+  return 'code' in error && (
+    error.code === MONGO_DUPLICATE_KEY_ERROR
+    || error.code === MONGO_DUPLICATE_KEY_ERROR2
+  );
 }
 
 /**
  * Turn duplicate key errors from Mongo into useful-for-humans error messages.
  *
  * @param {Error} error Error instance that may be a duplicate key error.
- * @return More useful error if a MongoDB duplicate key error was given,
+ * @return {Error} More useful error if a MongoDB duplicate key error was given,
  *    otherwise the given error, unchanged.
  */
 function beautifyDuplicateKeyError(error) {

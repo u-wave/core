@@ -2,7 +2,14 @@
 
 const UwaveError = require('./UwaveError');
 
+/**
+ * @deprecated
+ */
 class PermissionError extends UwaveError {
+  /**
+   * @param {string} message
+   * @param {{ requiredRole: string }} options
+   */
   constructor(message, { requiredRole }) {
     super(message);
     this.expose = true;

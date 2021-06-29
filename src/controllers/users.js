@@ -17,6 +17,14 @@ const { muteUser, unmuteUser } = require('./chat');
 
 const debug = createDebug('uwave:http:users');
 
+/**
+ * @typedef {object} GetUsersQuery
+ * @prop {string} filter
+ */
+
+/**
+ * @type {import('../types').AuthenticatedController<{}, GetUsersQuery>}
+ */
 async function getUsers(req) {
   const { filter } = req.query;
   const pagination = getOffsetPagination(req.query, {
@@ -30,10 +38,17 @@ async function getUsers(req) {
 
   return toPaginatedResponse(userList, {
     baseUrl: req.fullUrl,
-    filter,
   });
 }
 
+/**
+ * @typedef {object} GetUserParams
+ * @prop {string} id
+ */
+
+/**
+ * @type {import('../types').Controller<GetUserParams>}
+ */
 async function getUser(req) {
   const { users } = req.uwave;
   const { id: userID } = req.params;
@@ -48,6 +63,14 @@ async function getUser(req) {
   });
 }
 
+/**
+ * @typedef {object} GetUserRolesParams
+ * @prop {string} id
+ */
+
+/**
+ * @type {import('../types').Controller<GetUserRolesParams>}
+ */
 async function getUserRoles(req) {
   const { acl, users } = req.uwave;
   const { id } = req.params;
@@ -64,6 +87,15 @@ async function getUserRoles(req) {
   });
 }
 
+/**
+ * @typedef {object} AddUserRoleParams
+ * @prop {string} id
+ * @prop {string} role
+ */
+
+/**
+ * @type {import('../types').AuthenticatedController<AddUserRoleParams>}
+ */
 async function addUserRole(req) {
   const { user: moderator } = req;
   const { id, role } = req.params;
@@ -71,7 +103,7 @@ async function addUserRole(req) {
 
   const selfHasRole = await acl.isAllowed(moderator, role);
   if (!selfHasRole) {
-    throw new PermissionError('You cannot assign roles you do not have');
+    throw new PermissionError({ requiredRole: role });
   }
 
   const user = await users.getUser(id);
@@ -86,6 +118,15 @@ async function addUserRole(req) {
   });
 }
 
+/**
+ * @typedef {object} RemoveUserRoleParams
+ * @prop {string} id
+ * @prop {string} role
+ */
+
+/**
+ * @type {import('../types').AuthenticatedController<RemoveUserRoleParams>}
+ */
 async function removeUserRole(req) {
   const { user: moderator } = req;
   const { id, role } = req.params;
@@ -93,7 +134,7 @@ async function removeUserRole(req) {
 
   const selfHasRole = await acl.isAllowed(moderator, role);
   if (!selfHasRole) {
-    throw new PermissionError('You cannot remove roles you do not have');
+    throw new PermissionError({ requiredRole: role });
   }
 
   const user = await users.getUser(id);
@@ -108,6 +149,17 @@ async function removeUserRole(req) {
   });
 }
 
+/**
+ * @typedef {object} ChangeUsernameParams
+ * @prop {string} id
+ *
+ * @typedef {object} ChangeUsernameBody
+ * @prop {string} username
+ */
+
+/**
+ * @type {import('../types').AuthenticatedController<ChangeUsernameParams, {}, ChangeUsernameBody>}
+ */
 async function changeUsername(req) {
   const { user: moderator } = req;
   const { id } = req.params;
@@ -127,13 +179,18 @@ async function changeUsername(req) {
   }
 }
 
+/**
+ * @returns {Promise<import('type-fest').JsonObject>}
+ */
 async function changeAvatar() {
   throw new HTTPError(500, 'Not implemented');
 }
 
-async function disconnectUser(uw, user) {
-  const userID = typeof user === 'object' ? `${user._id}` : user;
-
+/**
+ * @param {import('../Uwave')} uw
+ * @param {import('mongodb').ObjectID} userID
+ */
+async function disconnectUser(uw, userID) {
   await skipIfCurrentDJ(uw, userID);
 
   try {
@@ -142,11 +199,19 @@ async function disconnectUser(uw, user) {
     // Ignore
   }
 
-  await uw.redis.lrem('users', 0, userID);
+  await uw.redis.lrem('users', 0, userID.toString());
 
-  uw.publish('user:leave', { userID });
+  uw.publish('user:leave', { userID: userID.toString() });
 }
 
+/**
+ * @typedef {object} GetHistoryParams
+ * @prop {string} id
+ */
+
+/**
+ * @type {import('../types').Controller<GetHistoryParams>}
+ */
 async function getHistory(req) {
   const { id } = req.params;
   const pagination = getOffsetPagination(req.query, {

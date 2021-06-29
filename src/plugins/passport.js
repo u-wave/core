@@ -9,16 +9,48 @@ const JWTStrategy = require('../auth/JWTStrategy');
 
 const schema = require('../schemas/socialAuth.json');
 
+/**
+ * @typedef {import('../models/User').User} User
+ *
+ * @typedef {{
+ *   callbackURL?: string,
+ * } & ({
+ *   enabled: false,
+ * } | {
+ *   enabled: true,
+ *   clientID: string,
+ *   clientSecret: string,
+ * })} GoogleOptions
+ *
+ * @typedef {object} SocialAuthSettings
+ * @prop {GoogleOptions} google
+ */
+
 class PassportPlugin extends Passport {
+  /**
+   * @param {import('../Uwave')} uw
+   * @param {{ secret: Buffer|string }} options
+   */
   constructor(uw, options) {
     super();
 
     this.uw = uw;
-    this.socialLogin = this.socialLogin.bind(this);
 
+    /**
+     * @param {Express.User} user
+     * @returns {Promise<string>}
+     */
     function serializeUser(user) {
-      return Promise.resolve(user.id);
+      /** @type {string} */
+      // @ts-ignore `user` is actually an instance of the User model
+      // but we can't express that
+      const userID = user.id;
+      return Promise.resolve(userID);
     }
+    /**
+     * @param {string} id
+     * @returns {Promise<User>}
+     */
     function deserializeUser(id) {
       return uw.users.getUser(id);
     }
@@ -26,6 +58,11 @@ class PassportPlugin extends Passport {
     this.serializeUser(callbackify(serializeUser));
     this.deserializeUser(callbackify(deserializeUser));
 
+    /**
+     * @param {string} email
+     * @param {string} password
+     * @returns {Promise<User>}
+     */
     function localLogin(email, password) {
       return uw.users.login({ type: 'local', email, password });
     }
@@ -43,18 +80,27 @@ class PassportPlugin extends Passport {
         this.applyAuthStrategies(settings);
       }
     });
+  }
 
-    uw.config.get(schema['uw:key'])
-      .then((settings) => this.applyAuthStrategies(settings))
-      .catch((err) => {
-        debug('social auth setup error', err);
-      });
+  /**
+   * Must be called once on boot.
+   */
+  async loadRuntimeConfiguration() {
+    /** @type {SocialAuthSettings} */
+    // @ts-ignore `get()` returns a validated object with default values populated
+    const settings = await this.uw.config.get(schema['uw:key']);
+    try {
+      this.applyAuthStrategies(settings);
+    } catch (error) {
+      // The schema doesn't _quite_ protect against all possible misconfiguration
+      debug('applying social auth settings failed', error);
+    }
   }
 
   /**
    * @param {string} accessToken
    * @param {string} refreshToken
-   * @param {{ provider: string }} profile
+   * @param {import('passport').Profile} profile
    * @returns {Promise<User>}
    * @private
    */
@@ -65,15 +111,30 @@ class PassportPlugin extends Passport {
     });
   }
 
+  /**
+   * @param {string} strategy
+   * @returns {boolean}
+   */
   supports(strategy) {
-    return this._strategy(strategy) !== undefined; // eslint-disable-line no-underscore-dangle
+    // @ts-ignore
+    // eslint-disable-next-line no-underscore-dangle
+    return this._strategy(strategy) !== undefined;
   }
 
+  /**
+   * @returns {string[]}
+   */
   strategies() {
-    return Object.keys(this._strategies) // eslint-disable-line no-underscore-dangle
+    // @ts-ignore
+    // eslint-disable-next-line no-underscore-dangle
+    return Object.keys(this._strategies)
       .filter((strategy) => strategy !== 'session' && strategy !== 'jwt');
   }
 
+  /**
+   * @param {SocialAuthSettings} settings
+   * @private
+   */
   applyAuthStrategies(settings) {
     debug('reapplying settings');
     this.unuse('google');
@@ -84,14 +145,20 @@ class PassportPlugin extends Passport {
         callbackURL: '/auth/service/google/callback',
         ...settings.google,
         scope: ['profile'],
-      }, callbackify(this.socialLogin)));
+      }, callbackify(this.socialLogin.bind(this))));
     }
   }
 }
 
-async function passportPlugin(uw, options = {}) {
+/**
+ * @param {import('../Uwave')} uw
+ * @param {{ secret: Buffer|string }} options
+ */
+async function passportPlugin(uw, options) {
   debug('setup');
   uw.passport = new PassportPlugin(uw, options);
+  await uw.passport.loadRuntimeConfiguration();
 }
 
 module.exports = passportPlugin;
+module.exports.Passport = PassportPlugin;

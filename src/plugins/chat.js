@@ -2,11 +2,23 @@
 
 const routes = require('../routes/chat');
 
+/**
+ * @typedef {import('../models').User} User
+ *
+ * @typedef {object} ChatOptions
+ * @prop {number} maxLength
+ */
+
+/** @type {ChatOptions} */
 const defaultOptions = {
   maxLength: 300,
 };
 
 class Chat {
+  /**
+   * @param {import('../Uwave')} uw
+   * @param {Partial<ChatOptions>} [options]
+   */
   constructor(uw, options = {}) {
     this.uw = uw;
 
@@ -18,36 +30,59 @@ class Chat {
     this.chatID = Date.now();
   }
 
-  async mute(user, duration, opts = {}) {
+  /**
+   * @param {User} user
+   * @param {number} duration
+   * @param {{ moderator: User }} options
+   */
+  async mute(user, duration, options) {
     await this.uw.redis.set(
-      `mute:${user.id}`, opts.moderator.id,
+      `mute:${user.id}`, options.moderator.id,
       'PX', duration,
     );
 
     this.uw.publish('chat:mute', {
-      moderatorID: opts.moderator.id,
+      moderatorID: options.moderator.id,
       userID: user.id,
       duration,
     });
   }
 
-  async unmute(user, opts = {}) {
+  /**
+   * @param {User} user
+   * @param {{ moderator: User }} options
+   */
+  async unmute(user, options) {
     await this.uw.redis.del(`mute:${user.id}`);
 
     this.uw.publish('chat:unmute', {
-      moderatorID: opts.moderator.id,
+      moderatorID: options.moderator.id,
       userID: user.id,
     });
   }
 
+  /**
+   * @param {User} user
+   *
+   * @private
+   */
   isMuted(user) {
     return this.uw.redis.exists(`mute:${user.id}`);
   }
 
+  /**
+   * @param {string} message
+   *
+   * @private
+   */
   truncate(message) {
     return message.slice(0, this.options.maxLength);
   }
 
+  /**
+   * @param {User} user
+   * @param {string} message
+   */
   async send(user, message) {
     if (await this.isMuted(user)) {
       return;
@@ -63,21 +98,26 @@ class Chat {
     });
   }
 
-  delete(filter = {}, opts = {}) {
+  /**
+   * @param {{ id: string } | { userID: string } | {}} filter
+   * @param {{ moderator: User }} options
+   */
+  delete(filter, options) {
     const deletion = {
       filter: typeof filter === 'string' ? { id: filter } : filter,
+      moderatorID: options.moderator.id,
     };
-
-    if (opts.moderator) {
-      deletion.moderatorID = opts.moderator.id;
-    }
 
     this.uw.publish('chat:delete', deletion);
   }
 }
 
-async function chat(uw, opts = {}) {
-  uw.chat = new Chat(uw, opts);
+/**
+ * @param {import('../Uwave')} uw
+ * @param {Partial<ChatOptions>} [options]
+ */
+async function chat(uw, options = {}) {
+  uw.chat = new Chat(uw, options);
   uw.httpApi.use('/chat', routes());
 }
 

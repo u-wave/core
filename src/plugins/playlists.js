@@ -2,15 +2,39 @@
 
 const { groupBy, shuffle } = require('lodash');
 const escapeStringRegExp = require('escape-string-regexp');
-const createDebug = require('debug');
-const { ObjectID } = require('mongoose').mongo;
-const { PlaylistNotFoundError } = require('../errors');
-const NotFoundError = require('../errors/NotFoundError');
+const debug = require('debug')('uwave:playlists');
+const {
+  PlaylistNotFoundError,
+  PlaylistItemNotFoundError,
+  ItemNotInPlaylistError,
+  MediaNotFoundError,
+} = require('../errors');
 const Page = require('../Page');
 const routes = require('../routes/playlists');
 
-const debug = createDebug('uwave:playlists');
+/**
+ * @typedef {import('mongodb').ObjectID} ObjectID
+ * @typedef {import('../models').User} User
+ * @typedef {import('../models').Playlist} Playlist
+ * @typedef {import('../models').PlaylistItem} PlaylistItem
+ * @typedef {import('../models').Media} Media
+ * @typedef {{ media: Media }} PopulateMedia
+ */
 
+/**
+ * @typedef {object} PlaylistItemDesc
+ * @prop {string} sourceType
+ * @prop {string|number} sourceID
+ * @prop {string} artist
+ * @prop {string} title
+ * @prop {number} [start]
+ * @prop {number} [end]
+ */
+
+/**
+ * @param {PlaylistItemDesc} item
+ * @returns {boolean}
+ */
 function isValidPlaylistItem(item) {
   return typeof item === 'object'
     && typeof item.sourceType === 'string'
@@ -19,6 +43,9 @@ function isValidPlaylistItem(item) {
 
 /**
  * Calculate valid start/end times for a playlist item.
+ *
+ * @param {PlaylistItemDesc} item
+ * @param {Media} media
  */
 function getStartEnd(item, media) {
   let { start, end } = item;
@@ -35,6 +62,10 @@ function getStartEnd(item, media) {
   return { start, end };
 }
 
+/**
+ * @param {PlaylistItemDesc} itemProps
+ * @param {Media} media
+ */
 function toPlaylistItem(itemProps, media) {
   const { artist, title } = itemProps;
   const { start, end } = getStartEnd(itemProps, media);
@@ -48,12 +79,19 @@ function toPlaylistItem(itemProps, media) {
 }
 
 class PlaylistsRepository {
+  /**
+   * @param {import('../Uwave')} uw
+   */
   constructor(uw) {
     this.uw = uw;
   }
 
+  /**
+   * @param {ObjectID} id
+   * @return {Promise<Playlist>}
+   */
   async getPlaylist(id) {
-    const Playlist = this.uw.model('Playlist');
+    const { Playlist } = this.uw.models;
     if (id instanceof Playlist) {
       return id;
     }
@@ -64,32 +102,43 @@ class PlaylistsRepository {
     return playlist;
   }
 
+  /**
+   * @param {ObjectID} id
+   * @return {Promise<Media>}
+   */
   async getMedia(id) {
-    const Media = this.uw.model('Media');
+    const { Media } = this.uw.models;
     if (id instanceof Media) {
       return id;
     }
     const media = await Media.findById(id);
     if (!media) {
-      throw new NotFoundError('Media not found.');
+      throw new MediaNotFoundError({ id });
     }
     return media;
   }
 
+  /**
+   * @param {User} user
+   * @param {ObjectID} id
+   * @returns {Promise<Playlist>}
+   */
   async getUserPlaylist(user, id) {
-    const Playlist = this.uw.model('Playlist');
-    const userID = typeof user === 'object' ? user.id : user;
-    const playlist = await Playlist.findOne({ _id: id, author: userID });
+    const { Playlist } = this.uw.models;
+    const playlist = await Playlist.findOne({ _id: id, author: user._id });
     if (!playlist) {
       throw new PlaylistNotFoundError({ id });
     }
     return playlist;
   }
 
-  async createPlaylist(userID, { name }) {
-    const { users } = this.uw;
-    const Playlist = this.uw.model('Playlist');
-    const user = await users.getUser(userID);
+  /**
+   * @param {User} user
+   * @param {{ name: string }} options
+   * @returns {Promise<Playlist>}
+   */
+  async createPlaylist(user, { name }) {
+    const { Playlist } = this.uw.models;
 
     const playlist = await Playlist.create({
       name,
@@ -106,45 +155,66 @@ class PlaylistsRepository {
     return playlist;
   }
 
+  /**
+   * @param {User} user
+   * @returns {Promise<Playlist[]>}
+   */
   async getUserPlaylists(user) {
-    const Playlist = this.uw.model('Playlist');
+    const { Playlist } = this.uw.models;
     const userID = typeof user === 'object' ? user.id : user;
     const playlists = await Playlist.where('author').eq(userID).lean();
     return playlists;
   }
 
-  async updatePlaylist(playlistOrID, patch = {}) {
-    const playlist = await this.getPlaylist(playlistOrID);
+  /**
+   * @param {Playlist} playlist
+   * @param {object} patch
+   * @returns {Promise<Playlist>}
+   */
+  // eslint-disable-next-line class-methods-use-this
+  async updatePlaylist(playlist, patch = {}) {
     Object.assign(playlist, patch);
-    return playlist.save();
+    await playlist.save();
+    return playlist;
   }
 
-  async shufflePlaylist(playlistOrID) {
-    const playlist = await this.getPlaylist(playlistOrID);
+  /**
+   * @param {Playlist} playlist
+   * @returns {Promise<Playlist>}
+   */
+  // eslint-disable-next-line class-methods-use-this
+  async shufflePlaylist(playlist) {
     playlist.media = shuffle(playlist.media);
-    return playlist.save();
+    await playlist.save();
+    return playlist;
   }
 
-  async deletePlaylist(playlistOrID) {
-    const playlist = await this.getPlaylist(playlistOrID);
-
+  /**
+   * @param {Playlist} playlist
+   * @returns {Promise<void>}
+   */
+  // eslint-disable-next-line class-methods-use-this
+  async deletePlaylist(playlist) {
     await playlist.remove();
-
-    return {};
   }
 
-  async getPlaylistItem(itemID) {
-    const PlaylistItem = this.uw.model('PlaylistItem');
+  /**
+   * @param {Playlist} playlist
+   * @param {ObjectID} itemID
+   * @returns {Promise<PlaylistItem & PopulateMedia>}
+   */
+  async getPlaylistItem(playlist, itemID) {
+    const { PlaylistItem } = this.uw.models;
 
-    let item;
-    if (itemID instanceof PlaylistItem) {
-      item = itemID;
-    } else {
-      item = await PlaylistItem.findById(itemID);
+    const playlistItemID = playlist.media.find((id) => id.equals(itemID));
+
+    if (!playlistItemID) {
+      throw new ItemNotInPlaylistError({ playlistID: playlist._id, itemID });
     }
 
+    const item = await PlaylistItem.findById(playlistItemID);
     if (!item) {
-      throw new NotFoundError('Playlist item not found.');
+      throw new PlaylistItemNotFoundError({ id: playlistItemID });
     }
 
     if (!item.populated('media')) {
@@ -154,9 +224,16 @@ class PlaylistsRepository {
     return item;
   }
 
-  async getPlaylistItems(playlistOrID, filter = null, pagination = null) {
-    const playlist = await this.getPlaylist(playlistOrID);
+  /**
+   * @param {Playlist} playlist
+   * @param {string|undefined} filter
+   * @param {{ offset: number, limit: number }} pagination
+   * @returns {Promise<Page<PlaylistItem, { offset: number, limit: number }>>}
+   */
+  async getPlaylistItems(playlist, filter, pagination) {
+    const { Playlist } = this.uw.models;
 
+    /** @type {object[]} */
     const aggregate = [
       // find the playlist
       { $match: { _id: playlist._id } },
@@ -186,14 +263,11 @@ class PlaylistsRepository {
     const aggregateCount = [
       { $count: 'filtered' },
     ];
-    const aggregateItems = [];
-
-    if (pagination) {
-      aggregateItems.push(
-        { $skip: pagination.offset },
-        { $limit: pagination.limit },
-      );
-    }
+    /** @type {object[]} */
+    const aggregateItems = [
+      { $skip: pagination.offset },
+      { $limit: pagination.limit },
+    ];
 
     // look up the media items after this is all filtered down
     aggregateItems.push(
@@ -212,37 +286,40 @@ class PlaylistsRepository {
       },
     });
 
-    const [{ count, items }] = await this.uw.model('Playlist').aggregate(aggregate);
+    const [{ count, items }] = await Playlist.aggregate(aggregate);
 
     // `items` is the same shape as a PlaylistItem instance!
     return new Page(items, {
-      pageSize: pagination ? pagination.limit : null,
+      pageSize: pagination.limit,
       // `count` can be the empty array if the playlist has no items
       filtered: count.length === 1 ? count[0].filtered : playlist.media.length,
       total: playlist.media.length,
 
       current: pagination,
-      next: pagination ? {
+      next: {
         offset: pagination.offset + pagination.limit,
         limit: pagination.limit,
-      } : null,
-      previous: pagination ? {
+      },
+      previous: {
         offset: Math.max(pagination.offset - pagination.limit, 0),
         limit: pagination.limit,
-      } : null,
+      },
     });
   }
 
   /**
    * Get playlists containing a particular Media.
    *
-   * @param {Media|ObjectID|string} mediaOrID
-   * @param {{ author?: ObjectID }} options
+   * @typedef {object} GetPlaylistsContainingMediaOptions
+   * @prop {ObjectID} [author]
+   * @prop {string[]} [fields]
+   *
+   * @param {ObjectID} mediaID
+   * @param {GetPlaylistsContainingMediaOptions} options
    * @return {Promise<Playlist[]>}
    */
-  async getPlaylistsContainingMedia(mediaOrID, options = {}) {
-    const Playlist = this.uw.model('Playlist');
-    const media = await this.getMedia(mediaOrID);
+  async getPlaylistsContainingMedia(mediaID, options = {}) {
+    const { Playlist } = this.uw.models;
 
     const aggregate = [];
     if (options.author) {
@@ -257,13 +334,14 @@ class PlaylistsRepository {
         },
       },
       // check if any media entry contains the id
-      { $match: { 'media.media': media._id } },
+      { $match: { 'media.media': mediaID } },
       // reduce data sent in `media` array—this is still needed to match the result of other
       // `getPlaylists()` functions
       { $addFields: { media: '$media.media' } },
     );
 
     if (options.fields) {
+      /** @type {Record<string, 1>} */
       const fields = {};
       options.fields.forEach((fieldName) => {
         fields[fieldName] = 1;
@@ -281,30 +359,13 @@ class PlaylistsRepository {
    * Get playlists that contain any of the given medias. If multiple medias are in a single
    * playlist, that playlist will be returned multiple times, keyed on the media's unique ObjectID.
    *
-   * @param {Media[]|string[]|ObjectID[]} mediasOrIDs
+   * @param {ObjectID[]} mediaIDs
    * @param {{ author?: ObjectID }} options
    * @return {Promise<Map<string, Playlist[]>>}
    *   A map of stringified `Media` `ObjectID`s to the Playlist objects that contain them.
    */
-  async getPlaylistsContainingAnyMedia(mediasOrIDs, options = {}) {
-    const Media = this.uw.model('Media');
-    const Playlist = this.uw.model('Playlist');
-
-    if (!Array.isArray(mediasOrIDs)) {
-      throw new TypeError('playlists.getPlaylistsContainingAnyMedia: mediasOrIDs must be an array');
-    }
-    const mediaIds = mediasOrIDs.map((media) => {
-      if (typeof media === 'string') {
-        return new ObjectID(media);
-      }
-      if (media instanceof ObjectID) {
-        return media;
-      }
-      if (media instanceof Media) {
-        return media._id;
-      }
-      throw new TypeError('playlists.getPlaylistsContainingAnyMedia: mediasOrIDs must contain strings, ObjectIds, or Media instances');
-    });
+  async getPlaylistsContainingAnyMedia(mediaIDs, options = {}) {
+    const { Playlist } = this.uw.models;
 
     const aggregate = [];
 
@@ -330,7 +391,7 @@ class PlaylistsRepository {
                     // Are in any of the matching playlists;
                     { $in: ['$_id', '$$itemID'] },
                     // Have a `.media` property that was listed.
-                    { $in: ['$media', mediaIds] },
+                    { $in: ['$media', mediaIDs] },
                   ],
                 },
               },
@@ -365,71 +426,92 @@ class PlaylistsRepository {
 
   /**
    * Bulk create playlist items from arbitrary sources.
+   *
+   * @param {User} user
+   * @param {PlaylistItemDesc[]} items
    */
-  async createPlaylistItems(userID, items) {
-    const Media = this.uw.model('Media');
-    const PlaylistItem = this.uw.model('PlaylistItem');
-    const User = this.uw.model('User');
+  async createPlaylistItems(user, items) {
+    const { Media, PlaylistItem } = this.uw.models;
 
     if (!items.every(isValidPlaylistItem)) {
       throw new Error('Cannot add a playlist item without a proper media source type and ID.');
     }
 
-    const user = await User.findById(userID);
-
     // Group by source so we can retrieve all unknown medias from the source in
     // one call.
     const itemsBySourceType = groupBy(items, 'sourceType');
+    /**
+     * @type {{ media: Media, artist: string, title: string, start: number, end: number }[]}
+     */
     const playlistItems = [];
     const promises = Object.entries(itemsBySourceType).map(async ([sourceType, sourceItems]) => {
+      /** @type {Media[]} */
       const knownMedias = await Media.find({
         sourceType,
-        sourceID: { $in: sourceItems.map((item) => item.sourceID) },
+        sourceID: { $in: sourceItems.map((item) => String(item.sourceID)) },
       });
 
+      /** @type {Set<string>} */
       const knownMediaIDs = new Set();
       knownMedias.forEach((knownMedia) => {
         knownMediaIDs.add(knownMedia.sourceID);
       });
 
+      /** @type {string[]} */
       const unknownMediaIDs = [];
       sourceItems.forEach((item) => {
         if (!knownMediaIDs.has(String(item.sourceID))) {
-          unknownMediaIDs.push(item.sourceID);
+          unknownMediaIDs.push(String(item.sourceID));
         }
       });
 
       let allMedias = knownMedias;
       if (unknownMediaIDs.length > 0) {
+        // @ts-ignore
         const unknownMedias = await this.uw.source(sourceType)
           .get(user, unknownMediaIDs);
         allMedias = allMedias.concat(await Media.create(unknownMedias));
       }
 
-      const itemsWithMedia = sourceItems.map((item) => toPlaylistItem(
-        item,
-        allMedias.find((media) => media.sourceID === String(item.sourceID)),
-      ));
+      const itemsWithMedia = sourceItems.map((item) => {
+        const media = allMedias.find((compare) => compare.sourceID === String(item.sourceID));
+        if (!media) {
+          throw new MediaNotFoundError({ sourceType: item.sourceType, sourceID: item.sourceID });
+        }
+        return toPlaylistItem(item, media);
+      });
       playlistItems.push(...itemsWithMedia);
     });
 
     await Promise.all(promises);
 
+    if (playlistItems.length === 0) {
+      return [];
+    }
     return PlaylistItem.create(playlistItems);
   }
 
   /**
    * Add items to a playlist.
+   *
+   * @param {Playlist} playlist
+   * @param {PlaylistItemDesc[]} items
+   * @param {{ after?: ObjectID|null }} options
+   * @returns {Promise<{
+   *   added: PlaylistItem[],
+   *   afterID: ObjectID?,
+   *   playlistSize: number,
+   * }>}
    */
-  async addPlaylistItems(playlistOrID, items, { after = null } = {}) {
-    const playlist = await this.getPlaylist(playlistOrID);
-    const userID = playlist.author.toString();
-    const newItems = await this.createPlaylistItems(userID, items);
+  async addPlaylistItems(playlist, items, { after = null } = {}) {
+    const { users } = this.uw;
+    const user = await users.getUser(playlist.author);
+    const newItems = await this.createPlaylistItems(user, items);
     const oldMedia = playlist.media;
-    const insertIndex = oldMedia.findIndex((item) => `${item}` === after);
+    const insertIndex = after === null ? 0 : oldMedia.findIndex((item) => item.equals(after));
     playlist.media = [
       ...oldMedia.slice(0, insertIndex + 1),
-      ...newItems,
+      ...newItems.map((item) => item._id),
       ...oldMedia.slice(insertIndex + 1),
     ];
 
@@ -442,26 +524,39 @@ class PlaylistsRepository {
     };
   }
 
-  async updatePlaylistItem(itemOrID, patch = {}) {
-    const item = await this.getPlaylistItem(itemOrID);
-
+  /**
+   * @param {PlaylistItem} item
+   * @param {object} patch
+   * @returns {Promise<PlaylistItem>}
+   */
+  // eslint-disable-next-line class-methods-use-this
+  async updatePlaylistItem(item, patch = {}) {
     Object.assign(item, patch);
-
-    return item.save();
+    await item.save();
+    return item;
   }
 
-  async movePlaylistItems(playlistOrID, itemIDs, { afterID }) {
-    const playlist = await this.getPlaylist(playlistOrID);
-
+  /**
+   * @param {Playlist} playlist
+   * @param {ObjectID[]} itemIDs
+   * @param {{ afterID: ObjectID? }} options
+   */
+  // eslint-disable-next-line class-methods-use-this
+  async movePlaylistItems(playlist, itemIDs, { afterID }) {
     // Use a plain array instead of a mongoose array because we need `splice()`.
     const itemsInPlaylist = [...playlist.media];
     const itemIDsInPlaylist = new Set(itemsInPlaylist.map((item) => `${item}`));
     // Only attempt to move items that are actually in the playlist.
     const itemIDsToInsert = itemIDs.filter((id) => itemIDsInPlaylist.has(`${id}`));
 
-    const newMedia = itemsInPlaylist.filter((item) => !itemIDsToInsert.includes(`${item}`));
+    // Remove the items that we are about to move.
+    const newMedia = itemsInPlaylist.filter((item) => (
+      itemIDsToInsert.every((insert) => !insert.equals(item))
+    ));
     // Reinsert items at their new position.
-    const insertIndex = newMedia.findIndex((item) => `${item}` === `${afterID}`);
+    const insertIndex = afterID
+      ? newMedia.findIndex((item) => item.equals(afterID))
+      : -1;
     newMedia.splice(insertIndex + 1, 0, ...itemIDsToInsert);
     playlist.media = newMedia;
 
@@ -470,16 +565,21 @@ class PlaylistsRepository {
     return {};
   }
 
-  async removePlaylistItems(playlistOrID, itemsOrIDs) {
-    const PlaylistItem = this.uw.model('PlaylistItem');
-    const playlist = await this.getPlaylist(playlistOrID);
+  /**
+   * @param {Playlist} playlist
+   * @param {ObjectID[]} itemIDs
+   */
+  async removePlaylistItems(playlist, itemIDs) {
+    const { PlaylistItem } = this.uw.models;
 
     // Only remove items that are actually in this playlist.
-    const stringIDs = itemsOrIDs.map((item) => String(item));
+    const stringIDs = new Set(itemIDs.map((item) => String(item)));
+    /** @type {ObjectID[]} */
     const toRemove = [];
+    /** @type {ObjectID[]} */
     const toKeep = [];
     playlist.media.forEach((itemID) => {
-      if (stringIDs.indexOf(`${itemID}`) !== -1) {
+      if (stringIDs.has(`${itemID}`)) {
         toRemove.push(itemID);
       } else {
         toKeep.push(itemID);
@@ -488,12 +588,15 @@ class PlaylistsRepository {
 
     playlist.media = toKeep;
     await playlist.save();
-    await PlaylistItem.remove({ _id: { $in: toRemove } });
+    await PlaylistItem.deleteMany({ _id: { $in: toRemove } });
 
     return {};
   }
 }
 
+/**
+ * @param {import('../Uwave')} uw
+ */
 async function playlistsPlugin(uw) {
   uw.playlists = new PlaylistsRepository(uw);
   uw.httpApi.use('/playlists', routes());
