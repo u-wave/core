@@ -1,5 +1,7 @@
 'use strict';
 
+const pkg = require('./package.json');
+
 module.exports = {
   extends: ['airbnb-base', 'plugin:node/recommended'],
 
@@ -51,12 +53,32 @@ module.exports = {
 
   overrides: [
     {
+      files: ['*.mjs'],
+      rules: {
+        'import/extensions': ['error', 'ignorePackages'],
+        'import/no-unresolved': ['error', {
+          ignore: [pkg.name], // not ideal!
+        }],
+      },
+      settings: {
+        node: {
+          allowModules: [pkg.name],
+        },
+      },
+    },
+    {
       files: ['test/**/*.js'],
       env: {
         mocha: true,
       },
       rules: {
         'node/no-unpublished-require': 'off',
+      },
+    },
+    {
+      files: ['test/**/*.mjs'],
+      env: {
+        mocha: true,
       },
     },
   ],
