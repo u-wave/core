@@ -6,6 +6,9 @@ const { SourceNotFoundError } = require('../errors');
 const toListResponse = require('../utils/toListResponse');
 
 // TODO should be deprecated once the Web client uses the better single-source route.
+/**
+ * @type {import('../types').AuthenticatedController}
+ */
 async function searchAll(req) {
   const { user } = req;
   const { query } = req.query;
@@ -21,6 +24,7 @@ async function searchAll(req) {
 
   const searchResults = await Promise.all(searches);
 
+  /** @type {Record<string, import('../plugins/playlists').PlaylistItemDesc[]>} */
   const combinedResults = {};
   sourceNames.forEach((name, index) => {
     combinedResults[name] = searchResults[index];
@@ -29,6 +33,10 @@ async function searchAll(req) {
   return combinedResults;
 }
 
+/**
+ * @param {import('../Uwave')} uw
+ * @param {Map<string, Record<string, unknown>>} updates
+ */
 async function updateSourceData(uw, updates) {
   const { Media } = uw.models;
   const ops = [];
@@ -46,6 +54,9 @@ async function updateSourceData(uw, updates) {
   await Media.bulkWrite(ops);
 }
 
+/**
+ * @type {import('../types').AuthenticatedController}
+ */
 async function search(req) {
   const { user } = req;
   const { source: sourceName } = req.params;
@@ -70,11 +81,13 @@ async function search(req) {
   // features in the source implementation.
   const mediasNeedSourceDataUpdate = new Map();
 
+  /** @type {import('../models').Media[]} */
   const mediasInSearchResults = await Media.find({
     sourceType: sourceName,
     sourceID: { $in: Array.from(searchResultsByID.keys()) },
   });
 
+  /** @type {Map<string, import('../models').Media>} */
   const mediaBySourceID = new Map();
   mediasInSearchResults.forEach((media) => {
     mediaBySourceID.set(media.sourceID, media);
@@ -86,13 +99,14 @@ async function search(req) {
   });
 
   const playlistsByMediaID = await uw.playlists.getPlaylistsContainingAnyMedia(
-    mediasInSearchResults,
+    mediasInSearchResults.map((media) => media._id),
     { author: user._id },
   );
 
   searchResults.forEach((result) => {
-    const media = mediaBySourceID.get(result.sourceID);
+    const media = mediaBySourceID.get(String(result.sourceID));
     if (media) {
+      // @ts-ignore
       result.inPlaylists = playlistsByMediaID.get(media._id.toString());
     }
   });

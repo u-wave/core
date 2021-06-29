@@ -1,30 +1,36 @@
 'use strict';
 
 const {
+  HttpError,
+  BadRequest,
   Forbidden,
-  InternalServerError,
+  Unauthorized,
   NotFound,
   TooManyRequests,
   UnprocessableEntity,
 } = require('http-errors');
 const { t } = require('../locale');
 
-class EmailError extends InternalServerError {
+class APIError extends Error {
+  /** @type {number|undefined} */
+  status;
+
+  /** @type {string|undefined} */
+  code;
+
+  /**
+   * @param {string} message
+   */
   constructor(message) {
     super(message);
-    this.name = 'EmailError';
-  }
-}
-
-class APIError extends Error {
-  constructor(message) {
-    super();
     Error.captureStackTrace(this);
     this.message = message;
   }
 
   /**
    * Hack to force other Error instances to be public.
+   *
+   * @param {Error} error
    */
   static wrap(error) {
     Object.setPrototypeOf(error, APIError.prototype);
@@ -33,27 +39,20 @@ class APIError extends Error {
 }
 
 class CombinedError extends APIError {
+  /**
+   * @param {Error[]} errors
+   */
   constructor(errors) {
     super('Multiple errors');
     this.errors = errors;
   }
 }
 
-class PasswordError extends APIError {
-  constructor(message) {
-    super(message);
-    this.name = 'PasswordError';
-  }
-}
-
-class TokenError extends APIError {
-  constructor(message) {
-    super(message);
-    this.name = 'TokenError';
-  }
-}
-
 class HTTPError extends APIError {
+  /**
+   * @param {number} status
+   * @param {string} message
+   */
   constructor(status, message) {
     super(message);
     this.name = 'HTTPError';
@@ -61,24 +60,31 @@ class HTTPError extends APIError {
   }
 }
 
-class PermissionError extends Forbidden {
-  constructor(message) {
-    super(message);
-    this.name = 'PermissionError';
-  }
-}
-
+/**
+ * @template {import('i18next').StringMap} TData
+ * @param {string} name
+ * @param {{
+ *   code: string,
+ *   string: string | ((data: TData) => string),
+ *   base: typeof import('http-errors').HttpError,
+ * }} options
+ *
+ * @returns {new(data?: TData) => HttpError}
+ */
 function createErrorClass(name, {
   code = 'unknown-error',
   string,
-  base = HTTPError,
+  base = HttpError,
 }) {
   const getString = typeof string !== 'function'
     ? (() => string)
     : string;
 
   return class extends base {
-    constructor(data = {}) {
+    /** @param {TData} [data] */
+    constructor(data) {
+      // @ts-ignore This is actually unsafe but the generic TData type
+      // is hard to express correctly in JSDoc.
       const i18nKey = getString(data);
       super(t(i18nKey, data));
       this.name = name;
@@ -93,6 +99,24 @@ function createErrorClass(name, {
   };
 }
 
+const PermissionError = createErrorClass('PermissionError', {
+  code: 'forbidden',
+  string: 'errors.genericPermission',
+  base: Forbidden,
+});
+
+const LoginRequiredError = createErrorClass('LoginRequiredError', {
+  code: 'forbidden',
+  string: 'errors.loginRequired',
+  base: Unauthorized,
+});
+
+const BannedError = createErrorClass('BannedError', {
+  code: 'banned',
+  string: 'errors.banned',
+  base: Forbidden,
+});
+
 const RateLimitError = createErrorClass('RateLimitError', {
   code: 'too-many-requests',
   string: 'errors.tooManyRequests',
@@ -102,7 +126,7 @@ const RateLimitError = createErrorClass('RateLimitError', {
 const NameChangeRateLimitError = createErrorClass('NameChangeRateLimitError', {
   code: 'too-many-requests',
   string: 'errors.tooManyNameChanges',
-  base: RateLimitError,
+  base: TooManyRequests,
 });
 
 const InvalidEmailError = createErrorClass('InvalidEmailError', {
@@ -114,6 +138,24 @@ const InvalidEmailError = createErrorClass('InvalidEmailError', {
 const InvalidUsernameError = createErrorClass('InvalidUsernameError', {
   code: 'invalid-username',
   string: 'errors.invalidUsername',
+  base: UnprocessableEntity,
+});
+
+const ReCaptchaError = createErrorClass('ReCaptchaError', {
+  code: 'recaptcha-failed',
+  string: 'errors.recaptchaFailed',
+  base: BadRequest,
+});
+
+const IncorrectPasswordError = createErrorClass('IncorrectPasswordError', {
+  code: 'incorrect-password',
+  string: 'errors.incorrectPassword',
+  base: BadRequest,
+});
+
+const InvalidResetTokenError = createErrorClass('InvalidResetTokenError', {
+  code: 'invalid-reset-token',
+  string: 'errors.invalidResetToken',
   base: UnprocessableEntity,
 });
 
@@ -138,6 +180,18 @@ const PlaylistItemNotFoundError = createErrorClass('PlaylistItemNotFoundError', 
 const HistoryEntryNotFoundError = createErrorClass('HistoryEntryNotFoundError', {
   code: 'history-entry-not-found',
   string: 'errors.historyEntryNotFound',
+  base: NotFound,
+});
+
+const MediaNotFoundError = createErrorClass('MediaNotFoundError', {
+  code: 'media-not-found',
+  string: 'errors.mediaNotFound',
+  base: NotFound,
+});
+
+const ItemNotInPlaylistError = createErrorClass('ItemNotInPlaylistError', {
+  code: 'playlist-item-not-found',
+  string: 'errors.itemNotInPlaylist',
   base: NotFound,
 });
 
@@ -171,23 +225,55 @@ const EmptyPlaylistError = createErrorClass('EmptyPlaylistError', {
   base: Forbidden,
 });
 
-exports.EmailError = EmailError;
+const WaitlistLockedError = createErrorClass('WaitlistLockedError', {
+  code: 'waitlist-locked',
+  string: 'errors.waitlistLocked',
+  base: Forbidden,
+});
+
+const AlreadyInWaitlistError = createErrorClass('AlreadyInWaitlistError', {
+  code: 'already-in-waitlist',
+  string: 'errors.alreadyInWaitlist',
+  base: Forbidden,
+});
+
+const UserNotInWaitlistError = createErrorClass('UserNotInWaitlistError', {
+  code: 'not-in-waitlist',
+  string: 'errors.userNotInWaitlist',
+  base: NotFound,
+});
+
+const UserIsPlayingError = createErrorClass('UserIsPlayingError', {
+  code: 'user-is-playing',
+  string: 'errors.userIsPlaying',
+  base: BadRequest,
+});
+
 exports.APIError = APIError;
 exports.CombinedError = CombinedError;
-exports.PasswordError = PasswordError;
-exports.TokenError = TokenError;
 exports.HTTPError = HTTPError;
 exports.PermissionError = PermissionError;
+exports.LoginRequiredError = LoginRequiredError;
+exports.BannedError = BannedError;
 exports.RateLimitError = RateLimitError;
 exports.NameChangeRateLimitError = NameChangeRateLimitError;
 exports.InvalidEmailError = InvalidEmailError;
 exports.InvalidUsernameError = InvalidUsernameError;
+exports.InvalidResetTokenError = InvalidResetTokenError;
+exports.ReCaptchaError = ReCaptchaError;
+exports.IncorrectPasswordError = IncorrectPasswordError;
 exports.UserNotFoundError = UserNotFoundError;
 exports.PlaylistNotFoundError = PlaylistNotFoundError;
 exports.PlaylistItemNotFoundError = PlaylistItemNotFoundError;
 exports.HistoryEntryNotFoundError = HistoryEntryNotFoundError;
+exports.MediaNotFoundError = MediaNotFoundError;
+exports.ItemNotInPlaylistError = ItemNotInPlaylistError;
 exports.CannotSelfFavoriteError = CannotSelfFavoriteError;
 exports.CannotSelfMuteError = CannotSelfMuteError;
 exports.SourceNotFoundError = SourceNotFoundError;
 exports.SourceNoImportError = SourceNoImportError;
 exports.EmptyPlaylistError = EmptyPlaylistError;
+exports.WaitlistLockedError = WaitlistLockedError;
+exports.AlreadyInWaitlistError = AlreadyInWaitlistError;
+exports.UserNotInWaitlistError = UserNotInWaitlistError;
+exports.UserIsPlayingError = UserIsPlayingError;

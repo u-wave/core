@@ -91,9 +91,8 @@ describe('Media Sources', () => {
       uw.source(testSource);
       await supertest(uw.server)
         .get('/api/search/test-source')
-        .set('accept', 'application/json')
         .send()
-        .expect(403);
+        .expect(401);
     });
 
     it('responds to an authenticated request', async () => {

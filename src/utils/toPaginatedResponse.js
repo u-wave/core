@@ -4,6 +4,11 @@ const url = require('url');
 const qs = require('qs');
 const toListResponse = require('./toListResponse');
 
+/**
+ * @param {string} base
+ * @param {object} query
+ * @returns {string}
+ */
 function appendQuery(base, query) {
   // eslint-disable-next-line node/no-deprecated-api
   const parsed = url.parse(base, true);
@@ -11,13 +16,19 @@ function appendQuery(base, query) {
     ...parsed.query,
     ...query,
   });
-  parsed.query = null;
+  parsed.query = {};
   return `${url.format(parsed)}`;
 }
 
+/**
+ * @template {any} TItem
+ * @template {{ offset: number }} TPagination
+ * @param {import('../Page')<TItem, TPagination>} page
+ * @param {{ baseUrl?: string, included?: toListResponse.IncludedOptions }} options
+ */
 function toPaginatedResponse(
   page,
-  { baseUrl = '', included = {} } = {},
+  { baseUrl = '', included } = {},
 ) {
   return Object.assign(toListResponse(page.data, {
     included,

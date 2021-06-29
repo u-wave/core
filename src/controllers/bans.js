@@ -5,6 +5,14 @@ const getOffsetPagination = require('../utils/getOffsetPagination');
 const toItemResponse = require('../utils/toItemResponse');
 const toPaginatedResponse = require('../utils/toPaginatedResponse');
 
+/**
+ * @typedef {object} GetBansQuery
+ * @prop {string} filter
+ */
+
+/**
+ * @type {import('../types').AuthenticatedController<{}, GetBansQuery>}
+ */
 async function getBans(req) {
   const { bans } = req.uwave;
   const { filter } = req.query;
@@ -14,12 +22,23 @@ async function getBans(req) {
 
   return toPaginatedResponse(bansList, {
     included: {
-      user: ['user'],
+      user: ['user', 'moderator'],
     },
     baseUrl: req.fullUrl,
   });
 }
 
+/**
+ * @typedef {object} AddBanBody
+ * @prop {number} [duration]
+ * @prop {string} userID
+ * @prop {boolean} [permanent]
+ * @prop {string} [reason]
+ */
+
+/**
+ * @type {import('../types').AuthenticatedController<{}, {}, AddBanBody>}
+ */
 async function addBan(req) {
   const { user: moderator } = req;
   const { users, bans } = req.uwave;
@@ -47,6 +66,14 @@ async function addBan(req) {
   });
 }
 
+/**
+ * @typedef {object} RemoveBanParams
+ * @prop {string} userID
+ */
+
+/**
+ * @type {import('../types').AuthenticatedController<RemoveBanParams>}
+ */
 async function removeBan(req) {
   const { user: moderator } = req;
   const { bans } = req.uwave;

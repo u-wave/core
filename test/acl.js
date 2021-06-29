@@ -84,7 +84,7 @@ describe('ACL', () => {
         .send({
           permissions: ['test.permission', 'test.permission2'],
         })
-        .expect(403);
+        .expect(401);
     });
 
     it('requires the acl.create role', async () => {
@@ -169,7 +169,7 @@ describe('ACL', () => {
 
       await supertest(uw.server)
         .delete('/api/roles/test.role')
-        .expect(403);
+        .expect(401);
     });
 
     it('requires the acl.delete role', async () => {

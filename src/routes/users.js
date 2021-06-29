@@ -1,6 +1,6 @@
 'use strict';
 
-const router = require('router');
+const { Router } = require('express');
 const route = require('../route');
 const validations = require('../validations');
 const protect = require('../middleware/protect');
@@ -10,7 +10,7 @@ const controller = require('../controllers/users');
 const { NameChangeRateLimitError } = require('../errors');
 
 function userRoutes() {
-  return router()
+  return Router()
     // GET /users/ - List user accounts.
     .get(
       '/',

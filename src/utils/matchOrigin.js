@@ -2,11 +2,18 @@
 
 const { escapeRegExp } = require('lodash');
 
+/**
+ * @template TArg,TRet
+ * @param {(arg: TArg) => TRet} fn
+ * @returns {(arg: TArg) => TRet}
+ */
 function memoize(fn) {
+  /** @type {TArg} */
   let lastArg;
+  /** @type {TRet} */
   let lastReturn;
   return (arg) => {
-    if (arg !== lastArg) {
+    if (arg !== lastArg || lastArg === undefined) {
       lastArg = arg;
       lastReturn = fn(arg);
     }
@@ -14,7 +21,14 @@ function memoize(fn) {
   };
 }
 
+/**
+ * @type {(origins: string[]) => RegExp}
+ */
 const getAllowedOriginsRegExp = memoize((allowedOrigins) => {
+  /**
+   * @param {string} origin
+   * @returns {string}
+   */
   function singleOriginToRegExp(origin) {
     return escapeRegExp(origin).replace('\\*', () => '.+?');
   }
@@ -22,8 +36,16 @@ const getAllowedOriginsRegExp = memoize((allowedOrigins) => {
   return new RegExp(`^(?:${allowedOrigins.map(singleOriginToRegExp).join('|')})$`);
 });
 
+/**
+ * @param {string|undefined} origin
+ * @param {string[]} allowedOrigins
+ * @returns {boolean}
+ */
 function matchOrigin(origin, allowedOrigins) {
   if (allowedOrigins.length === 0) {
+    return false;
+  }
+  if (!origin) {
     return false;
   }
 

@@ -7,6 +7,14 @@ const {
   set: setPath,
 } = require('lodash');
 
+/**
+ * @typedef {Record<string, string[]>} IncludedOptions
+ */
+
+/**
+ * @param {any[]} data
+ * @param {IncludedOptions} included
+ */
 function extractIncluded(data, included) {
   const includedTypes = Object.keys(included);
   if (includedTypes.length === 0) {
@@ -16,13 +24,19 @@ function extractIncluded(data, included) {
     };
   }
 
+  /** @type {Record<string, any[]>} */
   const includeds = includedTypes.reduce(
     (map, typeName) => Object.assign(map, { [typeName]: [] }),
     {},
   );
 
+  /** @type {Set<string>} */
   const had = new Set();
 
+  /**
+   * @param {string} type
+   * @param {{ _id: string }} item
+   */
   function include(type, item) {
     if (!had.has(type + item._id)) {
       includeds[type].push(item);
@@ -30,6 +44,7 @@ function extractIncluded(data, included) {
     }
   }
 
+  /** @type {any[]} */
   const resultData = [];
   data.forEach((initialItem) => {
     let item = isPlainObject(initialItem) ? initialItem : initialItem.toJSON();
@@ -59,12 +74,32 @@ function extractIncluded(data, included) {
   };
 }
 
+/**
+ * @typedef {object} ListResponse
+ * @prop {import('type-fest').JsonObject} meta
+ * @prop {import('type-fest').JsonValue[]} data
+ * @prop {import('type-fest').JsonObject} [included]
+ * @prop {Record<string, string>} links
+ */
+
+/**
+ * @template {any} TItem
+ * @param {TItem[]} list
+ * @param {object} [options]
+ * @param {import('type-fest').JsonObject} [options.meta]
+ * @param {IncludedOptions} [options.included]
+ * @param {string} [options.url]
+ */
 function toListResponse(list, {
   meta = {},
-  included = {},
-  url = null,
+  included,
+  url,
 } = {}) {
-  let props = { data: list };
+  let props = {
+    data: list,
+    /** @type {ListResponse['included']} */
+    included: undefined,
+  };
   if (included) {
     props = extractIncluded(list, included);
   }
@@ -74,8 +109,6 @@ function toListResponse(list, {
       ...meta,
     },
     links: url ? { self: url } : {},
-    data: null,
-    included: null,
     ...props,
   };
 }

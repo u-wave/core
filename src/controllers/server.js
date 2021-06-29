@@ -2,12 +2,18 @@
 
 const toItemResponse = require('../utils/toItemResponse');
 
-function getServerTime(req) {
+/**
+ * @type {import('../types').Controller}
+ */
+async function getServerTime(req) {
   return toItemResponse({
     time: Date.now(),
   }, { url: req.fullUrl });
 }
 
+/**
+ * @type {import('../types').AuthenticatedController}
+ */
 async function getAllConfig(req) {
   const { config } = req.uwave;
   const includeSchema = 'schema' in req.query;
@@ -19,6 +25,9 @@ async function getAllConfig(req) {
   });
 }
 
+/**
+ * @type {import('../types').AuthenticatedController}
+ */
 async function getConfig(req) {
   const { config } = req.uwave;
   const { key } = req.params;
@@ -28,12 +37,15 @@ async function getConfig(req) {
   const combinedSchema = config.getSchema();
   const schema = combinedSchema.properties[key];
 
-  return toItemResponse(values, {
+  return toItemResponse(values || {}, {
     url: req.fullUrl,
     meta: includeSchema ? { schema } : {},
   });
 }
 
+/**
+ * @type {import('../types').AuthenticatedController}
+ */
 async function updateConfig(req) {
   const { config } = req.uwave;
   const { key } = req.params;

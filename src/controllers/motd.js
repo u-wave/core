@@ -2,6 +2,9 @@
 
 const toItemResponse = require('../utils/toItemResponse');
 
+/**
+ * @type {import('../types').Controller<{}, {}, {}>}
+ */
 async function getMotd(req) {
   const { motd } = req.uwave;
 
@@ -13,13 +16,16 @@ async function getMotd(req) {
   );
 }
 
-async function setMotd(req, ...args) {
+/**
+ * @type {import('../types').AuthenticatedController<{}, {}, { motd: string | null }>}
+ */
+async function setMotd(req) {
   const { motd } = req.uwave;
   const { motd: newValue } = req.body;
 
-  await motd.set(String(newValue));
+  await motd.set(newValue);
 
-  return getMotd(req, ...args);
+  return getMotd(req);
 }
 
 exports.getMotd = getMotd;

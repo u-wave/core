@@ -6,15 +6,22 @@ const sjson = require('secure-json-parse');
 const WebSocket = require('ws');
 const Ajv = require('ajv').default;
 const ms = require('ms');
-const createDebug = require('debug');
+const debug = require('debug')('uwave:api:sockets');
 const { socketVote } = require('./controllers/booth');
 const { disconnectUser } = require('./controllers/users');
 const AuthRegistry = require('./AuthRegistry');
 const GuestConnection = require('./sockets/GuestConnection');
 const AuthedConnection = require('./sockets/AuthedConnection');
 const LostConnection = require('./sockets/LostConnection');
+const { serializeUser } = require('./utils/serialize');
 
-const debug = createDebug('uwave:api:sockets');
+/**
+ * @typedef {import('./models').User} User
+ */
+
+/**
+ * @typedef {GuestConnection | AuthedConnection | LostConnection} Connection
+ */
 
 const ajv = new Ajv({
   coerceTypes: false,
@@ -24,7 +31,7 @@ const ajv = new Ajv({
 });
 
 function missingServerOption() {
-  throw new TypeError(`
+  return new TypeError(`
 Exactly one of "options.server" and "options.port" is required. These
 options are used to attach the WebSocket server to the correct HTTP server.
 
@@ -52,12 +59,22 @@ Alternatively, you can provide a port for the socket server to listen on:
   `);
 }
 
+/**
+ * @template {object} T
+ * @param {T} object
+ * @param {PropertyKey} property
+ * @returns {property is keyof T}
+ */
 function has(object, property) {
   return Object.prototype.hasOwnProperty.call(object, property);
 }
 
 class SocketServer {
-  static async plugin(uw, options = {}) {
+  /**
+   * @param {import('./Uwave').Boot} uw
+   * @param {{ secret: Buffer|string }} options
+   */
+  static async plugin(uw, options) {
     uw.socketServer = new SocketServer(uw, {
       secret: options.secret,
       server: uw.server,
@@ -75,19 +92,22 @@ class SocketServer {
   /**
    * Create a socket server.
    *
-   * @param {Uwave} uw üWave Core instance.
+   * @param {import('./Uwave')} uw üWave Core instance.
    * @param {object} options Socket server options.
-   * @param {number} options.timeout Time in seconds to wait for disconnected
+   * @param {number} [options.timeout] Time in seconds to wait for disconnected
    *     users to reconnect before removing them.
+   * @param {Buffer|string} options.secret
+   * @param {import('http').Server | import('https').Server} [options.server]
+   * @param {number} [options.port]
    */
-  constructor(uw, options = {}) {
+  constructor(uw, options) {
     if (!uw || !('mongo' in uw)) {
       throw new TypeError('Expected a u-wave-core instance in the first parameter. If you are '
         + 'developing, you may have to upgrade your u-wave-* modules.');
     }
 
     if (!options.server && !options.port) {
-      missingServerOption(options);
+      throw missingServerOption();
     }
 
     if (!options.secret) {
@@ -98,9 +118,11 @@ class SocketServer {
     this.uw = uw;
     this.redisSubscription = uw.redis.duplicate();
 
+    /** @type {Connection[]} */
     this.connections = [];
 
     this.options = {
+      /** @type {(socket?: import('ws'), err: Error) => void} */
       onError: (socket, err) => {
         throw err;
       },
@@ -112,7 +134,7 @@ class SocketServer {
 
     this.wss = new WebSocket.Server({
       server: options.server,
-      port: options.server ? null : options.port,
+      port: options.server ? undefined : options.port,
       clientTracking: false,
     });
 
@@ -127,8 +149,8 @@ class SocketServer {
     this.wss.on('error', (error) => {
       this.onError(error);
     });
-    this.wss.on('connection', (socket, req) => {
-      this.onSocketConnected(socket, req);
+    this.wss.on('connection', (socket) => {
+      this.onSocketConnected(socket);
     });
 
     this.pinger = setInterval(() => {
@@ -143,6 +165,8 @@ class SocketServer {
 
     /**
      * Handlers for commands that come in from clients.
+     *
+     * @type {import('./socketMessages').ClientActions}
      */
     this.clientActions = {
       sendChat: (user, message) => {
@@ -153,9 +177,9 @@ class SocketServer {
         socketVote(this.uw, user.id, direction);
       },
       logout: (user, _, connection) => {
-        this.replace(connection, this.createGuestConnection(connection.socket, null));
+        this.replace(connection, this.createGuestConnection(connection.socket));
         if (!this.connection(user)) {
-          disconnectUser(this.uw, user);
+          disconnectUser(this.uw, user._id);
         }
       },
     };
@@ -172,6 +196,8 @@ class SocketServer {
 
     /**
      * Handlers for commands that come in from the server side.
+     *
+     * @type {import('./redisMessages').ServerActions}
      */
     this.serverActions = {
       /**
@@ -208,12 +234,12 @@ class SocketServer {
        * user, or be empty to delete all messages.
        */
       'chat:delete': ({ moderatorID, filter }) => {
-        if (filter.id) {
+        if ('id' in filter) {
           this.broadcast('chatDeleteByID', {
             moderatorID,
             _id: filter.id,
           });
-        } else if (filter.userID) {
+        } else if ('userID' in filter) {
           this.broadcast('chatDeleteByUser', {
             moderatorID,
             userID: filter.userID,
@@ -344,7 +370,7 @@ class SocketServer {
         const { users, redis } = this.uw;
         const user = await users.getUser(userID);
         await redis.rpush('users', user.id);
-        this.broadcast('join', user.toJSON());
+        this.broadcast('join', serializeUser(user));
       },
       /**
        * Broadcast that a user left the server.
@@ -381,7 +407,7 @@ class SocketServer {
        */
       'http-api:socket:close': (userID) => {
         this.connections.forEach((connection) => {
-          if (connection.user && connection.user.id === userID) {
+          if ('user' in connection && connection.user.id === userID) {
             connection.close();
           }
         });
@@ -392,41 +418,59 @@ class SocketServer {
   /**
    * Create `LostConnection`s for every user that's known to be online, but that
    * is not currently connected to the socket server.
+   * @private
    */
   async initLostConnections() {
     const { User } = this.uw.models;
     const userIDs = await this.uw.redis.lrange('users', 0, -1);
     const disconnectedIDs = userIDs.filter((userID) => !this.connection(userID));
 
+    /** @type {User[]} */
     const disconnectedUsers = await User.where('_id').in(disconnectedIDs);
     disconnectedUsers.forEach((user) => {
       this.add(this.createLostConnection(user));
     });
   }
 
-  onSocketConnected(socket, req) {
+  /**
+   * @param {import('ws')} socket
+   * @private
+   */
+  onSocketConnected(socket) {
     debug('new connection');
 
     socket.on('error', (error) => {
       this.onSocketError(socket, error);
     });
-    this.add(this.createGuestConnection(socket, req));
+    this.add(this.createGuestConnection(socket));
   }
 
+  /**
+   * @param {import('ws')} socket
+   * @param {Error} error
+   * @private
+   */
   onSocketError(socket, error) {
     debug('socket error:', error);
 
     this.options.onError(socket, error);
   }
 
+  /**
+   * @param {Error} error
+   * @private
+   */
   onError(error) {
     debug('server error:', error);
 
-    this.options.onError(null, error);
+    this.options.onError(undefined, error);
   }
 
   /**
    * Get a LostConnection for a user, if one exists.
+   *
+   * @param {User} user
+   * @private
    */
   getLostConnection(user) {
     return this.connections.find((connection) => (
@@ -436,16 +480,18 @@ class SocketServer {
 
   /**
    * Create a connection instance for an unauthenticated user.
+   *
+   * @param {import('ws')} socket
+   * @private
    */
-  createGuestConnection(socket, req) {
-    const connection = new GuestConnection(this.uw, socket, req, {
-      secret: this.options.secret,
+  createGuestConnection(socket) {
+    const connection = new GuestConnection(this.uw, socket, {
       authRegistry: this.authRegistry,
     });
     connection.on('close', () => {
       this.remove(connection);
     });
-    connection.on('authenticate', async (user, token) => {
+    connection.on('authenticate', async (user) => {
       debug('connecting', user.id, user.username);
       const isReconnect = await connection.isReconnect(user);
       if (isReconnect) {
@@ -454,7 +500,7 @@ class SocketServer {
         if (previousConnection) this.remove(previousConnection);
       }
 
-      this.replace(connection, this.createAuthedConnection(socket, user, token));
+      this.replace(connection, this.createAuthedConnection(socket, user));
 
       if (!isReconnect) {
         this.uw.publish('user:join', { userID: user.id });
@@ -465,37 +511,52 @@ class SocketServer {
 
   /**
    * Create a connection instance for an authenticated user.
+   *
+   * @param {WebSocket} socket
+   * @param {User} user
+   * @returns {AuthedConnection}
+   * @private
    */
-  createAuthedConnection(socket, user, token) {
-    const connection = new AuthedConnection(this.uw, socket, user, token);
+  createAuthedConnection(socket, user) {
+    const connection = new AuthedConnection(this.uw, socket, user);
     connection.on('close', ({ banned }) => {
       if (banned) {
         debug('removing connection after ban', user.id, user.username);
         this.remove(connection);
-        disconnectUser(this.uw, user);
+        disconnectUser(this.uw, user._id);
       } else {
         debug('lost connection', user.id, user.username);
         this.replace(connection, this.createLostConnection(user));
       }
     });
-    connection.on('command', (command, data) => {
-      debug('command', user.id, user.username, command, data);
-      if (has(this.clientActions, command)) {
-        // Ignore incorrect input
-        const validate = this.clientActionSchemas.get(command);
-        if (validate && !validate(data)) {
-          return;
-        }
+    connection.on('command',
+      /**
+       * @param {string} command
+       * @param {import('type-fest').JsonValue} data
+       */
+      (command, data) => {
+        debug('command', user.id, user.username, command, data);
+        if (has(this.clientActions, command)) {
+          // Ignore incorrect input
+          const validate = this.clientActionSchemas.get(command);
+          if (validate && !validate(data)) {
+            return;
+          }
 
-        const action = this.clientActions[command];
-        action(user, data, connection);
-      }
-    });
+          const action = this.clientActions[command];
+          // @ts-ignore TS2345 `data` is validated
+          action(user, data, connection);
+        }
+      });
     return connection;
   }
 
   /**
    * Create a connection instance for a user who disconnected.
+   *
+   * @param {User} user
+   * @returns {LostConnection}
+   * @private
    */
   createLostConnection(user) {
     const connection = new LostConnection(this.uw, user, this.options.timeout);
@@ -505,7 +566,7 @@ class SocketServer {
       // Only register that the user left if they didn't have another connection
       // still open.
       if (!this.connection(user)) {
-        disconnectUser(this.uw, user);
+        disconnectUser(this.uw, user._id);
       }
     });
     return connection;
@@ -513,6 +574,9 @@ class SocketServer {
 
   /**
    * Add a connection.
+   *
+   * @param {Connection} connection
+   * @private
    */
   add(connection) {
     debug('adding', String(connection));
@@ -523,6 +587,9 @@ class SocketServer {
 
   /**
    * Remove a connection.
+   *
+   * @param {Connection} connection
+   * @private
    */
   remove(connection) {
     debug('removing', String(connection));
@@ -537,6 +604,10 @@ class SocketServer {
   /**
    * Replace a connection instance with another connection instance. Useful when
    * a connection changes "type", like GuestConnection → AuthedConnection.
+   *
+   * @param {Connection} oldConnection
+   * @param {Connection} newConnection
+   * @private
    */
   replace(oldConnection, newConnection) {
     this.remove(oldConnection);
@@ -547,9 +618,21 @@ class SocketServer {
    * Handle command messages coming in from Redis.
    * Some commands are intended to broadcast immediately to all connected
    * clients, but others require special action.
+   *
+   * @param {string} channel
+   * @param {string} rawCommand
+   * @return {Promise<void>}
+   * @private
    */
   async onServerMessage(channel, rawCommand) {
-    const { command, data } = sjson.safeParse(rawCommand) || {};
+    /**
+     * @type {{ command: string, data: import('type-fest').JsonValue }|undefined}
+     */
+    const json = sjson.safeParse(rawCommand);
+    if (!json) {
+      return;
+    }
+    const { command, data } = json;
 
     debug(channel, command, data);
 
@@ -558,13 +641,18 @@ class SocketServer {
     } else if (channel === 'uwave') {
       if (has(this.serverActions, command)) {
         const action = this.serverActions[command];
-        action(data);
+        if (action !== undefined) { // the types for `ServerActions` allow undefined, so...
+          // @ts-ignore TS2345 `data` is validated
+          action(data);
+        }
       }
     }
   }
 
   /**
    * Stop the socket server.
+   *
+   * @return {Promise<void>}
    */
   async destroy() {
     clearInterval(this.pinger);
@@ -576,17 +664,17 @@ class SocketServer {
   /**
    * Get the connection instance for a specific user.
    *
-   * @param {object|string} user The user.
-   * @return {Connection}
+   * @param {User|string} user The user.
+   * @return {Connection|undefined}
    */
   connection(user) {
     const userID = typeof user === 'object' ? user.id : user;
-    return this.connections.find((connection) => connection.user && connection.user.id === userID);
+    return this.connections.find((connection) => 'user' in connection && connection.user.id === userID);
   }
 
   ping() {
     this.connections.forEach((connection) => {
-      if (connection.socket) {
+      if ('socket' in connection) {
         connection.ping();
       }
     });
@@ -596,7 +684,7 @@ class SocketServer {
    * Broadcast a command to all connected clients.
    *
    * @param {string} command Command name.
-   * @param {*} data Command data.
+   * @param {import('type-fest').JsonValue} data Command data.
    */
   broadcast(command, data) {
     debug('broadcast', command, data);
@@ -610,15 +698,15 @@ class SocketServer {
   /**
    * Send a command to a single user.
    *
-   * @param {Object|string} user User or user ID to send the command to.
+   * @param {User|string} user User or user ID to send the command to.
    * @param {string} command Command name.
-   * @param {*} data Command data.
+   * @param {import('type-fest').JsonValue} data Command data.
    */
   sendTo(user, command, data) {
     const userID = typeof user === 'object' ? user.id : user;
 
     this.connections.forEach((connection) => {
-      if (connection.user && connection.user.id === userID) {
+      if ('user' in connection && connection.user.id === userID) {
         connection.send(command, data);
       }
     });

@@ -1,13 +1,16 @@
 'use strict';
 
+/**
+ *
+ * @param {import('../HttpApi').HttpApi} httpApi
+ * @param {import('../Uwave')} uw
+ * @returns {import('express').RequestHandler}
+ */
 function attachUwaveMeta(httpApi, uw) {
   return (req, res, next) => {
     if (!req.uwave) {
       req.uwaveHttp = httpApi;
       req.uwave = uw;
-
-      // Backwards compat?
-      req.uwaveApiV1 = httpApi;
     }
     next();
   };
