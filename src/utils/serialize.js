@@ -15,7 +15,9 @@ function serializePlaylist(model) {
 }
 
 /**
- * @param {import('../models').User} model
+ * @param {Pick<import('../models').User,
+ *   '_id' | 'username' | 'slug' | 'roles' | 'avatar' |
+ *   'createdAt' | 'updatedAt' | 'lastSeenAt'>} model
  */
 function serializeUser(model) {
   return {

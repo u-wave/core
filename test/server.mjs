@@ -1,8 +1,6 @@
-'use strict';
-
-const assert = require('assert');
-const uwave = require('..');
-const createUwave = require('./utils/createUwave');
+import assert from 'assert';
+import { Uwave } from 'u-wave-core';
+import createUwave from './utils/createUwave.js';
 
 describe('üWave Core', () => {
   let uw;
@@ -14,6 +12,6 @@ describe('üWave Core', () => {
   });
 
   it('can create a üWave instance', async () => {
-    assert(uw instanceof uwave.Uwave);
+    assert(uw instanceof Uwave);
   });
 });

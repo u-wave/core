@@ -94,6 +94,7 @@
     "@types/random-string": "^0.0.28",
     "@types/ratelimiter": "^3.4.1",
     "@types/redlock": "^4.0.1",
+    "@types/ultron": "^1.1.0",
     "@types/ws": "^7.4.0",
     "concat-stream": "^2.0.0",
     "cross-env": "^7.0.0",
