@@ -4,6 +4,7 @@
     "strict": false,
     "strictBindCallApply": true,
     "strictNullChecks": true,
+    "strictPropertyInitialization": true,
     "noImplicitAny": true,
     "noImplicitThis": true,
     "allowJs": true,
@@ -16,7 +17,6 @@
   "include": [
     "src/types.d.ts",
     "src/redisMessages.d.ts",
-    "src/socketMessages.d.ts",
     "src/**/*.js",
     "src/schemas/*.json"
   ],
