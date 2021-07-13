@@ -1,12 +1,7 @@
 {
   "extends": "@tsconfig/node12/tsconfig.json",
   "compilerOptions": {
-    "strict": false,
-    "strictBindCallApply": true,
-    "strictNullChecks": true,
-    "strictPropertyInitialization": true,
-    "noImplicitAny": true,
-    "noImplicitThis": true,
+    "strict": true,
     "allowJs": true,
     "checkJs": true,
     "resolveJsonModule": true,
