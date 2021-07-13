@@ -23,6 +23,23 @@ const { serializeUser } = require('./utils/serialize');
  * @typedef {GuestConnection | AuthedConnection | LostConnection} Connection
  */
 
+/**
+ * @typedef {object} ClientActionParameters
+ * @prop {string} sendChat
+ * @prop {-1 | 1} vote
+ * @prop {undefined} logout
+ */
+
+/**
+ * @typedef {{
+ *   [Name in keyof ClientActionParameters]: (
+ *     user: User,
+ *     parameter: ClientActionParameters[Name],
+ *     connection: AuthedConnection
+ *   ) => void
+ * }} ClientActions
+ */
+
 const ajv = new Ajv({
   coerceTypes: false,
   ownProperties: true,
@@ -166,7 +183,7 @@ class SocketServer {
     /**
      * Handlers for commands that come in from clients.
      *
-     * @type {import('./socketMessages').ClientActions}
+     * @type {ClientActions}
      */
     this.clientActions = {
       sendChat: (user, message) => {
