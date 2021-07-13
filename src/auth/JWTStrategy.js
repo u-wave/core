@@ -1,5 +1,6 @@
 'use strict';
 
+const has = require('has');
 const { Strategy } = require('passport');
 const jwt = require('jsonwebtoken');
 const { BannedError } = require('../errors');
@@ -36,11 +37,14 @@ function getHeaderToken(headers) {
 }
 
 /**
- * @param {string|object} obj
- * @returns {boolean}
+ * @param {unknown} obj
+ * @returns {obj is { id: string }}
  */
 function isUserIDToken(obj) {
-  return typeof obj === 'object' && obj !== null && typeof obj.id === 'string';
+  return typeof obj === 'object'
+    && obj !== null
+    && has(obj, 'id')
+    && typeof obj.id === 'string';
 }
 
 class JWTStrategy extends Strategy {
@@ -76,6 +80,7 @@ class JWTStrategy extends Strategy {
       return this.pass();
     }
 
+    /** @type {unknown} */
     let value;
     try {
       value = jwt.verify(token, this.secret);
@@ -87,11 +92,7 @@ class JWTStrategy extends Strategy {
       return this.pass();
     }
 
-    /** @type {{ id: string }} */
-    // @ts-ignore
-    const content = value;
-
-    const user = await this.getUser(content);
+    const user = await this.getUser(value);
     if (!user) {
       return this.pass();
     }
