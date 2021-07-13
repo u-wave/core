@@ -316,6 +316,8 @@ class UsersRepository {
     /** @type {Record<string, string>} */
     const old = {};
     Object.keys(update).forEach((key) => {
+      // FIXME We should somehow make sure that the type of `key` extends `keyof LeanUser` here.
+      // @ts-ignore TS7053
       old[key] = user[key];
     });
     Object.assign(user, update);

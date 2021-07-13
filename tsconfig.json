@@ -4,6 +4,7 @@
     "strict": false,
     "strictBindCallApply": true,
     "strictNullChecks": true,
+    "noImplicitAny": true,
     "noImplicitThis": true,
     "allowJs": true,
     "checkJs": true,
