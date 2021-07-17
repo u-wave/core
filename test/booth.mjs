@@ -1,9 +1,7 @@
-'use strict';
-
-const assert = require('assert');
-const delay = require('delay');
-const supertest = require('supertest');
-const createUwave = require('./utils/createUwave');
+import assert from 'assert';
+import delay from 'delay';
+import supertest from 'supertest';
+import createUwave from './utils/createUwave.mjs';
 
 describe('Booth', () => {
   describe('PUT /booth/:historyID/vote', () => {

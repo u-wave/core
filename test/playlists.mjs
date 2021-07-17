@@ -1,11 +1,9 @@
-'use strict';
-
-const assert = require('assert');
-const { inspect } = require('util');
-const supertest = require('supertest');
-const sinon = require('sinon');
-const randomString = require('random-string');
-const createUwave = require('./utils/createUwave');
+import assert from 'assert';
+import { inspect } from 'util';
+import supertest from 'supertest';
+import sinon from 'sinon';
+import randomString from 'random-string';
+import createUwave from './utils/createUwave.mjs';
 
 function assertItemsAndIncludedMedia(body) {
   for (const item of body.data) {

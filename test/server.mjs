@@ -1,6 +1,6 @@
 import assert from 'assert';
 import { Uwave } from 'u-wave-core';
-import createUwave from './utils/createUwave.js';
+import createUwave from './utils/createUwave.mjs';
 
 describe('üWave Core', () => {
   let uw;

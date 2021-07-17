@@ -1,10 +1,8 @@
-'use strict';
-
-const assert = require('assert');
-const supertest = require('supertest');
-const sinon = require('sinon');
-const ms = require('ms');
-const createUwave = require('./utils/createUwave');
+import assert from 'assert';
+import supertest from 'supertest';
+import sinon from 'sinon';
+import ms from 'ms';
+import createUwave from './utils/createUwave.mjs';
 
 describe('Bans', () => {
   let user;
