@@ -1,9 +1,10 @@
-const { Buffer } = require('buffer');
-const uwave = require('u-wave-core');
-const createWebClient = require('u-wave-web/middleware').default;
-const youTubeSource = require('u-wave-source-youtube');
-const soundCloudSource = require('u-wave-source-soundcloud');
-const dotenv = require('dotenv');
+import process from 'process';
+import { Buffer } from 'buffer';
+import uwave from 'u-wave-core';
+import createWebClient from 'u-wave-web/middleware';
+import youTubeSource from 'u-wave-source-youtube';
+import soundCloudSource from 'u-wave-source-soundcloud';
+import dotenv from 'dotenv';
 
 dotenv.config();
 
@@ -22,7 +23,7 @@ const uw = uwave({
   helmet: false,
 });
 
-uw.use(async () => {
+uw.use(async function registerSources () {
   // Register your Media Sources. The API keys are configured in the config.json
   // file.
   uw.source(youTubeSource, {
@@ -33,7 +34,7 @@ uw.use(async () => {
   });
 });
 
-uw.use(async () => {
+uw.use(async function registerWebClient () {
   const webClient = createWebClient(null, {
     apiBase: '/api',
   });
@@ -41,13 +42,9 @@ uw.use(async () => {
   uw.express.use(webClient);
 });
 
-uw.listen().then(() => {
-  console.log(`üWave server running on http://localhost:${port}/`);
-}, (err) => {
-  console.error(err.stack);
-  process.exit(1);
-});
-
 process.on('beforeExit', () => {
   uw.close();
 });
+
+await uw.listen();
+console.log(`üWave server running on http://localhost:${port}/`);
