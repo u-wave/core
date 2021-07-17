@@ -87,26 +87,18 @@ function authenticateRoutes(passport, options) {
       withOptions(options),
       route(controller.login),
     )
-    // GET /auth/service/google/callback - Finish a social login using Google.
-    .get(
-      '/service/google/callback',
-      passport.authenticate('google'),
-      withOptions(options),
-      route(controller.socialLoginCallback.bind(null, 'google')),
-    )
-    // GET /auth/service/google - Initiate a social login using Google.
-    .get(
-      '/service/google',
-      passport.authenticate('google'),
-      withOptions(options),
-      route(controller.login),
-    )
     // GET /auth/service/google/callback - Receive social login data from Google.
     .get(
       '/service/google/callback',
       passport.authenticate('google'),
       withOptions(options),
-      route(controller.socialLoginCallback.bind(null, 'google')),
+      (rawReq, res, next) => {
+        /** @type {import('../types').AuthenticatedRequest & controller.WithAuthOptions} */
+        // Correct type is guaranteed by `passport.authenticate()` and `withOptions()` middlewares.
+        // @ts-ignore TS2322
+        const req = rawReq;
+        controller.socialLoginCallback('google', req, res).catch(next);
+      },
     )
     // POST /auth/service/google/finish - Finish creating an account with Google.
     .post(

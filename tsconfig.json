@@ -1,10 +1,7 @@
 {
   "extends": "@tsconfig/node12/tsconfig.json",
   "compilerOptions": {
-    "strict": false,
-    "strictBindCallApply": true,
-    "strictNullChecks": true,
-    "noImplicitThis": true,
+    "strict": true,
     "allowJs": true,
     "checkJs": true,
     "resolveJsonModule": true,
@@ -15,7 +12,6 @@
   "include": [
     "src/types.d.ts",
     "src/redisMessages.d.ts",
-    "src/socketMessages.d.ts",
     "src/**/*.js",
     "src/schemas/*.json"
   ],
