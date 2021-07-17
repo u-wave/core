@@ -1,12 +1,10 @@
-'use strict';
-
-const { once } = require('events');
-const mongoose = require('mongoose');
-const delay = require('delay');
+import { once } from 'events';
+import mongoose from 'mongoose';
+import delay from 'delay';
 
 const IN_PROGRESS_ERROR = 12586;
 
-module.exports = async function deleteDatabase(url) {
+export default async function deleteDatabase(url) {
   const defaultOptions = {
     useNewUrlParser: true,
     useCreateIndex: true,
@@ -35,4 +33,4 @@ module.exports = async function deleteDatabase(url) {
   /* eslint-enable no-await-in-loop */
 
   await mongo.close();
-};
+}

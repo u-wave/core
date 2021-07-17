@@ -23,8 +23,6 @@ module.exports = {
     // We're not transpiling
     strict: ['error', 'global'],
 
-    'node/no-unpublished-require': 'off',
-
     // MongoDB IDs
     'no-underscore-dangle': ['error', { allow: ['_id'] }],
     // Used by plugins
@@ -79,6 +77,9 @@ module.exports = {
       files: ['test/**/*.mjs'],
       env: {
         mocha: true,
+      },
+      rules: {
+        'node/no-unpublished-import': 'off',
       },
     },
   ],

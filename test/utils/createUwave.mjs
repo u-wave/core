@@ -1,12 +1,10 @@
-'use strict';
-
-const { once } = require('events');
-const { spawn } = require('child_process');
-const getPort = require('get-port');
-const Redis = require('ioredis');
-const deleteDatabase = require('./deleteDatabase');
-const uwave = require('../..');
-const testPlugin = require('./plugin');
+import { once } from 'events';
+import { spawn } from 'child_process';
+import getPort from 'get-port';
+import Redis from 'ioredis';
+import uwave from 'u-wave-core';
+import deleteDatabase from './deleteDatabase.mjs';
+import testPlugin from './plugin.mjs';
 
 const DB_HOST = process.env.MONGODB_HOST || 'localhost';
 
@@ -63,7 +61,7 @@ function createRedisConnection() {
 
 async function createUwave(name, options) {
   const redisServer = process.env.REDIS_URL
-    ? await createRedisConnection()
+    ? createRedisConnection()
     : await createIsolatedRedis();
   const mongoUrl = `mongodb://${DB_HOST}/uw_test_${name}`;
 
@@ -93,4 +91,4 @@ async function createUwave(name, options) {
   return uw;
 }
 
-module.exports = createUwave;
+export default createUwave;

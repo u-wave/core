@@ -1,9 +1,7 @@
-'use strict';
-
-const assert = require('assert');
-const sinon = require('sinon');
-const supertest = require('supertest');
-const createUwave = require('./utils/createUwave');
+import assert from 'assert';
+import sinon from 'sinon';
+import supertest from 'supertest';
+import createUwave from './utils/createUwave.mjs';
 
 const sandbox = sinon.createSandbox();
 

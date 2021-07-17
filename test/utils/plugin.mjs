@@ -1,9 +1,7 @@
-'use strict';
-
-const events = require('events');
-const mongoose = require('mongoose');
-const jwt = require('jsonwebtoken');
-const WebSocket = require('ws');
+import events from 'events';
+import mongoose from 'mongoose';
+import jwt from 'jsonwebtoken';
+import WebSocket from 'ws';
 
 async function testPlugin(uw) {
   const { User } = uw.models;
@@ -58,4 +56,4 @@ async function testPlugin(uw) {
   };
 }
 
-module.exports = testPlugin;
+export default testPlugin;
