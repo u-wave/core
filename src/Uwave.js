@@ -121,8 +121,8 @@ class UwaveServer extends EventEmitter {
   #sources = new Map();
 
   /**
-  * @param {Options} options
-  */
+   * @param {Options} options
+   */
   constructor(options) {
     super();
 
