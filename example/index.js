@@ -35,7 +35,7 @@ uw.use(async function registerSources () {
 });
 
 uw.use(async function registerWebClient () {
-  const webClient = createWebClient(null, {
+  const webClient = createWebClient({
     apiBase: '/api',
   });
 
