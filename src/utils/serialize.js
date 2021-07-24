@@ -7,8 +7,8 @@ function serializePlaylist(model) {
   return {
     _id: model.id || model._id.toString(),
     name: model.name,
-    author: model.author,
-    createdAt: model.createdAt,
+    author: model.author.toString(),
+    createdAt: model.createdAt.toISOString(),
     description: model.description,
     size: model.media.length,
   };
@@ -26,9 +26,9 @@ function serializeUser(model) {
     slug: model.slug,
     roles: model.roles,
     avatar: model.avatar,
-    createdAt: model.createdAt.toString(),
-    updatedAt: model.updatedAt.toString(),
-    lastSeenAt: model.lastSeenAt.toString(),
+    createdAt: model.createdAt.toISOString(),
+    updatedAt: model.updatedAt.toISOString(),
+    lastSeenAt: model.lastSeenAt.toISOString(),
   };
 }
 
