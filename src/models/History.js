@@ -30,11 +30,12 @@ const listOfUsers = [{ type: Types.ObjectId, ref: 'User' }];
  */
 
 /**
- * @typedef {import('mongoose').Document<LeanHistoryEntry["_id"]> & LeanHistoryEntry} HistoryEntry
+ * @typedef {mongoose.Document<LeanHistoryEntry["_id"], {}, LeanHistoryEntry> &
+ *           LeanHistoryEntry} HistoryEntry
  */
 
 /**
- * @type {import('mongoose').Schema<HistoryEntry, import('mongoose').Model<HistoryEntry>>}
+ * @type {mongoose.Schema<HistoryEntry, mongoose.Model<HistoryEntry>>}
  */
 const schema = new Schema({
   user: {

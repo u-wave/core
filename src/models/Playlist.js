@@ -15,13 +15,13 @@ const { Types } = mongoose.Schema;
  * @prop {Date} createdAt
  * @prop {Date} updatedAt
  *
- * @typedef {import('mongoose').Document<LeanPlaylist["_id"]> & LeanPlaylist & {
+ * @typedef {mongoose.Document<LeanPlaylist["_id"], {}, LeanPlaylist> & LeanPlaylist & {
  *  readonly size: number
  * }} Playlist
  */
 
 /**
- * @type {import('mongoose').Schema<Playlist, import('mongoose').Model<Playlist>>}
+ * @type {mongoose.Schema<Playlist, mongoose.Model<Playlist>>}
  */
 const schema = new Schema({
   name: {

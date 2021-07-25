@@ -15,12 +15,12 @@ const { Types } = mongoose.Schema;
  * @prop {string} [id]
  * @prop {string} [avatar]
  *
- * @typedef {import('mongoose').Document<LeanAuthentication["_id"]> & LeanAuthentication}
- *    Authentication
+ * @typedef {mongoose.Document<LeanAuthentication["_id"], {}, LeanAuthentication> &
+*            LeanAuthentication} Authentication
  */
 
 /**
- * @type {import('mongoose').Schema<Authentication, import('mongoose').Model<Authentication>>}
+ * @type {mongoose.Schema<Authentication, mongoose.Model<Authentication>>}
  */
 const schema = new Schema({
   user: { type: Types.ObjectId, ref: 'User', index: true },

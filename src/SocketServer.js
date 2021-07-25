@@ -386,8 +386,11 @@ class SocketServer {
       'user:join': async ({ userID }) => {
         const { users, redis } = this.uw;
         const user = await users.getUser(userID);
-        await redis.rpush('users', user.id);
-        this.broadcast('join', serializeUser(user));
+        if (user) {
+          // TODO this should not be the socket server code's responsibility
+          await redis.rpush('users', user.id);
+          this.broadcast('join', serializeUser(user));
+        }
       },
       /**
        * Broadcast that a user left the server.

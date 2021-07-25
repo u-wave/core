@@ -245,6 +245,9 @@ class Waitlist {
   async removeUser(userID, { moderator }) {
     const { acl, users } = this.uw;
     const user = await users.getUser(userID);
+    if (!user) {
+      throw new UserNotFoundError({ id: userID });
+    }
 
     const isRemoving = moderator && user.id !== moderator.id;
     if (isRemoving && !(await acl.isAllowed(moderator, 'waitlist.remove'))) {

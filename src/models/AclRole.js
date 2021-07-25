@@ -9,11 +9,11 @@ const { Schema } = mongoose;
  * @prop {string} _id
  * @prop {string[]} roles
  *
- * @typedef {import('mongoose').Document<LeanAclRole["_id"]> & LeanAclRole} AclRole
+ * @typedef {mongoose.Document<LeanAclRole["_id"], {}, LeanAclRole> & LeanAclRole} AclRole
  */
 
 /**
- * @type {import('mongoose').Schema<AclRole, import('mongoose').Model<AclRole>>}
+ * @type {mongoose.Schema<AclRole, mongoose.Model<AclRole>>}
  */
 const schema = new Schema({
   _id: String,

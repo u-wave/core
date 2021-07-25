@@ -19,14 +19,14 @@ const userSchema = require('./User');
  * @typedef {import('./PlaylistItem').PlaylistItem} PlaylistItem
  * @typedef {import('./User').User} User
  * @typedef {{
- *  AclRole: import('mongoose').Model<AclRole>,
- *  Authentication: import('mongoose').Model<Authentication>,
- *  HistoryEntry: import('mongoose').Model<HistoryEntry>,
- *  Media: import('mongoose').Model<Media>,
- *  Migration: import('mongoose').Model<Migration>,
- *  Playlist: import('mongoose').Model<Playlist>,
- *  PlaylistItem: import('mongoose').Model<PlaylistItem>,
- *  User: import('mongoose').Model<User>,
+ *  AclRole: import('mongoose').Model<AclRole, {}, {}>,
+ *  Authentication: import('mongoose').Model<Authentication, {}, {}>,
+ *  HistoryEntry: import('mongoose').Model<HistoryEntry, {}, {}>,
+ *  Media: import('mongoose').Model<Media, {}, {}>,
+ *  Migration: import('mongoose').Model<Migration, {}, {}>,
+ *  Playlist: import('mongoose').Model<Playlist, {}, {}>,
+ *  PlaylistItem: import('mongoose').Model<PlaylistItem, {}, {}>,
+ *  User: import('mongoose').Model<User, {}, {}>,
  * }} Models
  */
 

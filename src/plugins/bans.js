@@ -46,7 +46,7 @@ class Bans {
     const { users } = this.uw;
 
     const user = await users.getUser(userID);
-    return isValidBan(user);
+    return user && isValidBan(user);
   }
 
   /**

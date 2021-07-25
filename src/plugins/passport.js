@@ -49,7 +49,7 @@ class PassportPlugin extends Passport {
     }
     /**
      * @param {string} id
-     * @returns {Promise<User>}
+     * @returns {Promise<User|null>}
      */
     function deserializeUser(id) {
       return uw.users.getUser(id);

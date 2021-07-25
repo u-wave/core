@@ -57,7 +57,7 @@ async function down({ context: uw }) {
 
   const users = User.find({ activePlaylist: { $ne: null } });
 
-  for await (const user of users.stream()) {
+  for await (const user of users) {
     if (!user.activePlaylist) return;
 
     await uw.redis.set(`playlist:${user._id}`, user.activePlaylist.toString());

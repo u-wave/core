@@ -1,11 +1,11 @@
 'use strict';
 
 /**
- * @param {import('../models').Playlist} model
+ * @param {import('../models').Playlist | import('../models/Playlist').LeanPlaylist} model
  */
 function serializePlaylist(model) {
   return {
-    _id: model.id || model._id.toString(),
+    _id: 'id' in model ? model.id : model._id.toString(),
     name: model.name,
     author: model.author.toString(),
     createdAt: model.createdAt.toISOString(),

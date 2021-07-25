@@ -14,8 +14,5 @@
     "src/redisMessages.d.ts",
     "src/**/*.js",
     "src/schemas/*.json"
-  ],
-  "exclude": [
-    "node_modules"
   ]
 }

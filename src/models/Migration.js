@@ -11,11 +11,11 @@ const { Schema } = mongoose;
  * @prop {Date} createdAt
  * @prop {Date} updatedAt
  *
- * @typedef {import('mongoose').Document<LeanMigration["_id"]> & LeanMigration} Migration
+ * @typedef {mongoose.Document<LeanMigration["_id"], {}, LeanMigration> & LeanMigration} Migration
  */
 
 /**
- * @type {import('mongoose').Schema<Migration, import('mongoose').Model<Migration>>}
+ * @type {mongoose.Schema<Migration, mongoose.Model<Migration>>}
  */
 const schema = new Schema({
   migrationName: { type: String, required: true },

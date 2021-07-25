@@ -29,7 +29,7 @@ const { Types } = mongoose.Schema;
  * @prop {Date} createdAt
  * @prop {Date} updatedAt
  *
- * @typedef {import('mongoose').Document<LeanUser["_id"]> & LeanUser} User
+ * @typedef {mongoose.Document<LeanUser["_id"], {}, LeanUser> & LeanUser} User
  */
 
 const bannedSchema = new Schema({
@@ -40,7 +40,7 @@ const bannedSchema = new Schema({
 });
 
 /**
- * @type {import('mongoose').Schema<User, import('mongoose').Model<User>>}
+ * @type {mongoose.Schema<User, mongoose.Model<User>>}
  */
 const userSchema = new Schema({
   username: {

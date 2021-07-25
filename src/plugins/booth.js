@@ -3,7 +3,7 @@
 const ms = require('ms');
 const RedLock = require('redlock');
 const createDebug = require('debug');
-const { EmptyPlaylistError } = require('../errors');
+const { EmptyPlaylistError, PlaylistItemNotFoundError } = require('../errors');
 const routes = require('../routes/booth');
 
 /**
@@ -150,9 +150,12 @@ class Booth {
     }
 
     const playlistItem = await PlaylistItem.findById(playlist.media[0]);
+    if (!playlistItem) {
+      throw new PlaylistItemNotFoundError({ id: playlist.media[0] });
+    }
     await playlistItem.populate('media').execPopulate();
 
-    // @ts-ignore
+    // @ts-ignore TS2322 Wildly unsafe cast but what can we do
     return new HistoryEntry({
       user,
       playlist,

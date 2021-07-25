@@ -8,6 +8,7 @@ const {
   PlaylistItemNotFoundError,
   ItemNotInPlaylistError,
   MediaNotFoundError,
+  UserNotFoundError,
 } = require('../errors');
 const Page = require('../Page');
 const routes = require('../routes/playlists');
@@ -16,6 +17,7 @@ const routes = require('../routes/playlists');
  * @typedef {import('mongodb').ObjectID} ObjectID
  * @typedef {import('../models').User} User
  * @typedef {import('../models').Playlist} Playlist
+ * @typedef {import('../models/Playlist').LeanPlaylist} LeanPlaylist
  * @typedef {import('../models').PlaylistItem} PlaylistItem
  * @typedef {import('../models').Media} Media
  * @typedef {{ media: Media }} PopulateMedia
@@ -157,12 +159,12 @@ class PlaylistsRepository {
 
   /**
    * @param {User} user
-   * @returns {Promise<Playlist[]>}
+   * @returns {Promise<LeanPlaylist[]>}
    */
   async getUserPlaylists(user) {
     const { Playlist } = this.uw.models;
     const userID = typeof user === 'object' ? user.id : user;
-    const playlists = await Playlist.where('author').eq(userID).lean();
+    const playlists = await Playlist.where('author', userID).lean();
     return playlists;
   }
 
@@ -221,6 +223,8 @@ class PlaylistsRepository {
       await item.populate('media').execPopulate();
     }
 
+    // @ts-ignore TS2322: The types of `media` are incompatible, but we just populated it,
+    // typescript just doesn't know about that.
     return item;
   }
 
@@ -506,6 +510,10 @@ class PlaylistsRepository {
   async addPlaylistItems(playlist, items, { after = null } = {}) {
     const { users } = this.uw;
     const user = await users.getUser(playlist.author);
+    if (!user) {
+      throw new UserNotFoundError({ id: playlist.author });
+    }
+
     const newItems = await this.createPlaylistItems(user, items);
     const oldMedia = playlist.media;
     const insertIndex = after === null ? 0 : oldMedia.findIndex((item) => item.equals(after));

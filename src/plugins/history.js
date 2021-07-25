@@ -41,11 +41,16 @@ class HistoryRepository {
     );
 
     const total = await HistoryEntry.where(filter).countDocuments();
-    const results = await HistoryEntry.where(filter)
+    const query = HistoryEntry.where(filter)
       .sort({ playedAt: -1 })
       .skip(offset)
       .limit(limit)
       .populate('media.media user');
+
+    /** @type {PopulatedHistoryEntry[]} */
+    // @ts-ignore TS2322: `media` and `user` types mismatch because typescript
+    // doesn't understand `populate()`.
+    const results = await query;
 
     return new Page(results, {
       pageSize: pagination ? pagination.limit : undefined,

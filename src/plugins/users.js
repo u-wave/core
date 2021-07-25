@@ -9,10 +9,6 @@ const { IncorrectPasswordError, UserNotFoundError } = require('../errors');
 /**
  * @typedef {import('../models').User} User
  */
-/**
- * @template T
- * @typedef {import('../types').ToDocument<T>} ToDocument
- */
 
 /**
  * @param {string} password
@@ -86,14 +82,15 @@ class UsersRepository {
 
   /**
    * @param {import('mongodb').ObjectID|string|User} id
-   * @returns {Promise<User>}
+   * @returns {Promise<User|null>}
    */
-  getUser(id) {
+  async getUser(id) {
     const { User } = this.uw.models;
     if (id instanceof User) {
-      return Promise.resolve(id);
+      return id;
     }
-    return User.findById(id);
+    const user = await User.findById(id);
+    return user;
   }
 
   /**
@@ -126,9 +123,10 @@ class UsersRepository {
   async localLogin({ email, password }) {
     const { Authentication } = this.uw.models;
 
-    /**
-     * @type {import('../models').Authentication & { user: User }}
-     */
+    /** @type {null | (import('../models').Authentication & { user: User })} */
+    // @ts-ignore TS2322: the type check fails because the `user` property actually contains an
+    // ObjectID in this return value. We are definitely filling in a User object below before
+    // using this variable.
     const auth = await Authentication.findOne({
       email: email.toLowerCase(),
     }).populate('user').exec();
@@ -179,6 +177,10 @@ class UsersRepository {
 
     debug('find or create social', type, id);
 
+    /** @type {null | (import('../models').Authentication & { user: User })} */
+    // @ts-ignore TS2322: the type check fails because the `user` property actually contains an
+    // ObjectID in this return value. We are definitely filling in a User object below before
+    // using this variable.
     let auth = await Authentication.findOne({ type, id });
     if (auth) {
       await auth.populate('user').execPopulate();
@@ -195,6 +197,9 @@ class UsersRepository {
       });
       await user.validate();
 
+      // @ts-ignore TS2322: the type check fails because the `user` property actually contains an
+      // ObjectID in this return value. We are definitely filling in a User object below before
+      // using this variable.
       auth = new Authentication({
         type,
         user,
@@ -203,6 +208,9 @@ class UsersRepository {
         // HACK, providing a fake email so we can use `unique: true` on emails
         email: `${id}@${type}.sociallogin`,
       });
+
+      // Just so typescript knows `auth` is not null here.
+      if (!auth) throw new TypeError();
 
       try {
         await Promise.all([

@@ -17,11 +17,11 @@ const { Schema } = mongoose;
  * @prop {Date} createdAt
  * @prop {Date} updatedAt
  *
- * @typedef {import('mongoose').Document<LeanMedia["_id"]> & LeanMedia} Media
+ * @typedef {mongoose.Document<LeanMedia["_id"], {}, LeanMedia> & LeanMedia} Media
  */
 
 /**
- * @type {import('mongoose').Schema<Media, import('mongoose').Model<Media>>}
+ * @type {mongoose.Schema<Media, mongoose.Model<Media>>}
  */
 const schema = new Schema({
   sourceID: {
