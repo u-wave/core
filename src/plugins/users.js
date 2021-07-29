@@ -81,15 +81,15 @@ class UsersRepository {
   }
 
   /**
-   * @param {import('mongodb').ObjectID|string|User} id
+   * Get a user object by ID.
+   *
+   * @param {import('mongodb').ObjectID|string} id
    * @returns {Promise<User|null>}
    */
   async getUser(id) {
     const { User } = this.uw.models;
-    if (id instanceof User) {
-      return id;
-    }
     const user = await User.findById(id);
+
     return user;
   }
 

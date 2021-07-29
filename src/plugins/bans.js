@@ -40,13 +40,11 @@ class Bans {
   /**
    * Check whether a user is currently banned.
    *
-   * @param {string|ObjectID|User} userID A user object or ID.
+   * @param {User} user A user object.
    */
-  async isBanned(userID) {
-    const { users } = this.uw;
-
-    const user = await users.getUser(userID);
-    return user && isValidBan(user);
+  // eslint-disable-next-line class-methods-use-this
+  async isBanned(user) {
+    return isValidBan(user);
   }
 
   /**
