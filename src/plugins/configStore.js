@@ -32,12 +32,14 @@ class ConfigStore {
 
   #emitter = new EventEmitter();
 
+  /** @type {Map<string, import('ajv').ValidateFunction<unknown>>} */
   #registry = new Map();
 
   /**
    * @param {import('mongoose').Connection} mongo
    */
   constructor(mongo) {
+    // TODO move this to the same system as other models
     this.ConfigModel = mongo.model('ConfigStore', configSchema);
     this.#ajv = new Ajv({
       useDefaults: true,

@@ -33,6 +33,8 @@ async function cyclePlaylist(playlist) {
 }
 
 class Booth {
+  #uw;
+
   /** @type {ReturnType<typeof setTimeout>|null} */
   #timeout = null;
 
@@ -42,8 +44,8 @@ class Booth {
    * @param {import('../Uwave')} uw
    */
   constructor(uw) {
-    this.uw = uw;
-    this.#locker = new RedLock([this.uw.redis]);
+    this.#uw = uw;
+    this.#locker = new RedLock([this.#uw.redis]);
   }
 
   async onStart() {
@@ -72,8 +74,8 @@ class Booth {
    * @returns {Promise<HistoryEntry | null>}
    */
   async getCurrentEntry() {
-    const { HistoryEntry } = this.uw.models;
-    const historyID = await this.uw.redis.get('booth:historyID');
+    const { HistoryEntry } = this.#uw.models;
+    const historyID = await this.#uw.redis.get('booth:historyID');
     if (!historyID) {
       return null;
     }
@@ -82,7 +84,7 @@ class Booth {
   }
 
   async getCurrentVoteStats() {
-    const { redis } = this.uw;
+    const { redis } = this.#uw;
 
     const results = await redis.pipeline()
       .smembers('booth:upvotes')
@@ -117,12 +119,12 @@ class Booth {
    * @private
    */
   async getNextDJ(options) {
-    const { User } = this.uw.models;
+    const { User } = this.#uw.models;
     /** @type {string|null} */
-    let userID = await this.uw.redis.lindex('waitlist', 0);
+    let userID = await this.#uw.redis.lindex('waitlist', 0);
     if (!userID && !options.remove) {
       // If the waitlist is empty, the current DJ will play again immediately.
-      userID = await this.uw.redis.get('booth:currentDJ');
+      userID = await this.#uw.redis.get('booth:currentDJ');
     }
     if (!userID) {
       return null;
@@ -137,8 +139,8 @@ class Booth {
    * @private
    */
   async getNextEntry(options) {
-    const { HistoryEntry, PlaylistItem } = this.uw.models;
-    const { playlists } = this.uw;
+    const { HistoryEntry, PlaylistItem } = this.#uw.models;
+    const { playlists } = this.#uw;
 
     const user = await this.getNextDJ(options);
     if (!user || !user.activePlaylist) {
@@ -176,19 +178,19 @@ class Booth {
    * @private
    */
   async cycleWaitlist(previous, options) {
-    const waitlistLen = await this.uw.redis.llen('waitlist');
+    const waitlistLen = await this.#uw.redis.llen('waitlist');
     if (waitlistLen > 0) {
-      await this.uw.redis.lpop('waitlist');
+      await this.#uw.redis.lpop('waitlist');
       if (previous && !options.remove) {
         // The previous DJ should only be added to the waitlist again if it was
         // not empty. If it was empty, the previous DJ is already in the booth.
-        await this.uw.redis.rpush('waitlist', previous.user.toString());
+        await this.#uw.redis.rpush('waitlist', previous.user.toString());
       }
     }
   }
 
   clear() {
-    return this.uw.redis.del(
+    return this.#uw.redis.del(
       'booth:historyID',
       'booth:currentDJ',
       'booth:upvotes',
@@ -202,7 +204,7 @@ class Booth {
    * @private
    */
   update(next) {
-    return this.uw.redis.multi()
+    return this.#uw.redis.multi()
       .del('booth:upvotes', 'booth:downvotes', 'booth:favorites')
       .set('booth:historyID', next.id)
       .set('booth:currentDJ', next.user.id)
@@ -236,7 +238,7 @@ class Booth {
    * @private
    */
   getWaitlist() {
-    return this.uw.redis.lrange('waitlist', 0, -1);
+    return this.#uw.redis.lrange('waitlist', 0, -1);
   }
 
   /**
@@ -245,7 +247,7 @@ class Booth {
    */
   async publish(next) {
     if (next) {
-      this.uw.publish('advance:complete', {
+      this.#uw.publish('advance:complete', {
         historyID: next.id,
         userID: next.user.id,
         playlistID: next.playlist.id,
@@ -256,14 +258,14 @@ class Booth {
         },
         playedAt: next.playedAt.getTime(),
       });
-      this.uw.publish('playlist:cycle', {
+      this.#uw.publish('playlist:cycle', {
         userID: next.user.id,
         playlistID: next.playlist.id,
       });
     } else {
-      this.uw.publish('advance:complete', null);
+      this.#uw.publish('advance:complete', null);
     }
-    this.uw.publish('waitlist:update', await this.getWaitlist());
+    this.#uw.publish('waitlist:update', await this.getWaitlist());
   }
 
   /**

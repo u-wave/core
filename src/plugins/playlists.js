@@ -81,11 +81,13 @@ function toPlaylistItem(itemProps, media) {
 }
 
 class PlaylistsRepository {
+  #uw;
+
   /**
    * @param {import('../Uwave')} uw
    */
   constructor(uw) {
-    this.uw = uw;
+    this.#uw = uw;
   }
 
   /**
@@ -93,7 +95,7 @@ class PlaylistsRepository {
    * @return {Promise<Playlist>}
    */
   async getPlaylist(id) {
-    const { Playlist } = this.uw.models;
+    const { Playlist } = this.#uw.models;
     if (id instanceof Playlist) {
       return id;
     }
@@ -109,7 +111,7 @@ class PlaylistsRepository {
    * @return {Promise<Media>}
    */
   async getMedia(id) {
-    const { Media } = this.uw.models;
+    const { Media } = this.#uw.models;
     if (id instanceof Media) {
       return id;
     }
@@ -126,7 +128,7 @@ class PlaylistsRepository {
    * @returns {Promise<Playlist>}
    */
   async getUserPlaylist(user, id) {
-    const { Playlist } = this.uw.models;
+    const { Playlist } = this.#uw.models;
     const playlist = await Playlist.findOne({ _id: id, author: user._id });
     if (!playlist) {
       throw new PlaylistNotFoundError({ id });
@@ -140,7 +142,7 @@ class PlaylistsRepository {
    * @returns {Promise<Playlist>}
    */
   async createPlaylist(user, { name }) {
-    const { Playlist } = this.uw.models;
+    const { Playlist } = this.#uw.models;
 
     const playlist = await Playlist.create({
       name,
@@ -162,7 +164,7 @@ class PlaylistsRepository {
    * @returns {Promise<LeanPlaylist[]>}
    */
   async getUserPlaylists(user) {
-    const { Playlist } = this.uw.models;
+    const { Playlist } = this.#uw.models;
     const userID = typeof user === 'object' ? user.id : user;
     const playlists = await Playlist.where('author', userID).lean();
     return playlists;
@@ -206,7 +208,7 @@ class PlaylistsRepository {
    * @returns {Promise<PlaylistItem & PopulateMedia>}
    */
   async getPlaylistItem(playlist, itemID) {
-    const { PlaylistItem } = this.uw.models;
+    const { PlaylistItem } = this.#uw.models;
 
     const playlistItemID = playlist.media.find((id) => id.equals(itemID));
 
@@ -235,7 +237,7 @@ class PlaylistsRepository {
    * @returns {Promise<Page<PlaylistItem, { offset: number, limit: number }>>}
    */
   async getPlaylistItems(playlist, filter, pagination) {
-    const { Playlist } = this.uw.models;
+    const { Playlist } = this.#uw.models;
 
     /** @type {object[]} */
     const aggregate = [
@@ -323,7 +325,7 @@ class PlaylistsRepository {
    * @return {Promise<Playlist[]>}
    */
   async getPlaylistsContainingMedia(mediaID, options = {}) {
-    const { Playlist } = this.uw.models;
+    const { Playlist } = this.#uw.models;
 
     const aggregate = [];
     if (options.author) {
@@ -369,7 +371,7 @@ class PlaylistsRepository {
    *   A map of stringified `Media` `ObjectID`s to the Playlist objects that contain them.
    */
   async getPlaylistsContainingAnyMedia(mediaIDs, options = {}) {
-    const { Playlist } = this.uw.models;
+    const { Playlist } = this.#uw.models;
 
     const aggregate = [];
 
@@ -435,7 +437,7 @@ class PlaylistsRepository {
    * @param {PlaylistItemDesc[]} items
    */
   async createPlaylistItems(user, items) {
-    const { Media, PlaylistItem } = this.uw.models;
+    const { Media, PlaylistItem } = this.#uw.models;
 
     if (!items.every(isValidPlaylistItem)) {
       throw new Error('Cannot add a playlist item without a proper media source type and ID.');
@@ -472,7 +474,7 @@ class PlaylistsRepository {
       let allMedias = knownMedias;
       if (unknownMediaIDs.length > 0) {
         // @ts-ignore
-        const unknownMedias = await this.uw.source(sourceType)
+        const unknownMedias = await this.#uw.source(sourceType)
           .get(user, unknownMediaIDs);
         allMedias = allMedias.concat(await Media.create(unknownMedias));
       }
@@ -508,7 +510,7 @@ class PlaylistsRepository {
    * }>}
    */
   async addPlaylistItems(playlist, items, { after = null } = {}) {
-    const { users } = this.uw;
+    const { users } = this.#uw;
     const user = await users.getUser(playlist.author);
     if (!user) {
       throw new UserNotFoundError({ id: playlist.author });
@@ -578,7 +580,7 @@ class PlaylistsRepository {
    * @param {ObjectID[]} itemIDs
    */
   async removePlaylistItems(playlist, itemIDs) {
-    const { PlaylistItem } = this.uw.models;
+    const { PlaylistItem } = this.#uw.models;
 
     // Only remove items that are actually in this playlist.
     const stringIDs = new Set(itemIDs.map((item) => String(item)));

@@ -17,7 +17,7 @@ describe('Bans', () => {
 
   describe('isBanned(user)', () => {
     it('returns false for unbanned users', async () => {
-      assert.strictEqual(await uw.bans.isBanned(user.id), false);
+      assert.strictEqual(await uw.bans.isBanned(user), false);
     });
     it('returns true for banned users', async () => {
       user.banned = {
@@ -25,22 +25,28 @@ describe('Bans', () => {
         expiresAt: Date.now() + 1000,
       };
       await user.save();
-      assert.strictEqual(await uw.bans.isBanned(user.id), true);
+      // refresh user data
+      user = await uw.users.getUser(user.id);
+      assert.strictEqual(await uw.bans.isBanned(user), true);
     });
   });
 
   describe('ban() and unban()', () => {
     it('can ban and unban a user', async () => {
       const moderator = await uw.test.createUser();
-      assert.strictEqual(await uw.bans.isBanned(user.id), false);
+      assert.strictEqual(await uw.bans.isBanned(user), false);
       await uw.bans.ban(user, {
         moderator,
         duration: ms('10 hours'),
       });
-      assert.strictEqual(await uw.bans.isBanned(user.id), true);
+      // refresh user data
+      user = await uw.users.getUser(user.id);
+      assert.strictEqual(await uw.bans.isBanned(user), true);
 
       await uw.bans.unban(user, { moderator });
-      assert.strictEqual(await uw.bans.isBanned(user.id), false);
+      // refresh user data
+      user = await uw.users.getUser(user.id);
+      assert.strictEqual(await uw.bans.isBanned(user), false);
     });
   });
 

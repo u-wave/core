@@ -15,19 +15,24 @@ const defaultOptions = {
 };
 
 class Chat {
+  #uw;
+
+  #chatID = Date.now();
+
+  /** @type {ChatOptions} */
+  #options;
+
   /**
    * @param {import('../Uwave')} uw
    * @param {Partial<ChatOptions>} [options]
    */
   constructor(uw, options = {}) {
-    this.uw = uw;
+    this.#uw = uw;
 
-    this.options = {
+    this.#options = {
       ...defaultOptions,
       ...options,
     };
-
-    this.chatID = Date.now();
   }
 
   /**
@@ -36,12 +41,12 @@ class Chat {
    * @param {{ moderator: User }} options
    */
   async mute(user, duration, options) {
-    await this.uw.redis.set(
+    await this.#uw.redis.set(
       `mute:${user.id}`, options.moderator.id,
       'PX', duration,
     );
 
-    this.uw.publish('chat:mute', {
+    this.#uw.publish('chat:mute', {
       moderatorID: options.moderator.id,
       userID: user.id,
       duration,
@@ -53,9 +58,9 @@ class Chat {
    * @param {{ moderator: User }} options
    */
   async unmute(user, options) {
-    await this.uw.redis.del(`mute:${user.id}`);
+    await this.#uw.redis.del(`mute:${user.id}`);
 
-    this.uw.publish('chat:unmute', {
+    this.#uw.publish('chat:unmute', {
       moderatorID: options.moderator.id,
       userID: user.id,
     });
@@ -67,7 +72,7 @@ class Chat {
    * @private
    */
   isMuted(user) {
-    return this.uw.redis.exists(`mute:${user.id}`);
+    return this.#uw.redis.exists(`mute:${user.id}`);
   }
 
   /**
@@ -76,7 +81,7 @@ class Chat {
    * @private
    */
   truncate(message) {
-    return message.slice(0, this.options.maxLength);
+    return message.slice(0, this.#options.maxLength);
   }
 
   /**
@@ -88,10 +93,10 @@ class Chat {
       return;
     }
 
-    this.chatID += 1;
+    this.#chatID += 1;
 
-    this.uw.publish('chat:message', {
-      id: `${user.id}-${this.chatID}`,
+    this.#uw.publish('chat:message', {
+      id: `${user.id}-${this.#chatID}`,
       userID: user.id,
       message: this.truncate(message),
       timestamp: Date.now(),
@@ -108,7 +113,7 @@ class Chat {
       moderatorID: options.moderator.id,
     };
 
-    this.uw.publish('chat:delete', deletion);
+    this.#uw.publish('chat:delete', deletion);
   }
 }
 

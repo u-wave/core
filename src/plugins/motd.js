@@ -3,18 +3,20 @@
 const routes = require('../routes/motd');
 
 class MOTD {
+  #uw;
+
   /**
    * @param {import('../Uwave')} uw
    */
   constructor(uw) {
-    this.uw = uw;
+    this.#uw = uw;
   }
 
   /**
    * @returns {Promise<string | null>}
    */
   get() {
-    return this.uw.redis.get('motd');
+    return this.#uw.redis.get('motd');
   }
 
   /**
@@ -23,9 +25,9 @@ class MOTD {
    */
   async set(motd) {
     if (motd) {
-      await this.uw.redis.set('motd', motd);
+      await this.#uw.redis.set('motd', motd);
     } else {
-      await this.uw.redis.del('motd');
+      await this.#uw.redis.del('motd');
     }
   }
 }

@@ -30,11 +30,13 @@ function isValidBan(user) {
 }
 
 class Bans {
+  #uw;
+
   /**
    * @param {import('../Uwave')} uw
    */
   constructor(uw) {
-    this.uw = uw;
+    this.#uw = uw;
   }
 
   /**
@@ -55,7 +57,7 @@ class Bans {
    * @return {Promise<Page<Ban, { offset: number, limit: number }>>}
    */
   async getBans(filter, pagination = {}) {
-    const { User } = this.uw.models;
+    const { User } = this.#uw.models;
 
     const offset = pagination.offset || 0;
     const size = clamp(
@@ -126,7 +128,7 @@ class Bans {
     await user.save();
     await user.populate('banned.moderator').execPopulate();
 
-    this.uw.publish('user:ban', {
+    this.#uw.publish('user:ban', {
       userID: user.id,
       moderatorID: moderator.id,
       duration: banned.duration,
@@ -146,7 +148,7 @@ class Bans {
    * @param {User} options.moderator
    */
   async unban(userID, { moderator }) {
-    const { users } = this.uw;
+    const { users } = this.#uw;
 
     const user = await users.getUser(userID);
     if (!user) {
@@ -159,7 +161,7 @@ class Bans {
     user.banned = undefined;
     await user.save();
 
-    this.uw.publish('user:unban', {
+    this.#uw.publish('user:unban', {
       userID: `${user.id}`,
       moderatorID: typeof moderator === 'object' ? `${moderator.id}` : moderator,
     });

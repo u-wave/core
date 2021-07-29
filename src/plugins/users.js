@@ -25,11 +25,13 @@ function getDefaultAvatar(user) {
 }
 
 class UsersRepository {
+  #uw;
+
   /**
    * @param {import('../Uwave')} uw
    */
   constructor(uw) {
-    this.uw = uw;
+    this.#uw = uw;
   }
 
   /**
@@ -37,7 +39,7 @@ class UsersRepository {
    * @param {{ offset?: number, limit?: number }} [pagination]
    */
   async getUsers(filter, pagination = {}) {
-    const { User } = this.uw.models;
+    const { User } = this.#uw.models;
 
     const {
       offset = 0,
@@ -87,7 +89,7 @@ class UsersRepository {
    * @returns {Promise<User|null>}
    */
   async getUser(id) {
-    const { User } = this.uw.models;
+    const { User } = this.#uw.models;
     const user = await User.findById(id);
 
     return user;
@@ -121,7 +123,7 @@ class UsersRepository {
    * @returns {Promise<User>}
    */
   async localLogin({ email, password }) {
-    const { Authentication } = this.uw.models;
+    const { Authentication } = this.#uw.models;
 
     /** @type {null | (import('../models').Authentication & { user: User })} */
     // @ts-ignore TS2322: the type check fails because the `user` property actually contains an
@@ -154,7 +156,7 @@ class UsersRepository {
       username: profile.displayName,
       avatar: profile.photos && profile.photos.length > 0 ? profile.photos[0].value : undefined,
     };
-    return this.uw.users.findOrCreateSocialUser(user);
+    return this.#uw.users.findOrCreateSocialUser(user);
   }
 
   /**
@@ -173,7 +175,7 @@ class UsersRepository {
     username,
     avatar,
   }) {
-    const { User, Authentication } = this.uw.models;
+    const { User, Authentication } = this.#uw.models;
 
     debug('find or create social', type, id);
 
@@ -225,7 +227,7 @@ class UsersRepository {
         throw e;
       }
 
-      this.uw.publish('user:create', {
+      this.#uw.publish('user:create', {
         user: user.id,
         auth: { type, id },
       });
@@ -241,7 +243,7 @@ class UsersRepository {
   async createUser({
     username, email, password,
   }) {
-    const { User, Authentication } = this.uw.models;
+    const { User, Authentication } = this.#uw.models;
 
     debug('create user', username, email.toLowerCase());
 
@@ -276,7 +278,7 @@ class UsersRepository {
       throw e;
     }
 
-    this.uw.publish('user:create', {
+    this.#uw.publish('user:create', {
       user: user.id,
       auth: { type: 'local', email: email.toLowerCase() },
     });
@@ -289,7 +291,7 @@ class UsersRepository {
    * @param {string} password
    */
   async updatePassword(id, password) {
-    const { Authentication } = this.uw.models;
+    const { Authentication } = this.#uw.models;
 
     const user = await this.getUser(id);
     if (!user) throw new UserNotFoundError({ id });
@@ -340,7 +342,7 @@ class UsersRepository {
       update[key] = user[key];
     });
 
-    this.uw.publish('user:update', {
+    this.#uw.publish('user:update', {
       userID: user.id,
       moderatorID: moderator ? moderator.id : null,
       old,

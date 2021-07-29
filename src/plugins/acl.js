@@ -65,17 +65,20 @@ function getRoleName(role) {
   return typeof role === 'string' ? role : role.id;
 }
 
+const SUPER_ROLE = '*';
+
 class Acl {
+  #uw;
+
   /**
    * @param {import('../Uwave')} uw
    */
   constructor(uw) {
-    this.uw = uw;
-    this.superRole = '*';
+    this.#uw = uw;
   }
 
   async maybeAddDefaultRoles() {
-    const { AclRole } = this.uw.models;
+    const { AclRole } = this.#uw.models;
 
     const existingRoles = await AclRole.estimatedDocumentCount();
     debug('existing roles', existingRoles);
@@ -95,7 +98,7 @@ class Acl {
    * @private
    */
   async getAclRoles(names, options = {}) {
-    const { AclRole } = this.uw.models;
+    const { AclRole } = this.#uw.models;
 
     /** @type {AclRole[]} */
     const existingRoles = await AclRole.find({ _id: { $in: names } });
@@ -113,7 +116,7 @@ class Acl {
    * @returns {Promise<Record<string, string[]>>}
    */
   async getAllRoles() {
-    const { AclRole } = this.uw.models;
+    const { AclRole } = this.#uw.models;
 
     /** @type {AclRole[]} */
     const roles = await AclRole.find().lean();
@@ -127,7 +130,7 @@ class Acl {
    * @param {string[]} permissions
    */
   async createRole(name, permissions) {
-    const { AclRole } = this.uw.models;
+    const { AclRole } = this.#uw.models;
 
     const roles = await this.getAclRoles(permissions, { create: true });
     await AclRole.findByIdAndUpdate(
@@ -147,7 +150,7 @@ class Acl {
    * @param {string} name
    */
   async deleteRole(name) {
-    const { AclRole } = this.uw.models;
+    const { AclRole } = this.#uw.models;
 
     await AclRole.deleteOne({ _id: name });
   }
@@ -166,7 +169,7 @@ class Acl {
 
     await user.save();
 
-    this.uw.publish('acl:allow', {
+    this.#uw.publish('acl:allow', {
       userID: user.id,
       roles: aclRoles.map((role) => role.id),
     });
@@ -184,7 +187,7 @@ class Acl {
     user.roles = user.roles.filter((role) => !shouldRemove(getRoleName(role)));
     await user.save();
 
-    this.uw.publish('acl:disallow', {
+    this.#uw.publish('acl:disallow', {
       userID: user.id,
       roles: aclRoles.map((role) => role.id),
     });
@@ -206,7 +209,7 @@ class Acl {
    * @returns {Promise<boolean>}
    */
   async isAllowed(user, permission) {
-    const { AclRole } = this.uw.models;
+    const { AclRole } = this.#uw.models;
 
     const role = await AclRole.findById(permission);
     if (!role) {
@@ -216,9 +219,9 @@ class Acl {
     const userRoles = await getAllUserRoles(user);
     const roleIds = userRoles.map((userRole) => userRole.id);
 
-    debug('role ids', roleIds, 'check', user.id, role.id, 'super', this.superRole);
+    debug('role ids', roleIds, 'check', user.id, role.id, 'super', SUPER_ROLE);
 
-    return roleIds.includes(role.id) || roleIds.includes(this.superRole);
+    return roleIds.includes(role.id) || roleIds.includes(SUPER_ROLE);
   }
 }
 

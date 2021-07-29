@@ -27,6 +27,8 @@ const schema = require('../schemas/socialAuth.json');
  */
 
 class PassportPlugin extends Passport {
+  #uw;
+
   /**
    * @param {import('../Uwave')} uw
    * @param {{ secret: Buffer|string }} options
@@ -34,7 +36,7 @@ class PassportPlugin extends Passport {
   constructor(uw, options) {
     super();
 
-    this.uw = uw;
+    this.#uw = uw;
 
     /**
      * @param {Express.User} user
@@ -88,7 +90,7 @@ class PassportPlugin extends Passport {
   async loadRuntimeConfiguration() {
     /** @type {SocialAuthSettings} */
     // @ts-ignore `get()` returns a validated object with default values populated
-    const settings = await this.uw.config.get(schema['uw:key']);
+    const settings = await this.#uw.config.get(schema['uw:key']);
     try {
       this.applyAuthStrategies(settings);
     } catch (error) {
@@ -105,7 +107,7 @@ class PassportPlugin extends Passport {
    * @private
    */
   socialLogin(accessToken, refreshToken, profile) {
-    return this.uw.users.login({
+    return this.#uw.users.login({
       type: profile.provider,
       profile,
     });

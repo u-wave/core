@@ -106,6 +106,33 @@ class SocketServer {
     });
   }
 
+  #uw;
+
+  #redisSubscription;
+
+  #wss;
+
+  /** @type {Connection[]} */
+  #connections = [];
+
+  #pinger;
+
+  /**
+   * Handlers for commands that come in from clients.
+   * @type {ClientActions}
+   */
+  #clientActions;
+
+  /** @type {Map<string, import('ajv').ValidateFunction<unknown>>} */
+  #clientActionSchemas = new Map();
+
+  /**
+   * Handlers for commands that come in from the server side.
+   *
+   * @type {import('./redisMessages').ServerActions}
+   */
+  #serverActions;
+
   /**
    * Create a socket server.
    *
@@ -132,14 +159,11 @@ class SocketServer {
         + 'keys, and is required for security reasons.');
     }
 
-    this.uw = uw;
-    this.redisSubscription = uw.redis.duplicate();
-
-    /** @type {Connection[]} */
-    this.connections = [];
+    this.#uw = uw;
+    this.#redisSubscription = uw.redis.duplicate();
 
     this.options = {
-      /** @type {(socket?: import('ws'), err: Error) => void} */
+      /** @type {(socket: import('ws') | undefined, err: Error) => void} */
       onError: (socket, err) => {
         throw err;
       },
@@ -147,30 +171,31 @@ class SocketServer {
       ...options,
     };
 
+    // TODO put this behind a symbol, it's just public for tests
     this.authRegistry = new AuthRegistry(uw.redis);
 
-    this.wss = new WebSocket.Server({
+    this.#wss = new WebSocket.Server({
       server: options.server,
       port: options.server ? undefined : options.port,
       clientTracking: false,
     });
 
-    this.redisSubscription.subscribe('uwave', 'v1').catch((error) => {
+    this.#redisSubscription.subscribe('uwave', 'v1').catch((error) => {
       debug(error);
     });
-    this.redisSubscription.on('message', (channel, command) => {
+    this.#redisSubscription.on('message', (channel, command) => {
       this.onServerMessage(channel, command)
         .catch((e) => { throw e; });
     });
 
-    this.wss.on('error', (error) => {
+    this.#wss.on('error', (error) => {
       this.onError(error);
     });
-    this.wss.on('connection', (socket) => {
+    this.#wss.on('connection', (socket) => {
       this.onSocketConnected(socket);
     });
 
-    this.pinger = setInterval(() => {
+    this.#pinger = setInterval(() => {
       this.ping();
     }, ms('10 seconds'));
 
@@ -180,43 +205,32 @@ class SocketServer {
       });
     }, ms('2 seconds'));
 
-    /**
-     * Handlers for commands that come in from clients.
-     *
-     * @type {ClientActions}
-     */
-    this.clientActions = {
+    this.#clientActions = {
       sendChat: (user, message) => {
         debug('sendChat', user, message);
-        this.uw.chat.send(user, message);
+        this.#uw.chat.send(user, message);
       },
       vote: (user, direction) => {
-        socketVote(this.uw, user.id, direction);
+        socketVote(this.#uw, user.id, direction);
       },
       logout: (user, _, connection) => {
         this.replace(connection, this.createGuestConnection(connection.socket));
         if (!this.connection(user)) {
-          disconnectUser(this.uw, user._id);
+          disconnectUser(this.#uw, user._id);
         }
       },
     };
 
-    this.clientActionSchemas = new Map();
-    this.clientActionSchemas.set('sendChat', ajv.compile({
+    this.#clientActionSchemas.set('sendChat', ajv.compile({
       type: 'string',
     }));
-    this.clientActionSchemas.set('vote', ajv.compile({
+    this.#clientActionSchemas.set('vote', ajv.compile({
       type: 'integer',
       enum: [-1, 1],
     }));
-    this.clientActionSchemas.set('logout', ajv.compile(true));
+    this.#clientActionSchemas.set('logout', ajv.compile(true));
 
-    /**
-     * Handlers for commands that come in from the server side.
-     *
-     * @type {import('./redisMessages').ServerActions}
-     */
-    this.serverActions = {
+    this.#serverActions = {
       /**
        * Broadcast the next track.
        */
@@ -384,7 +398,7 @@ class SocketServer {
         }
       },
       'user:join': async ({ userID }) => {
-        const { users, redis } = this.uw;
+        const { users, redis } = this.#uw;
         const user = await users.getUser(userID);
         if (user) {
           // TODO this should not be the socket server code's responsibility
@@ -408,7 +422,7 @@ class SocketServer {
           moderatorID, userID, permanent, duration, expiresAt,
         });
 
-        this.connections.forEach((connection) => {
+        this.#connections.forEach((connection) => {
           if (connection instanceof AuthedConnection && connection.user.id === userID) {
             connection.ban();
           } else if (connection instanceof LostConnection && connection.user.id === userID) {
@@ -426,7 +440,7 @@ class SocketServer {
        * Force-close a connection.
        */
       'http-api:socket:close': (userID) => {
-        this.connections.forEach((connection) => {
+        this.#connections.forEach((connection) => {
           if ('user' in connection && connection.user.id === userID) {
             connection.close();
           }
@@ -441,8 +455,8 @@ class SocketServer {
    * @private
    */
   async initLostConnections() {
-    const { User } = this.uw.models;
-    const userIDs = await this.uw.redis.lrange('users', 0, -1);
+    const { User } = this.#uw.models;
+    const userIDs = await this.#uw.redis.lrange('users', 0, -1);
     const disconnectedIDs = userIDs.filter((userID) => !this.connection(userID));
 
     /** @type {User[]} */
@@ -493,7 +507,7 @@ class SocketServer {
    * @private
    */
   getLostConnection(user) {
-    return this.connections.find((connection) => (
+    return this.#connections.find((connection) => (
       connection instanceof LostConnection && connection.user.id === user.id
     ));
   }
@@ -505,7 +519,7 @@ class SocketServer {
    * @private
    */
   createGuestConnection(socket) {
-    const connection = new GuestConnection(this.uw, socket, {
+    const connection = new GuestConnection(this.#uw, socket, {
       authRegistry: this.authRegistry,
     });
     connection.on('close', () => {
@@ -523,7 +537,7 @@ class SocketServer {
       this.replace(connection, this.createAuthedConnection(socket, user));
 
       if (!isReconnect) {
-        this.uw.publish('user:join', { userID: user.id });
+        this.#uw.publish('user:join', { userID: user.id });
       }
     });
     return connection;
@@ -538,12 +552,12 @@ class SocketServer {
    * @private
    */
   createAuthedConnection(socket, user) {
-    const connection = new AuthedConnection(this.uw, socket, user);
+    const connection = new AuthedConnection(this.#uw, socket, user);
     connection.on('close', ({ banned }) => {
       if (banned) {
         debug('removing connection after ban', user.id, user.username);
         this.remove(connection);
-        disconnectUser(this.uw, user._id);
+        disconnectUser(this.#uw, user._id);
       } else {
         debug('lost connection', user.id, user.username);
         this.replace(connection, this.createLostConnection(user));
@@ -556,14 +570,14 @@ class SocketServer {
        */
       (command, data) => {
         debug('command', user.id, user.username, command, data);
-        if (has(this.clientActions, command)) {
+        if (has(this.#clientActions, command)) {
           // Ignore incorrect input
-          const validate = this.clientActionSchemas.get(command);
+          const validate = this.#clientActionSchemas.get(command);
           if (validate && !validate(data)) {
             return;
           }
 
-          const action = this.clientActions[command];
+          const action = this.#clientActions[command];
           // @ts-ignore TS2345 `data` is validated
           action(user, data, connection);
         }
@@ -579,14 +593,14 @@ class SocketServer {
    * @private
    */
   createLostConnection(user) {
-    const connection = new LostConnection(this.uw, user, this.options.timeout);
+    const connection = new LostConnection(this.#uw, user, this.options.timeout);
     connection.on('close', () => {
       debug('left', user.id, user.username);
       this.remove(connection);
       // Only register that the user left if they didn't have another connection
       // still open.
       if (!this.connection(user)) {
-        disconnectUser(this.uw, user._id);
+        disconnectUser(this.#uw, user._id);
       }
     });
     return connection;
@@ -601,7 +615,7 @@ class SocketServer {
   add(connection) {
     debug('adding', String(connection));
 
-    this.connections.push(connection);
+    this.#connections.push(connection);
     this.recountGuests();
   }
 
@@ -614,8 +628,8 @@ class SocketServer {
   remove(connection) {
     debug('removing', String(connection));
 
-    const i = this.connections.indexOf(connection);
-    this.connections.splice(i, 1);
+    const i = this.#connections.indexOf(connection);
+    this.#connections.splice(i, 1);
 
     connection.removed();
     this.recountGuests();
@@ -659,8 +673,8 @@ class SocketServer {
     if (channel === 'v1') {
       this.broadcast(command, data);
     } else if (channel === 'uwave') {
-      if (has(this.serverActions, command)) {
-        const action = this.serverActions[command];
+      if (has(this.#serverActions, command)) {
+        const action = this.#serverActions[command];
         if (action !== undefined) { // the types for `ServerActions` allow undefined, so...
           // @ts-ignore TS2345 `data` is validated
           action(data);
@@ -675,10 +689,10 @@ class SocketServer {
    * @return {Promise<void>}
    */
   async destroy() {
-    clearInterval(this.pinger);
-    const closeWsServer = promisify(this.wss.close.bind(this.wss));
+    clearInterval(this.#pinger);
+    const closeWsServer = promisify(this.#wss.close.bind(this.#wss));
     await closeWsServer();
-    await this.redisSubscription.quit();
+    await this.#redisSubscription.quit();
   }
 
   /**
@@ -689,11 +703,11 @@ class SocketServer {
    */
   connection(user) {
     const userID = typeof user === 'object' ? user.id : user;
-    return this.connections.find((connection) => 'user' in connection && connection.user.id === userID);
+    return this.#connections.find((connection) => 'user' in connection && connection.user.id === userID);
   }
 
   ping() {
-    this.connections.forEach((connection) => {
+    this.#connections.forEach((connection) => {
       if ('socket' in connection) {
         connection.ping();
       }
@@ -709,7 +723,7 @@ class SocketServer {
   broadcast(command, data) {
     debug('broadcast', command, data);
 
-    this.connections.forEach((connection) => {
+    this.#connections.forEach((connection) => {
       debug('  to', connection.toString());
       connection.send(command, data);
     });
@@ -725,7 +739,7 @@ class SocketServer {
   sendTo(user, command, data) {
     const userID = typeof user === 'object' ? user.id : user;
 
-    this.connections.forEach((connection) => {
+    this.#connections.forEach((connection) => {
       if ('user' in connection && connection.user.id === userID) {
         connection.send(command, data);
       }
@@ -733,7 +747,7 @@ class SocketServer {
   }
 
   async getGuestCount() {
-    const { redis } = this.uw;
+    const { redis } = this.#uw;
     const rawCount = await redis.get('http-api:guests');
     if (typeof rawCount !== 'string' || !/^\d+$/.test(rawCount)) {
       return 0;
@@ -743,14 +757,17 @@ class SocketServer {
 
   /**
    * Update online guests count and broadcast an update if necessary.
+   *
+   * @private
    */
   recountGuests() { // eslint-disable-line class-methods-use-this
     // assigned in constructor()
   }
 
+  /** @private */
   async recountGuestsInternal() {
-    const { redis } = this.uw;
-    const guests = this.connections
+    const { redis } = this.#uw;
+    const guests = this.#connections
       .filter((connection) => connection instanceof GuestConnection)
       .length;
 

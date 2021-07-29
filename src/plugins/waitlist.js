@@ -26,25 +26,27 @@ function isInWaitlist(waitlist, userID) {
 }
 
 class Waitlist {
+  #uw;
+
   /**
    * @param {import('../Uwave')} uw
    */
   constructor(uw) {
-    this.uw = uw;
+    this.#uw = uw;
   }
 
   /**
    * @private
    */
   getCurrentDJ() {
-    return this.uw.redis.get('booth:currentDJ');
+    return this.#uw.redis.get('booth:currentDJ');
   }
 
   /**
    * @private
    */
   async isBoothEmpty() {
-    return !(await this.uw.redis.get('booth:historyID'));
+    return !(await this.#uw.redis.get('booth:historyID'));
   }
 
   /**
@@ -63,7 +65,7 @@ class Waitlist {
    * @private
    */
   async hasPlayablePlaylist(user) {
-    const { playlists } = this.uw;
+    const { playlists } = this.#uw;
     if (!user.activePlaylist) {
       return false;
     }
@@ -76,14 +78,14 @@ class Waitlist {
    * @returns {Promise<boolean>}
    */
   isLocked() {
-    return this.uw.redis.get('waitlist:lock').then(Boolean);
+    return this.#uw.redis.get('waitlist:lock').then(Boolean);
   }
 
   /**
    * @returns {Promise<string[]>}
    */
   getUserIDs() {
-    return this.uw.redis.lrange('waitlist', 0, -1);
+    return this.#uw.redis.lrange('waitlist', 0, -1);
   }
 
   /**
@@ -94,11 +96,11 @@ class Waitlist {
    * @private
    */
   async doJoinWaitlist(user) {
-    await this.uw.redis.rpush('waitlist', user.id);
+    await this.#uw.redis.rpush('waitlist', user.id);
 
     const waitlist = await this.getUserIDs();
 
-    this.uw.publish('waitlist:join', {
+    this.#uw.publish('waitlist:join', {
       userID: user.id,
       waitlist,
     });
@@ -118,14 +120,14 @@ class Waitlist {
     const clampedPosition = clamp(position, 0, waitlist.length);
 
     if (clampedPosition < waitlist.length) {
-      await this.uw.redis.linsert('waitlist', 'BEFORE', waitlist[clampedPosition], user.id);
+      await this.#uw.redis.linsert('waitlist', 'BEFORE', waitlist[clampedPosition], user.id);
     } else {
-      await this.uw.redis.rpush('waitlist', user.id);
+      await this.#uw.redis.rpush('waitlist', user.id);
     }
 
     const newWaitlist = await this.getUserIDs();
 
-    this.uw.publish('waitlist:add', {
+    this.#uw.publish('waitlist:add', {
       userID: user.id,
       moderatorID: moderator.id,
       position: clampedPosition,
@@ -145,7 +147,7 @@ class Waitlist {
    * @returns {Promise<void>}
    */
   async addUser(userID, { moderator } = {}) {
-    const { acl, users } = this.uw;
+    const { acl, users } = this.#uw;
 
     const user = await users.getUser(userID);
     if (!user) throw new UserNotFoundError({ id: userID });
@@ -182,7 +184,7 @@ class Waitlist {
     }
 
     if (await this.isBoothEmpty()) {
-      await this.uw.booth.advance();
+      await this.#uw.booth.advance();
     }
   }
 
@@ -193,7 +195,7 @@ class Waitlist {
    * @returns {Promise<void>}
    */
   async moveUser(userID, position, { moderator }) {
-    const { users } = this.uw;
+    const { users } = this.#uw;
 
     const user = await users.getUser(userID.toLowerCase());
     if (!user) {
@@ -220,16 +222,16 @@ class Waitlist {
       return;
     }
 
-    await this.uw.redis.lrem('waitlist', 0, user.id);
+    await this.#uw.redis.lrem('waitlist', 0, user.id);
     if (beforeID) {
-      await this.uw.redis.linsert('waitlist', 'BEFORE', beforeID, user.id);
+      await this.#uw.redis.linsert('waitlist', 'BEFORE', beforeID, user.id);
     } else {
-      await this.uw.redis.rpush('waitlist', user.id);
+      await this.#uw.redis.rpush('waitlist', user.id);
     }
 
     waitlist = await this.getUserIDs();
 
-    this.uw.publish('waitlist:move', {
+    this.#uw.publish('waitlist:move', {
       userID: user.id,
       moderatorID: moderator.id,
       position: clampedPosition,
@@ -243,7 +245,7 @@ class Waitlist {
    * @returns {Promise<void>}
    */
   async removeUser(userID, { moderator }) {
-    const { acl, users } = this.uw;
+    const { acl, users } = this.#uw;
     const user = await users.getUser(userID);
     if (!user) {
       throw new UserNotFoundError({ id: userID });
@@ -261,17 +263,17 @@ class Waitlist {
       throw new UserNotInWaitlistError({ id: user.id });
     }
 
-    await this.uw.redis.lrem('waitlist', 0, user.id);
+    await this.#uw.redis.lrem('waitlist', 0, user.id);
 
     waitlist = await this.getUserIDs();
     if (isRemoving) {
-      this.uw.publish('waitlist:remove', {
+      this.#uw.publish('waitlist:remove', {
         userID: user.id,
         moderatorID: moderator.id,
         waitlist,
       });
     } else {
-      this.uw.publish('waitlist:leave', {
+      this.#uw.publish('waitlist:leave', {
         userID: user.id,
         waitlist,
       });
@@ -283,14 +285,14 @@ class Waitlist {
    * @returns {Promise<void>}
    */
   async clear({ moderator }) {
-    await this.uw.redis.del('waitlist');
+    await this.#uw.redis.del('waitlist');
 
     const waitlist = await this.getUserIDs();
     if (waitlist.length !== 0) {
       throw new Error('Could not clear the waitlist. Please try again.');
     }
 
-    this.uw.publish('waitlist:clear', {
+    this.#uw.publish('waitlist:clear', {
       moderatorID: moderator.id,
     });
   }
@@ -303,9 +305,9 @@ class Waitlist {
    */
   async lockWaitlist(lock, moderator) {
     if (lock) {
-      await this.uw.redis.set('waitlist:lock', String(lock));
+      await this.#uw.redis.set('waitlist:lock', String(lock));
     } else {
-      await this.uw.redis.del('waitlist:lock');
+      await this.#uw.redis.del('waitlist:lock');
     }
 
     const isLocked = await this.isLocked();
@@ -314,7 +316,7 @@ class Waitlist {
       throw new Error(`Could not ${lock ? 'lock' : 'unlock'} the waitlist. Please try again.`);
     }
 
-    this.uw.publish('waitlist:lock', {
+    this.#uw.publish('waitlist:lock', {
       moderatorID: moderator.id,
       locked: isLocked,
     });

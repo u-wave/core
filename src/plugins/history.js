@@ -19,11 +19,13 @@ const MAX_PAGE_SIZE = 100;
  */
 
 class HistoryRepository {
+  #uw;
+
   /**
    * @param {import('../Uwave')} uw
    */
   constructor(uw) {
-    this.uw = uw;
+    this.#uw = uw;
   }
 
   /**
@@ -32,7 +34,7 @@ class HistoryRepository {
    * @returns {Promise<Page<PopulatedHistoryEntry, { offset: number, limit: number }>>}
    */
   async getHistory(filter, pagination = {}) {
-    const { HistoryEntry } = this.uw.models;
+    const { HistoryEntry } = this.#uw.models;
 
     const offset = pagination.offset || 0;
     const limit = clamp(
