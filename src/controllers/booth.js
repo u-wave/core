@@ -27,7 +27,7 @@ async function getBoothData(uw) {
     return null;
   }
 
-  await historyEntry.populate('media.media').execPopulate();
+  await historyEntry.populate('media.media');
 
   const stats = await booth.getCurrentVoteStats();
 

@@ -9,7 +9,7 @@ function getWaitingUserIDs(uw) {
 
 /**
  * @param {import('../Uwave')} uw
- * @param {import('mongodb').ObjectID} userID
+ * @param {import('mongodb').ObjectId} userID
  */
 async function removeFromWaitlist(uw, userID) {
   const id = userID.toString();

@@ -7,11 +7,11 @@ const { Types } = mongoose.Schema;
 
 /**
  * @typedef {object} LeanPlaylist
- * @prop {import('mongodb').ObjectID} _id
+ * @prop {import('mongodb').ObjectId} _id
  * @prop {string} name
  * @prop {string} description
- * @prop {import('mongodb').ObjectID} author
- * @prop {import('mongodb').ObjectID[]} media
+ * @prop {import('mongodb').ObjectId} author
+ * @prop {import('mongodb').ObjectId[]} media
  * @prop {Date} createdAt
  * @prop {Date} updatedAt
  *

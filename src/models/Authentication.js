@@ -7,8 +7,8 @@ const { Types } = mongoose.Schema;
 
 /**
  * @typedef {object} LeanAuthentication
- * @prop {import('mongodb').ObjectID} _id
- * @prop {import('mongodb').ObjectID} user
+ * @prop {import('mongodb').ObjectId} _id
+ * @prop {import('mongodb').ObjectId} user
  * @prop {string} type
  * @prop {string} [email]
  * @prop {string} [hash]

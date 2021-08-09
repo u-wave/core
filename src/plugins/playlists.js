@@ -14,7 +14,7 @@ const Page = require('../Page');
 const routes = require('../routes/playlists');
 
 /**
- * @typedef {import('mongodb').ObjectID} ObjectID
+ * @typedef {import('mongodb').ObjectId} ObjectId
  * @typedef {import('../models').User} User
  * @typedef {import('../models').Playlist} Playlist
  * @typedef {import('../models/Playlist').LeanPlaylist} LeanPlaylist
@@ -91,7 +91,7 @@ class PlaylistsRepository {
   }
 
   /**
-   * @param {ObjectID} id
+   * @param {ObjectId} id
    * @return {Promise<Playlist>}
    */
   async getPlaylist(id) {
@@ -107,7 +107,7 @@ class PlaylistsRepository {
   }
 
   /**
-   * @param {ObjectID} id
+   * @param {ObjectId} id
    * @return {Promise<Media>}
    */
   async getMedia(id) {
@@ -124,7 +124,7 @@ class PlaylistsRepository {
 
   /**
    * @param {User} user
-   * @param {ObjectID} id
+   * @param {ObjectId} id
    * @returns {Promise<Playlist>}
    */
   async getUserPlaylist(user, id) {
@@ -204,7 +204,7 @@ class PlaylistsRepository {
 
   /**
    * @param {Playlist} playlist
-   * @param {ObjectID} itemID
+   * @param {ObjectId} itemID
    * @returns {Promise<PlaylistItem & PopulateMedia>}
    */
   async getPlaylistItem(playlist, itemID) {
@@ -222,7 +222,7 @@ class PlaylistsRepository {
     }
 
     if (!item.populated('media')) {
-      await item.populate('media').execPopulate();
+      await item.populate('media');
     }
 
     // @ts-ignore TS2322: The types of `media` are incompatible, but we just populated it,
@@ -317,10 +317,10 @@ class PlaylistsRepository {
    * Get playlists containing a particular Media.
    *
    * @typedef {object} GetPlaylistsContainingMediaOptions
-   * @prop {ObjectID} [author]
+   * @prop {ObjectId} [author]
    * @prop {string[]} [fields]
    *
-   * @param {ObjectID} mediaID
+   * @param {ObjectId} mediaID
    * @param {GetPlaylistsContainingMediaOptions} options
    * @return {Promise<Playlist[]>}
    */
@@ -363,12 +363,12 @@ class PlaylistsRepository {
 
   /**
    * Get playlists that contain any of the given medias. If multiple medias are in a single
-   * playlist, that playlist will be returned multiple times, keyed on the media's unique ObjectID.
+   * playlist, that playlist will be returned multiple times, keyed on the media's unique ObjectId.
    *
-   * @param {ObjectID[]} mediaIDs
-   * @param {{ author?: ObjectID }} options
+   * @param {ObjectId[]} mediaIDs
+   * @param {{ author?: ObjectId }} options
    * @return {Promise<Map<string, Playlist[]>>}
-   *   A map of stringified `Media` `ObjectID`s to the Playlist objects that contain them.
+   *   A map of stringified `Media` `ObjectId`s to the Playlist objects that contain them.
    */
   async getPlaylistsContainingAnyMedia(mediaIDs, options = {}) {
     const { Playlist } = this.#uw.models;
@@ -502,10 +502,10 @@ class PlaylistsRepository {
    *
    * @param {Playlist} playlist
    * @param {PlaylistItemDesc[]} items
-   * @param {{ after?: ObjectID|null }} options
+   * @param {{ after?: ObjectId|null }} options
    * @returns {Promise<{
    *   added: PlaylistItem[],
-   *   afterID: ObjectID?,
+   *   afterID: ObjectId?,
    *   playlistSize: number,
    * }>}
    */
@@ -548,8 +548,8 @@ class PlaylistsRepository {
 
   /**
    * @param {Playlist} playlist
-   * @param {ObjectID[]} itemIDs
-   * @param {{ afterID: ObjectID? }} options
+   * @param {ObjectId[]} itemIDs
+   * @param {{ afterID: ObjectId? }} options
    */
   // eslint-disable-next-line class-methods-use-this
   async movePlaylistItems(playlist, itemIDs, { afterID }) {
@@ -577,16 +577,16 @@ class PlaylistsRepository {
 
   /**
    * @param {Playlist} playlist
-   * @param {ObjectID[]} itemIDs
+   * @param {ObjectId[]} itemIDs
    */
   async removePlaylistItems(playlist, itemIDs) {
     const { PlaylistItem } = this.#uw.models;
 
     // Only remove items that are actually in this playlist.
     const stringIDs = new Set(itemIDs.map((item) => String(item)));
-    /** @type {ObjectID[]} */
+    /** @type {ObjectId[]} */
     const toRemove = [];
-    /** @type {ObjectID[]} */
+    /** @type {ObjectId[]} */
     const toKeep = [];
     playlist.media.forEach((itemID) => {
       if (stringIDs.has(`${itemID}`)) {

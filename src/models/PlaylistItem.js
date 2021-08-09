@@ -7,8 +7,8 @@ const { Types } = mongoose.Schema;
 
 /**
  * @typedef {object} LeanPlaylistItem
- * @prop {import('mongodb').ObjectID} _id
- * @prop {import('mongodb').ObjectID} media
+ * @prop {import('mongodb').ObjectId} _id
+ * @prop {import('mongodb').ObjectId} media
  * @prop {string} artist
  * @prop {string} title
  * @prop {number} start

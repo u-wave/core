@@ -8,7 +8,7 @@ const { Types } = mongoose.Schema;
 
 /**
  * @typedef {object} LeanBanned
- * @prop {import('mongodb').ObjectID} moderator
+ * @prop {import('mongodb').ObjectId} moderator
  * @prop {number} duration
  * @prop {Date} [expiresAt]
  * @prop {string} reason
@@ -16,13 +16,13 @@ const { Types } = mongoose.Schema;
 
 /**
  * @typedef {object} LeanUser
- * @prop {import('mongodb').ObjectID} _id
+ * @prop {import('mongodb').ObjectId} _id
  * @prop {string} username
  * @prop {string} language
  * @prop {string[]} roles
  * @prop {string} avatar
  * @prop {string} slug
- * @prop {import('mongodb').ObjectID|null} activePlaylist
+ * @prop {import('mongodb').ObjectId|null} activePlaylist
  * @prop {Date} lastSeenAt
  * @prop {LeanBanned|undefined} banned
  * @prop {string|undefined} pendingActivation

@@ -85,7 +85,7 @@ class UsersRepository {
   /**
    * Get a user object by ID.
    *
-   * @param {import('mongodb').ObjectID|string} id
+   * @param {import('mongodb').ObjectId|string} id
    * @returns {Promise<User|null>}
    */
   async getUser(id) {
@@ -127,7 +127,7 @@ class UsersRepository {
 
     /** @type {null | (import('../models').Authentication & { user: User })} */
     // @ts-ignore TS2322: the type check fails because the `user` property actually contains an
-    // ObjectID in this return value. We are definitely filling in a User object below before
+    // ObjectId in this return value. We are definitely filling in a User object below before
     // using this variable.
     const auth = await Authentication.findOne({
       email: email.toLowerCase(),
@@ -181,11 +181,11 @@ class UsersRepository {
 
     /** @type {null | (import('../models').Authentication & { user: User })} */
     // @ts-ignore TS2322: the type check fails because the `user` property actually contains an
-    // ObjectID in this return value. We are definitely filling in a User object below before
+    // ObjectId in this return value. We are definitely filling in a User object below before
     // using this variable.
     let auth = await Authentication.findOne({ type, id });
     if (auth) {
-      await auth.populate('user').execPopulate();
+      await auth.populate('user');
 
       if (avatar && auth.avatar !== avatar) {
         auth.avatar = avatar;
@@ -200,7 +200,7 @@ class UsersRepository {
       await user.validate();
 
       // @ts-ignore TS2322: the type check fails because the `user` property actually contains an
-      // ObjectID in this return value. We are definitely filling in a User object below before
+      // ObjectId in this return value. We are definitely filling in a User object below before
       // using this variable.
       auth = new Authentication({
         type,
@@ -287,7 +287,7 @@ class UsersRepository {
   }
 
   /**
-   * @param {import('mongodb').ObjectID} id
+   * @param {import('mongodb').ObjectId} id
    * @param {string} password
    */
   async updatePassword(id, password) {
@@ -311,7 +311,7 @@ class UsersRepository {
   }
 
   /**
-   * @param {import('mongodb').ObjectID|string} id
+   * @param {import('mongodb').ObjectId|string} id
    * @param {Record<string, string>} update
    * @param {{ moderator?: User }} [options]
    */

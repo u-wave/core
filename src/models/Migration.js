@@ -6,7 +6,7 @@ const { Schema } = mongoose;
 
 /**
  * @typedef {object} LeanMigration
- * @prop {import('mongodb').ObjectID} _id
+ * @prop {import('mongodb').ObjectId} _id
  * @prop {string} migrationName
  * @prop {Date} createdAt
  * @prop {Date} updatedAt

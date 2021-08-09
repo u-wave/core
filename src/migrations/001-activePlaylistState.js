@@ -6,7 +6,7 @@
 
 'use strict';
 
-const { ObjectID } = require('mongoose').mongo;
+const { ObjectId } = require('mongoose').mongo;
 const { zip } = require('lodash');
 
 const rxObjectID = /^[0-9a-f]{24}$/;
@@ -36,9 +36,9 @@ async function up({ context: uw }) {
 
       ops.push({
         updateOne: {
-          filter: { _id: new ObjectID(userID) },
+          filter: { _id: new ObjectId(userID) },
           update: {
-            $set: { activePlaylist: new ObjectID(playlistID) },
+            $set: { activePlaylist: new ObjectId(playlistID) },
           },
         },
       });

@@ -25,8 +25,7 @@ async function getSubRoles(role) {
   // and typescript does not like that!
   // @ts-ignore
   if (!(role.roles[0] instanceof role.constructor)) {
-    role.populate('roles');
-    await role.execPopulate();
+    await role.populate('roles');
   }
 
   /** @type {AclRole[]} */
@@ -46,8 +45,7 @@ async function getAllUserRoles(user) {
     return [];
   }
 
-  user.populate('roles');
-  await user.execPopulate();
+  await user.populate('roles');
 
   /** @type {AclRole[]} */
   // @ts-ignore
