@@ -2,6 +2,7 @@
 
 const aclRoleSchema = require('./AclRole');
 const authenticationSchema = require('./Authentication');
+const configSchema = require('./Config');
 const historySchema = require('./History');
 const mediaSchema = require('./Media');
 const migrationSchema = require('./Migration');
@@ -12,6 +13,7 @@ const userSchema = require('./User');
 /**
  * @typedef {import('./AclRole').AclRole} AclRole
  * @typedef {import('./Authentication').Authentication} Authentication
+ * @typedef {import('./Config').Config} Config
  * @typedef {import('./History').HistoryEntry} HistoryEntry
  * @typedef {import('./Media').Media} Media
  * @typedef {import('./Migration').Migration} Migration
@@ -21,6 +23,7 @@ const userSchema = require('./User');
  * @typedef {{
  *  AclRole: import('mongoose').Model<AclRole, {}, {}>,
  *  Authentication: import('mongoose').Model<Authentication, {}, {}>,
+ *  Config: import('mongoose').Model<Config, {}, {}>,
  *  HistoryEntry: import('mongoose').Model<HistoryEntry, {}, {}>,
  *  Media: import('mongoose').Model<Media, {}, {}>,
  *  Migration: import('mongoose').Model<Migration, {}, {}>,
@@ -37,6 +40,7 @@ async function models(uw) {
   uw.models = {
     AclRole: uw.mongo.model('AclRole', aclRoleSchema),
     Authentication: uw.mongo.model('Authentication', authenticationSchema),
+    Config: uw.mongo.model('Config', configSchema),
     HistoryEntry: uw.mongo.model('History', historySchema),
     Media: uw.mongo.model('Media', mediaSchema),
     Migration: uw.mongo.model('Migration', migrationSchema),

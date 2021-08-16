@@ -1,24 +1,11 @@
 'use strict';
 
-const mongoose = require('mongoose');
 const EventEmitter = require('events');
 const Ajv = require('ajv/dist/2019').default;
 const formats = require('ajv-formats').default;
 const ValidationError = require('../errors/ValidationError');
 
-const { Schema } = mongoose;
-
-/**
- * @typedef {import('../models/User').User} User
- */
-
-const configSchema = new Schema({
-  _id: { type: String },
-}, {
-  collection: 'config_store',
-  strict: false,
-  toJSON: { versionKey: false },
-});
+/** @typedef {import('../models').User} User */
 
 /**
  * Extensible configuration store.
@@ -28,6 +15,8 @@ const configSchema = new Schema({
  * check that the configuration is correct.
  */
 class ConfigStore {
+  #uw;
+
   #ajv;
 
   #emitter = new EventEmitter();
@@ -36,11 +25,10 @@ class ConfigStore {
   #registry = new Map();
 
   /**
-   * @param {import('mongoose').Connection} mongo
+   * @param {import('../Uwave')} uw
    */
-  constructor(mongo) {
-    // TODO move this to the same system as other models
-    this.ConfigModel = mongo.model('ConfigStore', configSchema);
+  constructor(uw) {
+    this.#uw = uw;
     this.#ajv = new Ajv({
       useDefaults: true,
       // Allow unknown keywords (`uw:xyz`)
@@ -64,7 +52,9 @@ class ConfigStore {
    * @private
    */
   async save(key, values) {
-    await this.ConfigModel.findByIdAndUpdate(
+    const { Config } = this.#uw.models;
+
+    await Config.findByIdAndUpdate(
       key,
       { _id: key, ...values },
       { upsert: true },
@@ -77,7 +67,9 @@ class ConfigStore {
    * @private
    */
   async load(key) {
-    const model = await this.ConfigModel.findById(key);
+    const { Config } = this.#uw.models;
+
+    const model = await Config.findById(key);
     if (!model) return null;
 
     const doc = model.toJSON();
@@ -145,7 +137,9 @@ class ConfigStore {
    * @returns {Promise<{ [key: string]: object }>}
    */
   async getAllConfig() {
-    const all = await this.ConfigModel.find();
+    const { Config } = this.#uw.models;
+
+    const all = await Config.find();
     const object = Object.create(null);
     for (const [key, validate] of this.#registry.entries()) {
       const model = all.find((m) => m._id === key);
@@ -179,7 +173,7 @@ class ConfigStore {
  * @param {import('../Uwave')} uw
  */
 async function configStorePlugin(uw) {
-  uw.config = new ConfigStore(uw.mongo);
+  uw.config = new ConfigStore(uw);
   uw.config.on('set', (key, value, user) => {
     uw.publish('configStore:update', {
       key,
