@@ -177,7 +177,6 @@ class SocketServer {
     this.#wss = new WebSocket.Server({
       server: options.server,
       port: options.server ? undefined : options.port,
-      clientTracking: false,
     });
 
     this.#redisSubscription.subscribe('uwave', 'v1').catch((error) => {
@@ -690,6 +689,11 @@ class SocketServer {
    */
   async destroy() {
     clearInterval(this.#pinger);
+
+    for (const connection of this.#wss.clients) {
+      connection.terminate();
+    }
+
     const closeWsServer = promisify(this.#wss.close.bind(this.#wss));
     await closeWsServer();
     await this.#redisSubscription.quit();
