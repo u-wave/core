@@ -28,8 +28,8 @@ async function testPlugin(uw) {
 
     ws.send(token);
 
-    const buffer = await events.once(ws, 'message');
-    const data = JSON.parse(buffer);
+    const [buffer, isBinary] = await events.once(ws, 'message');
+    const data = JSON.parse(isBinary ? buffer.toString() : buffer);
 
     if (data.command === 'error') {
       throw new Error(data.data);
