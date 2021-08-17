@@ -3,6 +3,7 @@
 const EventEmitter = require('events');
 const Ajv = require('ajv/dist/2019').default;
 const formats = require('ajv-formats').default;
+const { omit } = require('lodash');
 const ValidationError = require('../errors/ValidationError');
 
 /** @typedef {import('../models').User} User */
@@ -73,8 +74,7 @@ class ConfigStore {
     if (!model) return null;
 
     const doc = model.toJSON();
-    delete doc._id;
-    return doc;
+    return omit(doc, '_id');
   }
 
   /**
