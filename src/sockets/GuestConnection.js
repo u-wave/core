@@ -24,8 +24,8 @@ class GuestConnection extends EventEmitter {
       this.emit('close');
     });
 
-    this.events.on('message', (token) => {
-      this.attemptAuth(token).then(() => {
+    this.events.on('message', /** @param {string|Buffer} token */ (token) => {
+      this.attemptAuth(token.toString()).then(() => {
         this.send('authenticated');
       }).catch((error) => {
         this.send('error', error.message);

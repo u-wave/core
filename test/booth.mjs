@@ -59,8 +59,8 @@ describe('Booth', () => {
       const token = await uw.test.createTestSessionToken(user);
       const ws = await uw.test.connectToWebSocketAs(user);
       const receivedMessages = [];
-      ws.on('message', (data) => {
-        receivedMessages.push(JSON.parse(data));
+      ws.on('message', (data, isBinary) => {
+        receivedMessages.push(JSON.parse(isBinary ? data.toString() : data));
       });
 
       // Pretend that a DJ exists

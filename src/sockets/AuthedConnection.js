@@ -58,7 +58,7 @@ class AuthedConnection extends EventEmitter {
   }
 
   /**
-   * @param {string} raw
+   * @param {string|Buffer} raw
    */
   onMessage(raw) {
     const { command, data } = sjson.safeParse(raw) || {};
