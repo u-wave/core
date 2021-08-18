@@ -5,9 +5,7 @@ import delay from 'delay';
 const IN_PROGRESS_ERROR = 12586;
 
 export default async function deleteDatabase(url) {
-  const defaultOptions = {};
-
-  const mongo = mongoose.createConnection(url, defaultOptions);
+  const mongo = mongoose.createConnection(url);
   await once(mongo, 'connected');
 
   /* eslint-disable no-await-in-loop */
