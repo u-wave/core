@@ -5,7 +5,6 @@ const { promisify } = require('util');
 const mongoose = require('mongoose');
 const Redis = require('ioredis');
 const debug = require('debug');
-const { isPlainObject } = require('lodash');
 const avvio = require('avvio');
 
 const httpApi = require('./HttpApi');
@@ -36,10 +35,14 @@ const DEFAULT_REDIS_URL = 'redis://localhost:6379';
 
 /**
  * @typedef {UwaveServer & avvio.Server<UwaveServer>} Boot
+ * @typedef {Pick<
+ *   Redis.RedisOptions,
+ *   'port' | 'host' | 'family' | 'path' | 'db' | 'password' | 'username' | 'tls'
+ * >} RedisOptions
  * @typedef {{
  *   port?: number,
- *   mongo?: string | { url: string } & mongoose.ConnectOptions | mongoose.Connection,
- *   redis?: string | Redis.Redis | { port: number, host: string, options: Redis.RedisOptions },
+ *   mongo?: string,
+ *   redis?: string | RedisOptions,
  * } & httpApi.HttpApiOptions} Options
  */
 
@@ -131,40 +134,22 @@ class UwaveServer extends EventEmitter {
     this.locale = i18n.cloneInstance();
 
     this.options = {
+      mongo: DEFAULT_MONGO_URL,
+      redis: DEFAULT_REDIS_URL,
       ...options,
     };
 
-    const defaultMongoOptions = {
+    this.mongo = mongoose.createConnection(this.options.mongo, {
       useNewUrlParser: true,
       useCreateIndex: true,
       useFindAndModify: false,
       useUnifiedTopology: true,
-    };
-
-    if (typeof options.mongo === 'string') {
-      this.mongo = mongoose.createConnection(options.mongo, defaultMongoOptions);
-    } else if (options.mongo instanceof mongoose.Connection) {
-      this.mongo = options.mongo;
-    } else if (options.mongo && isPlainObject(options.mongo)) {
-      this.mongo = mongoose.createConnection(options.mongo.url, {
-        ...defaultMongoOptions,
-        ...options.mongo,
-      });
-    } else {
-      this.mongo = mongoose.createConnection(DEFAULT_MONGO_URL, defaultMongoOptions);
-    }
+    });
 
     if (typeof options.redis === 'string') {
       this.redis = new Redis(options.redis, { lazyConnect: true });
-    } else if (options.redis instanceof Redis) {
-      this.redis = options.redis;
-    } else if (options.redis && isPlainObject(options.redis)) {
-      this.redis = new Redis(options.redis.port, options.redis.host, {
-        ...options.redis.options,
-        lazyConnect: true,
-      });
     } else {
-      this.redis = new Redis(DEFAULT_REDIS_URL, { lazyConnect: true });
+      this.redis = new Redis({ ...options.redis, lazyConnect: true });
     }
 
     this.log = debug('uwave:core');

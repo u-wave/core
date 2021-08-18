@@ -4,6 +4,17 @@ All notable changes to this project will be documented in this file.
 
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## Unreleased
+
+This is an alpha release, but new servers should use this version rather than an older "stable" one.
+
+This one has many internal changes so please keep an eye on it when you deploy it and report any issues!
+
+Internal:
+ * **Breaking**: Simplify `mongo` and `redis` options: you can now only pass URL strings.
+ * Add type checking with jsdoc and typescript. (#442)
+ * Upgrade dependencies.
+
 ## 0.5.0-alpha.4 / 15 April 2021
 
 This is an alpha release, but new servers should use this version rather than an older "stable" one.

@@ -57,8 +57,8 @@ Create and start a üWave server.
 
 **Parameters**
 
- - `mongo` - A MongoDB URL or [Mongoose][] connection instance.
- - `redis` - A Redis URL or [IORedis][] instance.
+ - `mongo` - A MongoDB connection URL.
+ - `redis` - A Redis connection URL.
 
 ### uw.source(sourcePlugin, options={})
 
