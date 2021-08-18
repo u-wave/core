@@ -20,8 +20,6 @@ class ConfigStore {
 
   #ajv;
 
-  #emitter = new EventEmitter();
-
   /** @type {Map<string, import('ajv').ValidateFunction<unknown>>} */
   #registry = new Map();
 
@@ -42,9 +40,10 @@ class ConfigStore {
     this.#ajv.addSchema(require('../schemas/definitions.json'));
     /* eslint-enable global-require */
 
-    this.on = this.#emitter.on.bind(this);
-    this.off = this.#emitter.removeListener.bind(this);
-    this.emit = this.#emitter.emit.bind(this);
+    const emitter = new EventEmitter();
+    this.on = emitter.on.bind(emitter);
+    this.off = emitter.removeListener.bind(emitter);
+    this.emit = emitter.emit.bind(emitter);
   }
 
   /**
