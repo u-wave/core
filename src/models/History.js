@@ -60,7 +60,7 @@ const schema = new Schema({
     start: { type: Number, default: 0 },
     end: { type: Number, default: 0 },
   },
-  playedAt: { type: Date, default: Date.now, index: true },
+  playedAt: { type: Date, default: () => new Date(), index: true },
   upvotes: listOfUsers,
   downvotes: listOfUsers,
   favorites: listOfUsers,

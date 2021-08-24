@@ -78,7 +78,7 @@ const userSchema = new Schema({
   level: {
     type: Number, min: 0, max: 9001, default: 0,
   },
-  lastSeenAt: { type: Date, default: Date.now },
+  lastSeenAt: { type: Date, default: () => new Date() },
   exiled: { type: Boolean, default: false },
   banned: bannedSchema,
   pendingActivation: { type: String, required: false },
