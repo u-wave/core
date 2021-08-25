@@ -28,6 +28,9 @@ const { Types } = mongoose.Schema;
  * @prop {string|undefined} pendingActivation
  * @prop {Date} createdAt
  * @prop {Date} updatedAt
+ * @prop {number} role - Deprecated, do not use
+ * @prop {number} level - Deprecated, do not use
+ * @prop {boolean} exiled - Deprecated, do not use
  *
  * @typedef {mongoose.Document<LeanUser["_id"], {}, LeanUser> & LeanUser} User
  */
@@ -40,14 +43,14 @@ const bannedSchema = new Schema({
 });
 
 /**
- * @type {mongoose.Schema<User, mongoose.Model<User>>}
+ * @type {mongoose.Schema<User, mongoose.Model<User, {}, {}>, {}>}
  */
 const userSchema = new Schema({
   username: {
     type: String,
     minlength: [3, 'Usernames have to be at least 3 characters long.'],
     maxlength: [32, 'Usernames can be at most 32 characters long.'],
-    match: [/^[^\s]+$/, 'Usernames can\'t contain spaces.'],
+    match: /^[^\s]+$/,
     required: true,
     unique: true,
     index: true,
