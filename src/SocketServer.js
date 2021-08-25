@@ -123,8 +123,13 @@ class SocketServer {
    */
   #clientActions;
 
-  /** @type {Map<string, import('ajv').ValidateFunction<unknown>>} */
-  #clientActionSchemas = new Map();
+  /**
+   * @type {{
+   *   [K in keyof ClientActionParameters]:
+   *     import('ajv').ValidateFunction<ClientActionParameters[K]>
+   * }}
+   */
+  #clientActionSchemas;
 
   /**
    * Handlers for commands that come in from the server side.
@@ -220,14 +225,16 @@ class SocketServer {
       },
     };
 
-    this.#clientActionSchemas.set('sendChat', ajv.compile({
-      type: 'string',
-    }));
-    this.#clientActionSchemas.set('vote', ajv.compile({
-      type: 'integer',
-      enum: [-1, 1],
-    }));
-    this.#clientActionSchemas.set('logout', ajv.compile(true));
+    this.#clientActionSchemas = {
+      sendChat: ajv.compile({
+        type: 'string',
+      }),
+      vote: ajv.compile({
+        type: 'integer',
+        enum: [-1, 1],
+      }),
+      logout: ajv.compile(true),
+    };
 
     this.#serverActions = {
       /**
@@ -571,7 +578,7 @@ class SocketServer {
         debug('command', user.id, user.username, command, data);
         if (has(this.#clientActions, command)) {
           // Ignore incorrect input
-          const validate = this.#clientActionSchemas.get(command);
+          const validate = this.#clientActionSchemas[command];
           if (validate && !validate(data)) {
             return;
           }
