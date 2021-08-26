@@ -166,8 +166,13 @@ class PlaylistsRepository {
   async getUserPlaylists(user) {
     const { Playlist } = this.#uw.models;
     const userID = typeof user === 'object' ? user.id : user;
+    // LeanDocument seems to not work correctly with "native" ObjectIds, instead
+    // only expecting mongoose's subclass of ObjectId. So we'll use an unsafe cast to
+    // get past that. But to maintain most of the type safety we do explicitly assert
+    // the _original_ result type too.
+    /** @type {import('mongoose').LeanDocument<Playlist>[]} */
     const playlists = await Playlist.where('author', userID).lean();
-    return playlists;
+    return (/** @type {any[]} */ (playlists));
   }
 
   /**
