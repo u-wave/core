@@ -188,7 +188,7 @@ async function changeAvatar() {
 
 /**
  * @param {import('../Uwave')} uw
- * @param {import('mongodb').ObjectID} userID
+ * @param {import('mongodb').ObjectId} userID
  */
 async function disconnectUser(uw, userID) {
   await skipIfCurrentDJ(uw, userID);

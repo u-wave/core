@@ -139,12 +139,7 @@ class UwaveServer extends EventEmitter {
       ...options,
     };
 
-    this.mongo = mongoose.createConnection(this.options.mongo, {
-      useNewUrlParser: true,
-      useCreateIndex: true,
-      useFindAndModify: false,
-      useUnifiedTopology: true,
-    });
+    this.mongo = mongoose.createConnection(this.options.mongo);
 
     if (typeof options.redis === 'string') {
       this.redis = new Redis(options.redis, { lazyConnect: true });
@@ -167,7 +162,7 @@ class UwaveServer extends EventEmitter {
     // Wait for the connections to be set up.
     boot.use(async () => {
       this.mongoLog('waiting for mongodb...');
-      await this.mongo;
+      await this.mongo.asPromise();
     });
 
     boot.use(models);

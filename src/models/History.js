@@ -9,7 +9,7 @@ const listOfUsers = [{ type: Types.ObjectId, ref: 'User' }];
 
 /**
  * @typedef {object} HistoryMedia
- * @prop {import('mongodb').ObjectID} media
+ * @prop {import('mongodb').ObjectId} media
  * @prop {string} artist
  * @prop {string} title
  * @prop {number} start
@@ -18,15 +18,15 @@ const listOfUsers = [{ type: Types.ObjectId, ref: 'User' }];
 
 /**
  * @typedef {object} LeanHistoryEntry
- * @prop {import('mongodb').ObjectID} _id
- * @prop {import('mongodb').ObjectID} user
- * @prop {import('mongodb').ObjectID} playlist
- * @prop {import('mongodb').ObjectID} item
+ * @prop {import('mongodb').ObjectId} _id
+ * @prop {import('mongodb').ObjectId} user
+ * @prop {import('mongodb').ObjectId} playlist
+ * @prop {import('mongodb').ObjectId} item
  * @prop {HistoryMedia} media
  * @prop {Date} playedAt
- * @prop {import('mongodb').ObjectID[]} upvotes
- * @prop {import('mongodb').ObjectID[]} downvotes
- * @prop {import('mongodb').ObjectID[]} favorites
+ * @prop {import('mongodb').ObjectId[]} upvotes
+ * @prop {import('mongodb').ObjectId[]} downvotes
+ * @prop {import('mongodb').ObjectId[]} favorites
  */
 
 /**
@@ -60,7 +60,7 @@ const schema = new Schema({
     start: { type: Number, default: 0 },
     end: { type: Number, default: 0 },
   },
-  playedAt: { type: Date, default: Date.now, index: true },
+  playedAt: { type: Date, default: () => new Date(), index: true },
   upvotes: listOfUsers,
   downvotes: listOfUsers,
   favorites: listOfUsers,

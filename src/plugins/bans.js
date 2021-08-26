@@ -8,7 +8,6 @@ const {
 const Page = require('../Page');
 
 /**
- * @typedef {import('mongodb').ObjectID} ObjectID
  * @typedef {import('../models').User} User
  * @typedef {import('../models/User').LeanUser} LeanUser
  * @typedef {import('../models/User').LeanBanned} LeanBanned
@@ -126,7 +125,7 @@ class Bans {
     user.banned = banned;
 
     await user.save();
-    await user.populate('banned.moderator').execPopulate();
+    await user.populate('banned.moderator');
 
     this.#uw.publish('user:ban', {
       userID: user.id,

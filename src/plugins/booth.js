@@ -155,7 +155,7 @@ class Booth {
     if (!playlistItem) {
       throw new PlaylistItemNotFoundError({ id: playlist.media[0] });
     }
-    await playlistItem.populate('media').execPopulate();
+    await playlistItem.populate('media');
 
     // @ts-ignore TS2322 Wildly unsafe cast but what can we do
     return new HistoryEntry({
