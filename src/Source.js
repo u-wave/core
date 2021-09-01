@@ -91,7 +91,7 @@ class Source {
   }
 
   get apiVersion() {
-    return this.plugin.api || this.plugin.constructor.api || 1;
+    return this.plugin.api || 1;
   }
 
   /**
@@ -115,11 +115,11 @@ class Source {
    *
    * @param {User} user
    * @param {string} id
-   * @returns {Promise<PlaylistItemDesc?>}
+   * @returns {Promise<PlaylistItemDesc | undefined>}
    */
-  getOne(user, id) {
-    return this.get(user, [id])
-      .then((items) => items[0]);
+  async getOne(user, id) {
+    const [item] = await this.get(user, [id]);
+    return item;
   }
 
   /**
@@ -164,6 +164,10 @@ class Source {
 
   /**
    * Get playlists for a specific user from this media source.
+   *
+   * @param {User} user
+   * @param {string} userID
+   * @returns {Promise<unknown>}
    */
   async getUserPlaylists(user, userID) {
     if (this.apiVersion < 3 || !this.plugin.getUserPlaylists) {
@@ -177,6 +181,10 @@ class Source {
 
   /**
    * Get playlists for a specific user from this media source.
+   *
+   * @param {User} user
+   * @param {string} playlistID
+   * @returns {Promise<unknown>}
    */
   async getPlaylistItems(user, playlistID) {
     if (this.apiVersion < 3 || !this.plugin.getPlaylistItems) {
@@ -203,6 +211,9 @@ class Source {
     throw new SourceNoImportError({ name: this.type });
   }
 
+  /**
+   * @param {import('./Uwave')} uw
+   */
   static async plugin(uw, { source: SourcePlugin, baseOptions = {} }) {
     debug('registering plugin', SourcePlugin);
     if (SourcePlugin.api == null || SourcePlugin.api < 3) {
