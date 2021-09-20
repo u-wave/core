@@ -2,6 +2,7 @@
   "extends": "@tsconfig/node12/tsconfig.json",
   "compilerOptions": {
     "strict": true,
+    "useUnknownInCatchVariables": false,
     "allowJs": true,
     "checkJs": true,
     "resolveJsonModule": true,
