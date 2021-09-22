@@ -30,14 +30,23 @@ class AuthedConnection extends EventEmitter {
     this.sendWaiting();
   }
 
+  /**
+   * @private
+   */
   get key() {
     return `http-api:disconnected:${this.user.id}`;
   }
 
+  /**
+   * @private
+   */
   get messagesKey() {
     return `http-api:disconnected:${this.user.id}:messages`;
   }
 
+  /**
+   * @private
+   */
   async sendWaiting() {
     const wasDisconnected = await this.uw.redis.exists(this.key);
     if (!wasDisconnected) {
@@ -59,6 +68,7 @@ class AuthedConnection extends EventEmitter {
 
   /**
    * @param {string|Buffer} raw
+   * @private
    */
   onMessage(raw) {
     const { command, data } = sjson.safeParse(raw) || {};

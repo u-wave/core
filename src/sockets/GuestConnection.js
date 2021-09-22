@@ -37,6 +37,7 @@ class GuestConnection extends EventEmitter {
 
   /**
    * @param {string} token
+   * @private
    */
   async attemptAuth(token) {
     const { bans, users } = this.uw;

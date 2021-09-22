@@ -1,6 +1,7 @@
 'use strict';
 
 const debug = require('debug')('uwave:http-api:now');
+const { ObjectId } = require('mongoose').mongo;
 const { getBoothData } = require('./booth');
 const {
   serializePlaylist,
@@ -41,14 +42,16 @@ async function getOnlineUsers(uw) {
 
   const userIDs = await uw.redis.lrange('users', 0, -1);
   /** @type {Omit<import('../models/User').LeanUser, 'activePlaylist' | 'exiled' | 'level'>[]} */
-  const users = await User.find({ _id: { $in: userIDs } })
-    .select({
-      activePlaylist: 0,
-      exiled: 0,
-      level: 0,
-      __v: 0,
-    })
-    .lean();
+  const users = await User.find({
+    _id: {
+      $in: userIDs.map((id) => new ObjectId(id)),
+    },
+  }).select({
+    activePlaylist: 0,
+    exiled: 0,
+    level: 0,
+    __v: 0,
+  }).lean();
 
   return users.map(serializeUser);
 }

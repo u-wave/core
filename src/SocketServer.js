@@ -188,8 +188,9 @@ class SocketServer {
       debug(error);
     });
     this.#redisSubscription.on('message', (channel, command) => {
-      this.onServerMessage(channel, command)
-        .catch((e) => { throw e; });
+      // this returns a promise, but we don't handle the error case:
+      // there is not much we can do, so just let node.js crash w/ an unhandled rejection
+      this.onServerMessage(channel, command);
     });
 
     this.#wss.on('error', (error) => {

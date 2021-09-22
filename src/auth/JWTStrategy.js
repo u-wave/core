@@ -5,9 +5,7 @@ const { Strategy } = require('passport');
 const jwt = require('jsonwebtoken');
 const { BannedError } = require('../errors');
 
-/**
- * @typedef {import('../models').User} User
- */
+/** @typedef {import('../models').User} User */
 
 /**
  * @param {Record<string, string>} cookies
@@ -47,15 +45,23 @@ function isUserIDToken(obj) {
     && typeof obj.id === 'string';
 }
 
+/** @typedef {(claim: { id: string }) => Promise<User|null>} GetUserFn */
+
 class JWTStrategy extends Strategy {
+  /** @type {Buffer|string} */
+  #secret
+
+  /** @type {GetUserFn} */
+  #getUser
+
   /**
    * @param {Buffer|string} secret
-   * @param {(claim: { id: string }) => Promise<User|null>} getUser
+   * @param {GetUserFn} getUser
    */
   constructor(secret, getUser) {
     super();
-    this.secret = secret;
-    this.getUser = getUser;
+    this.#secret = secret;
+    this.#getUser = getUser;
   }
 
   /**
@@ -69,6 +75,7 @@ class JWTStrategy extends Strategy {
 
   /**
    * @param {import('express').Request} req
+   * @private
    */
   async authenticateP(req) {
     const { bans } = req.uwave;
@@ -83,7 +90,7 @@ class JWTStrategy extends Strategy {
     /** @type {unknown} */
     let value;
     try {
-      value = jwt.verify(token, this.secret);
+      value = jwt.verify(token, this.#secret);
     } catch (e) {
       return this.pass();
     }
@@ -92,7 +99,7 @@ class JWTStrategy extends Strategy {
       return this.pass();
     }
 
-    const user = await this.getUser(value);
+    const user = await this.#getUser(value);
     if (!user) {
       return this.pass();
     }

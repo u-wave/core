@@ -6,11 +6,13 @@ const { promisify } = require('util');
 const randomBytes = promisify(crypto.randomBytes);
 
 class AuthRegistry {
+  #redis
+
   /**
    * @param {import('ioredis').Redis} redis
    */
   constructor(redis) {
-    this.redis = redis;
+    this.#redis = redis;
   }
 
   /**
@@ -18,7 +20,7 @@ class AuthRegistry {
    */
   async createAuthToken(user) {
     const token = (await randomBytes(64)).toString('hex');
-    await this.redis.set(`http-api:socketAuth:${token}`, user.id, 'EX', 60);
+    await this.#redis.set(`http-api:socketAuth:${token}`, user.id, 'EX', 60);
     return token;
   }
 
@@ -29,7 +31,7 @@ class AuthRegistry {
     if (token.length !== 128) {
       throw new Error('Invalid token');
     }
-    const [result] = await this.redis
+    const [result] = await this.#redis
       .multi()
       .get(`http-api:socketAuth:${token}`)
       .del(`http-api:socketAuth:${token}`)
