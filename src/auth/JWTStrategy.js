@@ -48,20 +48,16 @@ function isUserIDToken(obj) {
 /** @typedef {(claim: { id: string }) => Promise<User|null>} GetUserFn */
 
 class JWTStrategy extends Strategy {
-  /** @type {Buffer|string} */
-  #secret
-
-  /** @type {GetUserFn} */
-  #getUser
-
   /**
    * @param {Buffer|string} secret
    * @param {GetUserFn} getUser
    */
   constructor(secret, getUser) {
     super();
-    this.#secret = secret;
-    this.#getUser = getUser;
+    /** @private */
+    this.secret = secret;
+    /** @private */
+    this.getUser = getUser;
   }
 
   /**
@@ -90,7 +86,7 @@ class JWTStrategy extends Strategy {
     /** @type {unknown} */
     let value;
     try {
-      value = jwt.verify(token, this.#secret);
+      value = jwt.verify(token, this.secret);
     } catch (e) {
       return this.pass();
     }
@@ -99,7 +95,7 @@ class JWTStrategy extends Strategy {
       return this.pass();
     }
 
-    const user = await this.#getUser(value);
+    const user = await this.getUser(value);
     if (!user) {
       return this.pass();
     }
