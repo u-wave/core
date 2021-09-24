@@ -1,10 +1,14 @@
 version: 2
 updates:
-- package-ecosystem: npm
-  directory: "/"
-  schedule:
-    interval: weekly
-  open-pull-requests-limit: 10
-  ignore:
-    # we use the lowest supported version on purpose
-    - dependency-name: "@types/node"
+  - package-ecosystem: npm
+    directory: "/"
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 10
+    ignore:
+      # we use the lowest supported version on purpose
+      - dependency-name: "@types/node"
+  - package-ecosystem: github-actions
+    directory: "/"
+    schedule:
+      interval: weekly
