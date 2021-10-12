@@ -9,7 +9,8 @@ const avvio = require('avvio');
 
 const httpApi = require('./HttpApi');
 const SocketServer = require('./SocketServer');
-const { Source } = require('./Source');
+const { LegacySourceWrapper } = require('./source/Source');
+const pluginifySource = require('./source/plugin');
 const { i18n } = require('./locale');
 
 const models = require('./models');
@@ -29,9 +30,9 @@ const migrations = require('./plugins/migrations');
 const DEFAULT_MONGO_URL = 'mongodb://localhost:27017/uwave';
 const DEFAULT_REDIS_URL = 'redis://localhost:6379';
 
-/**
- * @typedef {import('./Source').SourcePlugin} SourcePlugin
- */
+/** @typedef {import('./source/Source').SourcePluginV1} SourcePluginV1 */
+/** @typedef {import('./source/Source').SourcePluginV2} SourcePluginV2 */
+/** @typedef {import('./source/Source').SourceWrapper} SourceWrapper */
 
 /**
  * @typedef {UwaveServer & avvio.Server<UwaveServer>} Boot
@@ -119,7 +120,7 @@ class UwaveServer extends EventEmitter {
   socketServer;
 
   /**
-   * @type {Map<string, Source>}
+   * @type {Map<string, SourceWrapper>}
    */
   #sources = new Map();
 
@@ -207,7 +208,7 @@ class UwaveServer extends EventEmitter {
     // @ts-ignore
     const boot = this;
 
-    boot.use(Source.plugin, {
+    boot.use(pluginifySource, {
       source: sourcePlugin,
       baseOptions: opts,
     });
@@ -216,7 +217,7 @@ class UwaveServer extends EventEmitter {
   /**
    * An array of registered sources.
    *
-   * @type {Source[]}
+   * @type {SourceWrapper[]}
    */
   get sources() {
     return [...this.#sources.values()];
@@ -227,8 +228,9 @@ class UwaveServer extends EventEmitter {
    * If the first parameter is a string, returns an existing source plugin.
    * Else, adds a source plugin and returns its wrapped source plugin.
    *
-   * @typedef {((uw: UwaveServer, opts: object) => SourcePlugin)} SourcePluginFactory
-   * @typedef {SourcePlugin | SourcePluginFactory} ToSourcePlugin
+   * @typedef {((uw: UwaveServer, opts: object) => SourcePluginV1 | SourcePluginV2)}
+   *     SourcePluginFactory
+   * @typedef {SourcePluginV1 | SourcePluginV2 | SourcePluginFactory} ToSourcePlugin
    *
    * @param {string | Omit<ToSourcePlugin, 'default'> | { default: ToSourcePlugin }} sourcePlugin
    *     Source name or definition.
@@ -248,7 +250,7 @@ class UwaveServer extends EventEmitter {
       throw new TypeError(`Source plugin should be a function, got ${typeof sourceFactory}`);
     }
 
-    if (typeof sourceFactory === 'function' && has(sourceFactory, 'api') && sourceFactory.api >= 3) {
+    if (typeof sourceFactory === 'function' && sourceFactory.api >= 3) {
       throw new TypeError('uw.source() only supports old-style source plugins.');
     }
 
@@ -259,7 +261,7 @@ class UwaveServer extends EventEmitter {
     if (typeof sourceType !== 'string') {
       throw new TypeError('Source plugin does not specify a name. It may be incompatible with this version of üWave.');
     }
-    const newSource = new Source(this, sourceType, sourceDefinition);
+    const newSource = new LegacySourceWrapper(this, sourceType, sourceDefinition);
 
     this.insertSourceInternal(sourceType, newSource);
 
@@ -270,7 +272,7 @@ class UwaveServer extends EventEmitter {
    * Adds a fully wrapped source plugin. Not for external use.
    *
    * @param {string} sourceType
-   * @param {Source} source
+   * @param {SourceWrapper} source
    */
   insertSourceInternal(sourceType, source) {
     this.#sources.set(sourceType, source);
