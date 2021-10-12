@@ -15,7 +15,8 @@
     ".": {
       "import": "./src/index.mjs",
       "default": "./src/index.js"
-    }
+    },
+    "./package.json": "./package.json"
   },
   "type": "commonjs",
   "bin": {
