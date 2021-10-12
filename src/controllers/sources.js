@@ -8,6 +8,9 @@ const {
 const searchController = require('./search');
 const toListResponse = require('../utils/toListResponse');
 
+/**
+ * @param {import('../types').Request} req
+ */
 function getImportableSource(req) {
   const uw = req.uwave;
   const { source: sourceName } = req.params;
@@ -26,6 +29,9 @@ function getImportableSource(req) {
   return source;
 }
 
+/**
+ * @type {import('../types').AuthenticatedController}
+ */
 async function getPlaylists(req) {
   const source = getImportableSource(req);
   const {
@@ -45,11 +51,14 @@ async function getPlaylists(req) {
   });
 }
 
+/**
+ * @type {import('../types').AuthenticatedController}
+ */
 async function getPlaylistItems(req) {
   const source = getImportableSource(req);
   const { playlistID } = req.params;
 
-  const items = await source.getPlaylistItems(playlistID);
+  const items = await source.getPlaylistItems(req.user, playlistID);
   return toListResponse(items, {
     url: req.fullUrl,
   });

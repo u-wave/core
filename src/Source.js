@@ -1,5 +1,6 @@
 'use strict';
 
+const has = require('has');
 const debug = require('debug')('uwave:source');
 const mergeAllOf = require('json-schema-merge-allof');
 const { SourceNoImportError } = require('./errors');
@@ -27,7 +28,19 @@ const { SourceNoImportError } = require('./errors');
  * ) => Promise<PlaylistItemDesc[]>} search
  * @prop {(context: ImportContext, ...args: unknown[]) => Promise<unknown>} [import]
  *
- * @typedef {SourcePluginV1 | SourcePluginV2} SourcePlugin
+ * @typedef {object} SourcePluginV3Statics
+ * @prop {3} api
+ * @prop {string} sourceName
+ * @prop {import('ajv').JSONSchemaType<unknown> & { 'uw:key': string }} schema
+ * @typedef {object} SourcePluginV3Instance
+ * @prop {(context: SourceContext, ids: string[]) => Promise<PlaylistItemDesc[]>} get
+ * @prop {(context: SourceContext, query: string, page: unknown) => Promise<PlaylistItemDesc[]>} search
+ * @prop {(context: SourceContext, sourceID: string) => Promise<PlaylistItemDesc[]>} [getPlaylistItems]
+ * @prop {() => void} [close]
+ * @typedef {new(options: unknown) => SourcePluginV3Instance} SourcePluginV3Constructor
+ * @typedef {SourcePluginV3Constructor & SourcePluginV3Statics} SourcePluginV3
+ *
+ * @typedef {SourcePluginV1 | SourcePluginV2 | SourcePluginV3Instance} SourcePlugin
  */
 
 /**
@@ -152,9 +165,10 @@ class Source {
    * @returns {Promise<PlaylistItemDesc[]>}
    */
   async search(user, query, page, ...args) {
+    const context = new SourceContext(this.uw, this, user);
+
     let results;
     if (this.plugin.api === 2) {
-      const context = new SourceContext(this.uw, this, user);
       results = await this.plugin.search(context, query, page, ...args);
     } else {
       results = await this.plugin.search(query, page, ...args);
@@ -210,84 +224,86 @@ class Source {
     }
     throw new SourceNoImportError({ name: this.type });
   }
+}
 
-  /**
-   * @param {import('./Uwave')} uw
-   */
-  static async plugin(uw, { source: SourcePlugin, baseOptions = {} }) {
-    debug('registering plugin', SourcePlugin);
-    if (SourcePlugin.api == null || SourcePlugin.api < 3) {
-      uw.source(SourcePlugin, baseOptions);
-      return;
+/**
+ * @param {import('./Uwave')} uw
+ * @param {{ source: SourcePluginV3, baseOptions?: object }} options
+ */
+async function plugin(uw, { source: SourcePlugin, baseOptions = {} }) {
+  debug('registering plugin', SourcePlugin);
+  if (SourcePlugin.api !== 3) {
+    uw.source(SourcePlugin, baseOptions);
+    return;
+  }
+
+  if (!SourcePlugin.sourceName) {
+    throw new TypeError('Source plugin does not provide a `sourceName`');
+  }
+
+  async function readdSource(options) {
+    debug('adding plugin', options);
+    const { enabled, ...sourceOptions } = options;
+
+    const oldSource = uw.removeSourceInternal(SourcePlugin.sourceName);
+    if (oldSource && has(oldSource, 'close') && typeof oldSource.close === 'function') {
+      await oldSource.close();
     }
 
-    if (!SourcePlugin.sourceName) {
-      throw new TypeError('Source plugin does not provide a `sourceName`');
-    }
-
-    async function readdSource(options) {
-      debug('adding plugin', options);
-      const { enabled, ...sourceOptions } = options;
-
-      const oldSource = uw.removeSourceInternal(SourcePlugin.sourceName);
-      if (oldSource && typeof oldSource.close === 'function') {
-        await oldSource.close();
-      }
-
-      if (enabled) {
-        const instance = new SourcePlugin({
-          ...baseOptions,
-          ...sourceOptions,
-        });
-
-        const source = new Source(uw, SourcePlugin.sourceName, instance);
-        uw.insertSourceInternal(SourcePlugin.sourceName, source);
-      }
-    }
-
-    if (SourcePlugin.schema) {
-      if (!SourcePlugin.schema['uw:key']) {
-        throw new TypeError('Option schema for media source does not specify an "uw:key" value');
-      }
-
-      uw.config.register(SourcePlugin.schema['uw:key'], mergeAllOf({
-        allOf: [
-          {
-            type: 'object',
-            properties: {
-              enabled: {
-                type: 'boolean',
-                title: 'Enabled',
-                default: false,
-              },
-            },
-            required: ['enabled'],
-          },
-          SourcePlugin.schema,
-        ],
-      }, { deep: false }));
-
-      const initialOptions = await uw.config.get(SourcePlugin.schema['uw:key']);
-      uw.config.on('set', (key, newOptions) => {
-        if (key === SourcePlugin.schema['uw:key']) {
-          readdSource(newOptions).catch((error) => {
-            if (uw.options.onError) {
-              uw.options.onError(error);
-            } else {
-              debug(error);
-            }
-          });
-        }
+    if (enabled) {
+      const instance = new SourcePlugin({
+        ...baseOptions,
+        ...sourceOptions,
       });
 
-      await readdSource(initialOptions);
-    } else {
-      // The source does not support options
-      await readdSource({});
+      const source = new Source(uw, SourcePlugin.sourceName, instance);
+      uw.insertSourceInternal(SourcePlugin.sourceName, source);
     }
+  }
+
+  if (SourcePlugin.schema) {
+    if (!SourcePlugin.schema['uw:key']) {
+      throw new TypeError('Option schema for media source does not specify an "uw:key" value');
+    }
+
+    uw.config.register(SourcePlugin.schema['uw:key'], mergeAllOf({
+      allOf: [
+        {
+          type: 'object',
+          properties: {
+            enabled: {
+              type: 'boolean',
+              title: 'Enabled',
+              default: false,
+            },
+          },
+          required: ['enabled'],
+        },
+        SourcePlugin.schema,
+      ],
+    }, { deep: false }));
+
+    const initialOptions = await uw.config.get(SourcePlugin.schema['uw:key']);
+    uw.config.on('set', (key, newOptions) => {
+      if (key === SourcePlugin.schema['uw:key']) {
+        readdSource(newOptions).catch((error) => {
+          if (uw.options.onError) {
+            uw.options.onError(error);
+          } else {
+            debug(error);
+          }
+        });
+      }
+    });
+
+    await readdSource(initialOptions);
+  } else {
+    // The source does not support options
+    await readdSource({});
   }
 }
 
 exports.SourceContext = SourceContext;
 exports.ImportContext = ImportContext;
 exports.Source = Source;
+exports.plugin = plugin;
