@@ -122,7 +122,7 @@
   "scripts": {
     "lint": "eslint --cache .",
     "test": "npm run tests-only && npm run lint",
-    "tests-only": "c8 --src src mocha --exit",
+    "tests-only": "c8 --reporter lcov --src src mocha --exit",
     "types": "tsc -p tsconfig.json",
     "start": "cross-env DEBUG=uwave:* nodemon dev/u-wave-dev-server"
   }
