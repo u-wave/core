@@ -1,7 +1,7 @@
 import assert from 'assert';
 import supertest from 'supertest';
 import sinon from 'sinon';
-import { Source } from '../src/Source.js';
+import { LegacySourceWrapper } from '../src/source/Source.js';
 import createUwave from './utils/createUwave.mjs';
 
 describe('Media Sources', () => {
@@ -35,12 +35,12 @@ describe('Media Sources', () => {
 
   it('should register sources from objects', () => {
     uw.source(testSourceObject);
-    assert(uw.source('test-source') instanceof Source);
+    assert(uw.source('test-source') instanceof LegacySourceWrapper);
     assert.strictEqual(uw.source('test-source').apiVersion, 1);
   });
   it('should register sources from a factory function', () => {
     uw.source(testSource);
-    assert(uw.source('test-source') instanceof Source);
+    assert(uw.source('test-source') instanceof LegacySourceWrapper);
     assert.strictEqual(uw.source('test-source').apiVersion, 1);
   });
 
