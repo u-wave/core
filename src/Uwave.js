@@ -1,5 +1,6 @@
 'use strict';
 
+const has = require('has');
 const EventEmitter = require('events');
 const { promisify } = require('util');
 const mongoose = require('mongoose');
@@ -248,7 +249,10 @@ class UwaveServer extends EventEmitter {
       throw new TypeError(`Source plugin should be a function, got ${typeof sourceFactory}`);
     }
 
-    if (typeof sourceFactory === 'function' && sourceFactory.api >= 3) {
+    if (typeof sourceFactory === 'function'
+        && has(sourceFactory, 'api')
+        && typeof sourceFactory.api === 'number'
+        && sourceFactory.api >= 3) {
       throw new TypeError('uw.source() only supports old-style source plugins.');
     }
 
