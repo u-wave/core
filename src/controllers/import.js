@@ -1,6 +1,5 @@
 'use strict';
 
-const has = require('has');
 const {
   SourceNotFoundError,
   SourceNoImportError,
@@ -18,7 +17,7 @@ const getImportableSource = (req) => {
   if (!source) {
     throw new SourceNotFoundError({ name: sourceName });
   }
-  if (!has(source, 'import')) {
+  if (source.apiVersion >= 3) {
     throw new SourceNoImportError({ name: sourceName });
   }
 

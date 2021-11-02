@@ -42,4 +42,5 @@ export interface SourceWrapper {
   search(user: User, query: string, page?: JsonValue): Promise<Page<PlaylistItemDesc, JsonValue>>;
   getUserPlaylists(user: User, userID: string): Promise<Page<unknown, JsonValue>>;
   getPlaylistItems(user: User, playlistID: string): Promise<Page<PlaylistItemDesc, JsonValue>>;
+  import(user: User, params: {}): Promise<unknown>;
 }

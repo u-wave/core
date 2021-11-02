@@ -1,6 +1,5 @@
 'use strict';
 
-const has = require('has');
 const { BadRequest } = require('http-errors');
 const {
   SourceNotFoundError,
@@ -19,9 +18,6 @@ function getImportableSource(req) {
   const source = uw.source(sourceName);
   if (!source) {
     throw new SourceNotFoundError({ name: sourceName });
-  }
-  if (has(source, 'import')) {
-    throw new SourceNoImportError({ name: sourceName });
   }
   if (source.apiVersion < 3) {
     throw new SourceNoImportError({ name: sourceName });

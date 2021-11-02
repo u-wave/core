@@ -105,23 +105,17 @@ class LegacySourceWrapper {
 
   /**
    * Unsupported for legacy sources.
-   * @param {User} user
-   * @param {string} userID
-   * @returns {Promise<Page<unknown, {}>>}
+   * @returns {Promise<never>}
    */
-  // eslint-disable-next-line no-unused-vars
-  async getUserPlaylists(user, userID) {
+  async getUserPlaylists() {
     throw new SourceNoImportError({ name: this.type });
   }
 
   /**
    * Unsupported for legacy sources.
-   * @param {User} user
-   * @param {string} playlistID
-   * @returns {Promise<Page<PlaylistItemDesc, {}>>}
+   * @returns {Promise<never>}
    */
-  // eslint-disable-next-line no-unused-vars
-  async getPlaylistItems(user, playlistID) {
+  async getPlaylistItems() {
     throw new SourceNoImportError({ name: this.type });
   }
 
@@ -131,12 +125,13 @@ class LegacySourceWrapper {
    * doing.
    *
    * @param {User} user
-   * @param {unknown[]} args
+   * @param {{}} values
+   * @returns {Promise<unknown>}
    */
-  'import'(user, ...args) {
+  'import'(user, values) {
     const importContext = new ImportContext(this.uw, this, user);
     if (this.plugin.api === 2 && this.plugin.import != null) {
-      return this.plugin.import(importContext, ...args);
+      return this.plugin.import(importContext, values);
     }
     throw new SourceNoImportError({ name: this.type });
   }
@@ -256,8 +251,10 @@ class ModernSourceWrapper {
 
   /**
    * Unsupported for modern media sources.
+   *
+   * @returns {Promise<never>}
    */
-  'import'() {
+  async 'import'() {
     throw new SourceNoImportError({ name: this.type });
   }
 }
