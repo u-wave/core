@@ -11,11 +11,12 @@ const routes = require('../routes/booth');
  * @typedef {import('../models').Playlist} Playlist
  * @typedef {import('../models').PlaylistItem} PlaylistItem
  * @typedef {import('../models').HistoryEntry} HistoryEntry
+ * @typedef {import('../models').Media} Media
  * @typedef {{ user: User }} PopulateUser
  * @typedef {{ playlist: Playlist }} PopulatePlaylist
- * @typedef {{ item: PlaylistItem }} PopulatePlaylistItem
- * @typedef {HistoryEntry & PopulateUser & PopulatePlaylist & PopulatePlaylistItem}
- *     PopulatedHistoryEntry
+ * @typedef {{ media: { media: Media } }} PopulateMedia
+ * @typedef {Omit<HistoryEntry, 'user' | 'playlist'>
+ *     & PopulateUser & PopulatePlaylist & PopulateMedia} PopulatedHistoryEntry
  */
 
 const debug = createDebug('uwave:advance');
@@ -155,13 +156,14 @@ class Booth {
     if (!playlistItem) {
       throw new PlaylistItemNotFoundError({ id: playlist.media[0] });
     }
-    await playlistItem.populate('media');
 
-    // @ts-ignore TS2322 Wildly unsafe cast but what can we do
-    return new HistoryEntry({
+    /** @type {PopulatedHistoryEntry} */
+    // @ts-ignore TS2322: `user` and `playlist` are already populated,
+    // and `media.media` is populated immediately below.
+    const entry = new HistoryEntry({
       user,
       playlist,
-      item: playlistItem,
+      item: playlistItem._id,
       media: {
         media: playlistItem.media,
         artist: playlistItem.artist,
@@ -170,6 +172,9 @@ class Booth {
         end: playlistItem.end,
       },
     });
+    await entry.populate('media.media');
+
+    return entry;
   }
 
   /**
@@ -231,7 +236,6 @@ class Booth {
       () => this.advance(),
       (entry.media.end - entry.media.start) * ms('1 second'),
     );
-    return entry;
   }
 
   /**
@@ -251,10 +255,10 @@ class Booth {
         historyID: next.id,
         userID: next.user.id,
         playlistID: next.playlist.id,
-        itemID: next.item.id,
+        itemID: next.item.toString(),
         media: {
           ...next.media,
-          media: next.media.media.toString(),
+          media: next.media.media.toJSON(),
         },
         playedAt: next.playedAt.getTime(),
       });
@@ -326,7 +330,7 @@ class Booth {
     if (next) {
       await this.update(next);
       await cyclePlaylist(next.playlist);
-      await this.play(next);
+      this.play(next);
     } else {
       await this.clear();
     }

@@ -246,7 +246,7 @@ class SocketServer {
           this.broadcast('advance', {
             historyID: next.historyID,
             userID: next.userID,
-            item: next.itemID,
+            itemID: next.itemID,
             media: next.media,
             playedAt: new Date(next.playedAt).getTime(),
           });
