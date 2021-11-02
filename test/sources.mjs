@@ -48,7 +48,7 @@ describe('Media Sources', () => {
     uw.source(testSource);
     const query = 'search-query';
     const results = await uw.source('test-source').search(null, query);
-    assert.deepStrictEqual(results, [
+    assert.deepStrictEqual(results.data, [
       { sourceType: 'test-source', sourceID: query },
     ]);
   });

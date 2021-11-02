@@ -13,7 +13,10 @@ const Page = require('../Page');
 /** @typedef {import('./types').SourceWrapper} SourceWrapper */
 
 /**
- * Wrapper around source plugins with some more convenient aliases.
+ * Wrapper around V1/V2 source plugins with some more convenient aliases.
+ *
+ * Ideally we get rid of this in like a year and only support hot-swappable sources…
+ *
  * @implements {SourceWrapper}
  */
 class LegacySourceWrapper {
