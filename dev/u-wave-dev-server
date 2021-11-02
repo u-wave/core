@@ -6,8 +6,8 @@ const argv = require('minimist')(process.argv.slice(2));
 const concat = require('concat-stream');
 const explain = require('explain-error');
 const announce = require('u-wave-announce');
-const YouTubeSource = require('u-wave-source-youtube').default;
-const scSource = require('u-wave-source-soundcloud');
+const YouTubeSource = require('../../u-wave-source-youtube').default;
+const scSource = require('../../u-wave-source-soundcloud');
 const recaptchaTestKeys = require('recaptcha-test-keys');
 const debug = require('debug')('uwave:dev-server');
 const dotenv = require('dotenv');
@@ -66,11 +66,9 @@ async function start() {
 
   uw.useSource(YouTubeSource);
 
-  if (process.env.SOUNDCLOUD_API_KEY) {
-    uw.useSource(scSource, {
-      key: process.env.SOUNDCLOUD_API_KEY,
-    });
-  }
+  uw.useSource(scSource, {
+    key: process.env.SOUNDCLOUD_API_KEY ?? null,
+  });
 
   await uw.listen(port);
   console.log(`Now listening on ${port}`);
