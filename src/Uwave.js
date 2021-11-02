@@ -30,8 +30,7 @@ const migrations = require('./plugins/migrations');
 const DEFAULT_MONGO_URL = 'mongodb://localhost:27017/uwave';
 const DEFAULT_REDIS_URL = 'redis://localhost:6379';
 
-/** @typedef {import('./source/Source').SourcePluginV1} SourcePluginV1 */
-/** @typedef {import('./source/Source').SourcePluginV2} SourcePluginV2 */
+/** @typedef {import('./source/types').StaticSourcePlugin} StaticSourcePlugin */
 /** @typedef {import('./source/Source').SourceWrapper} SourceWrapper */
 
 /**
@@ -228,9 +227,8 @@ class UwaveServer extends EventEmitter {
    * If the first parameter is a string, returns an existing source plugin.
    * Else, adds a source plugin and returns its wrapped source plugin.
    *
-   * @typedef {((uw: UwaveServer, opts: object) => SourcePluginV1 | SourcePluginV2)}
-   *     SourcePluginFactory
-   * @typedef {SourcePluginV1 | SourcePluginV2 | SourcePluginFactory} ToSourcePlugin
+   * @typedef {(uw: UwaveServer, opts: object) => StaticSourcePlugin} SourcePluginFactory
+   * @typedef {StaticSourcePlugin | SourcePluginFactory} ToSourcePlugin
    *
    * @param {string | Omit<ToSourcePlugin, 'default'> | { default: ToSourcePlugin }} sourcePlugin
    *     Source name or definition.

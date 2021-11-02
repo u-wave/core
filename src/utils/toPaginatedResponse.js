@@ -1,6 +1,7 @@
 'use strict';
 
 const url = require('url');
+const has = require('has');
 const qs = require('qs');
 const toListResponse = require('./toListResponse');
 
@@ -22,7 +23,7 @@ function appendQuery(base, query) {
 
 /**
  * @template {any} TItem
- * @template {{ offset: number }} TPagination
+ * @template {import('type-fest').JsonValue} TPagination
  * @param {import('../Page')<TItem, TPagination>} page
  * @param {{ baseUrl?: string, included?: toListResponse.IncludedOptions }} options
  */
@@ -30,14 +31,23 @@ function toPaginatedResponse(
   page,
   { baseUrl = '', included } = {},
 ) {
+  /** @type {import('type-fest').JsonObject} */
+  const meta = {
+    pageSize: page.pageSize,
+    results: page.filteredSize,
+    total: page.totalSize,
+  };
+
+  if (page.currentPage
+      && typeof page.currentPage === 'object'
+      && has(page.currentPage, 'offset')
+      && typeof page.currentPage.offset === 'number') {
+    meta.offset = page.currentPage.offset;
+  }
+
   return Object.assign(toListResponse(page.data, {
     included,
-    meta: {
-      offset: page.currentPage.offset,
-      pageSize: page.pageSize,
-      results: page.filteredSize,
-      total: page.totalSize,
-    },
+    meta,
   }), {
     links: {
       self: appendQuery(baseUrl, { page: page.currentPage }),

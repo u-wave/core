@@ -6,16 +6,23 @@ const mergeAllOf = require('json-schema-merge-allof');
 const { ModernSourceWrapper } = require('./Source');
 
 /** @typedef {import('../Uwave')} Uwave} */
-/** @typedef {import('./Source').SourcePluginV3} SourcePluginV3} */
+/**
+ * @template TOptions
+ * @template {import('type-fest').JsonValue} TPagination
+ * @typedef {import('./types').HotSwappableSourcePlugin<TOptions, TPagination>} HotSwappableSourcePlugin
+ */
 
 /**
+ * @template TOptions
+ * @template {import('type-fest').JsonValue} TPagination
  * @param {Uwave} uw
- * @param {{ source: SourcePluginV3, baseOptions?: object }} options
+ * @param {{ source: HotSwappableSourcePlugin<TOptions, TPagination>, baseOptions?: TOptions }}
+ *     options
  */
-async function plugin(uw, { source: SourcePlugin, baseOptions = {} }) {
+async function plugin(uw, { source: SourcePlugin, baseOptions }) {
   debug('registering plugin', SourcePlugin);
   if (SourcePlugin.api !== 3) {
-    uw.source(SourcePlugin, baseOptions);
+    uw.source(SourcePlugin, baseOptions ?? {});
     return;
   }
 
@@ -23,9 +30,23 @@ async function plugin(uw, { source: SourcePlugin, baseOptions = {} }) {
     throw new TypeError('Source plugin does not provide a `sourceName`');
   }
 
+  /**
+   * This function is used to tell the compiler that something is of the TOptions shape.
+   * This will be safe if we ensure that source options never contain an `enabled` property…
+   *
+   * @param {unknown} options
+   * @returns {asserts options is TOptions}
+   */
+  // eslint-disable-next-line no-unused-vars
+  function forceTOptions(options) {}
+
+  /**
+   * @param {TOptions & { enabled: boolean }} options
+   */
   async function readdSource(options) {
     debug('adding plugin', options);
     const { enabled, ...sourceOptions } = options;
+    forceTOptions(sourceOptions);
 
     const oldSource = uw.removeSourceInternal(SourcePlugin.sourceName);
     if (oldSource && has(oldSource, 'close') && typeof oldSource.close === 'function') {
@@ -65,7 +86,9 @@ async function plugin(uw, { source: SourcePlugin, baseOptions = {} }) {
       ],
     }, { deep: false }));
 
-    const initialOptions = await uw.config.get(SourcePlugin.schema['uw:key']);
+    // NOTE this is wrong if the schema changes between versions :/
+    /** @type {TOptions | undefined} */
+    const initialOptions = (/** @type {unknown} */ await uw.config.get(SourcePlugin.schema['uw:key']));
     uw.config.on('set', (key, newOptions) => {
       if (key === SourcePlugin.schema['uw:key']) {
         readdSource(newOptions).catch((error) => {
@@ -78,9 +101,14 @@ async function plugin(uw, { source: SourcePlugin, baseOptions = {} }) {
       }
     });
 
+    // TODO(goto-bus-stop) correctly type the `undefined` case
+    // @ts-ignore
     await readdSource(initialOptions);
   } else {
     // The source does not support options
+    // TODO(goto-bus-stop) we still need to support enabling/disabling the source here, so this
+    // probably can just use the same code path as above.
+    // @ts-ignore
     await readdSource({});
   }
 }

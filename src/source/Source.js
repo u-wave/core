@@ -4,48 +4,23 @@ const has = require('has');
 const { SourceNoImportError } = require('../errors');
 const SourceContext = require('./SourceContext');
 const ImportContext = require('./ImportContext');
+const Page = require('../Page');
 
 /** @typedef {import('../Uwave')} Uwave */
 /** @typedef {import('../models').User} User */
 /** @typedef {import('../models').Playlist} Playlist */
 /** @typedef {import('../plugins/playlists').PlaylistItemDesc} PlaylistItemDesc */
-
-/**
- * @typedef {object} SourceWrapper
- * @prop {number} apiVersion
- * @prop {(user: User, id: string) => Promise<PlaylistItemDesc | undefined>} getOne
- * @prop {(user: User, ids: string[]) => Promise<PlaylistItemDesc[]>} get
- * @prop {(user: User, query: string, page?: unknown) => Promise<PlaylistItemDesc[]>} search
- * @prop {(user: User, userID: string) => Promise<unknown[]>} getUserPlaylists
- * @prop {(user: User, playlistID: string) => Promise<PlaylistItemDesc[]>} getPlaylistItems
- */
-
-/**
- * @typedef {object} SourcePluginV1
- * @prop {undefined|1} api
- * @prop {(ids: string[]) => Promise<PlaylistItemDesc[]>} get
- * @prop {(query: string, page: unknown, ...args: unknown[]) => Promise<PlaylistItemDesc[]>} search
- *
- * @typedef {object} SourcePluginV2
- * @prop {2} api
- * @prop {(context: SourceContext, ids: string[]) => Promise<PlaylistItemDesc[]>} get
- * @prop {(
- *   context: SourceContext,
- *   query: string,
- *   page: unknown,
- *   ...args: unknown[]
- * ) => Promise<PlaylistItemDesc[]>} search
- * @prop {(context: ImportContext, ...args: unknown[]) => Promise<unknown>} [import]
- */
+/** @typedef {import('./types').SourceWrapper} SourceWrapper */
 
 /**
  * Wrapper around source plugins with some more convenient aliases.
+ * @implements {SourceWrapper}
  */
 class LegacySourceWrapper {
   /**
    * @param {Uwave} uw
    * @param {string} sourceType
-   * @param {SourcePluginV1 | SourcePluginV2} sourcePlugin
+   * @param {import('./types').StaticSourcePlugin} sourcePlugin
    */
   constructor(uw, sourceType, sourcePlugin) {
     this.uw = uw;
@@ -109,32 +84,44 @@ class LegacySourceWrapper {
    *
    * @param {User} user
    * @param {string} query
-   * @param {unknown} [page]
-   * @returns {Promise<PlaylistItemDesc[]>}
+   * @param {import('type-fest').JsonValue} [page]
+   * @returns {Promise<Page<PlaylistItemDesc, import('type-fest').JsonValue>>}
    */
   async search(user, query, page) {
     const context = new SourceContext(this.uw, this, user);
 
+    /** @type {PlaylistItemDesc[] | undefined} */
     let results;
     if (this.plugin.api === 2) {
       results = await this.plugin.search(context, query, page);
     } else {
       results = await this.plugin.search(query, page);
     }
-    return this.addSourceType(results);
+
+    return new Page(this.addSourceType(results), {
+      current: page ?? null,
+    });
   }
 
   /**
    * Unsupported for legacy sources.
+   * @param {User} user
+   * @param {string} userID
+   * @returns {Promise<Page<unknown, {}>>}
    */
-  async getUserPlaylists() {
+  // eslint-disable-next-line no-unused-vars
+  async getUserPlaylists(user, userID) {
     throw new SourceNoImportError({ name: this.type });
   }
 
   /**
    * Unsupported for legacy sources.
+   * @param {User} user
+   * @param {string} playlistID
+   * @returns {Promise<Page<PlaylistItemDesc, {}>>}
    */
-  async getPlaylistItems() {
+  // eslint-disable-next-line no-unused-vars
+  async getPlaylistItems(user, playlistID) {
     throw new SourceNoImportError({ name: this.type });
   }
 
@@ -156,27 +143,13 @@ class LegacySourceWrapper {
 }
 
 /**
- * @typedef {object} SourcePluginV3Statics
- * @prop {3} api
- * @prop {string} sourceName
- * @prop {import('ajv').JSONSchemaType<unknown> & { 'uw:key': string }} schema
- * @typedef {object} SourcePluginV3Instance
- * @prop {(context: SourceContext, ids: string[]) => Promise<PlaylistItemDesc[]>} get
- * @prop {(context: SourceContext, query: string, page: unknown) => Promise<PlaylistItemDesc[]>}
- *     search
- * @prop {(context: SourceContext, userID: string) => Promise<unknown[]>} [getUserPlaylists]
- * @prop {(context: SourceContext, sourceID: string) => Promise<PlaylistItemDesc[]>}
- *     [getPlaylistItems]
- * @prop {() => void} [close]
- * @typedef {new(options: unknown) => SourcePluginV3Instance} SourcePluginV3Constructor
- * @typedef {SourcePluginV3Constructor & SourcePluginV3Statics} SourcePluginV3
+ * @implements {SourceWrapper}
  */
-
 class ModernSourceWrapper {
   /**
    * @param {Uwave} uw
    * @param {string} sourceType
-   * @param {SourcePluginV3Instance} sourcePlugin
+   * @param {import('./types').SourcePluginV3Instance<import('type-fest').JsonValue>} sourcePlugin
    */
   constructor(uw, sourceType, sourcePlugin) {
     this.uw = uw;
@@ -238,14 +211,15 @@ class ModernSourceWrapper {
    *
    * @param {User} user
    * @param {string} query
-   * @param {unknown} [page]
-   * @returns {Promise<PlaylistItemDesc[]>}
+   * @param {import('type-fest').JsonValue} [page]
+   * @returns {Promise<Page<PlaylistItemDesc, import('type-fest').JsonValue>>}
    */
   async search(user, query, page) {
     const context = new SourceContext(this.uw, this, user);
 
     const results = await this.plugin.search(context, query, page);
-    return this.addSourceType(results);
+    results.data = this.addSourceType(results.data);
+    return results;
   }
 
   /**
@@ -253,9 +227,10 @@ class ModernSourceWrapper {
    *
    * @param {User} user
    * @param {string} userID
+   * @returns {Promise<Page<unknown, import('type-fest').JsonValue>>}
    */
   async getUserPlaylists(user, userID) {
-    if (!has(this.plugin, 'getUserPlaylists')) {
+    if (!has(this.plugin, 'getUserPlaylists') || this.plugin.getUserPlaylists == null) {
       throw new SourceNoImportError({ name: this.type });
     }
 
@@ -268,9 +243,10 @@ class ModernSourceWrapper {
    *
    * @param {User} user
    * @param {string} playlistID
+   * @returns {Promise<Page<PlaylistItemDesc, import('type-fest').JsonValue>>}
    */
   async getPlaylistItems(user, playlistID) {
-    if (!has(this.plugin, 'getPlaylistItems')) {
+    if (!has(this.plugin, 'getPlaylistItems') || this.plugin.getPlaylistItems == null) {
       throw new SourceNoImportError({ name: this.type });
     }
 

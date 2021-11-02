@@ -24,7 +24,10 @@ class ImportContext extends SourceContext {
     const playlist = await this.uw.playlists.createPlaylist(this.user, { name });
 
     const rawItems = Array.isArray(itemOrItems) ? itemOrItems : [itemOrItems];
-    const items = this.source.addSourceType(rawItems);
+    const items = rawItems.map((item) => ({
+      ...item,
+      sourceType: this.source.type,
+    }));
 
     if (items.length > 0) {
       await this.uw.playlists.addPlaylistItems(playlist, items);

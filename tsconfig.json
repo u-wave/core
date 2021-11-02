@@ -11,8 +11,10 @@
     "emitDeclarationOnly": true
   },
   "include": [
+    "src/json-schema-merge-allof.d.ts",
     "src/types.d.ts",
     "src/redisMessages.d.ts",
+    "src/source/types.d.ts",
     "src/**/*.js",
     "src/schemas/*.json"
   ]

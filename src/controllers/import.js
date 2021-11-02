@@ -1,5 +1,6 @@
 'use strict';
 
+const has = require('has');
 const {
   SourceNotFoundError,
   SourceNoImportError,
@@ -17,7 +18,7 @@ const getImportableSource = (req) => {
   if (!source) {
     throw new SourceNotFoundError({ name: sourceName });
   }
-  if (!source.import) {
+  if (!has(source, 'import')) {
     throw new SourceNoImportError({ name: sourceName });
   }
 

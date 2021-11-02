@@ -3,7 +3,7 @@
 const debug = require('debug')('uwave:http:search');
 const { isEqual } = require('lodash');
 const { SourceNotFoundError } = require('../errors');
-const toListResponse = require('../utils/toListResponse');
+const toPaginatedResponse = require('../utils/toPaginatedResponse');
 
 // TODO should be deprecated once the Web client uses the better single-source route.
 /**
@@ -18,7 +18,6 @@ async function searchAll(req) {
     source.search(user, query).catch((error) => {
       debug(error);
       // Default to empty search on failure, for now.
-      return [];
     })
   ));
 
@@ -27,7 +26,8 @@ async function searchAll(req) {
   /** @type {Record<string, import('../plugins/playlists').PlaylistItemDesc[]>} */
   const combinedResults = {};
   sourceNames.forEach((name, index) => {
-    combinedResults[name] = searchResults[index];
+    const searchResultsForSource = searchResults[index];
+    combinedResults[name] = searchResultsForSource ? searchResultsForSource.data : [];
   });
 
   return combinedResults;
@@ -72,7 +72,7 @@ async function search(req) {
   const searchResults = await source.search(user, query);
 
   const searchResultsByID = new Map();
-  searchResults.forEach((result) => {
+  searchResults.data.forEach((result) => {
     searchResultsByID.set(result.sourceID, result);
   });
 
@@ -103,7 +103,7 @@ async function search(req) {
     { author: user._id },
   );
 
-  searchResults.forEach((result) => {
+  searchResults.data.forEach((result) => {
     const media = mediaBySourceID.get(String(result.sourceID));
     if (media) {
       // @ts-ignore
@@ -116,8 +116,8 @@ async function search(req) {
     debug('sourceData update failed', error);
   });
 
-  return toListResponse(searchResults, {
-    url: req.fullUrl,
+  return toPaginatedResponse(searchResults, {
+    baseUrl: req.fullUrl,
     included: {
       playlists: ['inPlaylists'],
     },

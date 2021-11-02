@@ -1,12 +1,13 @@
 'use strict';
 
+const has = require('has');
 const { BadRequest } = require('http-errors');
 const {
   SourceNotFoundError,
   SourceNoImportError,
 } = require('../errors');
 const searchController = require('./search');
-const toListResponse = require('../utils/toListResponse');
+const toPaginatedResponse = require('../utils/toPaginatedResponse');
 
 /**
  * @param {import('../types').Request} req
@@ -19,7 +20,7 @@ function getImportableSource(req) {
   if (!source) {
     throw new SourceNotFoundError({ name: sourceName });
   }
-  if (!source.import) {
+  if (has(source, 'import')) {
     throw new SourceNoImportError({ name: sourceName });
   }
   if (source.apiVersion < 3) {
@@ -46,8 +47,8 @@ async function getPlaylists(req) {
     throw new BadRequest('No playlist filter provided');
   }
 
-  return toListResponse(items, {
-    url: req.fullUrl,
+  return toPaginatedResponse(items, {
+    baseUrl: req.fullUrl,
   });
 }
 
@@ -59,8 +60,8 @@ async function getPlaylistItems(req) {
   const { playlistID } = req.params;
 
   const items = await source.getPlaylistItems(req.user, playlistID);
-  return toListResponse(items, {
-    url: req.fullUrl,
+  return toPaginatedResponse(items, {
+    baseUrl: req.fullUrl,
   });
 }
 
