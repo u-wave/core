@@ -32,7 +32,7 @@ const testTransport = {
  * üWave API development server.
  */
 async function start() {
-  const port = argv.port || process.env.PORT || 6042;
+  const port = Number(argv.port || process.env.PORT || 6042);
 
   const uwave = require('..');
 
@@ -77,7 +77,7 @@ async function start() {
     }
   });
 
-  await uw.listen(port);
+  await uw.listen();
   console.log(`Now listening on ${port}`);
 }
 

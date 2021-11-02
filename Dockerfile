@@ -12,4 +12,5 @@ RUN npm install --prod
 ENV NODE_ENV=production
 COPY . /u-wave-core
 
+EXPOSE 6042
 CMD ["node", "bin/u-wave-core"]
