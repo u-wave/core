@@ -202,8 +202,14 @@ class UwaveServer extends EventEmitter {
 
   /**
    * Register a source plugin.
+   *
+   * @template TOptions
+   * @template {import('./source/types').HotSwappableSourcePlugin<
+   *     TOptions, import('type-fest').JsonValue>} TPlugin
+   * @param {TPlugin} sourcePlugin
+   * @param {TOptions} [opts]
    */
-  async useSource(sourcePlugin, opts = {}) {
+  async useSource(sourcePlugin, opts) {
     /** @type {import('avvio').Avvio<this>} */
     // @ts-ignore
     const boot = this;
