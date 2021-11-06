@@ -49,6 +49,7 @@ class Booth {
     this.#locker = new RedLock([this.#uw.redis]);
   }
 
+  /** @internal */
   async onStart() {
     const current = await this.getCurrentEntry();
     if (current && this.#timeout === null) {
@@ -67,6 +68,7 @@ class Booth {
     }
   }
 
+  /** @internal */
   onStop() {
     this.maybeStop();
   }
@@ -84,6 +86,11 @@ class Booth {
     return HistoryEntry.findById(historyID);
   }
 
+  /**
+   * Get vote counts for the currently playing media.
+   *
+   * @returns {Promise<{ upvotes: number, downvotes: number, favorites: number }>}
+   */
   async getCurrentVoteStats() {
     const { redis } = this.#uw;
 
@@ -273,6 +280,25 @@ class Booth {
   }
 
   /**
+   * @param {PopulatedHistoryEntry} entry
+   * @private
+   */
+  async runPrePlayHooks(entry) {
+    const { sourceID, sourceType } = entry.media.media;
+    const source = this.#uw.source(sourceType);
+    if (source) {
+      debug('Running %s pre-play hook for %s', source.type, sourceID);
+      const sourceData = await source.play(entry.user, entry.media.media);
+      debug('sourceData', sourceData);
+      if (sourceData) {
+        Object.assign(entry.media.media.sourceData, sourceData);
+      }
+    }
+
+    return entry;
+  }
+
+  /**
    * @typedef {object} AdvanceOptions
    * @prop {boolean} [remove]
    * @prop {boolean} [publish]
@@ -285,9 +311,9 @@ class Booth {
     let lock;
     try {
       if (reuseLock) {
-        lock = await reuseLock.extend(ms('2 seconds'));
+        lock = await reuseLock.extend(ms('10 seconds'));
       } else {
-        lock = await this.#locker.lock('booth:advancing', ms('2 seconds'));
+        lock = await this.#locker.lock('booth:advancing', ms('10 seconds'));
       }
     } catch (err) {
       throw new Error('Another advance is still in progress.');
@@ -328,6 +354,8 @@ class Booth {
     await this.cycleWaitlist(previous, opts);
 
     if (next) {
+      await this.runPrePlayHooks(next);
+
       await this.update(next);
       await cyclePlaylist(next.playlist);
       this.play(next);
