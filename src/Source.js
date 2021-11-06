@@ -24,7 +24,8 @@ const { SourceNoImportError } = require('./errors');
  *   ...args: unknown[]
  * ) => Promise<PlaylistItemDesc[]>} search
  * @prop {(context: ImportContext, ...args: unknown[]) => Promise<unknown>} [import]
- * @prop {(context: SourceContext, entry: PlaylistItemDesc) => Promise<import('type-fest').JsonObject>} [play]
+ * @prop {(context: SourceContext, entry: PlaylistItemDesc) =>
+ *     Promise<import('type-fest').JsonObject>} [play]
  *
  * @typedef {SourcePluginV1 | SourcePluginV2} SourcePlugin
  */
