@@ -165,6 +165,9 @@ class Source {
   }
 
   /**
+   * Playback hook. Media sources can use this to pass the necessary data for
+   * media playback to clients, for example a temporary signed URL.
+   *
    * @param {User} user
    * @param {PlaylistItemDesc} entry
    */
