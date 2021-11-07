@@ -49,9 +49,6 @@ const envSchema = {
     YOUTUBE_API_KEY: {
       type: 'string',
     },
-    SOUNDCLOUD_API_KEY: {
-      type: 'string',
-    },
   },
 };
 
@@ -73,8 +70,6 @@ if (argv.h || argv.help || !validConfig) {
   console.log('    URL of the MongoDB database to use. Defaults to mongodb://localhost:27017/uwave.');
   console.log('  YOUTUBE_API_KEY [optional]');
   console.log('    Your YouTube Data API key.');
-  console.log('  SOUNDCLOUD_API_KEY [optional]');
-  console.log('    Your SoundCloud API key.');
   console.log();
 }
 
@@ -121,11 +116,7 @@ if (config.YOUTUBE_API_KEY) {
     key: config.YOUTUBE_API_KEY,
   });
 }
-if (config.SOUNDCLOUD_API_KEY) {
-  uw.source(scSource, {
-    key: config.SOUNDCLOUD_API_KEY,
-  });
-}
+uw.source(scSource);
 
 uw.listen(port).then(() => {
   console.log(`Now listening on ${port}`);

@@ -66,15 +66,13 @@ async function start() {
 
   uw.use(async function configureSources(uw) {
     if (process.env.YOUTUBE_API_KEY) {
-      uw.source(ytSource,  {
+      uw.source(ytSource, {
         key: process.env.YOUTUBE_API_KEY,
       });
     }
-    if (process.env.SOUNDCLOUD_API_KEY) {
-      uw.source(scSource, {
-        key: process.env.SOUNDCLOUD_API_KEY,
-      });
-    }
+    uw.source(scSource, {
+      key: process.env.SOUNDCLOUD_API_KEY,
+    });
   });
 
   await uw.listen();
