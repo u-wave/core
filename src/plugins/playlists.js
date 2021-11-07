@@ -230,7 +230,7 @@ class PlaylistsRepository {
       await item.populate('media');
     }
 
-    // @ts-ignore TS2322: The types of `media` are incompatible, but we just populated it,
+    // @ts-expect-error TS2322: The types of `media` are incompatible, but we just populated it,
     // typescript just doesn't know about that.
     return item;
   }
@@ -478,7 +478,7 @@ class PlaylistsRepository {
 
       let allMedias = knownMedias;
       if (unknownMediaIDs.length > 0) {
-        // @ts-ignore
+        // @ts-expect-error TS2322
         const unknownMedias = await this.#uw.source(sourceType)
           .get(user, unknownMediaIDs);
         allMedias = allMedias.concat(await Media.create(unknownMedias));

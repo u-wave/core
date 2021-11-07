@@ -95,8 +95,7 @@ function authenticateRoutes(passport, options) {
       (rawReq, res, next) => {
         /** @type {import('../types').AuthenticatedRequest & controller.WithAuthOptions} */
         // Correct type is guaranteed by `passport.authenticate()` and `withOptions()` middlewares.
-        // @ts-ignore TS2322
-        const req = rawReq;
+        const req = (/** @type {unknown} */ rawReq);
         controller.socialLoginCallback('google', req, res).catch(next);
       },
     )

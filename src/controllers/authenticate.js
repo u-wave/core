@@ -169,19 +169,19 @@ async function socialLoginCallback(service, req, res) {
   if (user.pendingActivation) {
     const socialAvatar = await getSocialAvatar(req.uwave, user, service);
 
+    /** @type {Record<string, string>} */
+    const avatars = {
+      sigil: `https://sigil.u-wave.net/${user.id}`,
+    };
+    if (socialAvatar) {
+      avatars[service] = socialAvatar;
+    }
     activationData = {
       pending: true,
       id: user.id,
-      avatars: {
-        sigil: `https://sigil.u-wave.net/${user.id}`,
-      },
+      avatars,
       type: service,
     };
-    if (socialAvatar) {
-      // @ts-ignore we literally just defined it
-      // TODO rewrite this with object spreading or something
-      activationData.avatars[service] = socialAvatar;
-    }
   }
 
   const script = `

@@ -14,7 +14,7 @@
 function route(handler) {
   return (rawReq, res, next) => {
     /** @type {import('./types').Request<TParams, TQuery, TBody> & TExtra} */
-    // @ts-ignore
+    // @ts-expect-error TS2322
     const req = rawReq;
 
     Promise.resolve(handler(req, res))

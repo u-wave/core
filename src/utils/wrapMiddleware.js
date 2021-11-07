@@ -12,8 +12,7 @@
 function wrapMiddleware(middleware) {
   return (rawReq, res, next) => {
     /** @type {import('../types').Request} */
-    // @ts-ignore
-    const req = rawReq;
+    const req = (/** @type {unknown} */ rawReq);
 
     middleware(req, res)
       .then(() => next(), next);

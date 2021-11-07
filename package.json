@@ -101,6 +101,8 @@
     "@types/supertest": "^2.0.11",
     "@types/ultron": "^1.1.0",
     "@types/ws": "^8.2.0",
+    "@typescript-eslint/eslint-plugin": "^5.3.0",
+    "@typescript-eslint/parser": "^5.3.0",
     "c8": "^7.10.0",
     "concat-stream": "^2.0.0",
     "cross-env": "^7.0.0",

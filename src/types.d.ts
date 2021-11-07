@@ -32,7 +32,7 @@ export type Request<
   TParams = DefaultParams,
   TQuery = DefaultQuery,
   TBody = DefaultBody,
-> = import('express').Request<TParams, any, TBody, TQuery, {}> & {
+> = import('express').Request<TParams, unknown, TBody, TQuery, never> & {
   user?: import('./models').User,
 };
 
@@ -68,5 +68,5 @@ export type AuthenticatedController<
 /**
  * Utility type that returns a Document<TSchema> given a Model<Document<TSchema>>.
  */
-export type ToDocument<TModel extends Model<any>> =
+export type ToDocument<TModel extends Model<unknown>> =
   TModel extends Model<infer TDoc> ? TDoc : never;
