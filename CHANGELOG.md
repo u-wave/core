@@ -4,6 +4,20 @@ All notable changes to this project will be documented in this file.
 
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## 0.5.0-alpha.6 / 07 Oct 2021
+This is an alpha release, but new servers should use this version rather than an older "stable" one.
+
+This is a hotfix release for problems introduced during development of `alpha.5`.
+
+Bugfixes:
+ * **Breaking:** Revert `playedAt` to a UNIX timestamp.
+   This fixes an accidental breaking change. I'm sorry if you updated your code already while tracking
+   the development branch these past months :(
+ * Make related playlists opt-in in search results. There is a serious performance problem in that
+   feature, so it is available behind a query parameter for diagnostic purposes.
+ * Fix registrations getting rejected when ReCaptcha is disabled.
+ * Fix favouriting tracks.
+
 ## 0.5.0-alpha.5 / 07 Oct 2021
 This is an alpha release, but new servers should use this version rather than an older "stable" one.
 
