@@ -24,6 +24,8 @@ const { SourceNoImportError } = require('./errors');
  *   ...args: unknown[]
  * ) => Promise<PlaylistItemDesc[]>} search
  * @prop {(context: ImportContext, ...args: unknown[]) => Promise<unknown>} [import]
+ * @prop {(context: SourceContext, entry: PlaylistItemDesc) =>
+ *     Promise<import('type-fest').JsonObject>} [play]
  *
  * @typedef {SourcePluginV1 | SourcePluginV2} SourcePlugin
  */
@@ -160,6 +162,21 @@ class Source {
       results = await this.plugin.search(query, page, ...args);
     }
     return this.addSourceType(results);
+  }
+
+  /**
+   * Playback hook. Media sources can use this to pass the necessary data for
+   * media playback to clients, for example a temporary signed URL.
+   *
+   * @param {User} user
+   * @param {PlaylistItemDesc} entry
+   */
+  play(user, entry) {
+    if (this.plugin.api === 2 && this.plugin.play != null) {
+      const context = new SourceContext(this.uw, this, user);
+      return this.plugin.play(context, entry);
+    }
+    return undefined;
   }
 
   /**
