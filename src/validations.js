@@ -473,6 +473,7 @@ exports.search = {
     type: 'object',
     properties: {
       query: { type: 'string' },
+      include: { type: 'string' },
     },
     required: ['query'],
   },

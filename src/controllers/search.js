@@ -40,7 +40,7 @@ async function searchAll(req) {
 async function updateSourceData(uw, updates) {
   const { Media } = uw.models;
   const ops = [];
-  debug('updating source data', updates);
+  debug('updating source data', [...updates.keys()]);
   for (const [id, sourceData] of updates.entries()) {
     ops.push({
       updateOne: {
@@ -60,7 +60,7 @@ async function updateSourceData(uw, updates) {
 async function search(req) {
   const { user } = req;
   const { source: sourceName } = req.params;
-  const { query } = req.query;
+  const { query, include } = req.query;
   const uw = req.uwave;
   const { Media } = uw.models;
 
@@ -98,29 +98,37 @@ async function search(req) {
     }
   });
 
-  const playlistsByMediaID = await uw.playlists.getPlaylistsContainingAnyMedia(
-    mediasInSearchResults.map((media) => media._id),
-    { author: user._id },
-  );
-
-  searchResults.forEach((result) => {
-    const media = mediaBySourceID.get(String(result.sourceID));
-    if (media) {
-      // @ts-ignore
-      result.inPlaylists = playlistsByMediaID.get(media._id.toString());
-    }
-  });
-
   // don't wait for this to complete
   updateSourceData(uw, mediasNeedSourceDataUpdate).catch((error) => {
     debug('sourceData update failed', error);
   });
 
+  // Only include related playlists if requested
+  // Clients should probably not request this until it is faster :)
+  if (include === 'playlists') {
+    const playlistsByMediaID = await uw.playlists.getPlaylistsContainingAnyMedia(
+      mediasInSearchResults.map((media) => media._id),
+      { author: user._id },
+    );
+
+    searchResults.forEach((result) => {
+      const media = mediaBySourceID.get(String(result.sourceID));
+      if (media) {
+        // @ts-ignore
+        result.inPlaylists = playlistsByMediaID.get(media._id.toString());
+      }
+    });
+
+    return toListResponse(searchResults, {
+      url: req.fullUrl,
+      included: {
+        playlists: ['inPlaylists'],
+      },
+    });
+  }
+
   return toListResponse(searchResults, {
     url: req.fullUrl,
-    included: {
-      playlists: ['inPlaylists'],
-    },
   });
 }
 
