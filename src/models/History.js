@@ -22,7 +22,7 @@ const listOfUsers = [{ type: Types.ObjectId, ref: 'User' }];
  * @prop {import('mongodb').ObjectId} user
  * @prop {import('mongodb').ObjectId} playlist
  * @prop {import('mongodb').ObjectId} item
- * @prop {HistoryMedia} media
+ * @prop {mongoose.Document<never, {}, HistoryMedia> & HistoryMedia} media
  * @prop {Date} playedAt
  * @prop {import('mongodb').ObjectId[]} upvotes
  * @prop {import('mongodb').ObjectId[]} downvotes
