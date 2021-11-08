@@ -28,6 +28,8 @@ async function getBoothData(uw) {
   }
 
   await historyEntry.populate('media.media');
+  // @ts-ignore TS2322: We just populated historyEntry.media.media
+  const media = booth.getMediaForPlayback(historyEntry);
 
   const stats = await booth.getCurrentVoteStats();
 
@@ -36,7 +38,7 @@ async function getBoothData(uw) {
     playlistID: `${historyEntry.playlist}`,
     playedAt: historyEntry.playedAt.getTime(),
     userID: `${historyEntry.user}`,
-    media: historyEntry.media,
+    media,
     stats,
   };
 }

@@ -3,6 +3,7 @@
 const ms = require('ms');
 const RedLock = require('redlock');
 const createDebug = require('debug');
+const { omit } = require('lodash');
 const { EmptyPlaylistError, PlaylistItemNotFoundError } = require('../errors');
 const routes = require('../routes/booth');
 
@@ -11,11 +12,12 @@ const routes = require('../routes/booth');
  * @typedef {import('../models').Playlist} Playlist
  * @typedef {import('../models').PlaylistItem} PlaylistItem
  * @typedef {import('../models').HistoryEntry} HistoryEntry
+ * @typedef {import('../models/History').HistoryMedia} HistoryMedia
  * @typedef {import('../models').Media} Media
  * @typedef {{ user: User }} PopulateUser
  * @typedef {{ playlist: Playlist }} PopulatePlaylist
- * @typedef {{ media: { media: Media } }} PopulateMedia
- * @typedef {Omit<HistoryEntry, 'user' | 'playlist'>
+ * @typedef {{ media: Omit<HistoryMedia, 'media'> & { media: Media } }} PopulateMedia
+ * @typedef {Omit<HistoryEntry, 'user' | 'playlist' | 'media'>
  *     & PopulateUser & PopulatePlaylist & PopulateMedia} PopulatedHistoryEntry
  */
 
@@ -83,7 +85,7 @@ class Booth {
       return null;
     }
 
-    return HistoryEntry.findById(historyID);
+    return HistoryEntry.findById(historyID, '+media.sourceData');
   }
 
   /**
@@ -253,6 +255,29 @@ class Booth {
   }
 
   /**
+   * This method creates a `media` object that clients can understand from a
+   * history entry object.
+   *
+   * We present the playback-specific `sourceData` as if it is
+   * a property of the media model for backwards compatibility.
+   * Old clients don't expect `sourceData` directly on a history entry object.
+   *
+   * @param {PopulateMedia} historyEntry
+   */
+  // eslint-disable-next-line class-methods-use-this
+  getMediaForPlayback(historyEntry) {
+    return Object.assign(omit(historyEntry.media, 'sourceData'), {
+      media: {
+        ...historyEntry.media.media.toJSON(),
+        sourceData: {
+          ...historyEntry.media.media.sourceData,
+          ...historyEntry.media.sourceData,
+        },
+      },
+    });
+  }
+
+  /**
    * @param {PopulatedHistoryEntry|null} next
    * @private
    */
@@ -263,10 +288,7 @@ class Booth {
         userID: next.user.id,
         playlistID: next.playlist.id,
         itemID: next.item.toString(),
-        media: {
-          ...next.media,
-          media: next.media.media.toJSON(),
-        },
+        media: this.getMediaForPlayback(next),
         playedAt: next.playedAt.getTime(),
       });
       this.#uw.publish('playlist:cycle', {
@@ -283,19 +305,17 @@ class Booth {
    * @param {PopulatedHistoryEntry} entry
    * @private
    */
-  async runPrePlayHooks(entry) {
+  async getSourceDataForPlayback(entry) {
     const { sourceID, sourceType } = entry.media.media;
     const source = this.#uw.source(sourceType);
     if (source) {
       debug('Running %s pre-play hook for %s', source.type, sourceID);
       const sourceData = await source.play(entry.user, entry.media.media);
       debug('sourceData', sourceData);
-      if (sourceData) {
-        Object.assign(entry.media.media.sourceData, sourceData);
-      }
+      return sourceData;
     }
 
-    return entry;
+    return undefined;
   }
 
   /**
@@ -346,6 +366,10 @@ class Booth {
     }
 
     if (next) {
+      const sourceData = await this.getSourceDataForPlayback(next);
+      if (sourceData) {
+        next.media.sourceData = sourceData;
+      }
       await next.save();
     } else {
       this.maybeStop();
@@ -354,8 +378,6 @@ class Booth {
     await this.cycleWaitlist(previous, opts);
 
     if (next) {
-      await this.runPrePlayHooks(next);
-
       await this.update(next);
       await cyclePlaylist(next.playlist);
       this.play(next);
