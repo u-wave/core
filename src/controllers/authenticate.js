@@ -331,7 +331,7 @@ async function register(req) {
   } = req.body;
 
   try {
-    if (req.authOptions.recaptcha) {
+    if (req.authOptions.recaptcha?.secret) {
       if (grecaptcha) {
         await verifyCaptcha(grecaptcha, req.authOptions.recaptcha);
       } else {
