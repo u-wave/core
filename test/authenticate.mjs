@@ -152,7 +152,7 @@ describe('Authentication', () => {
         })
         .expect(200);
 
-      assert.strictEqual(goodRes.body.data.name, 'name');
+      assert.strictEqual(goodRes.body.data.username, 'name');
       assert(scope.isDone());
     });
   });
