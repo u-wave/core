@@ -13,6 +13,7 @@ const { SourceNoImportError } = require('./errors');
  * @prop {undefined|1} api
  * @prop {(ids: string[]) => Promise<PlaylistItemDesc[]>} get
  * @prop {(query: string, page: unknown, ...args: unknown[]) => Promise<PlaylistItemDesc[]>} search
+ * @prop {(context: ImportContext, ...args: unknown[]) => Promise<unknown>} [import]
  *
  * @typedef {object} SourcePluginV2
  * @prop {2} api
@@ -189,7 +190,7 @@ class Source {
    */
   'import'(user, ...args) {
     const importContext = new ImportContext(this.uw, this, user);
-    if (this.plugin.api === 2 && this.plugin.import != null) {
+    if (this.plugin.import != null) {
       return this.plugin.import(importContext, ...args);
     }
     throw new SourceNoImportError({ name: this.type });
