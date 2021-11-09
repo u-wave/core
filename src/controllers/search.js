@@ -106,12 +106,15 @@ async function search(req) {
   });
 
   // Only include related playlists if requested
-  // Clients should probably not request this until it is faster :)
-  if (include === 'playlists') {
+  if (include.split(',').includes('playlists')) {
     const playlistsByMediaID = await uw.playlists.getPlaylistsContainingAnyMedia(
       mediasInSearchResults.map((media) => media._id),
       { author: user._id },
-    );
+    ).catch((error) => {
+      debug('playlists containing media lookup failed', error);
+      // just omit the related playlists if we timed out or crashed
+      return new Map();
+    });
 
     searchResults.forEach((result) => {
       const media = mediaBySourceID.get(String(result.sourceID));
