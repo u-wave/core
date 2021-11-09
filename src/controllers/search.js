@@ -56,7 +56,16 @@ async function updateSourceData(uw, updates) {
 }
 
 /**
- * @type {import('../types').AuthenticatedController}
+ * @typedef {object} SearchParams
+ * @prop {string} source
+ *
+ * @typedef {object} SearchQuery
+ * @prop {string} query
+ * @prop {string} [include]
+*/
+
+/**
+ * @type {import('../types').AuthenticatedController<SearchParams, SearchQuery, never>}
  */
 async function search(req) {
   const { user } = req;
@@ -106,12 +115,15 @@ async function search(req) {
   });
 
   // Only include related playlists if requested
-  // Clients should probably not request this until it is faster :)
-  if (include === 'playlists') {
+  if (typeof include === 'string' && include.split(',').includes('playlists')) {
     const playlistsByMediaID = await uw.playlists.getPlaylistsContainingAnyMedia(
       mediasInSearchResults.map((media) => media._id),
       { author: user._id },
-    );
+    ).catch((error) => {
+      debug('playlists containing media lookup failed', error);
+      // just omit the related playlists if we timed out or crashed
+      return new Map();
+    });
 
     searchResults.forEach((result) => {
       const media = mediaBySourceID.get(String(result.sourceID));
