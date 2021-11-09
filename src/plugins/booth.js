@@ -3,6 +3,7 @@
 const ms = require('ms');
 const RedLock = require('redlock');
 const createDebug = require('debug');
+const { omit } = require('lodash');
 const { EmptyPlaylistError, PlaylistItemNotFoundError } = require('../errors');
 const routes = require('../routes/booth');
 
@@ -11,11 +12,13 @@ const routes = require('../routes/booth');
  * @typedef {import('../models').Playlist} Playlist
  * @typedef {import('../models').PlaylistItem} PlaylistItem
  * @typedef {import('../models').HistoryEntry} HistoryEntry
+ * @typedef {import('../models/History').HistoryMedia} HistoryMedia
+ * @typedef {import('../models').Media} Media
  * @typedef {{ user: User }} PopulateUser
  * @typedef {{ playlist: Playlist }} PopulatePlaylist
- * @typedef {{ item: PlaylistItem }} PopulatePlaylistItem
- * @typedef {HistoryEntry & PopulateUser & PopulatePlaylist & PopulatePlaylistItem}
- *     PopulatedHistoryEntry
+ * @typedef {{ media: Omit<HistoryMedia, 'media'> & { media: Media } }} PopulateMedia
+ * @typedef {Omit<HistoryEntry, 'user' | 'playlist' | 'media'>
+ *     & PopulateUser & PopulatePlaylist & PopulateMedia} PopulatedHistoryEntry
  */
 
 const debug = createDebug('uwave:advance');
@@ -48,6 +51,7 @@ class Booth {
     this.#locker = new RedLock([this.#uw.redis]);
   }
 
+  /** @internal */
   async onStart() {
     const current = await this.getCurrentEntry();
     if (current && this.#timeout === null) {
@@ -66,6 +70,7 @@ class Booth {
     }
   }
 
+  /** @internal */
   onStop() {
     this.maybeStop();
   }
@@ -80,9 +85,14 @@ class Booth {
       return null;
     }
 
-    return HistoryEntry.findById(historyID);
+    return HistoryEntry.findById(historyID, '+media.sourceData');
   }
 
+  /**
+   * Get vote counts for the currently playing media.
+   *
+   * @returns {Promise<{ upvotes: number, downvotes: number, favorites: number }>}
+   */
   async getCurrentVoteStats() {
     const { redis } = this.#uw;
 
@@ -155,13 +165,14 @@ class Booth {
     if (!playlistItem) {
       throw new PlaylistItemNotFoundError({ id: playlist.media[0] });
     }
-    await playlistItem.populate('media').execPopulate();
 
-    // @ts-ignore TS2322 Wildly unsafe cast but what can we do
-    return new HistoryEntry({
+    /** @type {PopulatedHistoryEntry} */
+    // @ts-ignore TS2322: `user` and `playlist` are already populated,
+    // and `media.media` is populated immediately below.
+    const entry = new HistoryEntry({
       user,
       playlist,
-      item: playlistItem,
+      item: playlistItem._id,
       media: {
         media: playlistItem.media,
         artist: playlistItem.artist,
@@ -170,6 +181,9 @@ class Booth {
         end: playlistItem.end,
       },
     });
+    await entry.populate('media.media');
+
+    return entry;
   }
 
   /**
@@ -231,7 +245,6 @@ class Booth {
       () => this.advance(),
       (entry.media.end - entry.media.start) * ms('1 second'),
     );
-    return entry;
   }
 
   /**
@@ -239,6 +252,29 @@ class Booth {
    */
   getWaitlist() {
     return this.#uw.redis.lrange('waitlist', 0, -1);
+  }
+
+  /**
+   * This method creates a `media` object that clients can understand from a
+   * history entry object.
+   *
+   * We present the playback-specific `sourceData` as if it is
+   * a property of the media model for backwards compatibility.
+   * Old clients don't expect `sourceData` directly on a history entry object.
+   *
+   * @param {PopulateMedia} historyEntry
+   */
+  // eslint-disable-next-line class-methods-use-this
+  getMediaForPlayback(historyEntry) {
+    return Object.assign(omit(historyEntry.media, 'sourceData'), {
+      media: {
+        ...historyEntry.media.media.toJSON(),
+        sourceData: {
+          ...historyEntry.media.media.sourceData,
+          ...historyEntry.media.sourceData,
+        },
+      },
+    });
   }
 
   /**
@@ -251,11 +287,8 @@ class Booth {
         historyID: next.id,
         userID: next.user.id,
         playlistID: next.playlist.id,
-        itemID: next.item.id,
-        media: {
-          ...next.media,
-          media: next.media.media.toString(),
-        },
+        itemID: next.item.toString(),
+        media: this.getMediaForPlayback(next),
         playedAt: next.playedAt.getTime(),
       });
       this.#uw.publish('playlist:cycle', {
@@ -266,6 +299,23 @@ class Booth {
       this.#uw.publish('advance:complete', null);
     }
     this.#uw.publish('waitlist:update', await this.getWaitlist());
+  }
+
+  /**
+   * @param {PopulatedHistoryEntry} entry
+   * @private
+   */
+  async getSourceDataForPlayback(entry) {
+    const { sourceID, sourceType } = entry.media.media;
+    const source = this.#uw.source(sourceType);
+    if (source) {
+      debug('Running %s pre-play hook for %s', source.type, sourceID);
+      const sourceData = await source.play(entry.user, entry.media.media);
+      debug('sourceData', sourceData);
+      return sourceData;
+    }
+
+    return undefined;
   }
 
   /**
@@ -281,9 +331,9 @@ class Booth {
     let lock;
     try {
       if (reuseLock) {
-        lock = await reuseLock.extend(ms('2 seconds'));
+        lock = await reuseLock.extend(ms('10 seconds'));
       } else {
-        lock = await this.#locker.lock('booth:advancing', ms('2 seconds'));
+        lock = await this.#locker.lock('booth:advancing', ms('10 seconds'));
       }
     } catch (err) {
       throw new Error('Another advance is still in progress.');
@@ -308,7 +358,10 @@ class Booth {
       await this.saveStats(previous);
 
       debug(
-        'previous track:', previous.media.artist, '—', previous.media.title,
+        'previous track:',
+        previous.media.artist,
+        '—',
+        previous.media.title,
         `👍 ${previous.upvotes.length} `
         + `★ ${previous.favorites.length} `
         + `👎 ${previous.downvotes.length}`,
@@ -316,6 +369,10 @@ class Booth {
     }
 
     if (next) {
+      const sourceData = await this.getSourceDataForPlayback(next);
+      if (sourceData) {
+        next.media.sourceData = sourceData;
+      }
       await next.save();
     } else {
       this.maybeStop();
@@ -326,7 +383,7 @@ class Booth {
     if (next) {
       await this.update(next);
       await cyclePlaylist(next.playlist);
-      await this.play(next);
+      this.play(next);
     } else {
       await this.clear();
     }

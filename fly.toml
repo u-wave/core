@@ -1,7 +1,10 @@
 app = "u-wave-demo"
 
+[env]
+PORT = "6042"
+
 [[services]]
-internal_port = 8080
+internal_port = 6042
 protocol = "tcp"
 
 [services.concurrency]

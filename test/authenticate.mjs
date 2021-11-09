@@ -1,15 +1,19 @@
 import assert from 'assert';
 import sinon from 'sinon';
 import supertest from 'supertest';
+import nock from 'nock';
+import testKeys from 'recaptcha-test-keys';
 import createUwave from './utils/createUwave.mjs';
 
 const sandbox = sinon.createSandbox();
 
 describe('Authentication', () => {
   let uw;
+  let recaptcha = {};
 
   beforeEach(async () => {
-    uw = await createUwave('auth');
+    recaptcha = {};
+    uw = await createUwave('auth', { recaptcha });
   });
   afterEach(async () => {
     sandbox.restore();
@@ -62,6 +66,94 @@ describe('Authentication', () => {
         .get('/api/auth/strategies')
         .expect(200);
       assert.deepStrictEqual(res.body.data, ['local', 'google']);
+    });
+  });
+
+  describe('POST /auth/register', () => {
+    it('validates inputs', async () => {
+      await supertest(uw.server)
+        .post('/api/auth/register')
+        .expect(400);
+
+      await supertest(uw.server)
+        .post('/api/auth/register')
+        .send({ username: 'name' })
+        .expect(400);
+      await supertest(uw.server)
+        .post('/api/auth/register')
+        .send({ email: 'name@example.com' })
+        .expect(400);
+      await supertest(uw.server)
+        .post('/api/auth/register')
+        .send({ email: 'name@example.com', username: 'name', password: 'testtest' })
+        .expect(200);
+
+      await supertest(uw.server)
+        .post('/api/auth/register')
+        .send({ email: 'name@example.com', name: 'something with spaces', password: 'testtest' })
+        .expect(400);
+    });
+
+    it('creates a user', async () => {
+      const res = await supertest(uw.server)
+        .post('/api/auth/register')
+        .send({ email: 'name@example.com', username: 'name', password: 'testtest' })
+        .expect(200);
+
+      sinon.assert.match(res.body.data, {
+        _id: sinon.match.string,
+        // Default avatar
+        avatar: sinon.match(/^https:\/\/sigil\.u-wave\.net/),
+        roles: ['user'],
+        username: 'name',
+        slug: 'name',
+      });
+    });
+
+    it('slugifies names well', async () => {
+      const res = await supertest(uw.server)
+        .post('/api/auth/register')
+        .send({ email: 'name@example.com', username: '테스트네임', password: 'testtest' })
+        .expect(200);
+
+      assert.strictEqual(res.body.data.slug, 'teseuteuneim');
+    });
+
+    it('checks recaptcha if set', async () => {
+      Object.assign(recaptcha, testKeys);
+      const badRes = await supertest(uw.server)
+        .post('/api/auth/register')
+        .send({
+          email: 'name@example.com',
+          username: 'name',
+          password: 'testtest',
+        })
+        .expect(400);
+
+      sinon.assert.match(badRes.body.errors[0], {
+        status: 400,
+        code: 'recaptcha-failed',
+      });
+
+      const scope = nock('https://www.google.com/')
+        .post('/recaptcha/api/siteverify', {
+          response: 'sample recaptcha challenge for test :)',
+          secret: testKeys.secret,
+        })
+        .reply(200, { success: true });
+
+      const goodRes = await supertest(uw.server)
+        .post('/api/auth/register')
+        .send({
+          email: 'name@example.com',
+          username: 'name',
+          password: 'testtest',
+          grecaptcha: 'sample recaptcha challenge for test :)',
+        })
+        .expect(200);
+
+      assert.strictEqual(goodRes.body.data.username, 'name');
+      assert(scope.isDone());
     });
   });
 });

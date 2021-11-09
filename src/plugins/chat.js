@@ -42,8 +42,10 @@ class Chat {
    */
   async mute(user, duration, options) {
     await this.#uw.redis.set(
-      `mute:${user.id}`, options.moderator.id,
-      'PX', duration,
+      `mute:${user.id}`,
+      options.moderator.id,
+      'PX',
+      duration,
     );
 
     this.#uw.publish('chat:mute', {

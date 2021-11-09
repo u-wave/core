@@ -27,16 +27,18 @@ async function getBoothData(uw) {
     return null;
   }
 
-  await historyEntry.populate('media.media').execPopulate();
+  await historyEntry.populate('media.media');
+  // @ts-ignore TS2322: We just populated historyEntry.media.media
+  const media = booth.getMediaForPlayback(historyEntry);
 
   const stats = await booth.getCurrentVoteStats();
 
   return {
     historyID: historyEntry.id,
     playlistID: `${historyEntry.playlist}`,
-    playedAt: historyEntry.playedAt,
+    playedAt: historyEntry.playedAt.getTime(),
     userID: `${historyEntry.user}`,
-    media: historyEntry.media,
+    media,
     stats,
   };
 }
@@ -295,8 +297,7 @@ async function favorite(req) {
   const uw = req.uwave;
   const { PlaylistItem, HistoryEntry } = uw.models;
 
-  const historyEntry = await HistoryEntry.findById(historyID)
-    .populate('media.media');
+  const historyEntry = await HistoryEntry.findById(historyID);
 
   if (!historyEntry) {
     throw new HistoryEntryNotFoundError({ id: historyID });
@@ -312,9 +313,7 @@ async function favorite(req) {
 
   // `.media` has the same shape as `.item`, but is guaranteed to exist and have
   // the same properties as when the playlist item was actually played.
-  const playlistItem = new PlaylistItem(historyEntry.media);
-
-  await playlistItem.save();
+  const playlistItem = await PlaylistItem.create(historyEntry.media.toJSON());
 
   playlist.media.push(playlistItem.id);
 

@@ -13,6 +13,7 @@ const { SourceNoImportError } = require('./errors');
  * @prop {undefined|1} api
  * @prop {(ids: string[]) => Promise<PlaylistItemDesc[]>} get
  * @prop {(query: string, page: unknown, ...args: unknown[]) => Promise<PlaylistItemDesc[]>} search
+ * @prop {(context: ImportContext, ...args: unknown[]) => Promise<unknown>} [import]
  *
  * @typedef {object} SourcePluginV2
  * @prop {2} api
@@ -24,6 +25,8 @@ const { SourceNoImportError } = require('./errors');
  *   ...args: unknown[]
  * ) => Promise<PlaylistItemDesc[]>} search
  * @prop {(context: ImportContext, ...args: unknown[]) => Promise<unknown>} [import]
+ * @prop {(context: SourceContext, entry: PlaylistItemDesc) =>
+ *     Promise<import('type-fest').JsonObject>} [play]
  *
  * @typedef {SourcePluginV1 | SourcePluginV2} SourcePlugin
  */
@@ -163,6 +166,21 @@ class Source {
   }
 
   /**
+   * Playback hook. Media sources can use this to pass the necessary data for
+   * media playback to clients, for example a temporary signed URL.
+   *
+   * @param {User} user
+   * @param {PlaylistItemDesc} entry
+   */
+  play(user, entry) {
+    if (this.plugin.api === 2 && this.plugin.play != null) {
+      const context = new SourceContext(this.uw, this, user);
+      return this.plugin.play(context, entry);
+    }
+    return undefined;
+  }
+
+  /**
    * Import *something* from this media source. Because media sources can
    * provide wildly different imports, üWave trusts clients to know what they're
    * doing.
@@ -172,7 +190,7 @@ class Source {
    */
   'import'(user, ...args) {
     const importContext = new ImportContext(this.uw, this, user);
-    if (this.plugin.api === 2 && this.plugin.import != null) {
+    if (this.plugin.import != null) {
       return this.plugin.import(importContext, ...args);
     }
     throw new SourceNoImportError({ name: this.type });

@@ -16,6 +16,31 @@ client to actually use it.
 
 üWave requires MongoDB and Redis databases.
 
+## Usage
+
+üWave comes with an executable file that includes YouTube and SoundCloud
+support by default. The server can be configured with environment variables.
+You must provide a `YOUTUBE_API_KEY` to use YouTube. SoundCloud works
+without API keys.
+
+If you need more configuration options, your only option is to use the Node.js
+API of this package, and write your own server entry point. Over time more
+options will be made available through the CLI.
+
+```bash
+npx u-wave-core
+```
+
+Environment Variables:
+ - `SECRET` - A secret key used for encrypting passwords. Must be a 64-character
+    hexadecimal string (= 256 bits).
+ - `PORT` - Port to listen on. Defaults to 6042.
+ - `REDIS_URL` - URL of the Redis instance to connect to. Defaults to
+   `redis://localhost:6379/`.
+ - `MONGODB_URL` - URL of the MongoDB database to use. Defaults to
+   `mongodb://localhost:27017/uwave`.
+ - `YOUTUBE_API_KEY` (optional) - Your YouTube Data API key.
+
 ## Development
 
 The server can be run in development mode by:
@@ -37,8 +62,6 @@ MONGODB_URL=mongodb://localhost:27017/uwave_dev
 
 # Enables the YouTube media source if given.
 YOUTUBE_API_KEY=your key
-# Enables the SoundCloud media source if given.
-SOUNDCLOUD_API_KEY=your key
 ```
 
 ## API

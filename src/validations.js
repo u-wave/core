@@ -17,7 +17,7 @@ exports.register = {
         type: 'string',
         minLength: 6,
       },
-      grecaptcha: { type: 'string' },
+      grecaptcha: { type: 'string', nullable: true },
     },
     required: ['email', 'username', 'password'],
   },
@@ -473,6 +473,7 @@ exports.search = {
     type: 'object',
     properties: {
       query: { type: 'string' },
+      include: { type: 'string' },
     },
     required: ['query'],
   },

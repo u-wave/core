@@ -123,8 +123,13 @@ class SocketServer {
    */
   #clientActions;
 
-  /** @type {Map<string, import('ajv').ValidateFunction<unknown>>} */
-  #clientActionSchemas = new Map();
+  /**
+   * @type {{
+   *   [K in keyof ClientActionParameters]:
+   *     import('ajv').ValidateFunction<ClientActionParameters[K]>
+   * }}
+   */
+  #clientActionSchemas;
 
   /**
    * Handlers for commands that come in from the server side.
@@ -183,8 +188,9 @@ class SocketServer {
       debug(error);
     });
     this.#redisSubscription.on('message', (channel, command) => {
-      this.onServerMessage(channel, command)
-        .catch((e) => { throw e; });
+      // this returns a promise, but we don't handle the error case:
+      // there is not much we can do, so just let node.js crash w/ an unhandled rejection
+      this.onServerMessage(channel, command);
     });
 
     this.#wss.on('error', (error) => {
@@ -220,14 +226,16 @@ class SocketServer {
       },
     };
 
-    this.#clientActionSchemas.set('sendChat', ajv.compile({
-      type: 'string',
-    }));
-    this.#clientActionSchemas.set('vote', ajv.compile({
-      type: 'integer',
-      enum: [-1, 1],
-    }));
-    this.#clientActionSchemas.set('logout', ajv.compile(true));
+    this.#clientActionSchemas = {
+      sendChat: ajv.compile({
+        type: 'string',
+      }),
+      vote: ajv.compile({
+        type: 'integer',
+        enum: [-1, 1],
+      }),
+      logout: ajv.compile(true),
+    };
 
     this.#serverActions = {
       /**
@@ -238,7 +246,7 @@ class SocketServer {
           this.broadcast('advance', {
             historyID: next.historyID,
             userID: next.userID,
-            item: next.itemID,
+            itemID: next.itemID,
             media: next.media,
             playedAt: new Date(next.playedAt).getTime(),
           });
@@ -562,7 +570,8 @@ class SocketServer {
         this.replace(connection, this.createLostConnection(user));
       }
     });
-    connection.on('command',
+    connection.on(
+      'command',
       /**
        * @param {string} command
        * @param {import('type-fest').JsonValue} data
@@ -571,7 +580,7 @@ class SocketServer {
         debug('command', user.id, user.username, command, data);
         if (has(this.#clientActions, command)) {
           // Ignore incorrect input
-          const validate = this.#clientActionSchemas.get(command);
+          const validate = this.#clientActionSchemas[command];
           if (validate && !validate(data)) {
             return;
           }
@@ -580,7 +589,8 @@ class SocketServer {
           // @ts-ignore TS2345 `data` is validated
           action(user, data, connection);
         }
-      });
+      },
+    );
     return connection;
   }
 

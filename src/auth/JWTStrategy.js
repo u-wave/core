@@ -5,9 +5,7 @@ const { Strategy } = require('passport');
 const jwt = require('jsonwebtoken');
 const { BannedError } = require('../errors');
 
-/**
- * @typedef {import('../models').User} User
- */
+/** @typedef {import('../models').User} User */
 
 /**
  * @param {Record<string, string>} cookies
@@ -47,14 +45,18 @@ function isUserIDToken(obj) {
     && typeof obj.id === 'string';
 }
 
+/** @typedef {(claim: { id: string }) => Promise<User|null>} GetUserFn */
+
 class JWTStrategy extends Strategy {
   /**
    * @param {Buffer|string} secret
-   * @param {(claim: { id: string }) => Promise<User|null>} getUser
+   * @param {GetUserFn} getUser
    */
   constructor(secret, getUser) {
     super();
+    /** @private */
     this.secret = secret;
+    /** @private */
     this.getUser = getUser;
   }
 
@@ -69,6 +71,7 @@ class JWTStrategy extends Strategy {
 
   /**
    * @param {import('express').Request} req
+   * @private
    */
   async authenticateP(req) {
     const { bans } = req.uwave;

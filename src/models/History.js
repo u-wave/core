@@ -9,24 +9,35 @@ const listOfUsers = [{ type: Types.ObjectId, ref: 'User' }];
 
 /**
  * @typedef {object} HistoryMedia
- * @prop {import('mongodb').ObjectID} media
+ * @prop {import('mongodb').ObjectId} media
+ *     Reference to the `Media` object that is being played.
  * @prop {string} artist
+ *     Snapshot of the media artist name at the time this entry was played.
  * @prop {string} title
+ *     Snapshot of the media title at the time this entry was played.
  * @prop {number} start
+ *     Time to start playback at.
  * @prop {number} end
+ *     Time to stop playback at.
+ * @prop {HistorySourceData} sourceData
+ *     Arbitrary source-specific data required for media playback.
+ */
+
+/**
+ * @typedef {object} HistorySourceData
  */
 
 /**
  * @typedef {object} LeanHistoryEntry
- * @prop {import('mongodb').ObjectID} _id
- * @prop {import('mongodb').ObjectID} user
- * @prop {import('mongodb').ObjectID} playlist
- * @prop {import('mongodb').ObjectID} item
- * @prop {HistoryMedia} media
+ * @prop {import('mongodb').ObjectId} _id
+ * @prop {import('mongodb').ObjectId} user
+ * @prop {import('mongodb').ObjectId} playlist
+ * @prop {import('mongodb').ObjectId} item
+ * @prop {mongoose.Document<never, {}, HistoryMedia> & HistoryMedia} media
  * @prop {Date} playedAt
- * @prop {import('mongodb').ObjectID[]} upvotes
- * @prop {import('mongodb').ObjectID[]} downvotes
- * @prop {import('mongodb').ObjectID[]} favorites
+ * @prop {import('mongodb').ObjectId[]} upvotes
+ * @prop {import('mongodb').ObjectId[]} downvotes
+ * @prop {import('mongodb').ObjectId[]} favorites
  */
 
 /**
@@ -59,8 +70,9 @@ const schema = new Schema({
     },
     start: { type: Number, default: 0 },
     end: { type: Number, default: 0 },
+    sourceData: { type: Object, select: false },
   },
-  playedAt: { type: Date, default: Date.now, index: true },
+  playedAt: { type: Date, default: () => new Date(), index: true },
   upvotes: listOfUsers,
   downvotes: listOfUsers,
   favorites: listOfUsers,

@@ -6,7 +6,7 @@ const { Schema } = mongoose;
 
 /**
  * @typedef {object} LeanMedia
- * @prop {import('mongodb').ObjectID} _id
+ * @prop {import('mongodb').ObjectId} _id
  * @prop {string} sourceID
  * @prop {string} sourceType
  * @prop {object} sourceData

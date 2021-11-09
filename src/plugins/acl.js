@@ -9,12 +9,20 @@ const routes = require('../routes/acl');
  * @typedef {import('../models').AclRole} AclRole
  * @typedef {import('../models').User} User
  * @typedef {{ roles: AclRole[] }} PopulateRoles
- * @typedef {AclRole & PopulateRoles} PopulatedAclRole
+ * @typedef {Omit<AclRole, 'roles'> & PopulateRoles} PopulatedAclRole
+ */
+
+/**
+ * Not great: I don't think I can statically verify that the roles functions
+ * return exclusively populated or unpopulated roles. So I just tell typescript
+ * that it could be either. If the ACL module is rewritten to use graph queries
+ * to unroll permissions inside mongodb, we probably don't need this anymore.
+ * @typedef {AclRole | PopulatedAclRole} MaybePopulatedAclRole
  */
 
 /**
  * @param {AclRole | PopulatedAclRole} role
- * @returns {Promise<AclRole[]>}
+ * @returns {Promise<MaybePopulatedAclRole[]>}
  */
 async function getSubRoles(role) {
   if (role.roles.length === 0) {
@@ -23,14 +31,13 @@ async function getSubRoles(role) {
 
   // This function juggles the `.roles` type a bit between strings and AclRole instances,
   // and typescript does not like that!
-  // @ts-ignore
-  if (!(role.roles[0] instanceof role.constructor)) {
-    role.populate('roles');
-    await role.execPopulate();
+  if (typeof role.roles[0] === 'string') {
+    // @ts-ignore TS2349: this might require a type parameter now? not sure how to put that in.
+    await role.populate('roles');
   }
 
   /** @type {AclRole[]} */
-  // @ts-ignore
+  // @ts-ignore TS2322: we just made sure this is an AclRole and not a string
   const relatedRoles = role.roles;
 
   const roles = await Promise.all(relatedRoles.map(getSubRoles));
@@ -39,15 +46,14 @@ async function getSubRoles(role) {
 
 /**
  * @param {User} user
- * @returns {Promise<AclRole[]>}
+ * @returns {Promise<MaybePopulatedAclRole[]>}
  */
 async function getAllUserRoles(user) {
   if (user.roles.length === 0) {
     return [];
   }
 
-  user.populate('roles');
-  await user.execPopulate();
+  await user.populate('roles');
 
   /** @type {AclRole[]} */
   // @ts-ignore

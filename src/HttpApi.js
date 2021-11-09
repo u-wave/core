@@ -78,13 +78,6 @@ async function httpApi(uw, options) {
       + 'keys, and is required for security reasons.');
   }
 
-  if (options.recaptcha && !options.recaptcha.secret) {
-    throw new TypeError('ReCaptcha validation is enabled, but "options.recaptcha.secret" is '
-      + 'not set. Please set "options.recaptcha.secret" to your ReCaptcha '
-      + 'secret, or disable ReCaptcha validation by setting "options.recaptcha" '
-      + 'to "false".');
-  }
-
   if (options.onError != null && typeof options.onError !== 'function') {
     throw new TypeError('"options.onError" must be a function.');
   }

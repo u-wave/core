@@ -20,14 +20,23 @@ class LostConnection extends EventEmitter {
     this.setTimeout(timeout);
   }
 
+  /**
+   * @private
+   */
   get key() {
     return `http-api:disconnected:${this.user.id}`;
   }
 
+  /**
+   * @private
+   */
   get messagesKey() {
     return `http-api:disconnected:${this.user.id}:messages`;
   }
 
+  /**
+   * @private
+   */
   initQueued() {
     // We expire the keys after timeout*10, because a server restart near the
     // end of the timeout might mean that someone fails to reconnect. This way
@@ -43,6 +52,7 @@ class LostConnection extends EventEmitter {
 
   /**
    * @param {number} timeout
+   * @private
    */
   setTimeout(timeout) {
     this.removeTimer = setTimeout(() => {
