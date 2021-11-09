@@ -545,6 +545,16 @@ describe('Playlists', () => {
       assert.strictEqual(res.body.data.length, 20, 'returns the newly added items');
       assertItemsAndIncludedMedia(res.body);
 
+      const updatedRes = await supertest(uw.server)
+        .get(`/api/playlists/${playlist.id}/media`)
+        .set('Cookie', `uwsession=${token}`)
+        .expect(200);
+      assert.deepStrictEqual(
+        updatedRes.body.data.slice(0, 20).map((item) => item.artist),
+        firstItems.map((item) => item.artist),
+        'adds the items at the start',
+      );
+
       const secondItems = await generateItems(20);
       const res2 = await supertest(uw.server)
         .post(`/api/playlists/${playlist.id}/media`)
@@ -558,6 +568,16 @@ describe('Playlists', () => {
       });
       assert.strictEqual(res2.body.data.length, 20, 'returns the newly added items');
       assertItemsAndIncludedMedia(res2.body);
+
+      const updatedRes2 = await supertest(uw.server)
+        .get(`/api/playlists/${playlist.id}/media`)
+        .set('Cookie', `uwsession=${token}`)
+        .expect(200);
+      assert.deepStrictEqual(
+        updatedRes2.body.data.slice(0, 20).map((item) => item.artist),
+        secondItems.map((item) => item.artist),
+        'adds the items at the start',
+      );
     });
 
     it('inserts items `after` an existing item', async () => {

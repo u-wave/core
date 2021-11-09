@@ -523,7 +523,7 @@ class PlaylistsRepository {
 
     const newItems = await this.createPlaylistItems(user, items);
     const oldMedia = playlist.media;
-    const insertIndex = after === null ? 0 : oldMedia.findIndex((item) => item.equals(after));
+    const insertIndex = after === null ? -1 : oldMedia.findIndex((item) => item.equals(after));
     playlist.media = [
       ...oldMedia.slice(0, insertIndex + 1),
       ...newItems.map((item) => item._id),
