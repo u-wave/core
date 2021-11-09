@@ -570,7 +570,8 @@ class SocketServer {
         this.replace(connection, this.createLostConnection(user));
       }
     });
-    connection.on('command',
+    connection.on(
+      'command',
       /**
        * @param {string} command
        * @param {import('type-fest').JsonValue} data
@@ -588,7 +589,8 @@ class SocketServer {
           // @ts-ignore TS2345 `data` is validated
           action(user, data, connection);
         }
-      });
+      },
+    );
     return connection;
   }
 

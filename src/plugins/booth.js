@@ -358,7 +358,10 @@ class Booth {
       await this.saveStats(previous);
 
       debug(
-        'previous track:', previous.media.artist, '—', previous.media.title,
+        'previous track:',
+        previous.media.artist,
+        '—',
+        previous.media.title,
         `👍 ${previous.upvotes.length} `
         + `★ ${previous.favorites.length} `
         + `👎 ${previous.downvotes.length}`,

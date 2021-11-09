@@ -6,7 +6,7 @@ const { promisify } = require('util');
 const randomBytes = promisify(crypto.randomBytes);
 
 class AuthRegistry {
-  #redis
+  #redis;
 
   /**
    * @param {import('ioredis').Redis} redis
