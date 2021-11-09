@@ -362,7 +362,7 @@ class PlaylistsRepository {
       });
     }
 
-    const playlists = await Playlist.aggregate(aggregate);
+    const playlists = await Playlist.aggregate(aggregate, { maxTimeMS: 5_000 });
     return playlists.map((raw) => Playlist.hydrate(raw));
   }
 
