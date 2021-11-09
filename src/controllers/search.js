@@ -56,7 +56,16 @@ async function updateSourceData(uw, updates) {
 }
 
 /**
- * @type {import('../types').AuthenticatedController}
+ * @typedef {object} SearchParams
+ * @prop {string} source
+ *
+ * @typedef {object} SearchQuery
+ * @prop {string} query
+ * @prop {string} [include]
+*/
+
+/**
+ * @type {import('../types').AuthenticatedController<SearchParams, SearchQuery, never>}
  */
 async function search(req) {
   const { user } = req;
@@ -106,7 +115,7 @@ async function search(req) {
   });
 
   // Only include related playlists if requested
-  if (include.split(',').includes('playlists')) {
+  if (typeof include === 'string' && include.split(',').includes('playlists')) {
     const playlistsByMediaID = await uw.playlists.getPlaylistsContainingAnyMedia(
       mediasInSearchResults.map((media) => media._id),
       { author: user._id },
