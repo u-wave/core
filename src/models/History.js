@@ -10,10 +10,21 @@ const listOfUsers = [{ type: Types.ObjectId, ref: 'User' }];
 /**
  * @typedef {object} HistoryMedia
  * @prop {import('mongodb').ObjectId} media
+ *     Reference to the `Media` object that is being played.
  * @prop {string} artist
+ *     Snapshot of the media artist name at the time this entry was played.
  * @prop {string} title
+ *     Snapshot of the media title at the time this entry was played.
  * @prop {number} start
+ *     Time to start playback at.
  * @prop {number} end
+ *     Time to stop playback at.
+ * @prop {HistorySourceData} sourceData
+ *     Arbitrary source-specific data required for media playback.
+ */
+
+/**
+ * @typedef {object} HistorySourceData
  */
 
 /**
@@ -59,6 +70,7 @@ const schema = new Schema({
     },
     start: { type: Number, default: 0 },
     end: { type: Number, default: 0 },
+    sourceData: { type: Object, select: false },
   },
   playedAt: { type: Date, default: () => new Date(), index: true },
   upvotes: listOfUsers,
