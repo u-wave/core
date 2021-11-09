@@ -4,6 +4,14 @@ All notable changes to this project will be documented in this file.
 
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## 0.5.0-alpha.7 / 09 Oct 2021
+This is an alpha release, but new servers should use this version rather than an older "stable" one.
+
+Bugfixes:
+ * Fix imports from some media sources (like Youtube).
+ * Send data from `play()` hook in `/api/now` responses. (#486)
+ * Fix adding media to the start of a playlist. (#487)
+
 ## 0.5.0-alpha.6 / 07 Oct 2021
 This is an alpha release, but new servers should use this version rather than an older "stable" one.
 
