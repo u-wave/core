@@ -878,7 +878,13 @@ describe('Playlists', () => {
     });
   });
 
-  describe.skip('GET /playlists/:id/media/:itemID', () => {});
-  describe.skip('PUT /playlists/:id/media/:itemID', () => {});
-  describe.skip('DELETE /playlists/:id/media/:itemID', () => {});
+  describe.skip('GET /playlists/:id/media/:itemID', () => {
+    // TODO
+  });
+  describe.skip('PUT /playlists/:id/media/:itemID', () => {
+    // TODO
+  });
+  describe.skip('DELETE /playlists/:id/media/:itemID', () => {
+    // TODO
+  });
 });

@@ -32,12 +32,11 @@ async function getSubRoles(role) {
   // This function juggles the `.roles` type a bit between strings and AclRole instances,
   // and typescript does not like that!
   if (typeof role.roles[0] === 'string') {
-    // @ts-ignore TS2349: this might require a type parameter now? not sure how to put that in.
     await role.populate('roles');
   }
 
   /** @type {AclRole[]} */
-  // @ts-ignore TS2322: we just made sure this is an AclRole and not a string
+  // @ts-expect-error TS2322: we just made sure this is an AclRole and not a string
   const relatedRoles = role.roles;
 
   const roles = await Promise.all(relatedRoles.map(getSubRoles));
@@ -56,7 +55,7 @@ async function getAllUserRoles(user) {
   await user.populate('roles');
 
   /** @type {AclRole[]} */
-  // @ts-ignore
+  // @ts-expect-error TS2322: populated just above
   const baseRoles = user.roles;
 
   const roles = await Promise.all(baseRoles.map(getSubRoles));

@@ -586,7 +586,7 @@ class SocketServer {
           }
 
           const action = this.#clientActions[command];
-          // @ts-ignore TS2345 `data` is validated
+          // @ts-expect-error TS2345 `data` is validated
           action(user, data, connection);
         }
       },
@@ -685,7 +685,7 @@ class SocketServer {
       if (has(this.#serverActions, command)) {
         const action = this.#serverActions[command];
         if (action !== undefined) { // the types for `ServerActions` allow undefined, so...
-          // @ts-ignore TS2345 `data` is validated
+          // @ts-expect-error TS2345 `data` is validated
           action(data);
         }
       }

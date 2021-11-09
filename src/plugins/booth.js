@@ -167,7 +167,7 @@ class Booth {
     }
 
     /** @type {PopulatedHistoryEntry} */
-    // @ts-ignore TS2322: `user` and `playlist` are already populated,
+    // @ts-expect-error TS2322: `user` and `playlist` are already populated,
     // and `media.media` is populated immediately below.
     const entry = new HistoryEntry({
       user,

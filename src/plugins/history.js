@@ -51,8 +51,6 @@ class HistoryRepository {
       .populate('media.media user');
 
     /** @type {PopulatedHistoryEntry[]} */
-    // @ts-ignore TS2322: `media` and `user` types mismatch because typescript
-    // doesn't understand `populate()`.
     const results = await query;
 
     return new Page(results, {

@@ -111,10 +111,10 @@ class UsersRepository {
    */
   login({ type, ...params }) {
     if (type === 'local') {
-      // @ts-ignore
+      // @ts-expect-error TS2345: Pinky promise not to use 'local' name for custom sources
       return this.localLogin(params);
     }
-    // @ts-ignore
+    // @ts-expect-error TS2345: Pinky promise not to use 'local' name for custom sources
     return this.socialLogin(type, params);
   }
 
@@ -126,9 +126,6 @@ class UsersRepository {
     const { Authentication } = this.#uw.models;
 
     /** @type {null | (import('../models').Authentication & { user: User })} */
-    // @ts-ignore TS2322: the type check fails because the `user` property actually contains an
-    // ObjectId in this return value. We are definitely filling in a User object below before
-    // using this variable.
     const auth = await Authentication.findOne({
       email: email.toLowerCase(),
     }).populate('user').exec();
@@ -180,8 +177,8 @@ class UsersRepository {
     debug('find or create social', type, id);
 
     /** @type {null | (import('../models').Authentication & { user: User })} */
-    // @ts-ignore TS2322: the type check fails because the `user` property actually contains an
-    // ObjectId in this return value. We are definitely filling in a User object below before
+    // @ts-expect-error TS2322: the type check fails because the `user` property actually contains
+    // an ObjectId in this return value. We are definitely filling in a User object below before
     // using this variable.
     let auth = await Authentication.findOne({ type, id });
     if (auth) {
@@ -199,8 +196,8 @@ class UsersRepository {
       });
       await user.validate();
 
-      // @ts-ignore TS2322: the type check fails because the `user` property actually contains an
-      // ObjectId in this return value. We are definitely filling in a User object below before
+      // @ts-expect-error TS2322: the type check fails because the `user` property actually contains
+      // an ObjectId in this return value. We are definitely filling in a User object below before
       // using this variable.
       auth = new Authentication({
         type,
@@ -327,7 +324,7 @@ class UsersRepository {
     const old = {};
     Object.keys(update).forEach((key) => {
       // FIXME We should somehow make sure that the type of `key` extends `keyof LeanUser` here.
-      // @ts-ignore TS7053
+      // @ts-expect-error TS7053
       old[key] = user[key];
     });
     Object.assign(user, update);
@@ -337,7 +334,7 @@ class UsersRepository {
     // Take updated keys from the Model again,
     // as it may apply things like Unicode normalization on the values.
     Object.keys(update).forEach((key) => {
-      // @ts-ignore Infeasible to statically check properties here
+      // @ts-expect-error Infeasible to statically check properties here
       // Hopefully the caller took care
       update[key] = user[key];
     });

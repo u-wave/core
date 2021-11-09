@@ -5,6 +5,9 @@ const { isEqual } = require('lodash');
 const { SourceNotFoundError } = require('../errors');
 const toListResponse = require('../utils/toListResponse');
 
+/** @typedef {import('../models').Playlist} Playlist */
+/** @typedef {import('../plugins/playlists').PlaylistItemDesc} PlaylistItemDesc */
+
 // TODO should be deprecated once the Web client uses the better single-source route.
 /**
  * @type {import('../types').AuthenticatedController}
@@ -24,11 +27,9 @@ async function searchAll(req) {
 
   const searchResults = await Promise.all(searches);
 
-  /** @type {Record<string, import('../plugins/playlists').PlaylistItemDesc[]>} */
-  const combinedResults = {};
-  sourceNames.forEach((name, index) => {
-    combinedResults[name] = searchResults[index];
-  });
+  const combinedResults = Object.fromEntries(
+    sourceNames.map((name, index) => [name, searchResults[index]]),
+  );
 
   return combinedResults;
 }
@@ -69,6 +70,7 @@ async function search(req) {
     throw new SourceNotFoundError({ name: sourceName });
   }
 
+  /** @type {(PlaylistItemDesc & { inPlaylists?: Playlist[] })[]} */
   const searchResults = await source.search(user, query);
 
   const searchResultsByID = new Map();
@@ -114,7 +116,6 @@ async function search(req) {
     searchResults.forEach((result) => {
       const media = mediaBySourceID.get(String(result.sourceID));
       if (media) {
-        // @ts-ignore
         result.inPlaylists = playlistsByMediaID.get(media._id.toString());
       }
     });
