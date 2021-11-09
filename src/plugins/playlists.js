@@ -388,42 +388,33 @@ class PlaylistsRepository {
       // Store the `size` so we can remove the `.media` property later.
       { $addFields: { size: { $size: '$media' } } },
       // Store the playlist data on a property so lookup data does not pollute it.
+      // The result data is easier to process as separate {playlist, media} properties.
       { $replaceRoot: { newRoot: { playlist: '$$ROOT' } } },
-      // Find playlist items that:
+      // Find the playlist items in each playlist.
       {
         $lookup: {
           from: 'playlistitems',
-          let: { itemID: '$playlist.media' },
-          pipeline: [
-            {
-              $match: {
-                $expr: {
-                  $and: [
-                    // Are in any of the matching playlists;
-                    { $in: ['$_id', '$$itemID'] },
-                    // Have a `.media` property that was listed.
-                    { $in: ['$media', mediaIDs] },
-                  ],
-                },
-              },
-            },
-            // Only return what we need
-            { $project: { media: 1 } },
-          ],
-          as: 'foundMedia',
+          localField: 'playlist.media',
+          foreignField: '_id',
+          as: 'media',
         },
       },
-      // Remove unnecessary data.
+      // Unwind so we can match on individual playlist items.
+      { $unwind: '$media' },
+      {
+        $match: {
+          'media.media': { $in: mediaIDs },
+        },
+      },
+      // Omit the potentially large list of media IDs that we don't use.
       { $project: { 'playlist.media': 0 } },
-      // Output {playlist, foundMedia} pairs.
-      { $unwind: '$foundMedia' },
     );
 
     const pairs = await Playlist.aggregate(aggregate);
 
     const playlistsByMediaID = new Map();
-    pairs.forEach(({ playlist, foundMedia }) => {
-      const stringID = foundMedia.media.toString();
+    pairs.forEach(({ playlist, media }) => {
+      const stringID = media.media.toString();
       const playlists = playlistsByMediaID.get(stringID);
       if (playlists) {
         playlists.push(playlist);
