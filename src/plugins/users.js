@@ -58,7 +58,7 @@ class UsersRepository {
       query.where(queryFilter);
     }
 
-    const totalPromise = User.estimatedDocumentCount();
+    const totalPromise = User.estimatedDocumentCount().exec();
 
     const [
       users,
