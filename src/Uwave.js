@@ -83,6 +83,10 @@ class UwaveServer extends EventEmitter {
   // @ts-expect-error TS2564 Definitely assigned in a plugin
   config;
 
+  /** @type {import('./plugins/assets').Assets} */
+  // @ts-expect-error TS2564 Definitely assigned in a plugin
+  assets;
+
   /** @type {import('./plugins/history').HistoryRepository} */
   // @ts-expect-error TS2564 Definitely assigned in a plugin
   history;

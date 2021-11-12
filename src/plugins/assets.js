@@ -1,13 +1,19 @@
 const path = require('path');
 const fs = require('fs').promises;
-const mkdirp = require('mkdirp');
 const serveStatic = require('serve-static');
 
 class FSAssets {
-  constructor(options = {}) {
+  /**
+   * @typedef {object} FSAssetsOptions
+   * @prop {string} [publicPath]
+   * @prop {string} basedir
+   *
+   * @param {FSAssetsOptions} options
+   */
+  constructor(options) {
     this.options = {
       publicPath: '/assets/',
-      ...options
+      ...options,
     };
 
     if (!this.options.basedir) {
@@ -25,6 +31,7 @@ class FSAssets {
 
   /**
    * @param {string} key
+   * @private
    */
   path(key) {
     return path.resolve(this.basedir, key);
@@ -67,8 +74,13 @@ class FSAssets {
   }
 }
 
-module.exports = function assetsPlugin(options) {
-  return (uw) => {
-    uw.assets = new FSAssets(options);
-  };
+/**
+ * @param {import('../Uwave').Boot} uw
+ * @param {FSAssetsOptions} options
+ */
+async function assetsPlugin(uw, options) {
+  uw.assets = new FSAssets(options);
 }
+
+module.exports = assetsPlugin;
+module.exports.Assets = FSAssets;
