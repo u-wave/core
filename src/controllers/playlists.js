@@ -211,16 +211,18 @@ async function activatePlaylist(req) {
 /**
  * @typedef {object} GetPlaylistItemsParams
  * @prop {string} id
+ *
+ * @typedef {import('../types').PaginationQuery & { filter?: string }} GetPlaylistItemsQuery
  */
 
 /**
- * @type {import('../types').AuthenticatedController<GetPlaylistItemsParams>}
+ * @type {import('../types').AuthenticatedController<GetPlaylistItemsParams, GetPlaylistItemsQuery>}
  */
 async function getPlaylistItems(req) {
   const { user } = req;
   const { playlists } = req.uwave;
   const { id } = req.params;
-  const filter = req.query.filter || null;
+  const filter = req.query.filter || undefined;
   const pagination = getOffsetPagination(req.query);
 
   const playlist = await playlists.getUserPlaylist(user, new ObjectId(id));
