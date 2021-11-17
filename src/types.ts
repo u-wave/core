@@ -1,3 +1,4 @@
+/* eslint-disable node/no-missing-import,node/no-unpublished-import */
 // This file contains supporting types that can't be expressed in JavaScript/JSDoc.
 
 import type { Model } from 'mongoose';
@@ -11,6 +12,7 @@ import type { AuthenticateOptions } from './controllers/authenticate';
 
 // Add üWave specific request properties.
 declare global {
+  // eslint-disable-next-line @typescript-eslint/no-namespace
   namespace Express {
     interface Request {
       uwave: UwaveServer;
