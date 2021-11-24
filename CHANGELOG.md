@@ -4,6 +4,16 @@ All notable changes to this project will be documented in this file.
 
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## 0.5.0-alpha.9 / 13 Nov 2021
+This is an alpha release, but new servers should use this version rather than an older "stable" one.
+
+Bugfixes:
+ * Fix a crash in the `/api/users` endpoint. (#490)
+
+Internal:
+ * Fetch ACL sub-roles in a single database query. Should be good for performance, but most of all
+   for code quality.
+
 ## 0.5.0-alpha.8 / 10 Nov 2021
 This is an alpha release, but new servers should use this version rather than an older "stable" one.
 

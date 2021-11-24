@@ -11,9 +11,8 @@
     "emitDeclarationOnly": true
   },
   "include": [
-    "src/types.d.ts",
-    "src/redisMessages.d.ts",
     "src/**/*.js",
+    "src/**/*.ts",
     "src/schemas/*.json"
   ]
 }

@@ -10,7 +10,7 @@ const toListResponse = require('../utils/toListResponse');
 
 // TODO should be deprecated once the Web client uses the better single-source route.
 /**
- * @type {import('../types').AuthenticatedController}
+ * @type {import('../types').AuthenticatedController<never, SearchQuery, never>}
  */
 async function searchAll(req) {
   const { user } = req;

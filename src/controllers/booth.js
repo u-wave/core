@@ -336,7 +336,11 @@ async function favorite(req) {
 }
 
 /**
- * @type {import('../types').Controller}
+ * @typedef {object} GetRoomHistoryQuery
+ * @prop {import('../types').PaginationQuery & { media?: string }} [filter]
+ */
+/**
+ * @type {import('../types').Controller<never, GetRoomHistoryQuery, never>}
  */
 async function getHistory(req) {
   const filter = {};
