@@ -51,7 +51,7 @@ class HistoryRepository {
       .populate('media.media user');
 
     /** @type {PopulatedHistoryEntry[]} */
-    const results = await query;
+    const results = /** @type {any} */ (await query);
 
     return new Page(results, {
       pageSize: pagination ? pagination.limit : undefined,

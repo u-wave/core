@@ -14,6 +14,8 @@ const Page = require('../Page');
 const routes = require('../routes/playlists');
 
 /**
+ * @typedef {import('mongoose').PipelineStage} PipelineStage
+ * @typedef {import('mongoose').PipelineStage.Facet['$facet'][string]} FacetPipelineStage
  * @typedef {import('mongodb').ObjectId} ObjectId
  * @typedef {import('../models').User} User
  * @typedef {import('../models').Playlist} Playlist
@@ -244,7 +246,7 @@ class PlaylistsRepository {
   async getPlaylistItems(playlist, filter, pagination) {
     const { Playlist } = this.#uw.models;
 
-    /** @type {object[]} */
+    /** @type {PipelineStage[]} */
     const aggregate = [
       // find the playlist
       { $match: { _id: playlist._id } },
@@ -271,10 +273,11 @@ class PlaylistsRepository {
       });
     }
 
+    /** @type {FacetPipelineStage} */
     const aggregateCount = [
       { $count: 'filtered' },
     ];
-    /** @type {object[]} */
+    /** @type {FacetPipelineStage} */
     const aggregateItems = [
       { $skip: pagination.offset },
       { $limit: pagination.limit },

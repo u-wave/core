@@ -126,9 +126,9 @@ class UsersRepository {
     const { Authentication } = this.#uw.models;
 
     /** @type {null | (import('../models').Authentication & { user: User })} */
-    const auth = await Authentication.findOne({
+    const auth = /** @type {any} */ (await Authentication.findOne({
       email: email.toLowerCase(),
-    }).populate('user').exec();
+    }).populate('user').exec());
     if (!auth || !auth.hash) {
       throw new UserNotFoundError({ email });
     }
