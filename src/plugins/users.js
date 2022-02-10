@@ -176,10 +176,10 @@ class UsersRepository {
 
     debug('find or create social', type, id);
 
-    /** @type {null | (import('../models').Authentication & { user: User })} */
-    // @ts-expect-error TS2322: the type check fails because the `user` property actually contains
-    // an ObjectId in this return value. We are definitely filling in a User object below before
-    // using this variable.
+    // we need this type assertion because the `user` property actually contains
+    // an ObjectId in this return value. We are definitely filling in a User object
+    // below before using this variable.
+    /** @type {null | (Omit<import('../models').Authentication, 'user'> & { user: User })} */
     let auth = await Authentication.findOne({ type, id });
     if (auth) {
       await auth.populate('user');
