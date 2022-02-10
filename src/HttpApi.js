@@ -5,7 +5,7 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const cookieParser = require('cookie-parser');
 const cors = require('cors');
-const helmet = require('helmet');
+const helmet = require('helmet').default;
 const http = require('http');
 const debug = require('debug')('uwave:http-api');
 
