@@ -3,7 +3,7 @@
 const EventEmitter = require('events');
 const { promisify } = require('util');
 const mongoose = require('mongoose');
-const Redis = require('ioredis');
+const Redis = require('ioredis').default;
 const debug = require('debug');
 const avvio = require('avvio');
 
@@ -36,7 +36,7 @@ const DEFAULT_REDIS_URL = 'redis://localhost:6379';
 /**
  * @typedef {UwaveServer & avvio.Server<UwaveServer>} Boot
  * @typedef {Pick<
- *   Redis.RedisOptions,
+ *   import('ioredis').RedisOptions,
  *   'port' | 'host' | 'family' | 'path' | 'db' | 'password' | 'username' | 'tls'
  * >} RedisOptions
  * @typedef {{
@@ -47,7 +47,7 @@ const DEFAULT_REDIS_URL = 'redis://localhost:6379';
  */
 
 class UwaveServer extends EventEmitter {
-  /** @type {Redis.Redis} */
+  /** @type {import('ioredis').default} */
   redis;
 
   /** @type {import('http').Server} */

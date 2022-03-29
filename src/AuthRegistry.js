@@ -1,5 +1,6 @@
 'use strict';
 
+const assert = require('assert');
 const crypto = require('crypto');
 const { promisify } = require('util');
 
@@ -9,7 +10,7 @@ class AuthRegistry {
   #redis;
 
   /**
-   * @param {import('ioredis').Redis} redis
+   * @param {import('ioredis').default} redis
    */
   constructor(redis) {
     this.#redis = redis;
@@ -31,13 +32,14 @@ class AuthRegistry {
     if (token.length !== 128) {
       throw new Error('Invalid token');
     }
-    const [result] = await this.#redis
+    const result = await this.#redis
       .multi()
       .get(`http-api:socketAuth:${token}`)
       .del(`http-api:socketAuth:${token}`)
       .exec();
+    assert(result);
 
-    const [err, userID] = result;
+    const [err, userID] = result[0];
     if (err) {
       throw err;
     }
