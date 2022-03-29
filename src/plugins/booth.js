@@ -91,7 +91,7 @@ class Booth {
   /**
    * Get vote counts for the currently playing media.
    *
-   * @returns {Promise<{ upvotes: number, downvotes: number, favorites: number }>}
+   * @returns {Promise<{ upvotes: string[], downvotes: string[], favorites: string[] }>}
    */
   async getCurrentVoteStats() {
     const { redis } = this.#uw;
@@ -103,11 +103,10 @@ class Booth {
       .exec();
     assert(results);
 
-    // TODO what if there is an error?
     const voteStats = {
-      upvotes: Number(results[0][1]),
-      downvotes: Number(results[1][1]),
-      favorites: Number(results[2][1]),
+      upvotes: /** @type {string[]} */ (results[0][1]),
+      downvotes: /** @type {string[]} */ (results[1][1]),
+      favorites: /** @type {string[]} */ (results[2][1]),
     };
 
     return voteStats;
