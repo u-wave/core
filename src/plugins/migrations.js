@@ -1,7 +1,7 @@
 'use strict';
 
 const path = require('path');
-const RedLock = require('redlock');
+const RedLock = require('redlock').default;
 const { Umzug } = require('umzug');
 const debug = require('debug')('uwave:migrate');
 
@@ -83,12 +83,9 @@ async function migrationsPlugin(uw) {
       },
     });
 
-    const lock = await redLock.lock('migrate', 10000);
-    try {
+    await redLock.using(['migrate'], 10000, async () => {
       await migrator.up();
-    } finally {
-      await lock.unlock();
-    }
+    });
   }
   uw.migrate = migrate;
 

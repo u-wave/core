@@ -14,6 +14,8 @@ const Page = require('../Page');
 const routes = require('../routes/playlists');
 
 /**
+ * @typedef {import('mongoose').PipelineStage} PipelineStage
+ * @typedef {import('mongoose').PipelineStage.Facet['$facet'][string]} FacetPipelineStage
  * @typedef {import('mongodb').ObjectId} ObjectId
  * @typedef {import('../models').User} User
  * @typedef {import('../models').Playlist} Playlist
@@ -230,7 +232,7 @@ class PlaylistsRepository {
       await item.populate('media');
     }
 
-    // @ts-ignore TS2322: The types of `media` are incompatible, but we just populated it,
+    // @ts-expect-error TS2322: The types of `media` are incompatible, but we just populated it,
     // typescript just doesn't know about that.
     return item;
   }
@@ -244,7 +246,7 @@ class PlaylistsRepository {
   async getPlaylistItems(playlist, filter, pagination) {
     const { Playlist } = this.#uw.models;
 
-    /** @type {object[]} */
+    /** @type {PipelineStage[]} */
     const aggregate = [
       // find the playlist
       { $match: { _id: playlist._id } },
@@ -271,10 +273,11 @@ class PlaylistsRepository {
       });
     }
 
+    /** @type {FacetPipelineStage} */
     const aggregateCount = [
       { $count: 'filtered' },
     ];
-    /** @type {object[]} */
+    /** @type {FacetPipelineStage} */
     const aggregateItems = [
       { $skip: pagination.offset },
       { $limit: pagination.limit },
@@ -362,7 +365,7 @@ class PlaylistsRepository {
       });
     }
 
-    const playlists = await Playlist.aggregate(aggregate);
+    const playlists = await Playlist.aggregate(aggregate, { maxTimeMS: 5_000 });
     return playlists.map((raw) => Playlist.hydrate(raw));
   }
 
@@ -388,42 +391,33 @@ class PlaylistsRepository {
       // Store the `size` so we can remove the `.media` property later.
       { $addFields: { size: { $size: '$media' } } },
       // Store the playlist data on a property so lookup data does not pollute it.
+      // The result data is easier to process as separate {playlist, media} properties.
       { $replaceRoot: { newRoot: { playlist: '$$ROOT' } } },
-      // Find playlist items that:
+      // Find the playlist items in each playlist.
       {
         $lookup: {
           from: 'playlistitems',
-          let: { itemID: '$playlist.media' },
-          pipeline: [
-            {
-              $match: {
-                $expr: {
-                  $and: [
-                    // Are in any of the matching playlists;
-                    { $in: ['$_id', '$$itemID'] },
-                    // Have a `.media` property that was listed.
-                    { $in: ['$media', mediaIDs] },
-                  ],
-                },
-              },
-            },
-            // Only return what we need
-            { $project: { media: 1 } },
-          ],
-          as: 'foundMedia',
+          localField: 'playlist.media',
+          foreignField: '_id',
+          as: 'media',
         },
       },
-      // Remove unnecessary data.
+      // Unwind so we can match on individual playlist items.
+      { $unwind: '$media' },
+      {
+        $match: {
+          'media.media': { $in: mediaIDs },
+        },
+      },
+      // Omit the potentially large list of media IDs that we don't use.
       { $project: { 'playlist.media': 0 } },
-      // Output {playlist, foundMedia} pairs.
-      { $unwind: '$foundMedia' },
     );
 
     const pairs = await Playlist.aggregate(aggregate);
 
     const playlistsByMediaID = new Map();
-    pairs.forEach(({ playlist, foundMedia }) => {
-      const stringID = foundMedia.media.toString();
+    pairs.forEach(({ playlist, media }) => {
+      const stringID = media.media.toString();
       const playlists = playlistsByMediaID.get(stringID);
       if (playlists) {
         playlists.push(playlist);
@@ -478,7 +472,7 @@ class PlaylistsRepository {
 
       let allMedias = knownMedias;
       if (unknownMediaIDs.length > 0) {
-        // @ts-ignore
+        // @ts-expect-error TS2322
         const unknownMedias = await this.#uw.source(sourceType)
           .get(user, unknownMediaIDs);
         allMedias = allMedias.concat(await Media.create(unknownMedias));

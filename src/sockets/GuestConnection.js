@@ -44,7 +44,7 @@ class GuestConnection extends EventEmitter {
     const { authRegistry } = this.options;
 
     const userID = await authRegistry.getTokenUser(token);
-    if (!userID) {
+    if (!userID || typeof userID !== 'string') {
       throw new Error('Invalid token');
     }
     const userModel = await users.getUser(userID);

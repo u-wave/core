@@ -1,3 +1,4 @@
+import 'dotenv/config';
 import { once } from 'events';
 import { spawn } from 'child_process';
 import getPort from 'get-port';

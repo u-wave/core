@@ -41,7 +41,7 @@ async function start() {
   const uw = uwave({
     port,
     redis: process.env.REDIS_URL,
-    mongo: process.env.MONGODB_URL,
+    mongo: process.env.MONGODB_URL ?? 'mongodb://localhost/uwave',
     secret,
     mailTransport: testTransport,
     timeout: 10,

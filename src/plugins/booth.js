@@ -1,7 +1,7 @@
 'use strict';
 
-const ms = require('ms');
-const RedLock = require('redlock');
+const assert = require('assert');
+const RedLock = require('redlock').default;
 const createDebug = require('debug');
 const { omit } = require('lodash');
 const { EmptyPlaylistError, PlaylistItemNotFoundError } = require('../errors');
@@ -57,7 +57,7 @@ class Booth {
     if (current && this.#timeout === null) {
       // Restart the advance timer after a server restart, if a track was
       // playing before the server restarted.
-      const duration = (current.media.end - current.media.start) * ms('1 second');
+      const duration = (current.media.end - current.media.start) * 1000;
       const endTime = Number(current.playedAt) + duration;
       if (endTime > Date.now()) {
         this.#timeout = setTimeout(
@@ -91,7 +91,7 @@ class Booth {
   /**
    * Get vote counts for the currently playing media.
    *
-   * @returns {Promise<{ upvotes: number, downvotes: number, favorites: number }>}
+   * @returns {Promise<{ upvotes: string[], downvotes: string[], favorites: string[] }>}
    */
   async getCurrentVoteStats() {
     const { redis } = this.#uw;
@@ -101,12 +101,12 @@ class Booth {
       .smembers('booth:downvotes')
       .smembers('booth:favorites')
       .exec();
+    assert(results);
 
-    // TODO what if there is an error?
     const voteStats = {
-      upvotes: results[0][1],
-      downvotes: results[1][1],
-      favorites: results[2][1],
+      upvotes: /** @type {string[]} */ (results[0][1]),
+      downvotes: /** @type {string[]} */ (results[1][1]),
+      favorites: /** @type {string[]} */ (results[2][1]),
     };
 
     return voteStats;
@@ -167,7 +167,7 @@ class Booth {
     }
 
     /** @type {PopulatedHistoryEntry} */
-    // @ts-ignore TS2322: `user` and `playlist` are already populated,
+    // @ts-expect-error TS2322: `user` and `playlist` are already populated,
     // and `media.media` is populated immediately below.
     const entry = new HistoryEntry({
       user,
@@ -243,7 +243,7 @@ class Booth {
     this.maybeStop();
     this.#timeout = setTimeout(
       () => this.advance(),
-      (entry.media.end - entry.media.start) * ms('1 second'),
+      (entry.media.end - entry.media.start) * 1000,
     );
   }
 
@@ -331,9 +331,9 @@ class Booth {
     let lock;
     try {
       if (reuseLock) {
-        lock = await reuseLock.extend(ms('10 seconds'));
+        lock = await reuseLock.extend(10_000);
       } else {
-        lock = await this.#locker.lock('booth:advancing', ms('10 seconds'));
+        lock = await this.#locker.acquire(['booth:advancing'], 10_000);
       }
     } catch (err) {
       throw new Error('Another advance is still in progress.');
@@ -392,7 +392,7 @@ class Booth {
       await this.publish(next);
     }
 
-    lock.unlock().catch(() => {
+    lock.release().catch(() => {
       // Don't really care if this fails, it'll expire in some seconds anyway.
     });
 

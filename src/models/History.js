@@ -8,6 +8,10 @@ const { Types } = mongoose.Schema;
 const listOfUsers = [{ type: Types.ObjectId, ref: 'User' }];
 
 /**
+ * @typedef {object} HistorySourceData
+ */
+
+/**
  * @typedef {object} HistoryMedia
  * @prop {import('mongodb').ObjectId} media
  *     Reference to the `Media` object that is being played.
@@ -21,10 +25,6 @@ const listOfUsers = [{ type: Types.ObjectId, ref: 'User' }];
  *     Time to stop playback at.
  * @prop {HistorySourceData} sourceData
  *     Arbitrary source-specific data required for media playback.
- */
-
-/**
- * @typedef {object} HistorySourceData
  */
 
 /**

@@ -5,7 +5,17 @@ export type ServerActionParameters = {
     playlistID: string,
     itemID: string,
     media: {
-      media: {},
+      artist: string,
+      title: string,
+      start: number,
+      end: number,
+      media: {
+        sourceType: string,
+        sourceID: string,
+        artist: string,
+        title: string,
+        sourceData: object,
+      }
     },
     playedAt: number,
   } | null,
@@ -20,9 +30,14 @@ export type ServerActionParameters = {
     moderatorID: string | null,
   },
 
-  'chat:message': {},
+  'chat:message': {
+    id: string,
+    userID: string,
+    message: string,
+    timestamp: number,
+  },
   'chat:delete': {
-    filter: { id: string } | { userID: string } | {},
+    filter: { id: string } | { userID: string } | Record<string, never>,
     moderatorID: string,
   },
   'chat:mute': {

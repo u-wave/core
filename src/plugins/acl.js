@@ -1,6 +1,5 @@
 'use strict';
 
-const { flatten } = require('lodash');
 const debug = require('debug')('uwave:acl');
 const defaultRoles = require('../config/defaultRoles');
 const routes = require('../routes/acl');
@@ -11,57 +10,6 @@ const routes = require('../routes/acl');
  * @typedef {{ roles: AclRole[] }} PopulateRoles
  * @typedef {Omit<AclRole, 'roles'> & PopulateRoles} PopulatedAclRole
  */
-
-/**
- * Not great: I don't think I can statically verify that the roles functions
- * return exclusively populated or unpopulated roles. So I just tell typescript
- * that it could be either. If the ACL module is rewritten to use graph queries
- * to unroll permissions inside mongodb, we probably don't need this anymore.
- * @typedef {AclRole | PopulatedAclRole} MaybePopulatedAclRole
- */
-
-/**
- * @param {AclRole | PopulatedAclRole} role
- * @returns {Promise<MaybePopulatedAclRole[]>}
- */
-async function getSubRoles(role) {
-  if (role.roles.length === 0) {
-    return [role];
-  }
-
-  // This function juggles the `.roles` type a bit between strings and AclRole instances,
-  // and typescript does not like that!
-  if (typeof role.roles[0] === 'string') {
-    // @ts-ignore TS2349: this might require a type parameter now? not sure how to put that in.
-    await role.populate('roles');
-  }
-
-  /** @type {AclRole[]} */
-  // @ts-ignore TS2322: we just made sure this is an AclRole and not a string
-  const relatedRoles = role.roles;
-
-  const roles = await Promise.all(relatedRoles.map(getSubRoles));
-  return [role, ...flatten(roles)];
-}
-
-/**
- * @param {User} user
- * @returns {Promise<MaybePopulatedAclRole[]>}
- */
-async function getAllUserRoles(user) {
-  if (user.roles.length === 0) {
-    return [];
-  }
-
-  await user.populate('roles');
-
-  /** @type {AclRole[]} */
-  // @ts-ignore
-  const baseRoles = user.roles;
-
-  const roles = await Promise.all(baseRoles.map(getSubRoles));
-  return flatten(roles);
-}
 
 /**
  * @param {AclRole|string} role
@@ -132,6 +80,44 @@ class Acl {
   }
 
   /**
+   * @param {string[]} roleNames
+   * @returns {Promise<string[]>}
+   * @private
+   */
+  async getSubRoles(roleNames) {
+    const { AclRole } = this.#uw.models;
+    // Always returns 1 document.
+    /** @type {{ _id: 1, roles: string[] }[]} */
+    const res = await AclRole.aggregate([
+      {
+        $match: {
+          _id: { $in: roleNames },
+        },
+      },
+      // Create a starting document of shape: {_id: 1, roles: roleNames}
+      // This way we can get a result document that has both our initial
+      // role names AND all subroles.
+      {
+        $group: {
+          _id: 1,
+          roles: { $addToSet: '$_id' },
+        },
+      },
+      {
+        $graphLookup: {
+          from: 'acl_roles',
+          startWith: '$roles',
+          connectFromField: 'roles',
+          connectToField: '_id',
+          as: 'roles',
+        },
+      },
+      { $project: { roles: '$roles._id' } },
+    ]);
+    return res.length === 1 ? res[0].roles.sort() : [];
+  }
+
+  /**
    * @param {string} name
    * @param {string[]} permissions
    */
@@ -145,10 +131,12 @@ class Acl {
       { upsert: true },
     );
 
-    const subRoles = await Promise.all(roles.map(getSubRoles));
+    // We have to fetch the permissions from the database to account for permissions
+    // that have sub-permissions of their own.
+    const allPermissions = await this.getSubRoles(roles.map(getRoleName));
     return {
       name,
-      permissions: flatten(subRoles).map((role) => role._id),
+      permissions: allPermissions,
     };
   }
 
@@ -203,10 +191,9 @@ class Acl {
    * @param {User} user
    * @returns {Promise<string[]>}
    */
-  // eslint-disable-next-line class-methods-use-this
   async getAllPermissions(user) {
-    const roles = await getAllUserRoles(user);
-    return roles.map((role) => role.id);
+    const roles = await this.getSubRoles(user.roles.map(getRoleName));
+    return roles;
   }
 
   /**
@@ -222,12 +209,11 @@ class Acl {
       return false;
     }
 
-    const userRoles = await getAllUserRoles(user);
-    const roleIds = userRoles.map((userRole) => userRole.id);
+    const userRoles = await this.getSubRoles(user.roles.map(getRoleName));
 
-    debug('role ids', roleIds, 'check', user.id, role.id, 'super', SUPER_ROLE);
+    debug('role ids', userRoles, 'check', user.id, role.id, 'super', SUPER_ROLE);
 
-    return roleIds.includes(role.id) || roleIds.includes(SUPER_ROLE);
+    return userRoles.includes(role.id) || userRoles.includes(SUPER_ROLE);
   }
 }
 

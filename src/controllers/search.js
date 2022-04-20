@@ -5,9 +5,12 @@ const { isEqual } = require('lodash');
 const { SourceNotFoundError } = require('../errors');
 const toListResponse = require('../utils/toListResponse');
 
+/** @typedef {import('../models').Playlist} Playlist */
+/** @typedef {import('../plugins/playlists').PlaylistItemDesc} PlaylistItemDesc */
+
 // TODO should be deprecated once the Web client uses the better single-source route.
 /**
- * @type {import('../types').AuthenticatedController}
+ * @type {import('../types').AuthenticatedController<never, SearchQuery, never>}
  */
 async function searchAll(req) {
   const { user } = req;
@@ -24,11 +27,9 @@ async function searchAll(req) {
 
   const searchResults = await Promise.all(searches);
 
-  /** @type {Record<string, import('../plugins/playlists').PlaylistItemDesc[]>} */
-  const combinedResults = {};
-  sourceNames.forEach((name, index) => {
-    combinedResults[name] = searchResults[index];
-  });
+  const combinedResults = Object.fromEntries(
+    sourceNames.map((name, index) => [name, searchResults[index]]),
+  );
 
   return combinedResults;
 }
@@ -55,7 +56,16 @@ async function updateSourceData(uw, updates) {
 }
 
 /**
- * @type {import('../types').AuthenticatedController}
+ * @typedef {object} SearchParams
+ * @prop {string} source
+ *
+ * @typedef {object} SearchQuery
+ * @prop {string} query
+ * @prop {string} [include]
+*/
+
+/**
+ * @type {import('../types').AuthenticatedController<SearchParams, SearchQuery, never>}
  */
 async function search(req) {
   const { user } = req;
@@ -69,6 +79,7 @@ async function search(req) {
     throw new SourceNotFoundError({ name: sourceName });
   }
 
+  /** @type {(PlaylistItemDesc & { inPlaylists?: Playlist[] })[]} */
   const searchResults = await source.search(user, query);
 
   const searchResultsByID = new Map();
@@ -104,17 +115,19 @@ async function search(req) {
   });
 
   // Only include related playlists if requested
-  // Clients should probably not request this until it is faster :)
-  if (include === 'playlists') {
+  if (typeof include === 'string' && include.split(',').includes('playlists')) {
     const playlistsByMediaID = await uw.playlists.getPlaylistsContainingAnyMedia(
       mediasInSearchResults.map((media) => media._id),
       { author: user._id },
-    );
+    ).catch((error) => {
+      debug('playlists containing media lookup failed', error);
+      // just omit the related playlists if we timed out or crashed
+      return new Map();
+    });
 
     searchResults.forEach((result) => {
       const media = mediaBySourceID.get(String(result.sourceID));
       if (media) {
-        // @ts-ignore
         result.inPlaylists = playlistsByMediaID.get(media._id.toString());
       }
     });

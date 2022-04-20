@@ -5,7 +5,7 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const cookieParser = require('cookie-parser');
 const cors = require('cors');
-const helmet = require('helmet');
+const helmet = require('helmet').default;
 const http = require('http');
 const debug = require('debug')('uwave:http-api');
 
@@ -85,7 +85,7 @@ async function httpApi(uw, options) {
   uw.config.register(optionsSchema['uw:key'], optionsSchema);
 
   /** @type {HttpApiSettings} */
-  // @ts-ignore get() always returns a validated object here
+  // @ts-expect-error TS2322: get() always returns a validated object here
   let runtimeOptions = await uw.config.get(optionsSchema['uw:key']);
   uw.config.on('set', (key, value) => {
     if (key === 'u-wave:api') {
@@ -138,7 +138,7 @@ async function httpApi(uw, options) {
       callback(null, matchOrigin(origin, runtimeOptions.allowedOrigins));
     },
   };
-  // @ts-ignore TS2769 Not sure why the overload doesn't match, but it should :)
+  // @ts-expect-error TS2769: Not sure why the overload doesn't match, but it should :)
   uw.express.options('/api/*', cors(corsOptions));
   uw.express.use('/api', cors(corsOptions), uw.httpApi);
   // An older name

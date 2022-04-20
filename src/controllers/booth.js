@@ -1,5 +1,6 @@
 'use strict';
 
+const assert = require('assert');
 const mongoose = require('mongoose');
 const {
   HTTPError,
@@ -28,7 +29,7 @@ async function getBoothData(uw) {
   }
 
   await historyEntry.populate('media.media');
-  // @ts-ignore TS2322: We just populated historyEntry.media.media
+  // @ts-expect-error TS2322: We just populated historyEntry.media.media
   const media = booth.getMediaForPlayback(historyEntry);
 
   const stats = await booth.getCurrentVoteStats();
@@ -88,8 +89,8 @@ async function doSkip(uw, moderatorID, userID, reason, opts = {}) {
  *
  * @typedef {{
  *   remove?: boolean,
- *   userID?: undefined,
- *   reason?: undefined,
+ *   userID?: string,
+ *   reason?: string,
  * } & (SkipUserAndReason | {})} SkipBoothBody
  */
 
@@ -119,7 +120,7 @@ async function skipBooth(req) {
     throw new PermissionError({ requiredRole: 'booth.skip.other' });
   }
 
-  // @ts-ignore pretending like `userID` is definitely defined here
+  // @ts-expect-error TS2345 pretending like `userID` is definitely defined here
   // TODO I think the typescript error is actually correct so we should fix this
   await doSkip(req.uwave, user.id, userID, reason, opts);
 
@@ -171,6 +172,8 @@ async function addVote(uw, userID, direction) {
     .srem('booth:downvotes', userID)
     .sadd(direction > 0 ? 'booth:upvotes' : 'booth:downvotes', userID)
     .exec();
+  assert(results);
+
   const replacedUpvote = results[0][1] !== 0;
   const replacedDownvote = results[1][1] !== 0;
 
@@ -336,7 +339,11 @@ async function favorite(req) {
 }
 
 /**
- * @type {import('../types').Controller}
+ * @typedef {object} GetRoomHistoryQuery
+ * @prop {import('../types').PaginationQuery & { media?: string }} [filter]
+ */
+/**
+ * @type {import('../types').Controller<never, GetRoomHistoryQuery, never>}
  */
 async function getHistory(req) {
   const filter = {};

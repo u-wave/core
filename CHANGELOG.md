@@ -4,7 +4,32 @@ All notable changes to this project will be documented in this file.
 
 This project adheres to [Semantic Versioning](http://semver.org/).
 
-## 0.5.0-alpha.6 / 07 Oct 2021
+## 0.5.0-alpha.9 / 13 Nov 2021
+This is an alpha release, but new servers should use this version rather than an older "stable" one.
+
+Bugfixes:
+ * Fix a crash in the `/api/users` endpoint. (#490)
+
+Internal:
+ * Fetch ACL sub-roles in a single database query. Should be good for performance, but most of all
+   for code quality.
+
+## 0.5.0-alpha.8 / 10 Nov 2021
+This is an alpha release, but new servers should use this version rather than an older "stable" one.
+
+Bugfixes:
+ * Improve performance of searches with `?include=playlists`. (#489)
+   Now it's actually usable :)
+
+## 0.5.0-alpha.7 / 09 Nov 2021
+This is an alpha release, but new servers should use this version rather than an older "stable" one.
+
+Bugfixes:
+ * Fix imports from some media sources (like Youtube).
+ * Send data from `play()` hook in `/api/now` responses. (#486)
+ * Fix adding media to the start of a playlist. (#487)
+
+## 0.5.0-alpha.6 / 07 Nov 2021
 This is an alpha release, but new servers should use this version rather than an older "stable" one.
 
 This is a hotfix release for problems introduced during development of `alpha.5`.
