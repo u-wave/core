@@ -35,13 +35,13 @@ jobs:
     name: Tests
     strategy:
       matrix:
-        node-version: [12.x, 14.x, 16.x, 18.x]
-        mongo-version: [5.0]
+        node-version: ['12.x', '14.x', '16.x', '18.x']
+        mongo-version: ['5.0']
         include:
-          - node-version: 12.x
-            mongo-version: 4.2
-          - node-version: 12.x
-            mongo-version: 4.4
+          - node-version: '12.x'
+            mongo-version: '4.2'
+          - node-version: '12.x'
+            mongo-version: '4.4'
     runs-on: ubuntu-latest
     services:
       redis:
