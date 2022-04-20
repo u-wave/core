@@ -42,7 +42,7 @@ jobs:
         image: redis:6
         ports: ['6379:6379']
       mongodb:
-        image: mongo:4.2-bionic
+        image: mongo:5.0-focal
         ports: ['27017:27017']
     steps:
       - name: Checkout sources
