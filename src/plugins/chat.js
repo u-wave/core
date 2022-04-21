@@ -1,5 +1,6 @@
 'use strict';
 
+const randomUUID = require('crypto-randomuuid');
 const routes = require('../routes/chat');
 
 /**
@@ -16,8 +17,6 @@ const defaultOptions = {
 
 class Chat {
   #uw;
-
-  #chatID = Date.now();
 
   /** @type {ChatOptions} */
   #options;
@@ -95,10 +94,8 @@ class Chat {
       return;
     }
 
-    this.#chatID += 1;
-
     this.#uw.publish('chat:message', {
-      id: `${user.id}-${this.#chatID}`,
+      id: randomUUID(),
       userID: user.id,
       message: this.truncate(message),
       timestamp: Date.now(),
