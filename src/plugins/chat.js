@@ -108,10 +108,12 @@ class Chat {
 
     const permissions = tags ? await acl.getAllPermissions(user) : [];
     const globalTags = new Set(['id', 'replyTo']);
-    const filteredTags = Object.fromEntries(
-      Object.entries(tags ?? {})
-        .filter(([name]) => globalTags.has(name) || permissions.includes(name)),
-    );
+    const filteredTags = tags
+      ? Object.fromEntries(
+        Object.entries(tags)
+          .filter(([name]) => globalTags.has(name) || permissions.includes(name)),
+      )
+      : {};
 
     const id = randomUUID();
     const timestamp = Date.now();

@@ -1,4 +1,4 @@
-import type { ChatTags } from './types';
+import type { ChatTags } from './types'; // eslint-disable-line node/no-missing-import
 
 export type ServerActionParameters = {
   'advance:complete': {
