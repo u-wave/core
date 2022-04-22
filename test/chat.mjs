@@ -40,12 +40,11 @@ describe('Chat', () => {
 
     const receivedMessages = [];
     ws.on('message', (data) => {
-      console.log('received', data + '');
       receivedMessages.push(JSON.parse(data));
     });
 
     ws.send(JSON.stringify({ command: 'sendChat', data: 'Message text' }));
-    console.log('waiting');
+    // Using very long timeouts for CI
     await waitFor(() => (
       receivedMessages.some((message) => (
         message.command === 'chatMessage'
@@ -74,7 +73,8 @@ describe('Chat', () => {
     ws.send(JSON.stringify({ command: 'sendChat', data: 'unmuted' }));
     mutedWs.send(JSON.stringify({ command: 'sendChat', data: 'muted' }));
 
-    await waitFor(() => receivedMessages.length >= 2, 5_000);
+    // Using very long timeouts for CI
+    await waitFor(() => receivedMessages.length >= 2, 15_000);
 
     assert(receivedMessages.some((message) => message.command === 'chatMessage' && message.data.userID === user.id));
     assert(!receivedMessages.some((message) => message.command === 'chatMessage' && message.data.userID === mutedUser.id));
