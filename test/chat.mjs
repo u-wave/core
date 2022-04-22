@@ -40,17 +40,19 @@ describe('Chat', () => {
 
     const receivedMessages = [];
     ws.on('message', (data) => {
+      console.log('received', data);
       receivedMessages.push(JSON.parse(data));
     });
 
     ws.send(JSON.stringify({ command: 'sendChat', data: 'Message text' }));
+    console.log('waiting');
     await waitFor(() => (
       receivedMessages.some((message) => (
         message.command === 'chatMessage'
         && message.data.userID === user.id
         && message.data.message === 'Message text'
       ))
-    ), 5_000);
+    ), 15_000);
   });
 
   it('does not broadcast chat messages from muted users', async () => {
