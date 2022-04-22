@@ -120,11 +120,15 @@ describe('Chat', () => {
       const token = await uw.test.createTestSessionToken(user);
       const ws = await uw.test.connectToWebSocketAs(user);
 
-      await supertest(uw.server)
+      const res = await supertest(uw.server)
         .post('/api/chat')
         .set('Cookie', `uwsession=${token}`)
         .send({ message: 'HTTP message text' })
         .expect(200);
+      sinon.assert.match(res.body.data, {
+        _id: sinon.match.string,
+        message: sinon.match.string,
+      });
 
       const receivedMessages = [];
       ws.on('message', (data) => {

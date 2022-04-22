@@ -95,15 +95,17 @@ class Chat {
     }
 
     const id = randomUUID();
+    const truncatedMessage = this.truncate(message);
     this.#uw.publish('chat:message', {
       id,
       userID: user.id,
-      message: this.truncate(message),
+      message: truncatedMessage,
       timestamp: Date.now(),
     });
 
     return {
-      id,
+      _id: id,
+      message: truncatedMessage,
     };
   }
 
