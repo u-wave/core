@@ -2,6 +2,7 @@ import assert from 'assert';
 import sinon from 'sinon';
 import delay from 'delay';
 import supertest from 'supertest';
+import randomString from 'random-string';
 import createUwave from './utils/createUwave.mjs';
 
 const sandbox = sinon.createSandbox();
@@ -120,6 +121,66 @@ describe('Chat', () => {
         .expect(400);
     });
 
+    it('validates tags', async () => {
+      const user = await uw.test.createUser();
+      const token = await uw.test.createTestSessionToken(user);
+
+      await supertest(uw.server)
+        .post('/api/chat')
+        .set('Cookie', `uwsession=${token}`)
+        .send({ message: 'a message', tags: null })
+        .expect(400);
+
+      await supertest(uw.server)
+        .post('/api/chat')
+        .set('Cookie', `uwsession=${token}`)
+        .send({ message: 'a message', tags: {} })
+        .expect(200);
+
+      await supertest(uw.server)
+        .post('/api/chat')
+        .set('Cookie', `uwsession=${token}`)
+        .send({ message: 'a message', tags: { replyTo: 2 } })
+        .expect(400);
+
+      await supertest(uw.server)
+        .post('/api/chat')
+        .set('Cookie', `uwsession=${token}`)
+        .send({ message: 'a message', tags: { id: 1 } })
+        .expect(400);
+
+      await supertest(uw.server)
+        .post('/api/chat')
+        .set('Cookie', `uwsession=${token}`)
+        .send({
+          message: 'a message',
+          tags: {
+            id: '9e32b0f7-889b-40b3-b59b-60ed06a07890',
+            replyTo: '60bbdb3a-d9c3-42a8-be27-eb2574ad0ed4',
+          },
+        })
+        .expect(200);
+
+      const res = await supertest(uw.server)
+        .post('/api/chat')
+        .set('Cookie', `uwsession=${token}`)
+        .send({ message: 'a message', tags: { unknown: '' } })
+        .expect(200);
+      assert.deepStrictEqual(res.body.data.tags, {}, 'Unknown tags removed');
+
+      const aLotOfTags = {};
+      for (let i = 0; i < 20; i += 1) {
+        aLotOfTags[`test:${randomString({ length: 16 })}`] = randomString({ length: 200 });
+      }
+
+      await supertest(uw.server)
+        .post('/api/chat')
+        .set('Cookie', `uwsession=${token}`)
+        .send({ message: 'a message', tags: aLotOfTags })
+        // TODO This should return 400 when namespaced tags are supported.
+        .expect(200);
+    });
+
     it('broadcasts a chat message', async () => {
       const user = await uw.test.createUser();
       const token = await uw.test.createTestSessionToken(user);
@@ -133,6 +194,7 @@ describe('Chat', () => {
       sinon.assert.match(res.body.data, {
         _id: sinon.match.string,
         message: sinon.match.string,
+        tags: {},
       });
 
       const receivedMessages = [];

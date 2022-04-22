@@ -1,3 +1,5 @@
+import type { ChatTags } from './types';
+
 export type ServerActionParameters = {
   'advance:complete': {
     historyID: string,
@@ -35,6 +37,7 @@ export type ServerActionParameters = {
     userID: string,
     message: string,
     timestamp: number,
+    tags?: Partial<ChatTags>,
   },
   'chat:delete': {
     filter: { id: string } | { userID: string } | Record<string, never>,

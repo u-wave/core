@@ -213,6 +213,12 @@ const ChatMutedError = createErrorClass('ChatMutedError', {
   base: Forbidden,
 });
 
+const TooManyTagsError = createErrorClass('TooManyTagsError', {
+  code: 'too-many-tags',
+  string: 'errors.tooManyTags',
+  base: BadRequest,
+});
+
 const SourceNotFoundError = createErrorClass('SourceNotFoundError', {
   code: 'source-not-found',
   string: 'errors.sourceNotFound',
@@ -277,6 +283,7 @@ exports.ItemNotInPlaylistError = ItemNotInPlaylistError;
 exports.CannotSelfFavoriteError = CannotSelfFavoriteError;
 exports.CannotSelfMuteError = CannotSelfMuteError;
 exports.ChatMutedError = ChatMutedError;
+exports.TooManyTagsError = TooManyTagsError;
 exports.SourceNotFoundError = SourceNotFoundError;
 exports.SourceNoImportError = SourceNoImportError;
 exports.EmptyPlaylistError = EmptyPlaylistError;

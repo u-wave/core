@@ -3,7 +3,7 @@
 
 import type { Model } from 'mongoose';
 import type { ParsedQs } from 'qs';
-import type { JsonObject } from 'type-fest';
+import type { JsonObject, JsonValue } from 'type-fest';
 import type { Request as ExpressRequest, Response as ExpressResponse } from 'express';
 import type UwaveServer from './Uwave';
 import type { HttpApi } from './HttpApi';
@@ -85,3 +85,10 @@ type OffsetPaginationQuery = {
   page?: { offset?: string, limit?: string },
 };
 export type PaginationQuery = LegacyPaginationQuery | OffsetPaginationQuery;
+
+/** Well known chat message tag types. */
+export type ChatTags = {
+  id: string,
+  replyTo: string,
+  [key: `${string}:${string}`]: JsonValue,
+}

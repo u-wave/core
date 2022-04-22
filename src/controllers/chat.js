@@ -63,6 +63,7 @@ async function unmuteUser(req) {
 /**
  * @typedef {object} SendMessageBody
  * @prop {string} message
+ * @prop {Partial<import('../types').ChatTags>} [tags]
  */
 
 /**
@@ -70,10 +71,10 @@ async function unmuteUser(req) {
  */
 async function sendMessage(req) {
   const { user } = req;
-  const { message } = req.body;
+  const { message, tags } = req.body;
   const { chat } = req.uwave;
 
-  const result = await chat.send(user, message);
+  const result = await chat.send(user, { message, tags });
   return toItemResponse(result);
 }
 

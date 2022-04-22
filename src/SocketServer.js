@@ -214,7 +214,7 @@ class SocketServer {
     this.#clientActions = {
       sendChat: (user, message) => {
         debug('sendChat', user, message);
-        this.#uw.chat.send(user, message).catch((error) => {
+        this.#uw.chat.send(user, { message }).catch((error) => {
           if (error instanceof ChatMutedError) {
             return;
           }
