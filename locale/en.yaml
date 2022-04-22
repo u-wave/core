@@ -22,6 +22,7 @@ uwave:
     noSelfFavorite: "You can't favorite your own plays."
     noSelfMute: "You can't mute yourself."
     noSelfUnmute: "You can't unmute yourself."
+    chatMuted: 'You have been muted in the chat.'
     sourceNotFound: 'Source "{{name}}" not found.'
     sourceNoImport: 'Source "{{name}}" does not support importing.'
     tooManyNameChanges: 'You can only change your username five times per hour. Try again in {{retryAfter}}.'
