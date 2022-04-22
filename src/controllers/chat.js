@@ -3,7 +3,6 @@
 const {
   UserNotFoundError,
   CannotSelfMuteError,
-  ChatMutedError,
 } = require('../errors');
 const toItemResponse = require('../utils/toItemResponse');
 
@@ -75,9 +74,6 @@ async function sendMessage(req) {
   const { chat } = req.uwave;
 
   const result = await chat.send(user, message);
-  if (!result) {
-    throw new ChatMutedError();
-  }
   return toItemResponse(result);
 }
 

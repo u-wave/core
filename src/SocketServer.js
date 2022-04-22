@@ -7,6 +7,7 @@ const WebSocket = require('ws');
 const Ajv = require('ajv').default;
 const ms = require('ms');
 const debug = require('debug')('uwave:api:sockets');
+const { ChatMutedError } = require('./errors');
 const { socketVote } = require('./controllers/booth');
 const { disconnectUser } = require('./controllers/users');
 const AuthRegistry = require('./AuthRegistry');
@@ -213,7 +214,12 @@ class SocketServer {
     this.#clientActions = {
       sendChat: (user, message) => {
         debug('sendChat', user, message);
-        this.#uw.chat.send(user, message);
+        this.#uw.chat.send(user, message).catch((error) => {
+          if (error instanceof ChatMutedError) {
+            return;
+          }
+          debug('sendChat', error);
+        });
       },
       vote: (user, direction) => {
         socketVote(this.#uw, user.id, direction);

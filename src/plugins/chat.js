@@ -1,6 +1,7 @@
 'use strict';
 
 const randomUUID = require('crypto-randomuuid');
+const { ChatMutedError } = require('../errors');
 const routes = require('../routes/chat');
 
 /**
@@ -91,7 +92,7 @@ class Chat {
    */
   async send(user, message) {
     if (await this.isMuted(user)) {
-      return null;
+      throw new ChatMutedError();
     }
 
     const id = randomUUID();
