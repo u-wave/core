@@ -9,7 +9,7 @@ const controller = require('../controllers/chat');
 
 function chatRoutes() {
   return Router()
-    // POST / - Send a chat message.
+    // POST /chat/ - Send a chat message.
     .post(
       '/',
       protect('chat.send'),
