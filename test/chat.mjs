@@ -5,8 +5,23 @@ import createUwave from './utils/createUwave.mjs';
 
 const sandbox = sinon.createSandbox();
 
+/**
+ * @param {() => boolean} predicate
+ * @param {number} timeout
+ */
+async function waitFor(predicate, timeout) {
+  const end = Date.now() + timeout;
+  while (Date.now() < end) {
+    await delay(10); // eslint-disable-line no-await-in-loop
+    if (predicate()) {
+      return;
+    }
+  }
+  throw new Error('Timed out waiting for predicate');
+}
+
 // Can't get this to be reliable, skip for now
-describe.skip('Chat', () => {
+describe('Chat', () => {
   let uw;
 
   beforeEach(async () => {
@@ -28,9 +43,13 @@ describe.skip('Chat', () => {
     });
 
     ws.send(JSON.stringify({ command: 'sendChat', data: 'Message text' }));
-    await delay(500);
-
-    assert(receivedMessages.some((message) => message.command === 'chatMessage' && message.data.userID === user.id && message.data.message === 'Message text'));
+    await waitFor(() => (
+      receivedMessages.some((message) => (
+        message.command === 'chatMessage'
+        && message.data.userID === user.id
+        && message.data.message === 'Message text'
+      ))
+    ), 5_000);
   });
 
   it('does not broadcast chat messages from muted users', async () => {
@@ -52,7 +71,7 @@ describe.skip('Chat', () => {
     ws.send(JSON.stringify({ command: 'sendChat', data: 'unmuted' }));
     mutedWs.send(JSON.stringify({ command: 'sendChat', data: 'muted' }));
 
-    await delay(1500);
+    await waitFor(() => receivedMessages.length >= 2, 5_000);
 
     assert(receivedMessages.some((message) => message.command === 'chatMessage' && message.data.userID === user.id));
     assert(!receivedMessages.some((message) => message.command === 'chatMessage' && message.data.userID === mutedUser.id));
