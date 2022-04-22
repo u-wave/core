@@ -5,6 +5,7 @@ import supertest from 'supertest';
 import createUwave from './utils/createUwave.mjs';
 
 const sandbox = sinon.createSandbox();
+const skipOnCI = process.env.CI ? it.skip : it;
 
 /**
  * @param {() => boolean} predicate
@@ -21,7 +22,6 @@ async function waitFor(predicate, timeout) {
   throw new Error('Timed out waiting for predicate');
 }
 
-// Can't get this to be reliable, skip for now
 describe('Chat', () => {
   let uw;
 
@@ -33,14 +33,16 @@ describe('Chat', () => {
     await uw.destroy();
   });
 
-  it('can send chat messages through WebSockets', async () => {
+  // Flaky on CI
+  skipOnCI('can send chat messages through WebSockets', async () => {
     const user = await uw.test.createUser();
 
     const ws = await uw.test.connectToWebSocketAs(user);
 
     const receivedMessages = [];
     ws.on('message', (data) => {
-      receivedMessages.push(JSON.parse(data));
+      if (`${data}` === '-') return;
+      receivedMessages.push(JSON.parse(`${data}`));
     });
 
     ws.send(JSON.stringify({ command: 'sendChat', data: 'Message text' }));
@@ -51,10 +53,11 @@ describe('Chat', () => {
         && message.data.userID === user.id
         && message.data.message === 'Message text'
       ))
-    ), 15_000);
+    ), 5_000);
   });
 
-  it('does not broadcast chat messages from muted users', async () => {
+  // Flaky on CI
+  skipOnCI('does not broadcast chat messages from muted users', async () => {
     const user = await uw.test.createUser();
     const mutedUser = await uw.test.createUser();
 
@@ -67,14 +70,14 @@ describe('Chat', () => {
 
     const receivedMessages = [];
     ws.on('message', (data) => {
-      receivedMessages.push(JSON.parse(data));
+      if (`${data}` === '-') return;
+      receivedMessages.push(JSON.parse(`${data}`));
     });
 
     ws.send(JSON.stringify({ command: 'sendChat', data: 'unmuted' }));
     mutedWs.send(JSON.stringify({ command: 'sendChat', data: 'muted' }));
 
-    // Using very long timeouts for CI
-    await waitFor(() => receivedMessages.length >= 2, 15_000);
+    await waitFor(() => receivedMessages.length >= 2, 5_000);
 
     assert(receivedMessages.some((message) => message.command === 'chatMessage' && message.data.userID === user.id));
     assert(!receivedMessages.some((message) => message.command === 'chatMessage' && message.data.userID === mutedUser.id));
