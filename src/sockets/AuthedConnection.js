@@ -109,6 +109,7 @@ class AuthedConnection extends EventEmitter {
     this.events.remove();
   }
 
+  /** @override */
   toString() {
     return `Authed { user: ${this.user.id} ${this.user.username} }`;
   }

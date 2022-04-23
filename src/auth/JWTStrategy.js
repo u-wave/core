@@ -11,7 +11,7 @@ const { BannedError } = require('../errors');
  * @param {Record<string, string>} cookies
  */
 function getCookieToken(cookies) {
-  return cookies && cookies.uwsession;
+  return cookies && cookies['uwsession'];
 }
 
 /**

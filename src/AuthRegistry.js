@@ -37,7 +37,7 @@ class AuthRegistry {
       .get(`http-api:socketAuth:${token}`)
       .del(`http-api:socketAuth:${token}`)
       .exec();
-    assert(result);
+    assert(result?.[0]);
 
     const [err, userID] = result[0];
     if (err) {

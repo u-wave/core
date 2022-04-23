@@ -118,11 +118,11 @@ class Source {
    *
    * @param {User} user
    * @param {string} id
-   * @returns {Promise<PlaylistItemDesc?>}
+   * @returns {Promise<PlaylistItemDesc | null>}
    */
-  getOne(user, id) {
-    return this.get(user, [id])
-      .then((items) => items[0]);
+  async getOne(user, id) {
+    const items = await this.get(user, [id]);
+    return items[0] || null;
   }
 
   /**

@@ -85,6 +85,7 @@ class LostConnection extends EventEmitter {
     }
   }
 
+  /** @override */
   toString() {
     return `Lost { user: ${this.user.id} ${this.user.username} }`;
   }

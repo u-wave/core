@@ -168,8 +168,8 @@ class SocketServer {
     this.#redisSubscription = uw.redis.duplicate();
 
     this.options = {
-      /** @type {(socket: import('ws') | undefined, err: Error) => void} */
-      onError: (socket, err) => {
+      /** @type {(_socket: import('ws') | undefined, err: Error) => void} */
+      onError: (_socket, err) => {
         throw err;
       },
       timeout: 30,

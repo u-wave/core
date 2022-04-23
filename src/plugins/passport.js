@@ -100,13 +100,13 @@ class PassportPlugin extends Passport {
   }
 
   /**
-   * @param {string} accessToken
-   * @param {string} refreshToken
+   * @param {string} _accessToken
+   * @param {string} _refreshToken
    * @param {import('passport').Profile} profile
    * @returns {Promise<User>}
    * @private
    */
-  socialLogin(accessToken, refreshToken, profile) {
+  socialLogin(_accessToken, _refreshToken, profile) {
     return this.#uw.users.login({
       type: profile.provider,
       profile,

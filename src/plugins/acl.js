@@ -114,7 +114,7 @@ class Acl {
       },
       { $project: { roles: '$roles._id' } },
     ]);
-    return res.length === 1 ? res[0].roles.sort() : [];
+    return res.length === 1 && res[0] ? res[0].roles.sort() : [];
   }
 
   /**

@@ -151,7 +151,7 @@ async function httpApi(uw, options) {
 async function errorHandling(uw) {
   debug('after');
   uw.httpApi.use(errorHandler());
-  uw.express.use(/** @type {import('express').ErrorRequestHandler} */ (error, req, res, next) => {
+  uw.express.use(/** @type {import('express').ErrorRequestHandler} */ (error, _req, _res, next) => {
     debug(error);
     next(error);
   });
