@@ -37,7 +37,7 @@ async function getConfig(req) {
   const combinedSchema = config.getSchema();
   const schema = combinedSchema.properties[key];
 
-  return toItemResponse(values || {}, {
+  return toItemResponse(values ?? {}, {
     url: req.fullUrl,
     meta: includeSchema ? { schema } : {},
   });

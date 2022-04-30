@@ -77,8 +77,8 @@ class JWTStrategy extends Strategy {
     const { bans } = req.uwave;
 
     const token = getQueryToken(req.query)
-      || getHeaderToken(req.headers)
-      || getCookieToken(req.cookies);
+      ?? getHeaderToken(req.headers)
+      ?? getCookieToken(req.cookies);
     if (!token) {
       return this.pass();
     }

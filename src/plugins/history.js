@@ -36,7 +36,7 @@ class HistoryRepository {
   async getHistory(filter, pagination = {}) {
     const { HistoryEntry } = this.#uw.models;
 
-    const offset = pagination.offset || 0;
+    const offset = pagination.offset ?? 0;
     const limit = clamp(
       typeof pagination.limit === 'number' ? pagination.limit : DEFAULT_PAGE_SIZE,
       0,

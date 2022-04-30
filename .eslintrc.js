@@ -7,16 +7,8 @@ module.exports = {
 
   plugins: ['node', '@typescript-eslint'],
 
-  // We don't use babel for transpiling, but we do use features
-  // supported by Node.js that the default eslint parser does not
-  // yet understand.
-  parser: '@babel/eslint-parser',
   parserOptions: {
     sourceType: 'script',
-    requireConfigFile: false,
-    babelOptions: {
-      plugins: ['@babel/plugin-syntax-class-properties'],
-    },
   },
 
   rules: {
@@ -68,6 +60,9 @@ module.exports = {
     },
     {
       files: ['*.mjs'],
+      parserOptions: {
+        sourceType: 'module',
+      },
       rules: {
         'import/extensions': ['error', 'ignorePackages'],
         'import/no-unresolved': ['error', {
