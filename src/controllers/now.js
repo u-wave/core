@@ -80,7 +80,7 @@ async function getState(req) {
   const booth = getBoothData(uw);
   const waitlist = uw.waitlist.getUserIDs();
   const waitlistLocked = uw.waitlist.isLocked();
-  let activePlaylist = user && user.activePlaylist
+  let activePlaylist = user?.activePlaylist
     ? uw.playlists.getUserPlaylist(user, user.activePlaylist)
     : null;
   const playlists = user ? uw.playlists.getUserPlaylists(user) : null;
@@ -91,7 +91,7 @@ async function getState(req) {
 
   if (activePlaylist != null) {
     activePlaylist = activePlaylist
-      .then((playlist) => (playlist ? playlist.id : null))
+      .then((playlist) => playlist?.id)
       .catch((err) => {
         // If the playlist was not found, our database is inconsistent. A deleted or nonexistent
         // playlist should never be listed as the active playlist. Most likely this is not the
