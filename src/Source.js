@@ -94,7 +94,7 @@ class Source {
   }
 
   get apiVersion() {
-    return this.plugin.api || 1;
+    return this.plugin.api ?? 1;
   }
 
   /**

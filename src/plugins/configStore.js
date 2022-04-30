@@ -100,7 +100,7 @@ class ConfigStore {
     const validate = this.#registry.get(key);
     if (!validate) return undefined;
 
-    const config = (await this.load(key)) || {};
+    const config = (await this.load(key)) ?? {};
     // Allowed to fail--just fills in defaults
     validate(config);
 

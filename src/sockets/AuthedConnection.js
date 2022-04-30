@@ -71,7 +71,7 @@ class AuthedConnection extends EventEmitter {
    * @private
    */
   onMessage(raw) {
-    const { command, data } = sjson.safeParse(raw) || {};
+    const { command, data } = sjson.safeParse(raw) ?? {};
     if (command) {
       this.emit('command', command, data);
     }

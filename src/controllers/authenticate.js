@@ -46,7 +46,7 @@ function seconds(str) {
  * @type {import('../types').Controller}
  */
 async function getCurrentUser(req) {
-  return toItemResponse(req.user || null, {
+  return toItemResponse(req.user ?? null, {
     url: req.fullUrl,
   });
 }
@@ -84,7 +84,7 @@ async function refreshSession(res, api, user, options) {
     const serialized = cookie.serialize('uwsession', token, {
       httpOnly: true,
       secure: !!options.cookieSecure,
-      path: options.cookiePath || '/',
+      path: options.cookiePath ?? '/',
       maxAge: seconds('31 days'),
     });
     res.setHeader('Set-Cookie', serialized);
@@ -445,7 +445,7 @@ async function logout(req, res) {
     const serialized = cookie.serialize('uwsession', '', {
       httpOnly: true,
       secure: !!cookieSecure,
-      path: cookiePath || '/',
+      path: cookiePath ?? '/',
       maxAge: 0,
     });
     res.setHeader('Set-Cookie', serialized);

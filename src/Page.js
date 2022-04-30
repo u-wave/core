@@ -24,7 +24,7 @@ class Page {
   }
 
   get pageSize() {
-    return this.opts.pageSize || this.length;
+    return this.opts.pageSize ?? this.length;
   }
 
   get filteredSize() {

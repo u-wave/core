@@ -113,7 +113,7 @@ async function httpApi(uw, options) {
       mailTransport: options.mailTransport,
       recaptcha: options.recaptcha,
       createPasswordResetEmail:
-        options.createPasswordResetEmail || defaultCreatePasswordResetEmail,
+        options.createPasswordResetEmail ?? defaultCreatePasswordResetEmail,
     }))
     .use('/bans', bans())
     .use('/import', imports())
