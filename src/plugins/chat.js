@@ -1,6 +1,6 @@
 'use strict';
 
-const randomUUID = require('crypto-randomuuid');
+const { randomUUID } = require('crypto');
 const routes = require('../routes/chat');
 
 /**

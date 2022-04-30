@@ -75,8 +75,8 @@ function toPlaylistItem(itemProps, media) {
   const { start, end } = getStartEnd(itemProps, media);
   return {
     media,
-    artist: artist || media.artist,
-    title: title || media.title,
+    artist: artist ?? media.artist,
+    title: title ?? media.title,
     start,
     end,
   };

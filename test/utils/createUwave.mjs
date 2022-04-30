@@ -7,7 +7,7 @@ import uwave from 'u-wave-core';
 import deleteDatabase from './deleteDatabase.mjs';
 import testPlugin from './plugin.mjs';
 
-const DB_HOST = process.env.MONGODB_HOST || 'localhost';
+const DB_HOST = process.env.MONGODB_HOST ?? 'localhost';
 
 /**
  * Create a separate in-memory redis instance to run tests against.
@@ -46,7 +46,7 @@ async function createIsolatedRedis() {
  * This can be used to run tests on CI.
  */
 function createRedisConnection() {
-  const url = process.env.REDIS_URL || 'redis://localhost:6379';
+  const url = process.env.REDIS_URL ?? 'redis://localhost:6379';
 
   async function close() {
     const redis = new Redis(url);
