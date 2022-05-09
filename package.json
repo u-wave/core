@@ -114,7 +114,7 @@
     "nock": "^13.2.0",
     "nodemon": "^2.0.2",
     "recaptcha-test-keys": "^1.0.0",
-    "sinon": "^13.0.0",
+    "sinon": "^14.0.0",
     "supertest": "^6.1.3",
     "type-fest": "^2.0.0",
     "typescript": "~4.6.0"
