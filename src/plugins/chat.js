@@ -1,5 +1,6 @@
 'use strict';
 
+const { randomUUID } = require('crypto');
 const routes = require('../routes/chat');
 
 /**
@@ -16,8 +17,6 @@ const defaultOptions = {
 
 class Chat {
   #uw;
-
-  #chatID = Date.now();
 
   /** @type {ChatOptions} */
   #options;
@@ -42,8 +41,10 @@ class Chat {
    */
   async mute(user, duration, options) {
     await this.#uw.redis.set(
-      `mute:${user.id}`, options.moderator.id,
-      'PX', duration,
+      `mute:${user.id}`,
+      options.moderator.id,
+      'PX',
+      duration,
     );
 
     this.#uw.publish('chat:mute', {
@@ -93,10 +94,8 @@ class Chat {
       return;
     }
 
-    this.#chatID += 1;
-
     this.#uw.publish('chat:message', {
-      id: `${user.id}-${this.#chatID}`,
+      id: randomUUID(),
       userID: user.id,
       message: this.truncate(message),
       timestamp: Date.now(),

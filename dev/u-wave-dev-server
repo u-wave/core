@@ -32,7 +32,7 @@ const testTransport = {
  * üWave API development server.
  */
 async function start() {
-  const port = argv.port || process.env.PORT || 6042;
+  const port = Number(argv.port ?? process.env.PORT ?? 6042);
 
   const uwave = require('..');
 
@@ -41,7 +41,7 @@ async function start() {
   const uw = uwave({
     port,
     redis: process.env.REDIS_URL,
-    mongo: process.env.MONGODB_URL,
+    mongo: process.env.MONGODB_URL ?? 'mongodb://localhost/uwave',
     secret,
     mailTransport: testTransport,
     timeout: 10,
@@ -70,7 +70,7 @@ async function start() {
     key: process.env.SOUNDCLOUD_API_KEY ?? null,
   });
 
-  await uw.listen(port);
+  await uw.listen();
   console.log(`Now listening on ${port}`);
 }
 

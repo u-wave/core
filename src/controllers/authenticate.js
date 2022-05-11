@@ -46,7 +46,7 @@ function seconds(str) {
  * @type {import('../types').Controller}
  */
 async function getCurrentUser(req) {
-  return toItemResponse(req.user || null, {
+  return toItemResponse(req.user ?? null, {
     url: req.fullUrl,
   });
 }
@@ -84,7 +84,7 @@ async function refreshSession(res, api, user, options) {
     const serialized = cookie.serialize('uwsession', token, {
       httpOnly: true,
       secure: !!options.cookieSecure,
-      path: options.cookiePath || '/',
+      path: options.cookiePath ?? '/',
       maxAge: seconds('31 days'),
     });
     res.setHeader('Set-Cookie', serialized);
@@ -169,19 +169,19 @@ async function socialLoginCallback(service, req, res) {
   if (user.pendingActivation) {
     const socialAvatar = await getSocialAvatar(req.uwave, user, service);
 
+    /** @type {Record<string, string>} */
+    const avatars = {
+      sigil: `https://sigil.u-wave.net/${user.id}`,
+    };
+    if (socialAvatar) {
+      avatars[service] = socialAvatar;
+    }
     activationData = {
       pending: true,
       id: user.id,
-      avatars: {
-        sigil: `https://sigil.u-wave.net/${user.id}`,
-      },
+      avatars,
       type: service,
     };
-    if (socialAvatar) {
-      // @ts-ignore we literally just defined it
-      // TODO rewrite this with object spreading or something
-      activationData.avatars[service] = socialAvatar;
-    }
   }
 
   const script = `
@@ -331,9 +331,10 @@ async function register(req) {
   } = req.body;
 
   try {
-    if (req.authOptions.recaptcha) {
+    const recaptchaOptions = req.authOptions.recaptcha;
+    if (recaptchaOptions && recaptchaOptions.secret) {
       if (grecaptcha) {
-        await verifyCaptcha(grecaptcha, req.authOptions.recaptcha);
+        await verifyCaptcha(grecaptcha, recaptchaOptions);
       } else {
         throw new ReCaptchaError();
       }
@@ -444,7 +445,7 @@ async function logout(req, res) {
     const serialized = cookie.serialize('uwsession', '', {
       httpOnly: true,
       secure: !!cookieSecure,
-      path: cookiePath || '/',
+      path: cookiePath ?? '/',
       maxAge: 0,
     });
     res.setHeader('Set-Cookie', serialized);

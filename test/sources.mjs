@@ -33,6 +33,18 @@ describe('Media Sources', () => {
     };
   }
 
+  const testSourceWithPlayHook = {
+    api: 2,
+    name: 'test-source-with-play',
+    async search() { throw new Error('unimplemented'); },
+    async get() { throw new Error('unimplemented'); },
+    async play(context, media) {
+      return {
+        urn: `${media.sourceType}:${media.sourceID}`,
+      };
+    },
+  };
+
   it('should register sources from objects', () => {
     uw.source(testSourceObject);
     assert(uw.source('test-source') instanceof LegacySourceWrapper);
@@ -82,6 +94,17 @@ describe('Media Sources', () => {
 
     const results = await promise;
     assert.deepStrictEqual(results, { sourceType: 'test-source', sourceID: id });
+  });
+
+  it('should respond to play(media) API calls', async () => {
+    uw.source(testSourceWithPlayHook);
+    const sourceData = await uw.source('test-source-with-play').play(null, {
+      sourceID: '1234',
+      sourceType: 'test-source-with-play',
+    });
+    assert.deepStrictEqual(sourceData, {
+      urn: 'test-source-with-play:1234',
+    });
   });
 
   describe('GET /search/:source', () => {

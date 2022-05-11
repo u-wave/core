@@ -5,9 +5,12 @@ const { isEqual } = require('lodash');
 const { SourceNotFoundError } = require('../errors');
 const toPaginatedResponse = require('../utils/toPaginatedResponse');
 
+/** @typedef {import('../models').Playlist} Playlist */
+/** @typedef {import('../plugins/playlists').PlaylistItemDesc} PlaylistItemDesc */
+
 // TODO should be deprecated once the Web client uses the better single-source route.
 /**
- * @type {import('../types').AuthenticatedController}
+ * @type {import('../types').AuthenticatedController<never, SearchQuery, never>}
  */
 async function searchAll(req) {
   const { user } = req;
@@ -23,12 +26,9 @@ async function searchAll(req) {
 
   const searchResults = await Promise.all(searches);
 
-  /** @type {Record<string, import('../plugins/playlists').PlaylistItemDesc[]>} */
-  const combinedResults = {};
-  sourceNames.forEach((name, index) => {
-    const searchResultsForSource = searchResults[index];
-    combinedResults[name] = searchResultsForSource ? searchResultsForSource.data : [];
-  });
+  const combinedResults = Object.fromEntries(
+    sourceNames.map((name, index) => [name, searchResults[index]?.data ?? []]),
+  );
 
   return combinedResults;
 }
@@ -40,7 +40,7 @@ async function searchAll(req) {
 async function updateSourceData(uw, updates) {
   const { Media } = uw.models;
   const ops = [];
-  debug('updating source data', updates);
+  debug('updating source data', [...updates.keys()]);
   for (const [id, sourceData] of updates.entries()) {
     ops.push({
       updateOne: {
@@ -55,12 +55,21 @@ async function updateSourceData(uw, updates) {
 }
 
 /**
- * @type {import('../types').AuthenticatedController}
+ * @typedef {object} SearchParams
+ * @prop {string} source
+ *
+ * @typedef {object} SearchQuery
+ * @prop {string} query
+ * @prop {string} [include]
+*/
+
+/**
+ * @type {import('../types').AuthenticatedController<SearchParams, SearchQuery, never>}
  */
 async function search(req) {
   const { user } = req;
   const { source: sourceName } = req.params;
-  const { query } = req.query;
+  const { query, include } = req.query;
   const uw = req.uwave;
   const { Media } = uw.models;
 
@@ -69,6 +78,7 @@ async function search(req) {
     throw new SourceNotFoundError({ name: sourceName });
   }
 
+  /** @type {import('../Page')<PlaylistItemDesc & { inPlaylists?: Playlist[] }, any>} */
   const searchResults = await source.search(user, query);
 
   const searchResultsByID = new Map();
@@ -98,29 +108,39 @@ async function search(req) {
     }
   });
 
-  const playlistsByMediaID = await uw.playlists.getPlaylistsContainingAnyMedia(
-    mediasInSearchResults.map((media) => media._id),
-    { author: user._id },
-  );
-
-  searchResults.data.forEach((result) => {
-    const media = mediaBySourceID.get(String(result.sourceID));
-    if (media) {
-      // @ts-ignore
-      result.inPlaylists = playlistsByMediaID.get(media._id.toString());
-    }
-  });
-
   // don't wait for this to complete
   updateSourceData(uw, mediasNeedSourceDataUpdate).catch((error) => {
     debug('sourceData update failed', error);
   });
 
+  // Only include related playlists if requested
+  if (typeof include === 'string' && include.split(',').includes('playlists')) {
+    const playlistsByMediaID = await uw.playlists.getPlaylistsContainingAnyMedia(
+      mediasInSearchResults.map((media) => media._id),
+      { author: user._id },
+    ).catch((error) => {
+      debug('playlists containing media lookup failed', error);
+      // just omit the related playlists if we timed out or crashed
+      return new Map();
+    });
+
+    searchResults.data.forEach((result) => {
+      const media = mediaBySourceID.get(String(result.sourceID));
+      if (media) {
+        result.inPlaylists = playlistsByMediaID.get(media._id.toString());
+      }
+    });
+
+    return toPaginatedResponse(searchResults, {
+      baseUrl: req.fullUrl,
+      included: {
+        playlists: ['inPlaylists'],
+      },
+    });
+  }
+
   return toPaginatedResponse(searchResults, {
     baseUrl: req.fullUrl,
-    included: {
-      playlists: ['inPlaylists'],
-    },
   });
 }
 

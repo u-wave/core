@@ -44,7 +44,7 @@ class PassportPlugin extends Passport {
      */
     function serializeUser(user) {
       /** @type {string} */
-      // @ts-ignore `user` is actually an instance of the User model
+      // @ts-expect-error `user` is actually an instance of the User model
       // but we can't express that
       const userID = user.id;
       return Promise.resolve(userID);
@@ -89,7 +89,7 @@ class PassportPlugin extends Passport {
    */
   async loadRuntimeConfiguration() {
     /** @type {SocialAuthSettings} */
-    // @ts-ignore `get()` returns a validated object with default values populated
+    // @ts-expect-error TS2322 `get()` returns a validated object with default values populated
     const settings = await this.#uw.config.get(schema['uw:key']);
     try {
       this.applyAuthStrategies(settings);
@@ -118,7 +118,7 @@ class PassportPlugin extends Passport {
    * @returns {boolean}
    */
   supports(strategy) {
-    // @ts-ignore
+    // @ts-expect-error TS2339: _strategy is not in the typings for passport but it does exist
     // eslint-disable-next-line no-underscore-dangle
     return this._strategy(strategy) !== undefined;
   }
@@ -127,7 +127,7 @@ class PassportPlugin extends Passport {
    * @returns {string[]}
    */
   strategies() {
-    // @ts-ignore
+    // @ts-expect-error TS2339: _strategies is not in the typings for passport but it does exist
     // eslint-disable-next-line no-underscore-dangle
     return Object.keys(this._strategies)
       .filter((strategy) => strategy !== 'session' && strategy !== 'jwt');

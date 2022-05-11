@@ -1,5 +1,5 @@
 {
-  "extends": "@tsconfig/node12/tsconfig.json",
+  "extends": "@tsconfig/node14/tsconfig.json",
   "compilerOptions": {
     "strict": true,
     "useUnknownInCatchVariables": false,
@@ -11,11 +11,8 @@
     "emitDeclarationOnly": true
   },
   "include": [
-    "src/json-schema-merge-allof.d.ts",
-    "src/types.d.ts",
-    "src/redisMessages.d.ts",
-    "src/source/types.d.ts",
     "src/**/*.js",
+    "src/**/*.ts",
     "src/schemas/*.json"
   ]
 }

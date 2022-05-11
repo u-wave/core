@@ -2,7 +2,7 @@
 
 // Validations for authentication routes:
 
-exports.register = {
+exports.register = /** @type {const} */ ({
   body: {
     type: 'object',
     properties: {
@@ -17,13 +17,13 @@ exports.register = {
         type: 'string',
         minLength: 6,
       },
-      grecaptcha: { type: 'string' },
+      grecaptcha: { type: 'string', nullable: true },
     },
     required: ['email', 'username', 'password'],
   },
-};
+});
 
-exports.login = {
+exports.login = /** @type {const} */ ({
   query: {
     type: 'object',
     properties: {
@@ -53,9 +53,9 @@ exports.login = {
     },
     required: ['email', 'password'],
   },
-};
+});
 
-exports.requestPasswordReset = {
+exports.requestPasswordReset = /** @type {const} */ ({
   body: {
     type: 'object',
     properties: {
@@ -67,9 +67,9 @@ exports.requestPasswordReset = {
     },
     required: ['email'],
   },
-};
+});
 
-exports.passwordReset = {
+exports.passwordReset = /** @type {const} */ ({
   params: {
     type: 'object',
     properties: {
@@ -89,11 +89,11 @@ exports.passwordReset = {
     },
     required: ['password'],
   },
-};
+});
 
 // Validations for ACL routes:
 
-exports.createAclRole = {
+exports.createAclRole = /** @type {const} */ ({
   params: {
     type: 'object',
     properties: {
@@ -111,9 +111,9 @@ exports.createAclRole = {
     },
     required: ['permissions'],
   },
-};
+});
 
-exports.deleteAclRole = {
+exports.deleteAclRole = /** @type {const} */ ({
   params: {
     type: 'object',
     properties: {
@@ -121,11 +121,11 @@ exports.deleteAclRole = {
     },
     required: ['name'],
   },
-};
+});
 
 // Validations for booth routes:
 
-exports.skipBooth = {
+exports.skipBooth = /** @type {const} */ ({
   body: {
     type: 'object',
     properties: {
@@ -138,9 +138,9 @@ exports.skipBooth = {
       userID: ['reason'],
     },
   },
-};
+});
 
-exports.replaceBooth = {
+exports.replaceBooth = /** @type {const} */ ({
   body: {
     type: 'object',
     properties: {
@@ -148,9 +148,9 @@ exports.replaceBooth = {
     },
     required: ['userID'],
   },
-};
+});
 
-exports.getVote = {
+exports.getVote = /** @type {const} */ ({
   params: {
     type: 'object',
     properties: {
@@ -158,9 +158,9 @@ exports.getVote = {
     },
     required: ['historyID'],
   },
-};
+});
 
-exports.vote = {
+exports.vote = /** @type {const} */ ({
   params: {
     type: 'object',
     properties: {
@@ -175,9 +175,9 @@ exports.vote = {
     },
     required: ['direction'],
   },
-};
+});
 
-exports.favorite = {
+exports.favorite = /** @type {const} */ ({
   body: {
     type: 'object',
     properties: {
@@ -186,9 +186,9 @@ exports.favorite = {
     },
     required: ['playlistID', 'historyID'],
   },
-};
+});
 
-exports.getRoomHistory = {
+exports.getRoomHistory = /** @type {const} */ ({
   query: {
     anyOf: [
       {
@@ -210,11 +210,11 @@ exports.getRoomHistory = {
       },
     ],
   },
-};
+});
 
 // Validations for chat routes:
 
-exports.deleteChatByUser = {
+exports.deleteChatByUser = /** @type {const} */ ({
   params: {
     type: 'object',
     properties: {
@@ -222,9 +222,9 @@ exports.deleteChatByUser = {
     },
     required: ['id'],
   },
-};
+});
 
-exports.deleteChatMessage = {
+exports.deleteChatMessage = /** @type {const} */ ({
   params: {
     type: 'object',
     properties: {
@@ -232,11 +232,11 @@ exports.deleteChatMessage = {
     },
     required: ['id'],
   },
-};
+});
 
 // Validations for MOTD routes:
 
-exports.setMotd = {
+exports.setMotd = /** @type {const} */ ({
   body: {
     type: 'object',
     properties: {
@@ -245,37 +245,37 @@ exports.setMotd = {
     },
     required: ['motd'],
   },
-};
+});
 
 // Validations for playlist routes:
 
-const playlistParams = {
+const playlistParams = /** @type {const} */ ({
   type: 'object',
   properties: {
     id: { $ref: 'https://ns.u-wave.net/schemas/definitions.json#/definitions/ObjectID' },
   },
   required: ['id'],
-};
+});
 
-const playlistItemParams = {
+const playlistItemParams = /** @type {const} */ ({
   type: 'object',
   properties: {
     id: { $ref: 'https://ns.u-wave.net/schemas/definitions.json#/definitions/ObjectID' },
     itemID: { $ref: 'https://ns.u-wave.net/schemas/definitions.json#/definitions/ObjectID' },
   },
   required: ['id', 'itemID'],
-};
+});
 
-exports.getPlaylists = {
+exports.getPlaylists = /** @type {const} */ ({
   query: {
     type: 'object',
     properties: {
       contains: { $ref: 'https://ns.u-wave.net/schemas/definitions.json#/definitions/ObjectID' },
     },
   },
-};
+});
 
-exports.createPlaylist = {
+exports.createPlaylist = /** @type {const} */ ({
   body: {
     type: 'object',
     properties: {
@@ -283,17 +283,17 @@ exports.createPlaylist = {
     },
     required: ['name'],
   },
-};
+});
 
-exports.getPlaylist = {
+exports.getPlaylist = /** @type {const} */ ({
   params: playlistParams,
-};
+});
 
-exports.deletePlaylist = {
+exports.deletePlaylist = /** @type {const} */ ({
   params: playlistParams,
-};
+});
 
-exports.updatePlaylist = {
+exports.updatePlaylist = /** @type {const} */ ({
   params: playlistParams,
   body: {
     type: 'object',
@@ -302,9 +302,9 @@ exports.updatePlaylist = {
       description: { type: 'string' },
     },
   },
-};
+});
 
-exports.renamePlaylist = {
+exports.renamePlaylist = /** @type {const} */ ({
   params: playlistParams,
   body: {
     type: 'object',
@@ -313,9 +313,9 @@ exports.renamePlaylist = {
     },
     required: ['name'],
   },
-};
+});
 
-exports.getPlaylistItems = {
+exports.getPlaylistItems = /** @type {const} */ ({
   params: playlistParams,
   query: {
     type: 'object',
@@ -329,9 +329,9 @@ exports.getPlaylistItems = {
       ],
     },
   },
-};
+});
 
-exports.addPlaylistItems = {
+exports.addPlaylistItems = /** @type {const} */ ({
   params: playlistParams,
   body: {
     type: 'object',
@@ -378,9 +378,9 @@ exports.addPlaylistItems = {
       },
     ],
   },
-};
+});
 
-exports.removePlaylistItems = {
+exports.removePlaylistItems = /** @type {const} */ ({
   params: playlistParams,
   body: {
     type: 'object',
@@ -392,9 +392,9 @@ exports.removePlaylistItems = {
     },
     required: ['items'],
   },
-};
+});
 
-exports.movePlaylistItems = {
+exports.movePlaylistItems = /** @type {const} */ ({
   params: playlistParams,
   body: {
     type: 'object',
@@ -429,17 +429,17 @@ exports.movePlaylistItems = {
       },
     ],
   },
-};
+});
 
-exports.shufflePlaylistItems = {
+exports.shufflePlaylistItems = /** @type {const} */ ({
   params: playlistParams,
-};
+});
 
-exports.getPlaylistItem = {
+exports.getPlaylistItem = /** @type {const} */ ({
   params: playlistItemParams,
-};
+});
 
-exports.updatePlaylistItem = {
+exports.updatePlaylistItem = /** @type {const} */ ({
   params: playlistItemParams,
   body: {
     type: 'object',
@@ -450,15 +450,15 @@ exports.updatePlaylistItem = {
       end: { type: 'integer', minimum: 0 },
     },
   },
-};
+});
 
-exports.removePlaylistItem = {
+exports.removePlaylistItem = /** @type {const} */ ({
   params: playlistItemParams,
-};
+});
 
 // Validations for search routes:
 
-exports.searchAll = {
+exports.searchAll = /** @type {const} */ ({
   query: {
     type: 'object',
     properties: {
@@ -466,13 +466,14 @@ exports.searchAll = {
     },
     required: ['query'],
   },
-};
+});
 
-exports.search = {
+exports.search = /** @type {const} */ ({
   query: {
     type: 'object',
     properties: {
       query: { type: 'string' },
+      include: { type: 'string', nullable: true },
     },
     required: ['query'],
   },
@@ -483,23 +484,23 @@ exports.search = {
     },
     required: ['source'],
   },
-};
+});
 
 // Validations for user routes:
 
-const userParams = {
+const userParams = /** @type {const} */ ({
   type: 'object',
   properties: {
     id: { $ref: 'https://ns.u-wave.net/schemas/definitions.json#/definitions/ObjectID' },
   },
   required: ['id'],
-};
+});
 
-exports.getUser = {
+exports.getUser = /** @type {const} */ ({
   params: userParams,
-};
+});
 
-exports.muteUser = {
+exports.muteUser = /** @type {const} */ ({
   params: userParams,
   body: {
     type: 'object',
@@ -508,13 +509,13 @@ exports.muteUser = {
     },
     required: ['time'],
   },
-};
+});
 
-exports.unmuteUser = {
+exports.unmuteUser = /** @type {const} */ ({
   params: userParams,
-};
+});
 
-exports.addUserRole = {
+exports.addUserRole = /** @type {const} */ ({
   params: {
     type: 'object',
     properties: {
@@ -523,9 +524,9 @@ exports.addUserRole = {
     },
     required: ['id', 'role'],
   },
-};
+});
 
-exports.removeUserRole = {
+exports.removeUserRole = /** @type {const} */ ({
   params: {
     type: 'object',
     properties: {
@@ -534,9 +535,9 @@ exports.removeUserRole = {
     },
     required: ['id', 'role'],
   },
-};
+});
 
-exports.setUserName = {
+exports.setUserName = /** @type {const} */ ({
   params: userParams,
   body: {
     type: 'object',
@@ -545,9 +546,9 @@ exports.setUserName = {
     },
     required: ['username'],
   },
-};
+});
 
-exports.setUserAvatar = {
+exports.setUserAvatar = /** @type {const} */ ({
   params: userParams,
   body: {
     type: 'object',
@@ -556,9 +557,9 @@ exports.setUserAvatar = {
     },
     required: ['avatar'],
   },
-};
+});
 
-exports.setUserStatus = {
+exports.setUserStatus = /** @type {const} */ ({
   params: userParams,
   body: {
     type: 'object',
@@ -567,9 +568,9 @@ exports.setUserStatus = {
     },
     required: ['status'],
   },
-};
+});
 
-exports.getUserHistory = {
+exports.getUserHistory = /** @type {const} */ ({
   params: userParams,
   query: {
     oneOf: [
@@ -578,11 +579,11 @@ exports.getUserHistory = {
       true,
     ],
   },
-};
+});
 
 // Validations for Waitlist routes:
 
-exports.joinWaitlist = {
+exports.joinWaitlist = /** @type {const} */ ({
   body: {
     type: 'object',
     properties: {
@@ -590,9 +591,9 @@ exports.joinWaitlist = {
     },
     required: ['userID'],
   },
-};
+});
 
-exports.moveWaitlist = {
+exports.moveWaitlist = /** @type {const} */ ({
   body: {
     type: 'object',
     properties: {
@@ -604,9 +605,9 @@ exports.moveWaitlist = {
     },
     required: ['userID', 'position'],
   },
-};
+});
 
-exports.lockWaitlist = {
+exports.lockWaitlist = /** @type {const} */ ({
   body: {
     type: 'object',
     properties: {
@@ -614,4 +615,4 @@ exports.lockWaitlist = {
     },
     required: ['lock'],
   },
-};
+});

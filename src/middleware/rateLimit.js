@@ -16,7 +16,7 @@ RateLimiter.prototype.getAsync = promisify(RateLimiter.prototype.get);
  * @returns {import('express').RequestHandler}
  */
 function rateLimit(prefix, opts) {
-  const RLError = opts.error || RateLimitError;
+  const RLError = opts.error ?? RateLimitError;
 
   return wrapMiddleware(async (req, res) => {
     const uw = req.uwave;

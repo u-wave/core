@@ -90,7 +90,7 @@ const userSchema = new Schema({
   minimize: false,
 });
 
-// @ts-ignore TS2769 Not sure how to get this to pick the right overload
+// @ts-expect-error TS2769 Not sure how to get this to pick the right overload
 userSchema.pre('validate', function preValidate(next) {
   this.slug = slugify(this.username);
   next();

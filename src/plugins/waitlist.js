@@ -215,7 +215,7 @@ class Waitlist {
     }
 
     const clampedPosition = clamp(position, 0, waitlist.length);
-    const beforeID = waitlist[clampedPosition] || null;
+    const beforeID = waitlist[clampedPosition] ?? null;
 
     if (beforeID === user.id) {
       // No change.

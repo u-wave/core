@@ -3,20 +3,12 @@
 const pkg = require('./package.json');
 
 module.exports = {
-  extends: ['airbnb-base', 'plugin:node/recommended'],
+  extends: ['airbnb-base', 'plugin:node/recommended', 'plugin:@typescript-eslint/recommended'],
 
-  plugins: ['node'],
+  plugins: ['node', '@typescript-eslint'],
 
-  // We don't use babel for transpiling, but we do use features
-  // supported by Node.js that the default eslint parser does not
-  // yet understand.
-  parser: '@babel/eslint-parser',
   parserOptions: {
     sourceType: 'script',
-    requireConfigFile: false,
-    babelOptions: {
-      plugins: ['@babel/plugin-syntax-class-properties'],
-    },
   },
 
   rules: {
@@ -51,7 +43,26 @@ module.exports = {
 
   overrides: [
     {
+      files: ['*.js'],
+      rules: {
+        '@typescript-eslint/no-var-requires': 'off',
+      },
+    },
+    {
+      files: ['*.ts'],
+      parser: '@typescript-eslint/parser',
+      parserOptions: {
+        sourceType: 'module',
+      },
+      rules: {
+        'node/no-unsupported-features/es-syntax': 'off',
+      },
+    },
+    {
       files: ['*.mjs'],
+      parserOptions: {
+        sourceType: 'module',
+      },
       rules: {
         'import/extensions': ['error', 'ignorePackages'],
         'import/no-unresolved': ['error', {

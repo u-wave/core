@@ -12,7 +12,7 @@ jobs:
     name: Dispatch
     runs-on: ubuntu-latest
     steps:
-      - uses: peter-evans/repository-dispatch@v1
+      - uses: peter-evans/repository-dispatch@v2
         with:
           repository: u-wave/federation
           token: ${{secrets.SCHEMA_ACCESS_TOKEN}}
