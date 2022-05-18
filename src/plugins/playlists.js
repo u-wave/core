@@ -29,8 +29,8 @@ const routes = require('../routes/playlists');
  * @typedef {object} PlaylistItemDesc
  * @prop {string} sourceType
  * @prop {string|number} sourceID
- * @prop {string} artist
- * @prop {string} title
+ * @prop {string} [artist]
+ * @prop {string} [title]
  * @prop {number} [start]
  * @prop {number} [end]
  */
