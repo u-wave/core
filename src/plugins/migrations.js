@@ -3,6 +3,14 @@
 const path = require('path');
 const RedLock = require('redlock').default;
 const { Umzug } = require('umzug');
+const debug = require('debug')('uwave:migrate');
+
+/**
+ * @type {import('umzug').LogFn}
+ */
+function log(record) {
+  debug(record.event, record.name || record.path || record);
+}
 
 /**
  * @typedef {import('../Uwave')} Uwave
@@ -65,7 +73,14 @@ async function migrationsPlugin(uw) {
       migrations,
       context: uw,
       storage: mongooseStorage,
-      logger: uw.logger.child({ ns: 'uwave:migrations' }),
+      logger: {
+        // Only `info` is used right now. When Umzug actually implements the warn/error
+        // levels we could pass in different logging functions.
+        debug: log,
+        info: log,
+        warn: log,
+        error: log,
+      },
     });
 
     await redLock.using(['migrate'], 10000, async () => {

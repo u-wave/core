@@ -1,5 +1,6 @@
 'use strict';
 
+const debug = require('debug')('uwave:acl');
 const defaultRoles = require('../config/defaultRoles');
 const routes = require('../routes/acl');
 
@@ -23,23 +24,20 @@ const SUPER_ROLE = '*';
 class Acl {
   #uw;
 
-  #logger;
-
   /**
    * @param {import('../Uwave')} uw
    */
   constructor(uw) {
     this.#uw = uw;
-    this.#logger = uw.logger.child({ ns: 'uwave:acl' });
   }
 
   async maybeAddDefaultRoles() {
     const { AclRole } = this.#uw.models;
 
     const existingRoles = await AclRole.estimatedDocumentCount();
-    this.#logger.debug('existing roles', { roles: existingRoles });
+    debug('existing roles', existingRoles);
     if (existingRoles === 0) {
-      this.#logger.info('no roles found, adding defaults');
+      debug('no roles found, adding defaults');
       for (const [roleName, permissions] of Object.entries(defaultRoles)) {
         // eslint-disable-next-line no-await-in-loop
         await this.createRole(roleName, permissions);
@@ -212,16 +210,10 @@ class Acl {
     }
 
     const userRoles = await this.getSubRoles(user.roles.map(getRoleName));
-    const isAllowed = userRoles.includes(role.id) || userRoles.includes(SUPER_ROLE);
 
-    this.#logger.trace('user allowed check', {
-      userId: user.id,
-      roleId: role.id,
-      userRoles,
-      isAllowed,
-    });
+    debug('role ids', userRoles, 'check', user.id, role.id, 'super', SUPER_ROLE);
 
-    return isAllowed;
+    return userRoles.includes(role.id) || userRoles.includes(SUPER_ROLE);
   }
 }
 

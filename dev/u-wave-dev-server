@@ -9,19 +9,17 @@ const announce = require('u-wave-announce');
 const ytSource = require('u-wave-source-youtube');
 const scSource = require('u-wave-source-soundcloud');
 const recaptchaTestKeys = require('recaptcha-test-keys');
-const pino = require('pino');
+const debug = require('debug')('uwave:dev-server');
 const dotenv = require('dotenv');
 
 dotenv.config();
-
-const logger = pino({ level: 'trace' });
 
 const testTransport = {
   name: 'test',
   version: '0.0.0',
   send(mail, callback) {
     mail.message.createReadStream().pipe(concat((message) => {
-      logger.info('send test email', { to: mail.message.getEnvelope().to, contents: message.toString('utf8') });
+      debug(mail.message.getEnvelope().to, message.toString('utf8'));
       callback(null, {
         envelope: mail.message.getEnvelope(),
         messageId: mail.message.messageId(),
@@ -44,7 +42,6 @@ async function start() {
     port,
     redis: process.env.REDIS_URL,
     mongo: process.env.MONGODB_URL ?? 'mongodb://localhost/uwave',
-    logger,
     secret,
     mailTransport: testTransport,
     timeout: 10,
@@ -79,10 +76,10 @@ async function start() {
   });
 
   await uw.listen();
-  logger.info('Now listening', { port });
+  console.log(`Now listening on ${port}`);
 }
 
 start().catch((error) => {
-  logger.error(error);
+  console.error(error.stack);
   process.exit(1);
 });

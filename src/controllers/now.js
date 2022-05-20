@@ -1,5 +1,6 @@
 'use strict';
 
+const debug = require('debug')('uwave:http-api:now');
 const { ObjectId } = require('mongoose').mongo;
 const { getBoothData } = require('./booth');
 const {
@@ -91,16 +92,16 @@ async function getState(req) {
   if (activePlaylist != null) {
     activePlaylist = activePlaylist
       .then((playlist) => playlist?.id)
-      .catch((error) => {
+      .catch((err) => {
         // If the playlist was not found, our database is inconsistent. A deleted or nonexistent
         // playlist should never be listed as the active playlist. Most likely this is not the
         // user's fault, so we should not error out on `/api/now`. Instead, pretend they don't have
         // an active playlist at all. Clients can then let them select a new playlist to activate.
-        if (error.code === 'NOT_FOUND' || error.code === 'playlist-not-found') {
-          req.log.warn('The active playlist does not exist', { error });
+        if (err.code === 'NOT_FOUND' || err.code === 'playlist-not-found') {
+          debug('The active playlist does not exist', err);
           return null;
         }
-        throw error;
+        throw err;
       });
   }
 

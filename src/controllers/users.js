@@ -1,5 +1,6 @@
 'use strict';
 
+const createDebug = require('debug');
 const {
   HTTPError,
   PermissionError,
@@ -13,6 +14,8 @@ const toListResponse = require('../utils/toListResponse');
 const toPaginatedResponse = require('../utils/toPaginatedResponse');
 const beautifyDuplicateKeyError = require('../utils/beautifyDuplicateKeyError');
 const { muteUser, unmuteUser } = require('./chat');
+
+const debug = createDebug('uwave:http:users');
 
 /**
  * @typedef {object} GetUsersQuery
@@ -28,6 +31,8 @@ async function getUsers(req) {
     defaultSize: 50,
   });
   const { users } = req.uwave;
+
+  debug('getUsers', filter, pagination);
 
   const userList = await users.getUsers(filter, pagination);
 

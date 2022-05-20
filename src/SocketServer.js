@@ -6,6 +6,7 @@ const sjson = require('secure-json-parse');
 const WebSocket = require('ws');
 const Ajv = require('ajv').default;
 const ms = require('ms');
+const debug = require('debug')('uwave:api:sockets');
 const { socketVote } = require('./controllers/booth');
 const { disconnectUser } = require('./controllers/users');
 const AuthRegistry = require('./AuthRegistry');
@@ -107,8 +108,6 @@ class SocketServer {
 
   #uw;
 
-  #logger;
-
   #redisSubscription;
 
   #wss;
@@ -166,7 +165,6 @@ class SocketServer {
     }
 
     this.#uw = uw;
-    this.#logger = uw.logger.child({ ns: 'uwave:sockets' });
     this.#redisSubscription = uw.redis.duplicate();
 
     this.options = {
@@ -187,7 +185,7 @@ class SocketServer {
     });
 
     this.#redisSubscription.subscribe('uwave', 'v1').catch((error) => {
-      this.#logger.error(error);
+      debug(error);
     });
     this.#redisSubscription.on('message', (channel, command) => {
       // this returns a promise, but we don't handle the error case:
@@ -198,8 +196,8 @@ class SocketServer {
     this.#wss.on('error', (error) => {
       this.onError(error);
     });
-    this.#wss.on('connection', (socket, request) => {
-      this.onSocketConnected(socket, request);
+    this.#wss.on('connection', (socket) => {
+      this.onSocketConnected(socket);
     });
 
     this.#pinger = setInterval(() => {
@@ -208,13 +206,13 @@ class SocketServer {
 
     this.recountGuests = debounce(() => {
       this.recountGuestsInternal().catch((error) => {
-        this.#logger.error('counting guests failed', { error });
+        debug('counting guests failed:', error);
       });
     }, ms('2 seconds'));
 
     this.#clientActions = {
       sendChat: (user, message) => {
-        this.#logger.trace('sendChat', user, message);
+        debug('sendChat', user, message);
         this.#uw.chat.send(user, message);
       },
       vote: (user, direction) => {
@@ -477,11 +475,10 @@ class SocketServer {
 
   /**
    * @param {import('ws')} socket
-   * @param {import('http').IncomingMessage} request
    * @private
    */
-  onSocketConnected(socket, request) {
-    this.#logger.info('new connection', { req: request });
+  onSocketConnected(socket) {
+    debug('new connection');
 
     socket.on('error', (error) => {
       this.onSocketError(socket, error);
@@ -495,7 +492,7 @@ class SocketServer {
    * @private
    */
   onSocketError(socket, error) {
-    this.#logger.warn('socket error', { error });
+    debug('socket error:', error);
 
     this.options.onError(socket, error);
   }
@@ -505,7 +502,7 @@ class SocketServer {
    * @private
    */
   onError(error) {
-    this.#logger.error('server error', { error });
+    debug('server error:', error);
 
     this.options.onError(undefined, error);
   }
@@ -536,9 +533,10 @@ class SocketServer {
       this.remove(connection);
     });
     connection.on('authenticate', async (user) => {
+      debug('connecting', user.id, user.username);
       const isReconnect = await connection.isReconnect(user);
-      this.#logger.info('authenticated socket', { userId: user.id, isReconnect });
       if (isReconnect) {
+        debug('is reconnection');
         const previousConnection = this.getLostConnection(user);
         if (previousConnection) this.remove(previousConnection);
       }
@@ -564,11 +562,11 @@ class SocketServer {
     const connection = new AuthedConnection(this.#uw, socket, user);
     connection.on('close', ({ banned }) => {
       if (banned) {
-        this.#logger.info('removing connection after ban', { userId: user.id });
+        debug('removing connection after ban', user.id, user.username);
         this.remove(connection);
         disconnectUser(this.#uw, user._id);
       } else {
-        this.#logger.info('lost connection', { userId: user.id });
+        debug('lost connection', user.id, user.username);
         this.replace(connection, this.createLostConnection(user));
       }
     });
@@ -579,7 +577,7 @@ class SocketServer {
        * @param {import('type-fest').JsonValue} data
        */
       (command, data) => {
-        this.#logger.trace('command', { userId: user.id, command, data });
+        debug('command', user.id, user.username, command, data);
         if (has(this.#clientActions, command)) {
           // Ignore incorrect input
           const validate = this.#clientActionSchemas[command];
@@ -606,7 +604,7 @@ class SocketServer {
   createLostConnection(user) {
     const connection = new LostConnection(this.#uw, user, this.options.timeout);
     connection.on('close', () => {
-      this.#logger.info('user left', { userId: user.id });
+      debug('left', user.id, user.username);
       this.remove(connection);
       // Only register that the user left if they didn't have another connection
       // still open.
@@ -624,8 +622,7 @@ class SocketServer {
    * @private
    */
   add(connection) {
-    const userId = 'user' in connection ? connection.user.id : null;
-    this.#logger.trace('add connection', { type: connection.constructor.name, userId });
+    debug('adding', String(connection));
 
     this.#connections.push(connection);
     this.recountGuests();
@@ -638,8 +635,7 @@ class SocketServer {
    * @private
    */
   remove(connection) {
-    const userId = 'user' in connection ? connection.user.id : null;
-    this.#logger.trace('remove connection', { type: connection.constructor.name, userId });
+    debug('removing', String(connection));
 
     const i = this.#connections.indexOf(connection);
     this.#connections.splice(i, 1);
@@ -681,7 +677,7 @@ class SocketServer {
     }
     const { command, data } = json;
 
-    this.#logger.trace('server message', { channel, command, data });
+    debug(channel, command, data);
 
     if (channel === 'v1') {
       this.broadcast(command, data);
@@ -739,15 +735,10 @@ class SocketServer {
    * @param {import('type-fest').JsonValue} data Command data.
    */
   broadcast(command, data) {
-    this.#logger.trace('broadcast', {
-      command,
-      data,
-      to: this.#connections.map((connection) => (
-        'user' in connection ? connection.user.id : null
-      )),
-    });
+    debug('broadcast', command, data);
 
     this.#connections.forEach((connection) => {
+      debug('  to', connection.toString());
       connection.send(command, data);
     });
   }

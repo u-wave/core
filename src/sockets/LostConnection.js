@@ -1,10 +1,11 @@
 'use strict';
 
 const EventEmitter = require('events');
+const createDebug = require('debug');
+
+const debug = createDebug('uwave:api:sockets:lost');
 
 class LostConnection extends EventEmitter {
-  #logger;
-
   /**
    * @param {import('../Uwave')} uw
    * @param {import('../models').User} user
@@ -14,7 +15,6 @@ class LostConnection extends EventEmitter {
     this.uw = uw;
     this.user = user;
     this.timeout = timeout;
-    this.#logger = uw.logger.child({ ns: 'uwave:sockets', connectionType: 'LostConnection', userId: this.user.id });
 
     this.initQueued();
     this.setTimeout(timeout);
@@ -66,7 +66,7 @@ class LostConnection extends EventEmitter {
    * @param {import('type-fest').JsonValue} data
    */
   send(command, data) {
-    this.#logger.info('queue command', { command, data });
+    debug('queueing', command, data);
 
     this.uw.redis.rpush(
       this.messagesKey,
@@ -75,7 +75,7 @@ class LostConnection extends EventEmitter {
   }
 
   close() {
-    this.#logger.info('close');
+    debug('close', this.toString());
     this.emit('close');
   }
 
