@@ -110,6 +110,14 @@ class Waitlist {
   }
 
   /**
+   * @returns {Promise<boolean>}
+   */
+  async isCycleEnabled() {
+    const settings = await this.#getSettings();
+    return settings.cycle;
+  }
+
+  /**
    * @returns {Promise<string[]>}
    */
   getUserIDs() {
