@@ -3,12 +3,11 @@
 const EventEmitter = require('events');
 const Ultron = require('ultron');
 const WebSocket = require('ws');
-const createDebug = require('debug');
 const sjson = require('secure-json-parse');
 
-const debug = createDebug('uwave:api:sockets:authed');
-
 class AuthedConnection extends EventEmitter {
+  #logger;
+
   /**
    * @param {import('../Uwave')} uw
    * @param {import('ws')} socket
@@ -20,6 +19,7 @@ class AuthedConnection extends EventEmitter {
     this.socket = socket;
     this.events = new Ultron(this.socket);
     this.user = user;
+    this.#logger = uw.logger.child({ name: 'socketServer', connectionType: 'AuthedConnection', userId: this.user.id });
 
     this.events.on('close', () => {
       this.emit('close', { banned: this.banned });
@@ -54,11 +54,7 @@ class AuthedConnection extends EventEmitter {
     }
     /** @type {string[]} */
     const messages = await this.uw.redis.lrange(this.messagesKey, 0, -1);
-    if (messages.length) {
-      debug('queued', this.user.id, this.user.username, ...messages);
-    } else {
-      debug('no queued messages', this.user.id, this.user.username);
-    }
+    this.#logger.info('queued messages', { count: messages.length });
     messages.forEach((message) => {
       const { command, data } = sjson.parse(message);
       this.send(command, data);
@@ -94,14 +90,14 @@ class AuthedConnection extends EventEmitter {
   }
 
   ban() {
-    debug('ban', this.toString());
+    this.#logger.info('ban');
     this.banned = true;
     this.send('error', 'You have been banned');
     this.socket.close(4001, 'ban');
   }
 
   close() {
-    debug('close', this.toString());
+    this.#logger.info('close');
     this.socket.close();
   }
 
