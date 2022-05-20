@@ -4,6 +4,7 @@ const EventEmitter = require('events');
 const Ajv = require('ajv/dist/2019').default;
 const formats = require('ajv-formats').default;
 const { omit } = require('lodash');
+const jsonMergePatch = require('json-merge-patch');
 const ValidationError = require('../errors/ValidationError');
 
 /** @typedef {import('../models').User} User */
@@ -49,24 +50,25 @@ class ConfigStore {
   /**
    * @param {string} key
    * @param {object} values
-   * @private
+   * @returns {Promise<object|null>} The old values.
    */
-  async save(key, values) {
+  async #save(key, values) {
     const { Config } = this.#uw.models;
 
-    await Config.findByIdAndUpdate(
+    const previousValues = await Config.findByIdAndUpdate(
       key,
       { _id: key, ...values },
       { upsert: true },
     );
+
+    return omit(previousValues, '_id');
   }
 
   /**
    * @param {string} key
    * @returns {Promise<object|null>}
-   * @private
    */
-  async load(key) {
+  async #load(key) {
     const { Config } = this.#uw.models;
 
     const model = await Config.findById(key);
@@ -100,7 +102,7 @@ class ConfigStore {
     const validate = this.#registry.get(key);
     if (!validate) return undefined;
 
-    const config = (await this.load(key)) ?? {};
+    const config = (await this.#load(key)) ?? {};
     // Allowed to fail--just fills in defaults
     validate(config);
 
@@ -125,9 +127,10 @@ class ConfigStore {
       }
     }
 
-    await this.save(key, settings);
+    const oldSettings = await this.#save(key, settings);
+    const patch = jsonMergePatch.generate(oldSettings, settings);
 
-    this.emit('set', key, settings, user);
+    this.emit('set', key, settings, user, patch);
   }
 
   /**

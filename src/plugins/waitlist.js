@@ -39,6 +39,17 @@ class Waitlist {
     this.#uw = uw;
 
     uw.config.register(schema['uw:key'], schema);
+    uw.config.on('set', (key, _settings, user, patch) => {
+      if (key !== schema['uw:key']) {
+        return;
+      }
+      if ('locked' in patch) {
+        this.#uw.publish('waitlist:lock', {
+          moderatorID: user.id,
+          locked: patch.locked,
+        });
+      }
+    });
   }
 
   /**
@@ -328,11 +339,6 @@ class Waitlist {
     if (isLocked !== lock) {
       throw new Error(`Could not ${lock ? 'lock' : 'unlock'} the waitlist. Please try again.`);
     }
-
-    this.#uw.publish('waitlist:lock', {
-      moderatorID: moderator.id,
-      locked: isLocked,
-    });
   }
 
   /**
