@@ -103,6 +103,7 @@ async function httpApi(uw, options) {
   uw.httpApi
     .use(pinoHttp({
       genReqId: () => randomUUID(),
+      quietReqLogger: true,
       logger,
     }))
     .use(bodyParser.json())
