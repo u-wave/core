@@ -135,9 +135,7 @@ class UwaveServer extends EventEmitter {
 
     const boot = avvio(this);
 
-    this.logger = options.logger ?? pino({
-      mixin: () => ({ ns: 'uwave' }),
-    });
+    this.logger = options.logger ?? pino();
     this.locale = i18n.cloneInstance();
 
     this.options = {
@@ -154,7 +152,7 @@ class UwaveServer extends EventEmitter {
       this.redis = new Redis({ ...options.redis, lazyConnect: true });
     }
 
-    this.#mongoLogger = this.logger.child({ name: 'mongo' });
+    this.#mongoLogger = this.logger.child({ ns: 'uwave:mongo' });
 
     this.configureRedis();
     this.configureMongoose();
@@ -257,7 +255,7 @@ class UwaveServer extends EventEmitter {
    * @private
    */
   configureRedis() {
-    const log = this.logger.child({ name: 'redis' });
+    const log = this.logger.child({ ns: 'uwave:redis' });
 
     this.redis.on('error', (error) => {
       log.error(error);

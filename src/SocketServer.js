@@ -166,7 +166,7 @@ class SocketServer {
     }
 
     this.#uw = uw;
-    this.#logger = uw.logger.child({ name: 'socketServer' });
+    this.#logger = uw.logger.child({ ns: 'uwave:sockets' });
     this.#redisSubscription = uw.redis.duplicate();
 
     this.options = {

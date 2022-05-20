@@ -33,7 +33,7 @@ class UsersRepository {
    */
   constructor(uw) {
     this.#uw = uw;
-    this.#logger = uw.logger.child({ name: 'users' });
+    this.#logger = uw.logger.child({ ns: 'uwave:users' });
   }
 
   /**

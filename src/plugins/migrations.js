@@ -65,7 +65,7 @@ async function migrationsPlugin(uw) {
       migrations,
       context: uw,
       storage: mongooseStorage,
-      logger: uw.logger.child({ name: 'migrations' }),
+      logger: uw.logger.child({ ns: 'uwave:migrations' }),
     });
 
     await redLock.using(['migrate'], 10000, async () => {

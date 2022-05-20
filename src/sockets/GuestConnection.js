@@ -16,7 +16,7 @@ class GuestConnection extends EventEmitter {
     this.uw = uw;
     this.socket = socket;
     this.options = options;
-    this.#logger = uw.logger.child({ name: 'socketServer', connectionType: 'GuestConnection', userId: null });
+    this.#logger = uw.logger.child({ ns: 'uwave:sockets', connectionType: 'GuestConnection', userId: null });
 
     this.events = new Ultron(socket);
 

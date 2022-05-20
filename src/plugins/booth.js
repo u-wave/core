@@ -48,7 +48,7 @@ class Booth {
   constructor(uw) {
     this.#uw = uw;
     this.#locker = new RedLock([this.#uw.redis]);
-    this.#logger = uw.logger.child({ name: 'booth' });
+    this.#logger = uw.logger.child({ ns: 'uwave:booth' });
   }
 
   /** @internal */

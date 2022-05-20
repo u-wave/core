@@ -30,7 +30,7 @@ class Acl {
    */
   constructor(uw) {
     this.#uw = uw;
-    this.#logger = uw.logger.child({ name: 'acl' });
+    this.#logger = uw.logger.child({ ns: 'uwave:acl' });
   }
 
   async maybeAddDefaultRoles() {

@@ -91,7 +91,7 @@ class PlaylistsRepository {
    */
   constructor(uw) {
     this.#uw = uw;
-    this.#logger = uw.logger.child({ name: 'playlists' });
+    this.#logger = uw.logger.child({ ns: 'uwave:playlists' });
   }
 
   /**

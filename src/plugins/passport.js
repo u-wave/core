@@ -38,7 +38,7 @@ class PassportPlugin extends Passport {
     super();
 
     this.#uw = uw;
-    this.#logger = uw.logger.child({ name: 'authentication' });
+    this.#logger = uw.logger.child({ ns: 'uwave:authentication' });
 
     /**
      * @param {Express.User} user

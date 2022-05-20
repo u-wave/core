@@ -14,10 +14,7 @@ const dotenv = require('dotenv');
 
 dotenv.config();
 
-const logger = pino({
-  level: 'trace',
-  mixin: () => ({ ns: 'uwave' }),
-});
+const logger = pino({ level: 'trace' });
 
 const testTransport = {
   name: 'test',
