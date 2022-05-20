@@ -339,7 +339,10 @@ class Booth {
       throw new Error('Another advance is still in progress.');
     }
 
-    opts.remove ||= !await this.#uw.waitlist.isCycleEnabled();
+    if (!opts.remove) {
+      // TODO do not modify the object
+      opts.remove = !await this.#uw.waitlist.isCycleEnabled();
+    }
 
     const previous = await this.getCurrentEntry();
     let next;
