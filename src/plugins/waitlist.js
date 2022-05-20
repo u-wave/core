@@ -12,8 +12,12 @@ const {
 } = require('../errors');
 const routes = require('../routes/waitlist');
 
+const schema = require('../schemas/waitlist.json');
+
 /**
  * @typedef {import('../models').User} User
+ *
+ * @typedef {{ cycle: boolean, locked: boolean }} WaitlistSettings
  */
 
 /**
@@ -33,6 +37,8 @@ class Waitlist {
    */
   constructor(uw) {
     this.#uw = uw;
+
+    uw.config.register(schema['uw:key'], schema);
   }
 
   /**
@@ -75,10 +81,21 @@ class Waitlist {
   }
 
   /**
+   * @returns {Promise<WaitlistSettings>}
+   */
+  async #getSettings() {
+    const { config } = this.#uw;
+
+    const settings = /** @type {WaitlistSettings} */ (await config.get(schema['uw:key']));
+    return settings;
+  }
+
+  /**
    * @returns {Promise<boolean>}
    */
-  isLocked() {
-    return this.#uw.redis.get('waitlist:lock').then(Boolean);
+  async isLocked() {
+    const settings = await this.#getSettings();
+    return settings.locked;
   }
 
   /**
@@ -304,14 +321,10 @@ class Waitlist {
    * @private
    */
   async lockWaitlist(lock, moderator) {
-    if (lock) {
-      await this.#uw.redis.set('waitlist:lock', String(lock));
-    } else {
-      await this.#uw.redis.del('waitlist:lock');
-    }
+    const settings = await this.#getSettings();
+    await this.#uw.config.set(schema['uw:key'], { ...settings, locked: lock }, { user: moderator });
 
     const isLocked = await this.isLocked();
-
     if (isLocked !== lock) {
       throw new Error(`Could not ${lock ? 'lock' : 'unlock'} the waitlist. Please try again.`);
     }

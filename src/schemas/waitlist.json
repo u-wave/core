@@ -1,0 +1,16 @@
+{
+  "$schema": "https://json-schema.org/draft/2019-09/schema",
+  "$id": "https://ns.u-wave.net/config/waitlist.json#",
+  "uw:key": "u-wave:waitlist",
+  "type": "object",
+  "title": "DJ Queue",
+  "description": "Configure how the waitlist works: cycles, locking, etc.",
+  "properties": {
+    "locked": {
+      "title": "Lock down the waitlist",
+      "description": "While locked, only users with the `waitlist.join.locked` permission can join the wait list. This can be useful for themed events and the like.",
+      "type": "boolean",
+      "default": false
+    }
+  }
+}
