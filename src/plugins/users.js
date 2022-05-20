@@ -1,7 +1,6 @@
 'use strict';
 
 const bcrypt = require('bcryptjs');
-const debug = require('debug')('uwave:users');
 const escapeStringRegExp = require('escape-string-regexp');
 const Page = require('../Page');
 const { IncorrectPasswordError, UserNotFoundError } = require('../errors');
@@ -27,11 +26,14 @@ function getDefaultAvatar(user) {
 class UsersRepository {
   #uw;
 
+  #logger;
+
   /**
    * @param {import('../Uwave')} uw
    */
   constructor(uw) {
     this.#uw = uw;
+    this.#logger = uw.logger.child({ ns: 'uwave:users' });
   }
 
   /**
@@ -174,7 +176,7 @@ class UsersRepository {
   }) {
     const { User, Authentication } = this.#uw.models;
 
-    debug('find or create social', type, id);
+    this.#logger.info('find or create social', { type, id });
 
     // we need this type assertion because the `user` property actually contains
     // an ObjectId in this return value. We are definitely filling in a User object
@@ -242,7 +244,7 @@ class UsersRepository {
   }) {
     const { User, Authentication } = this.#uw.models;
 
-    debug('create user', username, email.toLowerCase());
+    this.#logger.info('create user', { username, email: email.toLowerCase() });
 
     const hash = await encryptPassword(password);
 
@@ -316,7 +318,7 @@ class UsersRepository {
     const user = await this.getUser(id);
     if (!user) throw new UserNotFoundError({ id });
 
-    debug('update user', user.id, user.username, update);
+    this.#logger.info('update user', { userId: user.id, update });
 
     const moderator = options && options.moderator;
 
