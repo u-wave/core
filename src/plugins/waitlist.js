@@ -52,36 +52,28 @@ class Waitlist {
     });
   }
 
-  /**
-   * @private
-   */
-  getCurrentDJ() {
+  #getCurrentDJ() {
     return this.#uw.redis.get('booth:currentDJ');
   }
 
-  /**
-   * @private
-   */
-  async isBoothEmpty() {
+  async #isBoothEmpty() {
     return !(await this.#uw.redis.get('booth:historyID'));
   }
 
   /**
    * @param {string} userID
    * @returns {Promise<boolean>}
-   * @private
    */
-  async isCurrentDJ(userID) {
-    const dj = await this.getCurrentDJ();
+  async #isCurrentDJ(userID) {
+    const dj = await this.#getCurrentDJ();
     return dj !== null && dj === userID;
   }
 
   /**
    * @param {User} user
    * @returns {Promise<boolean>}
-   * @private
    */
-  async hasPlayablePlaylist(user) {
+  async #hasPlayablePlaylist(user) {
     const { playlists } = this.#uw;
     if (!user.activePlaylist) {
       return false;
@@ -129,9 +121,8 @@ class Waitlist {
    *
    * @param {User} user
    * @returns {Promise<string[]>}
-   * @private
    */
-  async doJoinWaitlist(user) {
+  async #doJoinWaitlist(user) {
     await this.#uw.redis.rpush('waitlist', user.id);
 
     const waitlist = await this.getUserIDs();
@@ -150,9 +141,8 @@ class Waitlist {
    * @param {User} user
    * @param {{ moderator: User, waitlist: string[], position: number }} options
    * @returns {Promise<string[]>}
-   * @private
    */
-  async doAddToWaitlist(user, { moderator, waitlist, position }) {
+  async #doAddToWaitlist(user, { moderator, waitlist, position }) {
     const clampedPosition = clamp(position, 0, waitlist.length);
 
     if (clampedPosition < waitlist.length) {
@@ -197,29 +187,29 @@ class Waitlist {
     if (isInWaitlist(waitlist, user.id)) {
       throw new AlreadyInWaitlistError();
     }
-    if (await this.isCurrentDJ(user.id)) {
+    if (await this.#isCurrentDJ(user.id)) {
       throw new AlreadyInWaitlistError();
     }
-    if (!(await this.hasPlayablePlaylist(user))) {
+    if (!(await this.#hasPlayablePlaylist(user))) {
       throw new EmptyPlaylistError();
     }
 
     if (!moderator || user.id === moderator.id) {
-      waitlist = await this.doJoinWaitlist(user);
+      waitlist = await this.#doJoinWaitlist(user);
     } else {
       if (!(await acl.isAllowed(moderator, 'waitlist.add'))) {
         throw new PermissionError({
           requiredRole: 'waitlist.add',
         });
       }
-      waitlist = await this.doAddToWaitlist(user, {
+      waitlist = await this.#doAddToWaitlist(user, {
         moderator,
         waitlist,
         position: waitlist.length,
       });
     }
 
-    if (await this.isBoothEmpty()) {
+    if (await this.#isBoothEmpty()) {
       await this.#uw.booth.advance();
     }
   }
@@ -243,10 +233,10 @@ class Waitlist {
     if (!isInWaitlist(waitlist, user.id)) {
       throw new UserNotInWaitlistError({ id: user.id });
     }
-    if (await this.isCurrentDJ(user.id)) {
+    if (await this.#isCurrentDJ(user.id)) {
       throw new UserIsPlayingError({ id: user.id });
     }
-    if (!(await this.hasPlayablePlaylist(user))) {
+    if (!(await this.#hasPlayablePlaylist(user))) {
       throw new EmptyPlaylistError();
     }
 
@@ -337,9 +327,8 @@ class Waitlist {
    * @param {boolean} lock
    * @param {User} moderator
    * @returns {Promise<void>}
-   * @private
    */
-  async lockWaitlist(lock, moderator) {
+  async #lockWaitlist(lock, moderator) {
     const settings = await this.#getSettings();
     await this.#uw.config.set(schema['uw:key'], { ...settings, locked: lock }, { user: moderator });
 
@@ -354,7 +343,7 @@ class Waitlist {
    * @returns {Promise<void>}
    */
   lock({ moderator }) {
-    return this.lockWaitlist(true, moderator);
+    return this.#lockWaitlist(true, moderator);
   }
 
   /**
@@ -362,7 +351,7 @@ class Waitlist {
    * @returns {Promise<void>}
    */
   unlock({ moderator }) {
-    return this.lockWaitlist(false, moderator);
+    return this.#lockWaitlist(false, moderator);
   }
 }
 
