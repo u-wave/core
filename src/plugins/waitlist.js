@@ -1,6 +1,5 @@
 'use strict';
 
-const { clamp } = require('lodash');
 const {
   PermissionError,
   UserNotFoundError,
@@ -20,14 +19,66 @@ const schema = require('../schemas/waitlist.json');
  * @typedef {{ cycle: boolean, locked: boolean }} WaitlistSettings
  */
 
-/**
- * @param {string[]} waitlist
- * @param {string} userID
- * @returns {boolean}
- */
-function isInWaitlist(waitlist, userID) {
-  return waitlist.some((waitingID) => waitingID === userID);
-}
+const ADD_TO_WAITLIST_SCRIPT = /** @type {[string, number, ...string[]]} */ ([
+  `
+    local k_waitlist = KEYS[1]
+    local k_dj = KEYS[2]
+    local user_id = ARGV[1]
+    local position = ARGV[2]
+    local is_in_waitlist = redis.call('LPOS', k_waitlist, user_id)
+    local current_dj = redis.call('GET', k_dj)
+    if is_in_waitlist or current_dj == user_id then
+      return 'AlreadyInWaitlist'
+    end
+
+    local before_id = nil
+    if position then
+      before_id = redis.call('LINDEX', k_waitlist, position)
+    end
+
+    if before_id then
+      redis.call('LINSERT', k_waitlist, 'BEFORE', before_id)
+    else
+      redis.call('RPUSH', k_waitlist, user_id)
+    end
+
+    return redis.call('LRANGE', k_waitlist, 0, -1)
+  `,
+  2,
+  'waitlist',
+  'booth:currentDJ',
+]);
+
+const MOVE_WAITLIST_SCRIPT = /** @type {[string, number, ...string[]]} */ ([
+  `
+    local k_waitlist = KEYS[1]
+    local k_dj = KEYS[2]
+    local user_id = ARGV[1]
+    local position = ARGV[2]
+    local is_in_waitlist = redis.call('LPOS', k_waitlist, user_id)
+    if not is_in_waitlist then
+      return 'NotInWaitlist'
+    end
+    local current_dj = redis.call('GET', k_dj)
+    if current_dj == user_id then
+      return 'AlreadyInWaitlist'
+    end
+
+    local before_id = redis.call('LINDEX', k_waitlist, position)
+
+    redis.call('LREM', k_waitlist, 0, user_id);
+    if before_id then
+      redis.call('LINSERT', k_waitlist, 'BEFORE', before_id, user_id);
+    else
+      redis.call('RPUSH', k_waitlist, user_id)
+    end
+
+    return redis.call('LRANGE', k_waitlist, 0, -1)
+  `,
+  2,
+  'waitlist',
+  'booth:currentDJ',
+]);
 
 class Waitlist {
   #uw;
@@ -117,53 +168,6 @@ class Waitlist {
   }
 
   /**
-   * POST waitlist/ handler for joining the waitlist.
-   *
-   * @param {User} user
-   * @returns {Promise<string[]>}
-   */
-  async #doJoinWaitlist(user) {
-    await this.#uw.redis.rpush('waitlist', user.id);
-
-    const waitlist = await this.getUserIDs();
-
-    this.#uw.publish('waitlist:join', {
-      userID: user.id,
-      waitlist,
-    });
-
-    return waitlist;
-  }
-
-  /**
-   * POST waitlist/ handler for adding a (different) user to the waitlist.
-   *
-   * @param {User} user
-   * @param {{ moderator: User, waitlist: string[], position: number }} options
-   * @returns {Promise<string[]>}
-   */
-  async #doAddToWaitlist(user, { moderator, waitlist, position }) {
-    const clampedPosition = clamp(position, 0, waitlist.length);
-
-    if (clampedPosition < waitlist.length) {
-      await this.#uw.redis.linsert('waitlist', 'BEFORE', waitlist[clampedPosition], user.id);
-    } else {
-      await this.#uw.redis.rpush('waitlist', user.id);
-    }
-
-    const newWaitlist = await this.getUserIDs();
-
-    this.#uw.publish('waitlist:add', {
-      userID: user.id,
-      moderatorID: moderator.id,
-      position: clampedPosition,
-      waitlist: newWaitlist,
-    });
-
-    return newWaitlist;
-  }
-
-  /**
    * used both for joining the waitlist, and for
    * adding someone else to the waitlist.
    * TODO maybe split this up and let http-api handle the difference
@@ -178,34 +182,42 @@ class Waitlist {
     const user = await users.getUser(userID);
     if (!user) throw new UserNotFoundError({ id: userID });
 
-    const canForceJoin = await acl.isAllowed(user, 'waitlist.join.locked');
-    if (!canForceJoin && await this.isLocked()) {
-      throw new WaitlistLockedError();
-    }
-
-    let waitlist = await this.getUserIDs();
-    if (isInWaitlist(waitlist, user.id)) {
-      throw new AlreadyInWaitlistError();
-    }
-    if (await this.#isCurrentDJ(user.id)) {
-      throw new AlreadyInWaitlistError();
-    }
-    if (!(await this.#hasPlayablePlaylist(user))) {
-      throw new EmptyPlaylistError();
-    }
-
-    if (!moderator || user.id === moderator.id) {
-      waitlist = await this.#doJoinWaitlist(user);
-    } else {
+    const isAddingOtherUser = moderator && user.id !== moderator.id;
+    if (isAddingOtherUser) {
       if (!(await acl.isAllowed(moderator, 'waitlist.add'))) {
         throw new PermissionError({
           requiredRole: 'waitlist.add',
         });
       }
-      waitlist = await this.#doAddToWaitlist(user, {
-        moderator,
+    }
+
+    const canForceJoin = await acl.isAllowed(user, 'waitlist.join.locked');
+    if (!canForceJoin && await this.isLocked()) {
+      throw new WaitlistLockedError();
+    }
+
+    if (!(await this.#hasPlayablePlaylist(user))) {
+      throw new EmptyPlaylistError();
+    }
+
+    const waitlist = /** @type {string[] | 'AlreadyInWaitlist'} */ (
+      await this.#uw.redis.eval(...ADD_TO_WAITLIST_SCRIPT, user.id)
+    );
+    if (waitlist === 'AlreadyInWaitlist') {
+      throw new AlreadyInWaitlistError();
+    }
+
+    if (isAddingOtherUser) {
+      this.#uw.publish('waitlist:add', {
+        userID: user.id,
+        moderatorID: moderator.id,
+        position: waitlist.indexOf(user.id),
         waitlist,
-        position: waitlist.length,
+      });
+    } else {
+      this.#uw.publish('waitlist:join', {
+        userID: user.id,
+        waitlist,
       });
     }
 
@@ -228,39 +240,24 @@ class Waitlist {
       throw new UserNotFoundError({ id: userID });
     }
 
-    let waitlist = await this.getUserIDs();
-
-    if (!isInWaitlist(waitlist, user.id)) {
-      throw new UserNotInWaitlistError({ id: user.id });
-    }
-    if (await this.#isCurrentDJ(user.id)) {
-      throw new UserIsPlayingError({ id: user.id });
-    }
     if (!(await this.#hasPlayablePlaylist(user))) {
       throw new EmptyPlaylistError();
     }
 
-    const clampedPosition = clamp(position, 0, waitlist.length);
-    const beforeID = waitlist[clampedPosition] ?? null;
-
-    if (beforeID === user.id) {
-      // No change.
-      return;
+    const waitlist = /** @type {string[] | 'NotInWaitlist' | 'AlreadyInWaitlist' } */ (
+      await this.#uw.redis.eval(...MOVE_WAITLIST_SCRIPT, user.id, position)
+    );
+    if (waitlist === 'NotInWaitlist') {
+      throw new UserNotInWaitlistError({ id: user.id });
     }
-
-    await this.#uw.redis.lrem('waitlist', 0, user.id);
-    if (beforeID) {
-      await this.#uw.redis.linsert('waitlist', 'BEFORE', beforeID, user.id);
-    } else {
-      await this.#uw.redis.rpush('waitlist', user.id);
+    if (waitlist === 'AlreadyInWaitlist') {
+      throw new UserIsPlayingError({ id: user.id });
     }
-
-    waitlist = await this.getUserIDs();
 
     this.#uw.publish('waitlist:move', {
       userID: user.id,
       moderatorID: moderator.id,
-      position: clampedPosition,
+      position: waitlist.indexOf(user.id),
       waitlist,
     });
   }
@@ -284,14 +281,12 @@ class Waitlist {
       });
     }
 
-    let waitlist = await this.getUserIDs();
-    if (!isInWaitlist(waitlist, user.id)) {
+    const removedCount = await this.#uw.redis.lrem('waitlist', 0, user.id);
+    if (removedCount === 0) {
       throw new UserNotInWaitlistError({ id: user.id });
     }
 
-    await this.#uw.redis.lrem('waitlist', 0, user.id);
-
-    waitlist = await this.getUserIDs();
+    const waitlist = await this.getUserIDs();
     if (isRemoving) {
       this.#uw.publish('waitlist:remove', {
         userID: user.id,
