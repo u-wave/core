@@ -179,7 +179,7 @@ class Waitlist {
     }
 
     const canForceJoin = await acl.isAllowed(user, 'waitlist.join.locked');
-    if (!canForceJoin && await this.isLocked()) {
+    if (!isAddingOtherUser && !canForceJoin && await this.isLocked()) {
       throw new WaitlistLockedError();
     }
 
