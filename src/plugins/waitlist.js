@@ -103,21 +103,8 @@ class Waitlist {
     });
   }
 
-  #getCurrentDJ() {
-    return this.#uw.redis.get('booth:currentDJ');
-  }
-
   async #isBoothEmpty() {
     return !(await this.#uw.redis.get('booth:historyID'));
-  }
-
-  /**
-   * @param {string} userID
-   * @returns {Promise<boolean>}
-   */
-  async #isCurrentDJ(userID) {
-    const dj = await this.#getCurrentDJ();
-    return dj !== null && dj === userID;
   }
 
   /**
@@ -323,30 +310,31 @@ class Waitlist {
    * @param {User} moderator
    * @returns {Promise<void>}
    */
-  async #lockWaitlist(lock, moderator) {
+  async #setWaitlistLocked(lock, moderator) {
     const settings = await this.#getSettings();
     await this.#uw.config.set(schema['uw:key'], { ...settings, locked: lock }, { user: moderator });
-
-    const isLocked = await this.isLocked();
-    if (isLocked !== lock) {
-      throw new Error(`Could not ${lock ? 'lock' : 'unlock'} the waitlist. Please try again.`);
-    }
   }
 
   /**
+   * Lock the waitlist. Only users with the `waitlist.join.locked` permission
+   * will be able to join.
+   *
    * @param {{moderator: User}} options
    * @returns {Promise<void>}
    */
   lock({ moderator }) {
-    return this.#lockWaitlist(true, moderator);
+    return this.#setWaitlistLocked(true, moderator);
   }
 
   /**
+   * Unlock the waitlist. All users with the `waitlist.join` permission
+   * will be able to join.
+   *
    * @param {{moderator: User}} options
    * @returns {Promise<void>}
    */
   unlock({ moderator }) {
-    return this.#lockWaitlist(false, moderator);
+    return this.#setWaitlistLocked(false, moderator);
   }
 }
 
