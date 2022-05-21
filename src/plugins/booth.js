@@ -320,7 +320,7 @@ class Booth {
         lock = await this.#locker.acquire(['booth:advancing'], 10_000);
       }
     } catch (err) {
-      throw new Error('Another advance is still in progress.');
+      throw new Error('Another advance is still in progress.', { cause: err });
     }
 
     const publish = opts.publish ?? true;
@@ -381,9 +381,11 @@ class Booth {
       await this.#publishAdvanceComplete(next);
     }
 
-    lock.release().catch(() => {
+    try {
+      await lock.release();
+    } catch {
       // Don't really care if this fails, it'll expire in some seconds anyway.
-    });
+    }
 
     return next;
   }
