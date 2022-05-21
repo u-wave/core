@@ -339,22 +339,22 @@ class Booth {
       throw new Error('Another advance is still in progress.');
     }
 
-    if (!opts.remove) {
-      // TODO do not modify the object
-      opts.remove = !await this.#uw.waitlist.isCycleEnabled();
-    }
+    const publish = opts.publish ?? true;
+    const remove = opts.remove || (
+      !await this.#uw.waitlist.isCycleEnabled()
+    );
 
     const previous = await this.getCurrentEntry();
     let next;
     try {
-      next = await this.getNextEntry(opts);
+      next = await this.getNextEntry({ remove });
     } catch (err) {
       // If the next user's playlist was empty, remove them from the waitlist
       // and try advancing again.
       if (err.code === 'PLAYLIST_IS_EMPTY') {
         debug('user has empty playlist, skipping on to the next');
-        await this.cycleWaitlist(previous, opts);
-        return this.advance({ ...opts, remove: true }, lock);
+        await this.cycleWaitlist(previous, { remove });
+        return this.advance({ publish, remove: true }, lock);
       }
       throw err;
     }
@@ -383,7 +383,7 @@ class Booth {
       this.maybeStop();
     }
 
-    await this.cycleWaitlist(previous, opts);
+    await this.cycleWaitlist(previous, { remove });
 
     if (next) {
       await this.update(next);
@@ -393,7 +393,7 @@ class Booth {
       await this.clear();
     }
 
-    if (opts.publish !== false) {
+    if (publish !== false) {
       await this.publish(next);
     }
 
