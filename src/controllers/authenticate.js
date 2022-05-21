@@ -2,7 +2,6 @@
 
 const { URLSearchParams } = require('url');
 const cookie = require('cookie');
-const debug = require('debug')('uwave:http:auth');
 const jwt = require('jsonwebtoken');
 const randomString = require('random-string');
 const fetch = require('node-fetch').default;
@@ -288,10 +287,10 @@ async function getSocketToken(req) {
 
 /**
  * @param {string} responseString
- * @param {Required<AuthenticateOptions>['recaptcha']} options
+ * @param {{ secret: string, logger?: import('pino').Logger }} options
  */
 async function verifyCaptcha(responseString, options) {
-  debug('recaptcha: sending siteverify request');
+  options.logger?.info('recaptcha: sending siteverify request');
   const response = await fetch('https://www.google.com/recaptcha/api/siteverify', {
     method: 'post',
     headers: {
@@ -306,10 +305,10 @@ async function verifyCaptcha(responseString, options) {
   const body = await response.json();
 
   if (!body.success) {
-    debug('recaptcha: validation failure', body);
+    options.logger?.warn('recaptcha: validation failure', body);
     throw new ReCaptchaError();
   } else {
-    debug('recaptcha: ok');
+    options.logger?.info('recaptcha: ok');
   }
 }
 
@@ -334,8 +333,12 @@ async function register(req) {
     const recaptchaOptions = req.authOptions.recaptcha;
     if (recaptchaOptions && recaptchaOptions.secret) {
       if (grecaptcha) {
-        await verifyCaptcha(grecaptcha, recaptchaOptions);
+        await verifyCaptcha(grecaptcha, {
+          secret: recaptchaOptions.secret,
+          logger: req.log,
+        });
       } else {
+        req.log.warn('missing client-side captcha response');
         throw new ReCaptchaError();
       }
     }
