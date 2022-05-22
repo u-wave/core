@@ -1,6 +1,7 @@
 'use strict';
 
 const { randomUUID } = require('crypto');
+const { ChatMutedError, TooManyTagsError } = require('../errors');
 const routes = require('../routes/chat');
 
 /**
@@ -8,6 +9,10 @@ const routes = require('../routes/chat');
  *
  * @typedef {object} ChatOptions
  * @prop {number} maxLength
+ *
+ * @typedef {object} ChatMessage
+ * @prop {string} message
+ * @prop {Partial<import('../types').ChatTags>} [tags]
  */
 
 /** @type {ChatOptions} */
@@ -87,19 +92,46 @@ class Chat {
 
   /**
    * @param {User} user
-   * @param {string} message
+   * @param {ChatMessage} data
    */
-  async send(user, message) {
-    if (await this.isMuted(user)) {
-      return;
+  async send(user, { message, tags }) {
+    const { acl } = this.#uw;
+
+    const maxLength = 2048;
+    if (tags && JSON.stringify(tags).length > maxLength) {
+      throw new TooManyTagsError({ maxLength });
     }
 
+    if (await this.isMuted(user)) {
+      throw new ChatMutedError();
+    }
+
+    const permissions = tags ? await acl.getAllPermissions(user) : [];
+    const globalTags = new Set(['id', 'replyTo']);
+    const filteredTags = tags
+      ? Object.fromEntries(
+        Object.entries(tags)
+          .filter(([name]) => globalTags.has(name) || permissions.includes(name)),
+      )
+      : {};
+
+    const id = randomUUID();
+    const timestamp = Date.now();
+    const truncatedMessage = this.truncate(message);
     this.#uw.publish('chat:message', {
-      id: randomUUID(),
+      id,
       userID: user.id,
-      message: this.truncate(message),
-      timestamp: Date.now(),
+      message: truncatedMessage,
+      timestamp,
+      tags: filteredTags,
     });
+
+    return {
+      _id: id,
+      message: truncatedMessage,
+      timestamp,
+      tags: filteredTags,
+    };
   }
 
   /**

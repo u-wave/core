@@ -9,6 +9,13 @@ const controller = require('../controllers/chat');
 
 function chatRoutes() {
   return Router()
+    // POST /chat/ - Send a chat message.
+    .post(
+      '/',
+      protect('chat.send'),
+      schema(validations.sendChatMessage),
+      route(controller.sendMessage),
+    )
     // DELETE /chat/ - Clear the chat (delete all messages).
     .delete(
       '/',

@@ -1,3 +1,5 @@
+import type { ChatTags } from './types'; // eslint-disable-line node/no-missing-import
+
 export type ServerActionParameters = {
   'advance:complete': {
     historyID: string,
@@ -35,6 +37,7 @@ export type ServerActionParameters = {
     userID: string,
     message: string,
     timestamp: number,
+    tags?: Partial<ChatTags>,
   },
   'chat:delete': {
     filter: { id: string } | { userID: string } | Record<string, never>,

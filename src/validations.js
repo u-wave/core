@@ -214,6 +214,25 @@ exports.getRoomHistory = /** @type {const} */ ({
 
 // Validations for chat routes:
 
+exports.sendChatMessage = /** @type {const} */ ({
+  body: {
+    type: 'object',
+    properties: {
+      message: { type: 'string', minLength: 1 },
+      tags: {
+        type: 'object',
+        properties: {
+          id: { type: 'string', maxLength: 40 },
+          replyTo: { type: 'string', minLength: 1, maxLength: 40 },
+        },
+        // In the future we should support custom tags, maybe namespaced with a : in the name.
+        additionalProperties: false,
+      },
+    },
+    required: ['message'],
+  },
+});
+
 exports.deleteChatByUser = /** @type {const} */ ({
   params: {
     type: 'object',
