@@ -1,5 +1,6 @@
 'use strict';
 
+const has = require('has');
 const EventEmitter = require('events');
 const { promisify } = require('util');
 const mongoose = require('mongoose');
@@ -9,7 +10,8 @@ const avvio = require('avvio');
 
 const httpApi = require('./HttpApi');
 const SocketServer = require('./SocketServer');
-const { Source } = require('./Source');
+const { LegacySourceWrapper } = require('./source/Source');
+const pluginifySource = require('./source/plugin');
 const { i18n } = require('./locale');
 
 const models = require('./models');
@@ -29,9 +31,8 @@ const migrations = require('./plugins/migrations');
 const DEFAULT_MONGO_URL = 'mongodb://localhost:27017/uwave';
 const DEFAULT_REDIS_URL = 'redis://localhost:6379';
 
-/**
- * @typedef {import('./Source').SourcePlugin} SourcePlugin
- */
+/** @typedef {import('./source/types').StaticSourcePlugin} StaticSourcePlugin */
+/** @typedef {import('./source/Source').SourceWrapper} SourceWrapper */
 
 /**
  * @typedef {UwaveServer & avvio.Server<UwaveServer>} Boot
@@ -119,7 +120,7 @@ class UwaveServer extends EventEmitter {
   socketServer;
 
   /**
-   * @type {Map<string, Source>}
+   * @type {Map<string, SourceWrapper>}
    */
   #sources = new Map();
 
@@ -200,9 +201,29 @@ class UwaveServer extends EventEmitter {
   }
 
   /**
+   * Register a source plugin.
+   *
+   * @template TOptions
+   * @template {import('./source/types').HotSwappableSourcePlugin<
+   *     TOptions, import('type-fest').JsonValue>} TPlugin
+   * @param {TPlugin} sourcePlugin
+   * @param {TOptions} [opts]
+   */
+  async useSource(sourcePlugin, opts) {
+    /** @type {import('avvio').Avvio<this>} */
+    // @ts-ignore
+    const boot = this;
+
+    boot.use(pluginifySource, {
+      source: sourcePlugin,
+      baseOptions: opts,
+    });
+  }
+
+  /**
    * An array of registered sources.
    *
-   * @type {Source[]}
+   * @type {SourceWrapper[]}
    */
   get sources() {
     return [...this.#sources.values()];
@@ -213,8 +234,8 @@ class UwaveServer extends EventEmitter {
    * If the first parameter is a string, returns an existing source plugin.
    * Else, adds a source plugin and returns its wrapped source plugin.
    *
-   * @typedef {((uw: UwaveServer, opts: object) => SourcePlugin)} SourcePluginFactory
-   * @typedef {SourcePlugin | SourcePluginFactory} ToSourcePlugin
+   * @typedef {(uw: UwaveServer, opts: object) => StaticSourcePlugin} SourcePluginFactory
+   * @typedef {StaticSourcePlugin | SourcePluginFactory} ToSourcePlugin
    *
    * @param {string | Omit<ToSourcePlugin, 'default'> | { default: ToSourcePlugin }} sourcePlugin
    *     Source name or definition.
@@ -234,6 +255,13 @@ class UwaveServer extends EventEmitter {
       throw new TypeError(`Source plugin should be a function, got ${typeof sourceFactory}`);
     }
 
+    if (typeof sourceFactory === 'function'
+        && has(sourceFactory, 'api')
+        && typeof sourceFactory.api === 'number'
+        && sourceFactory.api >= 3) {
+      throw new TypeError('uw.source() only supports old-style source plugins.');
+    }
+
     const sourceDefinition = typeof sourceFactory === 'function'
       ? sourceFactory(this, opts)
       : sourceFactory;
@@ -241,16 +269,38 @@ class UwaveServer extends EventEmitter {
     if (typeof sourceType !== 'string') {
       throw new TypeError('Source plugin does not specify a name. It may be incompatible with this version of üWave.');
     }
-    const newSource = new Source(this, sourceType, sourceDefinition);
+    const newSource = new LegacySourceWrapper(this, sourceType, sourceDefinition);
 
-    this.#sources.set(sourceType, newSource);
+    this.insertSourceInternal(sourceType, newSource);
 
     return newSource;
   }
 
   /**
-   * @private
+   * Adds a fully wrapped source plugin. Not for external use.
+   *
+   * @param {string} sourceType
+   * @param {SourceWrapper} source
    */
+  insertSourceInternal(sourceType, source) {
+    this.#sources.set(sourceType, source);
+  }
+
+  /**
+   * Removes a source plugin. Not for external use.
+   *
+   * Only source plugins using Media Source API 3 or higher can be removed.
+   *
+   * @param {string} sourceType
+   */
+  removeSourceInternal(sourceType) {
+    const source = this.#sources.get(sourceType);
+    if (this.#sources.delete(sourceType)) {
+      return source;
+    }
+    return null;
+  }
+
   configureRedis() {
     this.redis.on('error', (e) => {
       this.emit('redisError', e);

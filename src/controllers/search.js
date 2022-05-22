@@ -3,7 +3,7 @@
 const debug = require('debug')('uwave:http:search');
 const { isEqual } = require('lodash');
 const { SourceNotFoundError } = require('../errors');
-const toListResponse = require('../utils/toListResponse');
+const toPaginatedResponse = require('../utils/toPaginatedResponse');
 
 /** @typedef {import('../models').Playlist} Playlist */
 /** @typedef {import('../plugins/playlists').PlaylistItemDesc} PlaylistItemDesc */
@@ -21,14 +21,13 @@ async function searchAll(req) {
     source.search(user, query).catch((error) => {
       debug(error);
       // Default to empty search on failure, for now.
-      return [];
     })
   ));
 
   const searchResults = await Promise.all(searches);
 
   const combinedResults = Object.fromEntries(
-    sourceNames.map((name, index) => [name, searchResults[index]]),
+    sourceNames.map((name, index) => [name, searchResults[index]?.data ?? []]),
   );
 
   return combinedResults;
@@ -79,11 +78,11 @@ async function search(req) {
     throw new SourceNotFoundError({ name: sourceName });
   }
 
-  /** @type {(PlaylistItemDesc & { inPlaylists?: Playlist[] })[]} */
+  /** @type {import('../Page')<PlaylistItemDesc & { inPlaylists?: Playlist[] }, any>} */
   const searchResults = await source.search(user, query);
 
   const searchResultsByID = new Map();
-  searchResults.forEach((result) => {
+  searchResults.data.forEach((result) => {
     searchResultsByID.set(result.sourceID, result);
   });
 
@@ -125,23 +124,23 @@ async function search(req) {
       return new Map();
     });
 
-    searchResults.forEach((result) => {
+    searchResults.data.forEach((result) => {
       const media = mediaBySourceID.get(String(result.sourceID));
       if (media) {
         result.inPlaylists = playlistsByMediaID.get(media._id.toString());
       }
     });
 
-    return toListResponse(searchResults, {
-      url: req.fullUrl,
+    return toPaginatedResponse(searchResults, {
+      baseUrl: req.fullUrl,
       included: {
         playlists: ['inPlaylists'],
       },
     });
   }
 
-  return toListResponse(searchResults, {
-    url: req.fullUrl,
+  return toPaginatedResponse(searchResults, {
+    baseUrl: req.fullUrl,
   });
 }
 

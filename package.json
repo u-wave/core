@@ -16,6 +16,10 @@
       "import": "./src/index.mjs",
       "default": "./src/index.js"
     },
+    "./source": {
+      "import": "./src/source/index.mjs",
+      "default": "./src/source/index.js"
+    },
     "./package.json": "./package.json"
   },
   "type": "commonjs",
@@ -44,6 +48,7 @@
     "http-errors": "^2.0.0",
     "i18next": "^21.0.2",
     "ioredis": "^5.0.1",
+    "json-schema-merge-allof": "^0.8.1",
     "jsonwebtoken": "^8.5.1",
     "lodash": "^4.17.15",
     "make-promises-safe": "^5.1.0",

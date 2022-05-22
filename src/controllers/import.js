@@ -17,7 +17,7 @@ const getImportableSource = (req) => {
   if (!source) {
     throw new SourceNotFoundError({ name: sourceName });
   }
-  if (!source.import) {
+  if (source.apiVersion >= 3) {
     throw new SourceNoImportError({ name: sourceName });
   }
 
