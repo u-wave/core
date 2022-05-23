@@ -320,6 +320,7 @@ class Booth {
         lock = await this.#locker.acquire(['booth:advancing'], 10_000);
       }
     } catch (err) {
+      // @ts-expect-error TS2554: `cause` is not in our target types yet :shrug:
       throw new Error('Another advance is still in progress.', { cause: err });
     }
 
