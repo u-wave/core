@@ -6,6 +6,7 @@ const sjson = require('secure-json-parse');
 const WebSocket = require('ws');
 const Ajv = require('ajv').default;
 const ms = require('ms');
+const { stdSerializers } = require('pino');
 const { socketVote } = require('./controllers/booth');
 const { disconnectUser } = require('./controllers/users');
 const AuthRegistry = require('./AuthRegistry');
@@ -166,7 +167,11 @@ class SocketServer {
     }
 
     this.#uw = uw;
-    this.#logger = uw.logger.child({ ns: 'uwave:sockets' });
+    this.#logger = uw.logger.child({ ns: 'uwave:sockets' }, {
+      serializers: {
+        req: stdSerializers.req,
+      },
+    });
     this.#redisSubscription = uw.redis.duplicate();
 
     this.options = {
@@ -477,10 +482,11 @@ class SocketServer {
 
   /**
    * @param {import('ws')} socket
+   * @param {import('http').IncomingMessage} request
    * @private
    */
-  onSocketConnected(socket) {
-    this.#logger.info('new connection');
+  onSocketConnected(socket, request) {
+    this.#logger.info({ req: request }, 'new connection');
 
     socket.on('error', (error) => {
       this.onSocketError(socket, error);
