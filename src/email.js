@@ -19,7 +19,7 @@ async function sendEmail(emailAddress, options) {
     },
   };
 
-  const transporter = nodemailer.createTransport(options.mailTransport || smtpOptions);
+  const transporter = nodemailer.createTransport(options.mailTransport ?? smtpOptions);
 
   const mailOptions = { to: emailAddress, ...options.email };
 

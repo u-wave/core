@@ -4,6 +4,19 @@ All notable changes to this project will be documented in this file.
 
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## 0.5.0-alpha.10 / 23 May 2022
+This is an alpha release, but new servers should use this version rather than an older "stable" one.
+
+Features:
+ * Make `artist`, `title` optional when adding playlist items (#516).
+   With this change, deriving the artist and title for a search result can be deferred until it
+   is actually added to a playlist. Then the search can show only original titles, which makes
+   finding the correct result easier, and is required for compliance with ToS for some services.
+
+Internal:
+ * **Breaking:** üWave now requires Node.js 14.17 or above. (#513)
+ * Use UUIDs for chat message IDs. (#511)
+
 ## 0.5.0-alpha.9 / 13 Nov 2021
 This is an alpha release, but new servers should use this version rather than an older "stable" one.
 

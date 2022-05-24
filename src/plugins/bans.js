@@ -58,7 +58,7 @@ class Bans {
   async getBans(filter, pagination = {}) {
     const { User } = this.#uw.models;
 
-    const offset = pagination.offset || 0;
+    const offset = pagination.offset ?? 0;
     const size = clamp(
       pagination.limit == null ? 50 : pagination.limit,
       0,

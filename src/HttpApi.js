@@ -1,13 +1,13 @@
 'use strict';
 
-const { URL } = require('url');
+const { randomUUID } = require('crypto');
 const express = require('express');
 const bodyParser = require('body-parser');
 const cookieParser = require('cookie-parser');
 const cors = require('cors');
 const helmet = require('helmet').default;
 const http = require('http');
-const debug = require('debug')('uwave:http-api');
+const pinoHttp = require('pino-http').default;
 
 // routes
 const authenticate = require('./routes/authenticate');
@@ -82,6 +82,10 @@ async function httpApi(uw, options) {
     throw new TypeError('"options.onError" must be a function.');
   }
 
+  const logger = uw.logger.child({
+    ns: 'uwave:http-api',
+  });
+
   uw.config.register(optionsSchema['uw:key'], optionsSchema);
 
   /** @type {HttpApiSettings} */
@@ -93,12 +97,17 @@ async function httpApi(uw, options) {
     }
   });
 
-  debug('setup', runtimeOptions);
+  logger.debug(runtimeOptions, 'start HttpApi');
   uw.httpApi = Object.assign(express.Router(), {
     authRegistry: new AuthRegistry(uw.redis),
   });
 
   uw.httpApi
+    .use(pinoHttp({
+      genReqId: () => randomUUID(),
+      quietReqLogger: true,
+      logger,
+    }))
     .use(bodyParser.json())
     .use(cookieParser())
     .use(uw.passport.initialize())
@@ -113,7 +122,7 @@ async function httpApi(uw, options) {
       mailTransport: options.mailTransport,
       recaptcha: options.recaptcha,
       createPasswordResetEmail:
-        options.createPasswordResetEmail || defaultCreatePasswordResetEmail,
+        options.createPasswordResetEmail ?? defaultCreatePasswordResetEmail,
     }))
     .use('/bans', bans())
     .use('/import', imports())
@@ -149,12 +158,12 @@ async function httpApi(uw, options) {
  * @param {import('./Uwave')} uw
  */
 async function errorHandling(uw) {
-  debug('after');
-  uw.httpApi.use(errorHandler());
-  uw.express.use(/** @type {import('express').ErrorRequestHandler} */ (error, req, res, next) => {
-    debug(error);
-    next(error);
-  });
+  uw.logger.debug({ ns: 'uwave:http-api' }, 'setup HTTP error handling');
+  uw.httpApi.use(errorHandler({
+    onError(_req, error) {
+      uw.logger.error({ err: error, ns: 'uwave:http-api' });
+    },
+  }));
 }
 
 httpApi.errorHandling = errorHandling;

@@ -9,17 +9,19 @@ const announce = require('u-wave-announce');
 const ytSource = require('u-wave-source-youtube');
 const scSource = require('u-wave-source-soundcloud');
 const recaptchaTestKeys = require('recaptcha-test-keys');
-const debug = require('debug')('uwave:dev-server');
+const pino = require('pino');
 const dotenv = require('dotenv');
 
 dotenv.config();
+
+const logger = pino({ level: 'trace' });
 
 const testTransport = {
   name: 'test',
   version: '0.0.0',
   send(mail, callback) {
     mail.message.createReadStream().pipe(concat((message) => {
-      debug(mail.message.getEnvelope().to, message.toString('utf8'));
+      logger.info('send test email', { to: mail.message.getEnvelope().to, contents: message.toString('utf8') });
       callback(null, {
         envelope: mail.message.getEnvelope(),
         messageId: mail.message.messageId(),
@@ -32,7 +34,7 @@ const testTransport = {
  * üWave API development server.
  */
 async function start() {
-  const port = Number(argv.port || process.env.PORT || 6042);
+  const port = Number(argv.port ?? process.env.PORT ?? 6042);
 
   const uwave = require('..');
 
@@ -42,6 +44,7 @@ async function start() {
     port,
     redis: process.env.REDIS_URL,
     mongo: process.env.MONGODB_URL ?? 'mongodb://localhost/uwave',
+    logger: { level: 'trace' },
     secret,
     mailTransport: testTransport,
     timeout: 10,
@@ -76,10 +79,10 @@ async function start() {
   });
 
   await uw.listen();
-  console.log(`Now listening on ${port}`);
+  logger.info('Now listening', { port });
 }
 
 start().catch((error) => {
-  console.error(error.stack);
+  logger.error(error);
   process.exit(1);
 });

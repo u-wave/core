@@ -316,7 +316,8 @@ async function favorite(req) {
 
   // `.media` has the same shape as `.item`, but is guaranteed to exist and have
   // the same properties as when the playlist item was actually played.
-  const playlistItem = await PlaylistItem.create(historyEntry.media.toJSON());
+  const itemProps = historyEntry.media.toJSON();
+  const playlistItem = await PlaylistItem.create(itemProps);
 
   playlist.media.push(playlistItem.id);
 
