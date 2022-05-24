@@ -2,7 +2,6 @@
 
 const assert = require('assert');
 const RedLock = require('redlock').default;
-const createDebug = require('debug');
 const { omit } = require('lodash');
 const { EmptyPlaylistError, PlaylistItemNotFoundError } = require('../errors');
 const routes = require('../routes/booth');
@@ -21,8 +20,6 @@ const routes = require('../routes/booth');
  *     & PopulateUser & PopulatePlaylist & PopulateMedia} PopulatedHistoryEntry
  */
 
-const debug = createDebug('uwave:advance');
-
 /**
  * @param {Playlist} playlist
  * @returns {Promise<void>}
@@ -38,6 +35,8 @@ async function cyclePlaylist(playlist) {
 class Booth {
   #uw;
 
+  #logger;
+
   /** @type {ReturnType<typeof setTimeout>|null} */
   #timeout = null;
 
@@ -49,6 +48,7 @@ class Booth {
   constructor(uw) {
     this.#uw = uw;
     this.#locker = new RedLock([this.#uw.redis]);
+    this.#logger = uw.logger.child({ ns: 'uwave:booth' });
   }
 
   /** @internal */
@@ -309,9 +309,9 @@ class Booth {
     const { sourceID, sourceType } = entry.media.media;
     const source = this.#uw.source(sourceType);
     if (source) {
-      debug('Running %s pre-play hook for %s', source.type, sourceID);
+      this.#logger.trace({ sourceType: source.type, sourceID }, 'running pre-play hook');
       const sourceData = await source.play(entry.user, entry.media.media);
-      debug('sourceData', sourceData);
+      this.#logger.trace({ sourceType: source.type, sourceID, sourceData }, 'pre-play hook result');
       return sourceData;
     }
 
@@ -347,7 +347,7 @@ class Booth {
       // If the next user's playlist was empty, remove them from the waitlist
       // and try advancing again.
       if (err.code === 'PLAYLIST_IS_EMPTY') {
-        debug('user has empty playlist, skipping on to the next');
+        this.#logger.info('user has empty playlist, skipping on to the next');
         await this.cycleWaitlist(previous, opts);
         return this.advance({ ...opts, remove: true }, lock);
       }
@@ -357,18 +357,22 @@ class Booth {
     if (previous) {
       await this.saveStats(previous);
 
-      debug(
-        'previous track:',
-        previous.media.artist,
-        '—',
-        previous.media.title,
-        `👍 ${previous.upvotes.length} `
-        + `★ ${previous.favorites.length} `
-        + `👎 ${previous.downvotes.length}`,
-      );
+      this.#logger.info({
+        id: previous._id,
+        artist: previous.media.artist,
+        title: previous.media.title,
+        upvotes: previous.upvotes.length,
+        favorites: previous.favorites.length,
+        downvotes: previous.downvotes.length,
+      }, 'previous track stats');
     }
 
     if (next) {
+      this.#logger.info({
+        id: next._id,
+        artist: next.media.artist,
+        title: next.media.title,
+      }, 'next track');
       const sourceData = await this.getSourceDataForPlayback(next);
       if (sourceData) {
         next.media.sourceData = sourceData;

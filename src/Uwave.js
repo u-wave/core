@@ -4,8 +4,8 @@ const EventEmitter = require('events');
 const { promisify } = require('util');
 const mongoose = require('mongoose');
 const Redis = require('ioredis').default;
-const debug = require('debug');
 const avvio = require('avvio');
+const { pino } = require('pino');
 
 const httpApi = require('./HttpApi');
 const SocketServer = require('./SocketServer');
@@ -43,6 +43,7 @@ const DEFAULT_REDIS_URL = 'redis://localhost:6379';
  *   port?: number,
  *   mongo?: string,
  *   redis?: string | RedisOptions,
+ *   logger?: import('pino').LoggerOptions,
  * } & httpApi.HttpApiOptions} Options
  */
 
@@ -123,6 +124,9 @@ class UwaveServer extends EventEmitter {
    */
   #sources = new Map();
 
+  /** @type {import('pino').Logger} */
+  #mongoLogger;
+
   /**
    * @param {Options} options
    */
@@ -131,6 +135,10 @@ class UwaveServer extends EventEmitter {
 
     const boot = avvio(this);
 
+    this.logger = pino({
+      ...options.logger,
+      redact: ['req.headers.cookie', 'res.headers["set-cookie"]'],
+    });
     this.locale = i18n.cloneInstance();
 
     this.options = {
@@ -147,9 +155,7 @@ class UwaveServer extends EventEmitter {
       this.redis = new Redis({ ...options.redis, lazyConnect: true });
     }
 
-    this.log = debug('uwave:core');
-    this.mongoLog = debug('uwave:core:mongo');
-    this.redisLog = debug('uwave:core:redis');
+    this.#mongoLogger = this.logger.child({ ns: 'uwave:mongo' });
 
     this.configureRedis();
     this.configureMongoose();
@@ -161,7 +167,7 @@ class UwaveServer extends EventEmitter {
 
     // Wait for the connections to be set up.
     boot.use(async () => {
-      this.mongoLog('waiting for mongodb...');
+      this.#mongoLogger.debug('waiting for mongodb...');
       await this.mongo.asPromise();
     });
 
@@ -252,18 +258,23 @@ class UwaveServer extends EventEmitter {
    * @private
    */
   configureRedis() {
-    this.redis.on('error', (e) => {
-      this.emit('redisError', e);
+    const log = this.logger.child({ ns: 'uwave:redis' });
+
+    this.redis.on('error', (error) => {
+      log.error(error);
+      this.emit('redisError', error);
     });
-    this.redis.on('reconnecting', () => this.redisLog('trying to reconnect...'));
+    this.redis.on('reconnecting', () => {
+      log.info('trying to reconnect...');
+    });
 
     this.redis.on('end', () => {
-      this.redisLog('disconnected');
+      log.info('disconnected');
       this.emit('redisDisconnect');
     });
 
     this.redis.on('connect', () => {
-      this.redisLog('connected');
+      log.info('connected');
       this.emit('redisConnect');
     });
   }
@@ -272,23 +283,23 @@ class UwaveServer extends EventEmitter {
    * @private
    */
   configureMongoose() {
-    this.mongo.on('error', (e) => {
-      this.mongoLog(e);
-      this.emit('mongoError', e);
+    this.mongo.on('error', (error) => {
+      this.#mongoLogger.error(error);
+      this.emit('mongoError', error);
     });
 
     this.mongo.on('reconnected', () => {
-      this.mongoLog('reconnected');
+      this.#mongoLogger.info('reconnected');
       this.emit('mongoReconnect');
     });
 
     this.mongo.on('disconnected', () => {
-      this.mongoLog('disconnected');
+      this.#mongoLogger.info('disconnected');
       this.emit('mongoDisconnect');
     });
 
     this.mongo.on('connected', () => {
-      this.mongoLog('connected');
+      this.#mongoLogger.info('connected');
       this.emit('mongoConnect');
     });
   }
