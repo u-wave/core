@@ -54,7 +54,7 @@ class AuthedConnection extends EventEmitter {
     }
     /** @type {string[]} */
     const messages = await this.uw.redis.lrange(this.messagesKey, 0, -1);
-    this.#logger.info('queued messages', { count: messages.length });
+    this.#logger.info({ count: messages.length }, 'queued messages');
     messages.forEach((message) => {
       const { command, data } = sjson.parse(message);
       this.send(command, data);

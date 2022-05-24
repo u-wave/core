@@ -170,8 +170,8 @@ class SocketServer {
     this.#redisSubscription = uw.redis.duplicate();
 
     this.options = {
-      /** @type {(socket: import('ws') | undefined, err: Error) => void} */
-      onError: (socket, err) => {
+      /** @type {(_socket: import('ws') | undefined, err: Error) => void} */
+      onError: (_socket, err) => {
         throw err;
       },
       timeout: 30,
@@ -208,13 +208,13 @@ class SocketServer {
 
     this.recountGuests = debounce(() => {
       this.recountGuestsInternal().catch((error) => {
-        this.#logger.error('counting guests failed', { err: error });
+        this.#logger.error({ err: error }, 'counting guests failed');
       });
     }, ms('2 seconds'));
 
     this.#clientActions = {
       sendChat: (user, message) => {
-        this.#logger.trace('sendChat', user, message);
+        this.#logger.trace({ user, message }, 'sendChat');
         this.#uw.chat.send(user, message);
       },
       vote: (user, direction) => {
@@ -481,7 +481,7 @@ class SocketServer {
    * @private
    */
   onSocketConnected(socket, request) {
-    this.#logger.info('new connection', { req: request });
+    this.#logger.info({ req: request }, 'new connection');
 
     socket.on('error', (error) => {
       this.onSocketError(socket, error);
@@ -495,7 +495,7 @@ class SocketServer {
    * @private
    */
   onSocketError(socket, error) {
-    this.#logger.warn('socket error', { err: error });
+    this.#logger.warn({ err: error }, 'socket error');
 
     this.options.onError(socket, error);
   }
@@ -505,7 +505,7 @@ class SocketServer {
    * @private
    */
   onError(error) {
-    this.#logger.error('server error', { err: error });
+    this.#logger.error({ err: error }, 'server error');
 
     this.options.onError(undefined, error);
   }
@@ -537,7 +537,7 @@ class SocketServer {
     });
     connection.on('authenticate', async (user) => {
       const isReconnect = await connection.isReconnect(user);
-      this.#logger.info('authenticated socket', { userId: user.id, isReconnect });
+      this.#logger.info({ userId: user.id, isReconnect }, 'authenticated socket');
       if (isReconnect) {
         const previousConnection = this.getLostConnection(user);
         if (previousConnection) this.remove(previousConnection);
@@ -564,11 +564,11 @@ class SocketServer {
     const connection = new AuthedConnection(this.#uw, socket, user);
     connection.on('close', ({ banned }) => {
       if (banned) {
-        this.#logger.info('removing connection after ban', { userId: user.id });
+        this.#logger.info({ userId: user.id }, 'removing connection after ban');
         this.remove(connection);
         disconnectUser(this.#uw, user._id);
       } else {
-        this.#logger.info('lost connection', { userId: user.id });
+        this.#logger.info({ userId: user.id }, 'lost connection');
         this.replace(connection, this.createLostConnection(user));
       }
     });
@@ -579,7 +579,7 @@ class SocketServer {
        * @param {import('type-fest').JsonValue} data
        */
       (command, data) => {
-        this.#logger.trace('command', { userId: user.id, command, data });
+        this.#logger.trace({ userId: user.id, command, data }, 'command');
         if (has(this.#clientActions, command)) {
           // Ignore incorrect input
           const validate = this.#clientActionSchemas[command];
@@ -606,7 +606,7 @@ class SocketServer {
   createLostConnection(user) {
     const connection = new LostConnection(this.#uw, user, this.options.timeout);
     connection.on('close', () => {
-      this.#logger.info('user left', { userId: user.id });
+      this.#logger.info({ userId: user.id }, 'user left');
       this.remove(connection);
       // Only register that the user left if they didn't have another connection
       // still open.
@@ -625,7 +625,7 @@ class SocketServer {
    */
   add(connection) {
     const userId = 'user' in connection ? connection.user.id : null;
-    this.#logger.trace('add connection', { type: connection.constructor.name, userId });
+    this.#logger.trace({ type: connection.constructor.name, userId }, 'add connection');
 
     this.#connections.push(connection);
     this.recountGuests();
@@ -639,7 +639,7 @@ class SocketServer {
    */
   remove(connection) {
     const userId = 'user' in connection ? connection.user.id : null;
-    this.#logger.trace('remove connection', { type: connection.constructor.name, userId });
+    this.#logger.trace({ type: connection.constructor.name, userId }, 'remove connection');
 
     const i = this.#connections.indexOf(connection);
     this.#connections.splice(i, 1);
@@ -681,7 +681,7 @@ class SocketServer {
     }
     const { command, data } = json;
 
-    this.#logger.trace('server message', { channel, command, data });
+    this.#logger.trace({ channel, command, data }, 'server message');
 
     if (channel === 'v1') {
       this.broadcast(command, data);
@@ -739,13 +739,13 @@ class SocketServer {
    * @param {import('type-fest').JsonValue} data Command data.
    */
   broadcast(command, data) {
-    this.#logger.trace('broadcast', {
+    this.#logger.trace({
       command,
       data,
       to: this.#connections.map((connection) => (
         'user' in connection ? connection.user.id : null
       )),
-    });
+    }, 'broadcast');
 
     this.#connections.forEach((connection) => {
       connection.send(command, data);

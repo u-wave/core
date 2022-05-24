@@ -66,7 +66,7 @@ class LostConnection extends EventEmitter {
    * @param {import('type-fest').JsonValue} data
    */
   send(command, data) {
-    this.#logger.info('queue command', { command, data });
+    this.#logger.info({ command, data }, 'queue command');
 
     this.uw.redis.rpush(
       this.messagesKey,

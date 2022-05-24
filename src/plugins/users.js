@@ -176,7 +176,7 @@ class UsersRepository {
   }) {
     const { User, Authentication } = this.#uw.models;
 
-    this.#logger.info('find or create social', { type, id });
+    this.#logger.info({ type, id }, 'find or create social');
 
     // we need this type assertion because the `user` property actually contains
     // an ObjectId in this return value. We are definitely filling in a User object
@@ -244,7 +244,7 @@ class UsersRepository {
   }) {
     const { User, Authentication } = this.#uw.models;
 
-    this.#logger.info('create user', { username, email: email.toLowerCase() });
+    this.#logger.info({ username, email: email.toLowerCase() }, 'create user');
 
     const hash = await encryptPassword(password);
 
@@ -318,7 +318,7 @@ class UsersRepository {
     const user = await this.getUser(id);
     if (!user) throw new UserNotFoundError({ id });
 
-    this.#logger.info('update user', { userId: user.id, update });
+    this.#logger.info({ userId: user.id, update }, 'update user');
 
     const moderator = options && options.moderator;
 

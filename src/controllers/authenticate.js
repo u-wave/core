@@ -305,7 +305,7 @@ async function verifyCaptcha(responseString, options) {
   const body = await response.json();
 
   if (!body.success) {
-    options.logger?.warn('recaptcha: validation failure', body);
+    options.logger?.warn(body, 'recaptcha: validation failure');
     throw new ReCaptchaError();
   } else {
     options.logger?.info('recaptcha: ok');

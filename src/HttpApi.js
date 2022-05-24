@@ -95,7 +95,7 @@ async function httpApi(uw, options) {
     }
   });
 
-  logger.debug('setup', runtimeOptions);
+  logger.debug(runtimeOptions, 'start HttpApi');
   uw.httpApi = Object.assign(express.Router(), {
     authRegistry: new AuthRegistry(uw.redis),
   });
@@ -156,10 +156,10 @@ async function httpApi(uw, options) {
  * @param {import('./Uwave')} uw
  */
 async function errorHandling(uw) {
-  uw.logger.debug('error handling', { name: 'httpApi' });
+  uw.logger.debug({ ns: 'uwave:http-api' }, 'setup HTTP error handling');
   uw.httpApi.use(errorHandler({
     onError(_req, error) {
-      uw.logger.error({ err: error, name: 'httpApi' });
+      uw.logger.error({ err: error, ns: 'uwave:http-api' });
     },
   }));
 }

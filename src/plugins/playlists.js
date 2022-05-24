@@ -155,7 +155,7 @@ class PlaylistsRepository {
 
     // If this is the user's first playlist, immediately activate it.
     if (user.activePlaylist == null) {
-      this.#logger.info('activating first playlist', { userId: user.id, playlistId: playlist.id });
+      this.#logger.info({ userId: user.id, playlistId: playlist.id }, 'activating first playlist');
       user.activePlaylist = playlist._id;
       await user.save();
     }

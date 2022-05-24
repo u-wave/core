@@ -309,9 +309,9 @@ class Booth {
     const { sourceID, sourceType } = entry.media.media;
     const source = this.#uw.source(sourceType);
     if (source) {
-      this.#logger.trace('running pre-play hook', { sourceType: source.type, sourceID });
+      this.#logger.trace({ sourceType: source.type, sourceID }, 'running pre-play hook');
       const sourceData = await source.play(entry.user, entry.media.media);
-      this.#logger.trace('pre-play hook result', { sourceType: source.type, sourceID, sourceData });
+      this.#logger.trace({ sourceType: source.type, sourceID, sourceData }, 'pre-play hook result');
       return sourceData;
     }
 
@@ -357,22 +357,22 @@ class Booth {
     if (previous) {
       await this.saveStats(previous);
 
-      this.#logger.info('previous track stats', {
+      this.#logger.info({
         id: previous._id,
         artist: previous.media.artist,
         title: previous.media.title,
         upvotes: previous.upvotes.length,
         favorites: previous.favorites.length,
         downvotes: previous.downvotes.length,
-      });
+      }, 'previous track stats');
     }
 
     if (next) {
-      this.#logger.info('next track', {
+      this.#logger.info({
         id: next._id,
         artist: next.media.artist,
         title: next.media.title,
-      });
+      }, 'next track');
       const sourceData = await this.getSourceDataForPlayback(next);
       if (sourceData) {
         next.media.sourceData = sourceData;

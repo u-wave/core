@@ -37,7 +37,7 @@ class Acl {
     const { AclRole } = this.#uw.models;
 
     const existingRoles = await AclRole.estimatedDocumentCount();
-    this.#logger.debug('existing roles', { roles: existingRoles });
+    this.#logger.debug({ roles: existingRoles }, 'existing roles');
     if (existingRoles === 0) {
       this.#logger.info('no roles found, adding defaults');
       for (const [roleName, permissions] of Object.entries(defaultRoles)) {
@@ -214,12 +214,12 @@ class Acl {
     const userRoles = await this.getSubRoles(user.roles.map(getRoleName));
     const isAllowed = userRoles.includes(role.id) || userRoles.includes(SUPER_ROLE);
 
-    this.#logger.trace('user allowed check', {
+    this.#logger.trace({
       userId: user.id,
       roleId: role.id,
       userRoles,
       isAllowed,
-    });
+    }, 'user allowed check');
 
     return isAllowed;
   }
