@@ -110,7 +110,7 @@ async function search(req) {
 
   // don't wait for this to complete
   updateSourceData(uw, mediasNeedSourceDataUpdate).catch((error) => {
-    uw.logger.error('sourceData update failed', { name: 'search', error });
+    uw.logger.error('sourceData update failed', { name: 'search', err: error });
   });
 
   // Only include related playlists if requested
@@ -119,7 +119,7 @@ async function search(req) {
       mediasInSearchResults.map((media) => media._id),
       { author: user._id },
     ).catch((error) => {
-      uw.logger.error('playlists containing media lookup failed', { name: 'search', error });
+      uw.logger.error('playlists containing media lookup failed', { name: 'search', err: error });
       // just omit the related playlists if we timed out or crashed
       return new Map();
     });

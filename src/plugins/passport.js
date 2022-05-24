@@ -97,7 +97,7 @@ class PassportPlugin extends Passport {
       this.applyAuthStrategies(settings);
     } catch (error) {
       // The schema doesn't _quite_ protect against all possible misconfiguration
-      this.#logger.error('applying social auth settings failed', { error });
+      this.#logger.error('applying social auth settings failed', { err: error });
     }
   }
 

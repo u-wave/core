@@ -157,11 +157,11 @@ async function httpApi(uw, options) {
  */
 async function errorHandling(uw) {
   uw.logger.debug('error handling', { name: 'httpApi' });
-  uw.httpApi.use(errorHandler());
-  uw.express.use(/** @type {import('express').ErrorRequestHandler} */ (error, req, res, next) => {
-    uw.logger.error({ error, name: 'httpApi' });
-    next(error);
-  });
+  uw.httpApi.use(errorHandler({
+    onError(_req, error) {
+      uw.logger.error({ err: error, name: 'httpApi' });
+    },
+  }));
 }
 
 httpApi.errorHandling = errorHandling;

@@ -208,7 +208,7 @@ class SocketServer {
 
     this.recountGuests = debounce(() => {
       this.recountGuestsInternal().catch((error) => {
-        this.#logger.error('counting guests failed', { error });
+        this.#logger.error('counting guests failed', { err: error });
       });
     }, ms('2 seconds'));
 
@@ -495,7 +495,7 @@ class SocketServer {
    * @private
    */
   onSocketError(socket, error) {
-    this.#logger.warn('socket error', { error });
+    this.#logger.warn('socket error', { err: error });
 
     this.options.onError(socket, error);
   }
@@ -505,7 +505,7 @@ class SocketServer {
    * @private
    */
   onError(error) {
-    this.#logger.error('server error', { error });
+    this.#logger.error('server error', { err: error });
 
     this.options.onError(undefined, error);
   }
