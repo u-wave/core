@@ -16,7 +16,6 @@ class ValidationError extends UwaveError {
     this.code = 'SCHEMA_VALIDATION_FAILED';
 
     this.errors = errors;
-    this.ajv = ajv;
   }
 }
 

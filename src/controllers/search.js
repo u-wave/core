@@ -1,6 +1,5 @@
 'use strict';
 
-const debug = require('debug')('uwave:http:search');
 const { isEqual } = require('lodash');
 const { SourceNotFoundError } = require('../errors');
 const toListResponse = require('../utils/toListResponse');
@@ -19,7 +18,7 @@ async function searchAll(req) {
   const sourceNames = uw.sources.map((source) => source.type);
   const searches = uw.sources.map((source) => (
     source.search(user, query).catch((error) => {
-      debug(error);
+      req.log.warn(error, { ns: 'uwave:search' });
       // Default to empty search on failure, for now.
       return [];
     })
@@ -41,7 +40,7 @@ async function searchAll(req) {
 async function updateSourceData(uw, updates) {
   const { Media } = uw.models;
   const ops = [];
-  debug('updating source data', [...updates.keys()]);
+  uw.logger.debug({ ns: 'uwave:search', forMedia: [...updates.keys()] }, 'updating source data');
   for (const [id, sourceData] of updates.entries()) {
     ops.push({
       updateOne: {
@@ -111,7 +110,7 @@ async function search(req) {
 
   // don't wait for this to complete
   updateSourceData(uw, mediasNeedSourceDataUpdate).catch((error) => {
-    debug('sourceData update failed', error);
+    uw.logger.error({ ns: 'uwave:search', err: error }, 'sourceData update failed');
   });
 
   // Only include related playlists if requested
@@ -120,7 +119,7 @@ async function search(req) {
       mediasInSearchResults.map((media) => media._id),
       { author: user._id },
     ).catch((error) => {
-      debug('playlists containing media lookup failed', error);
+      uw.logger.error({ ns: 'uwave:search', err: error }, 'playlists containing media lookup failed');
       // just omit the related playlists if we timed out or crashed
       return new Map();
     });

@@ -2,7 +2,6 @@
 
 const { groupBy, shuffle } = require('lodash');
 const escapeStringRegExp = require('escape-string-regexp');
-const debug = require('debug')('uwave:playlists');
 const {
   PlaylistNotFoundError,
   PlaylistItemNotFoundError,
@@ -85,11 +84,14 @@ function toPlaylistItem(itemProps, media) {
 class PlaylistsRepository {
   #uw;
 
+  #logger;
+
   /**
    * @param {import('../Uwave')} uw
    */
   constructor(uw) {
     this.#uw = uw;
+    this.#logger = uw.logger.child({ ns: 'uwave:playlists' });
   }
 
   /**
@@ -153,7 +155,7 @@ class PlaylistsRepository {
 
     // If this is the user's first playlist, immediately activate it.
     if (user.activePlaylist == null) {
-      debug(`activating first playlist for ${user.id} ${user.username}`);
+      this.#logger.info({ userId: user.id, playlistId: playlist.id }, 'activating first playlist');
       user.activePlaylist = playlist._id;
       await user.save();
     }
