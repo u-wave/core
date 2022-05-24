@@ -477,11 +477,10 @@ class SocketServer {
 
   /**
    * @param {import('ws')} socket
-   * @param {import('http').IncomingMessage} request
    * @private
    */
-  onSocketConnected(socket, request) {
-    this.#logger.info({ req: request }, 'new connection');
+  onSocketConnected(socket) {
+    this.#logger.info('new connection');
 
     socket.on('error', (error) => {
       this.onSocketError(socket, error);
