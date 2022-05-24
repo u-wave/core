@@ -43,7 +43,7 @@ const DEFAULT_REDIS_URL = 'redis://localhost:6379';
  *   port?: number,
  *   mongo?: string,
  *   redis?: string | RedisOptions,
- *   logger?: import('pino').Logger,
+ *   logger?: import('pino').LoggerOptions,
  * } & httpApi.HttpApiOptions} Options
  */
 
@@ -135,7 +135,10 @@ class UwaveServer extends EventEmitter {
 
     const boot = avvio(this);
 
-    this.logger = options.logger ?? pino();
+    this.logger = pino({
+      ...options.logger,
+      redact: ['req.headers.cookie', 'res.headers["set-cookie"]'],
+    });
     this.locale = i18n.cloneInstance();
 
     this.options = {

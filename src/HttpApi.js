@@ -82,7 +82,9 @@ async function httpApi(uw, options) {
     throw new TypeError('"options.onError" must be a function.');
   }
 
-  const logger = uw.logger.child({ ns: 'uwave:http-api' });
+  const logger = uw.logger.child({
+    ns: 'uwave:http-api',
+  });
 
   uw.config.register(optionsSchema['uw:key'], optionsSchema);
 

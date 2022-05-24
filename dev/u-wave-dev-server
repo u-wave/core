@@ -44,7 +44,7 @@ async function start() {
     port,
     redis: process.env.REDIS_URL,
     mongo: process.env.MONGODB_URL ?? 'mongodb://localhost/uwave',
-    logger,
+    logger: { level: 'trace' },
     secret,
     mailTransport: testTransport,
     timeout: 10,
