@@ -28,7 +28,7 @@ const ADD_TO_WAITLIST_SCRIPT = /** @type {[string, number, ...string[]]} */ ([
     local is_in_waitlist = redis.call('LPOS', k_waitlist, user_id)
     local current_dj = redis.call('GET', k_dj)
     if is_in_waitlist or current_dj == user_id then
-      return 'AlreadyInWaitlist'
+      return {'AlreadyInWaitlist', nil}
     end
 
     local before_id = nil
@@ -42,7 +42,7 @@ const ADD_TO_WAITLIST_SCRIPT = /** @type {[string, number, ...string[]]} */ ([
       redis.call('RPUSH', k_waitlist, user_id)
     end
 
-    return redis.call('LRANGE', k_waitlist, 0, -1)
+    return {nil, redis.call('LRANGE', k_waitlist, 0, -1)}
   `,
   2,
   'waitlist',
@@ -57,11 +57,11 @@ const MOVE_WAITLIST_SCRIPT = /** @type {[string, number, ...string[]]} */ ([
     local position = ARGV[2]
     local is_in_waitlist = redis.call('LPOS', k_waitlist, user_id)
     if not is_in_waitlist then
-      return 'NotInWaitlist'
+      return {'NotInWaitlist', nil}
     end
     local current_dj = redis.call('GET', k_dj)
     if current_dj == user_id then
-      return 'AlreadyInWaitlist'
+      return {'AlreadyInWaitlist', nil}
     end
 
     local before_id = redis.call('LINDEX', k_waitlist, position)
@@ -73,7 +73,7 @@ const MOVE_WAITLIST_SCRIPT = /** @type {[string, number, ...string[]]} */ ([
       redis.call('RPUSH', k_waitlist, user_id)
     end
 
-    return redis.call('LRANGE', k_waitlist, 0, -1)
+    return {nil, redis.call('LRANGE', k_waitlist, 0, -1)}
   `,
   2,
   'waitlist',
@@ -187,10 +187,10 @@ class Waitlist {
       throw new EmptyPlaylistError();
     }
 
-    const waitlist = /** @type {string[] | 'AlreadyInWaitlist'} */ (
+    const [code, waitlist] = /** @type {['AlreadyInWaitlist', null] | [null, string[]]} */ (
       await this.#uw.redis.eval(...ADD_TO_WAITLIST_SCRIPT, user.id)
     );
-    if (waitlist === 'AlreadyInWaitlist') {
+    if (code === 'AlreadyInWaitlist') {
       throw new AlreadyInWaitlistError();
     }
 
@@ -231,13 +231,13 @@ class Waitlist {
       throw new EmptyPlaylistError();
     }
 
-    const waitlist = /** @type {string[] | 'NotInWaitlist' | 'AlreadyInWaitlist' } */ (
+    const [code, waitlist] = /** @type {['NotInWaitlist', null] | ['AlreadyInWaitlist', null] | [null, string[]]} */ (
       await this.#uw.redis.eval(...MOVE_WAITLIST_SCRIPT, user.id, position)
     );
-    if (waitlist === 'NotInWaitlist') {
+    if (code === 'NotInWaitlist') {
       throw new UserNotInWaitlistError({ id: user.id });
     }
-    if (waitlist === 'AlreadyInWaitlist') {
+    if (code === 'AlreadyInWaitlist') {
       throw new UserIsPlayingError({ id: user.id });
     }
 
