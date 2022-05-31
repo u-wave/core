@@ -47,35 +47,6 @@ const ajv = new Ajv({
   useDefaults: false,
 });
 
-function missingServerOption() {
-  return new TypeError(`
-Exactly one of "options.server" and "options.port" is required. These
-options are used to attach the WebSocket server to the correct HTTP server.
-
-An example of how to attach the WebSocket server to an existing HTTP server
-using Express:
-
-    const { createSocketServer } = require('u-wave-http-api');
-    const app = express();
-    const server = app.listen(80);
-
-    createSocketServer(uwave, {
-      server: server,
-      /* ... */
-    });
-
-Alternatively, you can provide a port for the socket server to listen on:
-
-    const { createSocketServer } = require('u-wave-http-api');
-    const app = express();
-
-    createSocketServer(uwave, {
-      port: 6042,
-      /* ... */
-    });
-  `);
-}
-
 /**
  * @template {object} T
  * @param {T} object
@@ -152,18 +123,8 @@ class SocketServer {
    * @param {number} [options.port]
    */
   constructor(uw, options) {
-    if (!uw || !('mongo' in uw)) {
-      throw new TypeError('Expected a u-wave-core instance in the first parameter. If you are '
-        + 'developing, you may have to upgrade your u-wave-* modules.');
-    }
-
-    if (!options.server && !options.port) {
-      throw missingServerOption();
-    }
-
-    if (!options.secret) {
-      throw new TypeError('"options.secret" is empty. This option is used to sign authentication '
-        + 'keys, and is required for security reasons.');
+    if (!uw) {
+      throw new TypeError(`The "uw" argument must be of type UwaveServer. Received ${typeof uw}`);
     }
 
     this.#uw = uw;
@@ -191,7 +152,7 @@ class SocketServer {
       port: options.server ? undefined : options.port,
     });
 
-    this.#redisSubscription.subscribe('uwave', 'v1').catch((error) => {
+    this.#redisSubscription.subscribe('uwave').catch((error) => {
       this.#logger.error(error);
     });
     this.#redisSubscription.on('message', (channel, command) => {
@@ -688,15 +649,11 @@ class SocketServer {
 
     this.#logger.trace({ channel, command, data }, 'server message');
 
-    if (channel === 'v1') {
-      this.broadcast(command, data);
-    } else if (channel === 'uwave') {
-      if (has(this.#serverActions, command)) {
-        const action = this.#serverActions[command];
-        if (action !== undefined) { // the types for `ServerActions` allow undefined, so...
-          // @ts-expect-error TS2345 `data` is validated
-          action(data);
-        }
+    if (has(this.#serverActions, command)) {
+      const action = this.#serverActions[command];
+      if (action !== undefined) { // the types for `ServerActions` allow undefined, so...
+        // @ts-expect-error TS2345 `data` is validated
+        action(data);
       }
     }
   }
