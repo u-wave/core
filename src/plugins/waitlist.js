@@ -84,23 +84,34 @@ class Waitlist {
   #uw;
 
   /**
-   * @param {import('../Uwave')} uw
+   * @param {import('../Uwave').Boot} uw
    */
   constructor(uw) {
     this.#uw = uw;
 
     uw.config.register(schema['uw:key'], schema);
-    uw.config.on('set', (key, _settings, user, patch) => {
-      if (key !== schema['uw:key']) {
-        return;
-      }
-      if ('locked' in patch) {
-        this.#uw.publish('waitlist:lock', {
-          moderatorID: user.id,
-          locked: patch.locked,
-        });
-      }
-    });
+
+    const unsubscribe = uw.config.subscribe(
+      schema['uw:key'],
+      /**
+       * @param {WaitlistSettings} _settings
+       * @param {string|null} userID
+       * @param {Partial<WaitlistSettings>} patch
+       */
+      (_settings, userID, patch) => {
+        // TODO This userID != null check is wrong. It should always pass as
+        // long as all the cases where waitlist settings can be updated provide
+        // the moderator's user ID. There's no type level guarantee of that happening
+        // though and if it doesn't, clients will get out of sync because of this check.
+        if ('locked' in patch && patch.locked != null && userID != null) {
+          this.#uw.publish('waitlist:lock', {
+            moderatorID: userID,
+            locked: patch.locked,
+          });
+        }
+      },
+    );
+    uw.onClose(unsubscribe);
   }
 
   async #isBoothEmpty() {
@@ -349,7 +360,7 @@ class Waitlist {
 }
 
 /**
- * @param {import('../Uwave')} uw
+ * @param {import('../Uwave').Boot} uw
  * @returns {Promise<void>}
  */
 async function waitlistPlugin(uw) {

@@ -80,7 +80,7 @@ class ConfigStore {
 
     try {
       const updatedSettings = await this.get(data.key);
-      this.#emitter.emit(data.key, updatedSettings, data.patch);
+      this.#emitter.emit(data.key, updatedSettings, data.user, data.patch);
     } catch (error) {
       this.#logger.error({ err: error }, 'could not retrieve settings after update');
     }
@@ -89,7 +89,7 @@ class ConfigStore {
   /**
    * @template {object} TSettings
    * @param {string} key
-   * @param {(settings: TSettings) => void} listener
+   * @param {(settings: TSettings, user: string|null, patch: Partial<TSettings>) => void} listener
    */
   subscribe(key, listener) {
     this.#emitter.on(key, listener);
@@ -177,7 +177,7 @@ class ConfigStore {
     }
 
     const oldSettings = await this.#save(key, settings);
-    const patch = jsonMergePatch.generate(oldSettings, settings);
+    const patch = jsonMergePatch.generate(oldSettings, settings) ?? Object.create(null);
 
     this.#uw.publish('configStore:update', {
       key,
