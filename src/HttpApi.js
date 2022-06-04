@@ -69,7 +69,7 @@ function defaultCreatePasswordResetEmail({ token, requestUrl }) {
  */
 
 /**
- * @param {import('./Uwave')} uw
+ * @param {import('./Uwave').Boot} uw
  * @param {HttpApiOptions} options
  */
 async function httpApi(uw, options) {
@@ -91,10 +91,8 @@ async function httpApi(uw, options) {
   /** @type {HttpApiSettings} */
   // @ts-expect-error TS2322: get() always returns a validated object here
   let runtimeOptions = await uw.config.get(optionsSchema['uw:key']);
-  uw.config.on('set', (key, value) => {
-    if (key === 'u-wave:api') {
-      runtimeOptions = value;
-    }
+  const unsubscribe = uw.config.subscribe('u-wave:api', /** @param {HttpApiSettings} settings */ (settings) => {
+    runtimeOptions = settings;
   });
 
   logger.debug(runtimeOptions, 'start HttpApi');
@@ -152,10 +150,15 @@ async function httpApi(uw, options) {
   uw.express.use('/api', cors(corsOptions), uw.httpApi);
   // An older name
   uw.express.use('/v1', cors(corsOptions), uw.httpApi);
+
+  uw.onClose(() => {
+    unsubscribe();
+    uw.server.close();
+  });
 }
 
 /**
- * @param {import('./Uwave')} uw
+ * @param {import('./Uwave').Boot} uw
  */
 async function errorHandling(uw) {
   uw.logger.debug({ ns: 'uwave:http-api' }, 'setup HTTP error handling');
