@@ -54,6 +54,12 @@ describe('Authentication', () => {
     });
 
     it('returns "google" if configured', async () => {
+      const configPropagated = new Promise((resolve) => {
+        const unsubscribe = uw.config.subscribe('u-wave:socialAuth', () => {
+          unsubscribe();
+          resolve();
+        });
+      });
       await uw.config.set('u-wave:socialAuth', {
         google: {
           enabled: true,
@@ -61,6 +67,7 @@ describe('Authentication', () => {
           clientSecret: 'TEST SECRET',
         },
       });
+      await configPropagated;
 
       const res = await supertest(uw.server)
         .get('/api/auth/strategies')
