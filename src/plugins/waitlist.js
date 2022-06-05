@@ -19,8 +19,9 @@ const schema = require('../schemas/waitlist.json');
  * @typedef {{ cycle: boolean, locked: boolean }} WaitlistSettings
  */
 
-const ADD_TO_WAITLIST_SCRIPT = /** @type {[string, number, ...string[]]} */ ([
-  `
+const ADD_TO_WAITLIST_SCRIPT = {
+  keys: ['waitlist', 'booth:currentDJ'],
+  lua: `
     local k_waitlist = KEYS[1]
     local k_dj = KEYS[2]
     local user_id = ARGV[1]
@@ -28,7 +29,7 @@ const ADD_TO_WAITLIST_SCRIPT = /** @type {[string, number, ...string[]]} */ ([
     local is_in_waitlist = redis.call('LPOS', k_waitlist, user_id)
     local current_dj = redis.call('GET', k_dj)
     if is_in_waitlist or current_dj == user_id then
-      return {'${AlreadyInWaitlistError.code}', nil}
+      return { err = '${AlreadyInWaitlistError.code}' }
     end
 
     local before_id = nil
@@ -42,26 +43,24 @@ const ADD_TO_WAITLIST_SCRIPT = /** @type {[string, number, ...string[]]} */ ([
       redis.call('RPUSH', k_waitlist, user_id)
     end
 
-    return {nil, redis.call('LRANGE', k_waitlist, 0, -1)}
+    return redis.call('LRANGE', k_waitlist, 0, -1)
   `,
-  2,
-  'waitlist',
-  'booth:currentDJ',
-]);
+};
 
-const MOVE_WAITLIST_SCRIPT = /** @type {[string, number, ...string[]]} */ ([
-  `
+const MOVE_WAITLIST_SCRIPT = {
+  keys: ['waitlist', 'booth:currentDJ'],
+  lua: `
     local k_waitlist = KEYS[1]
     local k_dj = KEYS[2]
     local user_id = ARGV[1]
     local position = ARGV[2]
     local is_in_waitlist = redis.call('LPOS', k_waitlist, user_id)
     if not is_in_waitlist then
-      return {'${UserNotInWaitlistError.code}', nil}
+      return { err = '${UserNotInWaitlistError.code}' }
     end
     local current_dj = redis.call('GET', k_dj)
     if current_dj == user_id then
-      return {'${UserIsPlayingError.code}', nil}
+      return { err = '${UserIsPlayingError.code}' }
     end
 
     local before_id = redis.call('LINDEX', k_waitlist, position)
@@ -73,12 +72,9 @@ const MOVE_WAITLIST_SCRIPT = /** @type {[string, number, ...string[]]} */ ([
       redis.call('RPUSH', k_waitlist, user_id)
     end
 
-    return {nil, redis.call('LRANGE', k_waitlist, 0, -1)}
+    return redis.call('LRANGE', k_waitlist, 0, -1)
   `,
-  2,
-  'waitlist',
-  'booth:currentDJ',
-]);
+};
 
 class Waitlist {
   #uw;
@@ -90,6 +86,14 @@ class Waitlist {
     this.#uw = uw;
 
     uw.config.register(schema['uw:key'], schema);
+    uw.redis.defineCommand('uw:addToWaitlist', {
+      numberOfKeys: ADD_TO_WAITLIST_SCRIPT.keys.length,
+      lua: ADD_TO_WAITLIST_SCRIPT.lua,
+    });
+    uw.redis.defineCommand('uw:moveWaitlist', {
+      numberOfKeys: MOVE_WAITLIST_SCRIPT.keys.length,
+      lua: MOVE_WAITLIST_SCRIPT.lua,
+    });
 
     const unsubscribe = uw.config.subscribe(
       schema['uw:key'],
@@ -172,7 +176,6 @@ class Waitlist {
    *
    * @param {string} userID
    * @param {{moderator?: User}} [options]
-   * @returns {Promise<void>}
    */
   async addUser(userID, { moderator } = {}) {
     const { acl, users } = this.#uw;
@@ -198,27 +201,28 @@ class Waitlist {
       throw new EmptyPlaylistError();
     }
 
-    const [code, waitlist] = (
-      /** @type {[AlreadyInWaitlistError['code'], null] | [null, string[]]} */ (
-        await this.#uw.redis.eval(...ADD_TO_WAITLIST_SCRIPT, user.id)
-      )
-    );
-    if (code === AlreadyInWaitlistError.code) {
-      throw new AlreadyInWaitlistError();
-    }
+    try {
+      /** @type {string[]} */
+      const waitlist = await this.#uw.redis['uw:addToWaitlist'](...ADD_TO_WAITLIST_SCRIPT.keys, user.id);
 
-    if (isAddingOtherUser) {
-      this.#uw.publish('waitlist:add', {
-        userID: user.id,
-        moderatorID: moderator.id,
-        position: waitlist.indexOf(user.id),
-        waitlist,
-      });
-    } else {
-      this.#uw.publish('waitlist:join', {
-        userID: user.id,
-        waitlist,
-      });
+      if (isAddingOtherUser) {
+        this.#uw.publish('waitlist:add', {
+          userID: user.id,
+          moderatorID: moderator.id,
+          position: waitlist.indexOf(user.id),
+          waitlist,
+        });
+      } else {
+        this.#uw.publish('waitlist:join', {
+          userID: user.id,
+          waitlist,
+        });
+      }
+    } catch (error) {
+      if (error.message === AlreadyInWaitlistError.code) {
+        throw new AlreadyInWaitlistError();
+      }
+      throw error;
     }
 
     if (await this.#isBoothEmpty()) {
@@ -244,30 +248,25 @@ class Waitlist {
       throw new EmptyPlaylistError();
     }
 
-    const [code, waitlist] = (
-      /**
-       * @type {
-       *   | [UserNotInWaitlistError['code'], null]
-       *   | [UserIsPlayingError['code'], null]
-       *   | [null, string[]]
-       * }
-       */ (
-        await this.#uw.redis.eval(...MOVE_WAITLIST_SCRIPT, user.id, position)
-      )
-    );
-    if (code === UserNotInWaitlistError.code) {
-      throw new UserNotInWaitlistError({ id: user.id });
-    }
-    if (code === UserIsPlayingError.code) {
-      throw new UserIsPlayingError({ id: user.id });
-    }
+    try {
+      /** @type {string[]} */
+      const waitlist = await this.#uw.redis['uw:moveWaitlist'](...MOVE_WAITLIST_SCRIPT.keys, user.id, position);
 
-    this.#uw.publish('waitlist:move', {
-      userID: user.id,
-      moderatorID: moderator.id,
-      position: waitlist.indexOf(user.id),
-      waitlist,
-    });
+      this.#uw.publish('waitlist:move', {
+        userID: user.id,
+        moderatorID: moderator.id,
+        position: waitlist.indexOf(user.id),
+        waitlist,
+      });
+    } catch (error) {
+      if (error.message === UserNotInWaitlistError.code) {
+        throw new UserNotInWaitlistError({ id: user.id });
+      }
+      if (error.message === UserIsPlayingError.code) {
+        throw new UserIsPlayingError({ id: user.id });
+      }
+      throw error;
+    }
   }
 
   /**

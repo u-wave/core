@@ -238,7 +238,7 @@ const WaitlistLockedError = createErrorClass('WaitlistLockedError', {
 const AlreadyInWaitlistError = createErrorClass('AlreadyInWaitlistError', {
   code: 'already-in-waitlist',
   string: 'errors.alreadyInWaitlist',
-  base: Forbidden,
+  base: BadRequest,
 });
 
 const UserNotInWaitlistError = createErrorClass('UserNotInWaitlistError', {

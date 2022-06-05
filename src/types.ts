@@ -30,6 +30,16 @@ declare global {
   }
 }
 
+// Declare custom commands.
+declare module 'ioredis' {
+  interface Redis {
+    /** Run the add-to-waitlist script, declared in src/plugins/waitlist.js. */
+    'uw:addToWaitlist'(...args: [...keys: string[], userId: string]): Promise<string[]>;
+    /** Run the move-waitlist script, declared in src/plugins/waitlist.js. */
+    'uw:moveWaitlist'(...args: [...keys: string[], userId: string, position: number]): Promise<string[]>;
+  }
+}
+
 type DefaultParams = Record<string, string>;
 type DefaultQuery = ParsedQs;
 type DefaultBody = JsonObject;

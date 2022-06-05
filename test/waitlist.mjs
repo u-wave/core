@@ -135,6 +135,34 @@ describe('Waitlist', () => {
         .set('Cookie', `uwsession=${token}`)
         .send({ userID: user.id })
         .expect(200);
+
+      const res = await supertest(uw.server)
+        .get('/api/booth')
+        .set('Cookie', `uwsession=${token}`)
+        .expect(200);
+      sinon.assert.match(res.body.data, { userID: user.id });
+    });
+
+    it('prevents double-joining', async () => {
+      await uw.acl.allow(user, ['user']);
+      await createTestPlaylistItem(user);
+
+      const token = await uw.test.createTestSessionToken(user);
+      await uw.test.connectToWebSocketAs(user);
+
+      await supertest(uw.server)
+        .post('/api/waitlist')
+        .set('Cookie', `uwsession=${token}`)
+        .send({ userID: user.id })
+        .expect(200);
+
+      const res = await supertest(uw.server)
+        .post('/api/waitlist')
+        .set('Cookie', `uwsession=${token}`)
+        .send({ userID: user.id })
+        .expect(400);
+
+      sinon.assert.match(res.body.errors[0], { code: 'already-in-waitlist' });
     });
 
     it('requires the waitlist.add role to add other users', async () => {
