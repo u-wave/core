@@ -68,10 +68,13 @@ class Booth {
         this.advance();
       }
     }
+
+    /** @type {import('../Uwave').Boot} */ (this.#uw).onClose(() => {
+      this.#onStop();
+    });
   }
 
-  /** @internal */
-  onStop() {
+  #onStop() {
     this.maybeStop();
   }
 
@@ -415,9 +418,6 @@ async function boothPlugin(uw) {
     if (!err) {
       await uw.booth.onStart();
     }
-  });
-  uw.onClose(() => {
-    uw.booth.onStop();
   });
 }
 

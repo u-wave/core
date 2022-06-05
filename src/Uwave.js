@@ -188,9 +188,7 @@ class UwaveServer extends EventEmitter {
       createPasswordResetEmail: this.options.createPasswordResetEmail,
       onError: this.options.onError,
     });
-    boot.use(SocketServer.plugin, {
-      secret: this.options.secret,
-    });
+    boot.use(SocketServer.plugin);
 
     boot.use(acl);
     boot.use(chat);
