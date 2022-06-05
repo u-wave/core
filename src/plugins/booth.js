@@ -311,22 +311,9 @@ class Booth {
    * @prop {boolean} [publish]
    *
    * @param {AdvanceOptions} [opts]
-   * @param {import('redlock').Lock} [reuseLock]
    * @returns {Promise<PopulatedHistoryEntry|null>}
    */
-  async advance(opts = {}, reuseLock = undefined) {
-    let lock;
-    try {
-      if (reuseLock) {
-        lock = await reuseLock.extend(10_000);
-      } else {
-        lock = await this.#locker.acquire(['booth:advancing'], 10_000);
-      }
-    } catch (err) {
-      // @ts-expect-error TS2554: `cause` is not in our target types yet :shrug:
-      throw new Error('Another advance is still in progress.', { cause: err });
-    }
-
+  async #advanceLocked(opts = {}) {
     const publish = opts.publish ?? true;
     const remove = opts.remove || (
       !await this.#uw.waitlist.isCycleEnabled()
@@ -339,10 +326,10 @@ class Booth {
     } catch (err) {
       // If the next user's playlist was empty, remove them from the waitlist
       // and try advancing again.
-      if (err.code === 'PLAYLIST_IS_EMPTY') {
+      if (err instanceof EmptyPlaylistError) {
         this.#logger.info('user has empty playlist, skipping on to the next');
         await this.#cycleWaitlist(previous, { remove });
-        return this.advance({ publish, remove: true }, lock);
+        return this.#advanceLocked({ publish, remove: true });
       }
       throw err;
     }
@@ -389,13 +376,15 @@ class Booth {
       await this.#publishAdvanceComplete(next);
     }
 
-    try {
-      await lock.release();
-    } catch {
-      // Don't really care if this fails, it'll expire in some seconds anyway.
-    }
-
     return next;
+  }
+
+  /**
+   * @param {AdvanceOptions} [opts]
+   * @returns {Promise<PopulatedHistoryEntry|null>}
+   */
+  advance(opts = {}) {
+    return this.#locker.using(['booth:advancing'], 10_000, () => this.#advanceLocked(opts));
   }
 }
 
