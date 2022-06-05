@@ -85,6 +85,8 @@ class SocketServer {
 
   #wss;
 
+  #closing = false;
+
   /** @type {Connection[]} */
   #connections = [];
 
@@ -533,7 +535,7 @@ class SocketServer {
         this.#logger.info({ userId: user.id }, 'removing connection after ban');
         this.remove(connection);
         disconnectUser(this.#uw, user._id);
-      } else {
+      } else if (!this.#closing) {
         this.#logger.info({ userId: user.id }, 'lost connection');
         this.replace(connection, this.createLostConnection(user));
       }
@@ -666,8 +668,9 @@ class SocketServer {
   async destroy() {
     clearInterval(this.#pinger);
 
+    this.#closing = true;
     for (const connection of this.#wss.clients) {
-      connection.terminate();
+      connection.close();
     }
 
     const closeWsServer = promisify(this.#wss.close.bind(this.#wss));
