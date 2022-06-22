@@ -313,8 +313,13 @@ class Booth {
     const source = this.#uw.source(sourceType);
     if (source) {
       this.#logger.trace({ sourceType: source.type, sourceID }, 'running pre-play hook');
-      const sourceData = await source.play(entry.user, entry.media.media);
-      this.#logger.trace({ sourceType: source.type, sourceID, sourceData }, 'pre-play hook result');
+      let sourceData;
+      try {
+        sourceData = await source.play(entry.user, entry.media.media);
+        this.#logger.trace({ sourceType: source.type, sourceID, sourceData }, 'pre-play hook result');
+      } catch (error) {
+        this.#logger.error({ sourceType: source.type, sourceID, err: error }, 'pre-play hook failed');
+      }
       return sourceData;
     }
 
