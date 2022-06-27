@@ -4,6 +4,18 @@ All notable changes to this project will be documented in this file.
 
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## 0.5.0-alpha.11 / 27 Jun 2022
+This is an alpha release, but new servers should use this version rather than an older "stable" one.
+
+Features:
+ * Update `u-wave-source-youtube`. This expects that clients use u-wave-web v2.0.0-alpha.9 or later.
+
+Bugfixes:
+ * Fix crash when a media source's `play()` hook throws. (#525)
+
+Internal:
+ * Do not rely on in-process event emitters. (#522)
+
 ## 0.5.0-alpha.10 / 23 May 2022
 This is an alpha release, but new servers should use this version rather than an older "stable" one.
 
