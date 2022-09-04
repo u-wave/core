@@ -145,7 +145,6 @@ async function httpApi(uw, options) {
       callback(null, matchOrigin(origin, runtimeOptions.allowedOrigins));
     },
   };
-  // @ts-expect-error TS2769: Not sure why the overload doesn't match, but it should :)
   uw.express.options('/api/*', cors(corsOptions));
   uw.express.use('/api', cors(corsOptions), uw.httpApi);
   // An older name

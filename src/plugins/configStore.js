@@ -163,7 +163,8 @@ class ConfigStore {
    * @param {{ user?: User }} [options]
    * @public
    */
-  async set(key, settings, { user } = {}) {
+  async set(key, settings, options = {}) {
+    const { user } = options;
     const validate = this.#validators.get(key);
     if (validate) {
       if (!validate(settings)) {
