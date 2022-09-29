@@ -8,7 +8,7 @@ const { Types } = mongoose.Schema;
 const listOfUsers = [{ type: Types.ObjectId, ref: 'User' }];
 
 /**
- * @typedef {object} HistorySourceData
+ * @typedef {import('type-fest').JsonObject} HistorySourceData
  */
 
 /**
@@ -70,6 +70,8 @@ const schema = new Schema({
     },
     start: { type: Number, default: 0 },
     end: { type: Number, default: 0 },
+    // Bypass typecheck as JsonObject is a recursive structure & causes infinite looping here.
+    /** @type {any} */
     sourceData: { type: Object, select: false },
   },
   playedAt: { type: Date, default: () => new Date(), index: true },
