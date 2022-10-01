@@ -7,6 +7,7 @@ const { EmptyPlaylistError, PlaylistItemNotFoundError } = require('../errors');
 const routes = require('../routes/booth');
 
 /**
+ * @typedef {import('type-fest').JsonObject} JsonObject
  * @typedef {import('../models').User} User
  * @typedef {import('../models').Playlist} Playlist
  * @typedef {import('../models').PlaylistItem} PlaylistItem
@@ -297,8 +298,14 @@ class Booth {
     const source = this.#uw.source(sourceType);
     if (source) {
       this.#logger.trace({ sourceType: source.type, sourceID }, 'running pre-play hook');
-      const sourceData = await source.play(entry.user, entry.media.media);
-      this.#logger.trace({ sourceType: source.type, sourceID, sourceData }, 'pre-play hook result');
+      /** @type {JsonObject | undefined} */
+      let sourceData;
+      try {
+        sourceData = await source.play(entry.user, entry.media.media);
+        this.#logger.trace({ sourceType: source.type, sourceID, sourceData }, 'pre-play hook result');
+      } catch (error) {
+        this.#logger.error({ sourceType: source.type, sourceID, err: error }, 'pre-play hook failed');
+      }
       return sourceData;
     }
 

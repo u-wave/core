@@ -35,8 +35,8 @@ function toPaginatedResponse(
     meta: {
       offset: page.currentPage.offset,
       pageSize: page.pageSize,
-      results: page.filteredSize,
-      total: page.totalSize,
+      results: page.filteredSize ?? null,
+      total: page.totalSize ?? null,
     },
   }), {
     links: {

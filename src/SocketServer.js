@@ -398,7 +398,7 @@ class SocketServer {
        * Broadcast a ban event.
        */
       'user:ban': ({
-        moderatorID, userID, permanent, duration, expiresAt,
+        moderatorID, userID, permanent = false, duration, expiresAt,
       }) => {
         this.broadcast('ban', {
           moderatorID, userID, permanent, duration, expiresAt,
