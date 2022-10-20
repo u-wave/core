@@ -112,6 +112,10 @@ async function httpApi(uw, options) {
     .use(cookieParser())
     .use(session({
       name: 'uwsid',
+      cookie: {
+        secure: true,
+        httpOnly: true,
+      },
       store: new RedisSessionStore({
         client: uw.redis,
       }),
@@ -130,6 +134,7 @@ async function httpApi(uw, options) {
       recaptcha: options.recaptcha,
       createPasswordResetEmail:
         options.createPasswordResetEmail ?? defaultCreatePasswordResetEmail,
+      cookieSecure: true,
     }))
     .use('/bans', bans())
     .use('/import', imports())
