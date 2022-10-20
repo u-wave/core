@@ -9,7 +9,6 @@ const toListResponse = require('./toListResponse');
  * @returns {string}
  */
 function appendQuery(base, query) {
-  // eslint-disable-next-line node/no-deprecated-api
   const parsed = new URL(base);
   parsed.search = qs.stringify({
     ...qs.parse(parsed.search),
