@@ -1,6 +1,6 @@
 'use strict';
 
-const { URLSearchParams } = require('url');
+const { promisify } = require('util');
 const cookie = require('cookie');
 const jwt = require('jsonwebtoken');
 const randomString = require('random-string');
@@ -439,6 +439,9 @@ async function logout(req, res) {
   const { user, cookies } = req;
   const { cookieSecure, cookiePath } = req.authOptions;
   const uw = req.uwave;
+
+  const passportLogOut = promisify(req.logOut.bind(req));
+  await passportLogOut();
 
   uw.publish('user:logout', {
     userID: user.id,
