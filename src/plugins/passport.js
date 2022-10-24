@@ -31,7 +31,7 @@ class PassportPlugin extends Passport {
   #logger;
 
   /**
-   * @param {import('../Uwave')} uw
+   * @param {import('../Uwave').Boot} uw
    * @param {{ secret: Buffer|string }} options
    */
   constructor(uw, options) {
@@ -79,11 +79,10 @@ class PassportPlugin extends Passport {
     this.use('jwt', new JWTStrategy(options.secret, (user) => uw.users.getUser(user.id)));
 
     uw.config.register(schema['uw:key'], schema);
-    uw.config.on('set', (key, settings) => {
-      if (key === schema['uw:key']) {
-        this.applyAuthStrategies(settings);
-      }
+    const unsubscribe = uw.config.subscribe(schema['uw:key'], /** @param {SocialAuthSettings} settings */ (settings) => {
+      this.applyAuthStrategies(settings);
     });
+    uw.onClose(unsubscribe);
   }
 
   /**
@@ -155,7 +154,7 @@ class PassportPlugin extends Passport {
 }
 
 /**
- * @param {import('../Uwave')} uw
+ * @param {import('../Uwave').Boot} uw
  * @param {{ secret: Buffer|string }} options
  */
 async function passportPlugin(uw, options) {

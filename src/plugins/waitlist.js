@@ -146,7 +146,8 @@ class Waitlist {
    * @param {{moderator?: User}} [options]
    * @returns {Promise<void>}
    */
-  async addUser(userID, { moderator } = {}) {
+  async addUser(userID, options = {}) {
+    const { moderator } = options;
     const { acl, users } = this.#uw;
 
     const user = await users.getUser(userID);

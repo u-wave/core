@@ -35,8 +35,8 @@ jobs:
     name: Tests
     strategy:
       matrix:
-        node-version: ['14.x', '16.x', '18.x']
-        mongo-version: ['5.0']
+        node-version: ['14.x', '16.x', '18.x', '19.x']
+        mongo-version: ['5.0', '6.0']
         include:
           - node-version: 'lts/*'
             mongo-version: '4.2'

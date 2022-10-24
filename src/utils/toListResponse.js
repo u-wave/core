@@ -90,11 +90,13 @@ function extractIncluded(data, included) {
  * @param {IncludedOptions} [options.included]
  * @param {string} [options.url]
  */
-function toListResponse(list, {
-  meta = {},
-  included,
-  url,
-} = {}) {
+function toListResponse(list, options = {}) {
+  const {
+    meta = {},
+    included,
+    url,
+  } = options;
+
   let props = {
     data: list,
     /** @type {ListResponse['included']} */
