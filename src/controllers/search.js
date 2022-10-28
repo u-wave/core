@@ -53,7 +53,6 @@ async function updateSourceData(uw, updates) {
       },
     });
   }
-  // @ts-expect-error TS2615: don't really understand this one
   await Media.bulkWrite(ops);
 }
 

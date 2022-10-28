@@ -61,7 +61,7 @@ class HTTPError extends APIError {
 }
 
 /**
- * @template {import('i18next').StringMap} TData
+ * @template {import('i18next').TOptions} TData
  * @template {string} ErrorName
  * @template {string} ErrorCode
  * @param {ErrorName} name

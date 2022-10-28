@@ -1,6 +1,5 @@
 'use strict';
 
-const url = require('url');
 const qs = require('qs');
 const toListResponse = require('./toListResponse');
 
@@ -10,14 +9,12 @@ const toListResponse = require('./toListResponse');
  * @returns {string}
  */
 function appendQuery(base, query) {
-  // eslint-disable-next-line node/no-deprecated-api
-  const parsed = url.parse(base, true);
+  const parsed = new URL(base);
   parsed.search = qs.stringify({
-    ...parsed.query,
+    ...qs.parse(parsed.search),
     ...query,
   });
-  parsed.query = {};
-  return `${url.format(parsed)}`;
+  return parsed.toString();
 }
 
 /**
