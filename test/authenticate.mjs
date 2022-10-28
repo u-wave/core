@@ -2,7 +2,6 @@ import assert from 'assert';
 import sinon from 'sinon';
 import supertest from 'supertest';
 import nock from 'nock';
-import delay from 'delay';
 import testKeys from 'recaptcha-test-keys';
 import createUwave from './utils/createUwave.mjs';
 
