@@ -4,6 +4,7 @@ const { EventEmitter } = require('events');
 const Ajv = require('ajv/dist/2019').default;
 const formats = require('ajv-formats').default;
 const { omit } = require('lodash');
+const jsonMergePatch = require('json-merge-patch');
 const sjson = require('secure-json-parse');
 const ValidationError = require('../errors/ValidationError');
 
@@ -63,7 +64,10 @@ class ConfigStore {
    */
   async #onServerMessage(rawCommand) {
     /**
-     * @type {{ command: string, data: { key: string, user: string|null } }|undefined}
+     * @type {undefined|{
+     *   command: string,
+     *   data: import('../redisMessages').ServerActionParameters['configStore:update'],
+     * }}
      */
     const json = sjson.safeParse(rawCommand);
     if (!json) {
@@ -76,7 +80,7 @@ class ConfigStore {
 
     try {
       const updatedSettings = await this.get(data.key);
-      this.#emitter.emit(data.key, updatedSettings);
+      this.#emitter.emit(data.key, updatedSettings, data.user, data.patch);
     } catch (error) {
       this.#logger.error({ err: error }, 'could not retrieve settings after update');
     }
@@ -85,7 +89,7 @@ class ConfigStore {
   /**
    * @template {object} TSettings
    * @param {string} key
-   * @param {(settings: TSettings) => void} listener
+   * @param {(settings: TSettings, user: string|null, patch: Partial<TSettings>) => void} listener
    */
   subscribe(key, listener) {
     this.#emitter.on(key, listener);
@@ -95,24 +99,25 @@ class ConfigStore {
   /**
    * @param {string} key
    * @param {object} values
-   * @private
+   * @returns {Promise<object|null>} The old values.
    */
-  async save(key, values) {
+  async #save(key, values) {
     const { Config } = this.#uw.models;
 
-    await Config.findByIdAndUpdate(
+    const previousValues = await Config.findByIdAndUpdate(
       key,
       { _id: key, ...values },
       { upsert: true },
     );
+
+    return omit(previousValues, '_id');
   }
 
   /**
    * @param {string} key
    * @returns {Promise<object|null>}
-   * @private
    */
-  async load(key) {
+  async #load(key) {
     const { Config } = this.#uw.models;
 
     const model = await Config.findById(key);
@@ -146,7 +151,7 @@ class ConfigStore {
     const validate = this.#validators.get(key);
     if (!validate) return undefined;
 
-    const config = (await this.load(key)) ?? {};
+    const config = (await this.#load(key)) ?? {};
     // Allowed to fail--just fills in defaults
     validate(config);
 
@@ -172,11 +177,13 @@ class ConfigStore {
       }
     }
 
-    await this.save(key, settings);
+    const oldSettings = await this.#save(key, settings);
+    const patch = jsonMergePatch.generate(oldSettings, settings) ?? Object.create(null);
 
     this.#uw.publish('configStore:update', {
       key,
       user: user ? user.id : null,
+      patch,
     });
   }
 

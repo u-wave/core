@@ -62,17 +62,17 @@ class HTTPError extends APIError {
 
 /**
  * @template {import('i18next').TOptions} TData
- * @param {string} name
+ * @template {string} ErrorName
+ * @template {string} ErrorCode
+ * @param {ErrorName} name
  * @param {{
- *   code: string,
+ *   code: ErrorCode,
  *   string: string | ((data: TData) => string),
  *   base: typeof import('http-errors').HttpError,
  * }} options
- *
- * @returns {new(data?: TData) => HttpError}
  */
 function createErrorClass(name, {
-  code = 'unknown-error',
+  code,
   string,
   base = HttpError,
 }) {
@@ -80,7 +80,7 @@ function createErrorClass(name, {
     ? (() => string)
     : string;
 
-  return class extends base {
+  const Error = class extends base {
     /** @param {TData} [data] */
     constructor(data) {
       // @ts-expect-error TS2345 This is actually unsafe but the generic TData type
@@ -97,6 +97,10 @@ function createErrorClass(name, {
       return translate(this.i18nKey);
     }
   };
+
+  Error.code = code;
+
+  return Error;
 }
 
 const PermissionError = createErrorClass('PermissionError', {
@@ -234,7 +238,7 @@ const WaitlistLockedError = createErrorClass('WaitlistLockedError', {
 const AlreadyInWaitlistError = createErrorClass('AlreadyInWaitlistError', {
   code: 'already-in-waitlist',
   string: 'errors.alreadyInWaitlist',
-  base: Forbidden,
+  base: BadRequest,
 });
 
 const UserNotInWaitlistError = createErrorClass('UserNotInWaitlistError', {

@@ -2,7 +2,6 @@ import assert from 'assert';
 import sinon from 'sinon';
 import supertest from 'supertest';
 import nock from 'nock';
-import delay from 'delay';
 import testKeys from 'recaptcha-test-keys';
 import createUwave from './utils/createUwave.mjs';
 
@@ -55,6 +54,12 @@ describe('Authentication', () => {
     });
 
     it('returns "google" if configured', async () => {
+      const configPropagated = new Promise((resolve) => {
+        const unsubscribe = uw.config.subscribe('u-wave:socialAuth', () => {
+          unsubscribe();
+          resolve();
+        });
+      });
       await uw.config.set('u-wave:socialAuth', {
         google: {
           enabled: true,
@@ -62,8 +67,7 @@ describe('Authentication', () => {
           clientSecret: 'TEST SECRET',
         },
       });
-      // TODO Remove after #519? That PR ensures that config is applied before returning.
-      await delay(200);
+      await configPropagated;
 
       const res = await supertest(uw.server)
         .get('/api/auth/strategies')

@@ -55,6 +55,7 @@ export type ServerActionParameters = {
   'configStore:update': {
     key: string,
     user: string | null,
+    patch: Record<string, import('type-fest').JsonValue>,
   },
 
   'booth:vote': {

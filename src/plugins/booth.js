@@ -76,7 +76,7 @@ class Booth {
   }
 
   #onStop() {
-    this.maybeStop();
+    this.#maybeStop();
   }
 
   /**
@@ -118,9 +118,8 @@ class Booth {
 
   /**
    * @param {HistoryEntry} entry
-   * @private
    */
-  async saveStats(entry) {
+  async #saveStats(entry) {
     const stats = await this.getCurrentVoteStats();
 
     Object.assign(entry, stats);
@@ -130,9 +129,8 @@ class Booth {
   /**
    * @param {{ remove?: boolean }} options
    * @returns {Promise<User|null>}
-   * @private
    */
-  async getNextDJ(options) {
+  async #getNextDJ(options) {
     const { User } = this.#uw.models;
     /** @type {string|null} */
     let userID = await this.#uw.redis.lindex('waitlist', 0);
@@ -150,13 +148,12 @@ class Booth {
   /**
    * @param {{ remove?: boolean }} options
    * @returns {Promise<PopulatedHistoryEntry | null>}
-   * @private
    */
-  async getNextEntry(options) {
+  async #getNextEntry(options) {
     const { HistoryEntry, PlaylistItem } = this.#uw.models;
     const { playlists } = this.#uw;
 
-    const user = await this.getNextDJ(options);
+    const user = await this.#getNextDJ(options);
     if (!user || !user.activePlaylist) {
       return null;
     }
@@ -193,9 +190,8 @@ class Booth {
   /**
    * @param {HistoryEntry|null} previous
    * @param {{ remove?: boolean }} options
-   * @private
    */
-  async cycleWaitlist(previous, options) {
+  async #cycleWaitlist(previous, options) {
     const waitlistLen = await this.#uw.redis.llen('waitlist');
     if (waitlistLen > 0) {
       await this.#uw.redis.lpop('waitlist');
@@ -219,9 +215,8 @@ class Booth {
 
   /**
    * @param {PopulatedHistoryEntry} next
-   * @private
    */
-  update(next) {
+  #update(next) {
     return this.#uw.redis.multi()
       .del('booth:upvotes', 'booth:downvotes', 'booth:favorites')
       .set('booth:historyID', next.id)
@@ -229,10 +224,7 @@ class Booth {
       .exec();
   }
 
-  /**
-   * @private
-   */
-  maybeStop() {
+  #maybeStop() {
     if (this.#timeout) {
       clearTimeout(this.#timeout);
       this.#timeout = null;
@@ -241,21 +233,13 @@ class Booth {
 
   /**
    * @param {PopulatedHistoryEntry} entry
-   * @private
    */
-  play(entry) {
-    this.maybeStop();
+  #play(entry) {
+    this.#maybeStop();
     this.#timeout = setTimeout(
       () => this.advance(),
       (entry.media.end - entry.media.start) * 1000,
     );
-  }
-
-  /**
-   * @private
-   */
-  getWaitlist() {
-    return this.#uw.redis.lrange('waitlist', 0, -1);
   }
 
   /**
@@ -283,9 +267,10 @@ class Booth {
 
   /**
    * @param {PopulatedHistoryEntry|null} next
-   * @private
    */
-  async publish(next) {
+  async #publishAdvanceComplete(next) {
+    const { waitlist } = this.#uw;
+
     if (next) {
       this.#uw.publish('advance:complete', {
         historyID: next.id,
@@ -302,14 +287,13 @@ class Booth {
     } else {
       this.#uw.publish('advance:complete', null);
     }
-    this.#uw.publish('waitlist:update', await this.getWaitlist());
+    this.#uw.publish('waitlist:update', await waitlist.getUserIDs());
   }
 
   /**
    * @param {PopulatedHistoryEntry} entry
-   * @private
    */
-  async getSourceDataForPlayback(entry) {
+  async #getSourceDataForPlayback(entry) {
     const { sourceID, sourceType } = entry.media.media;
     const source = this.#uw.source(sourceType);
     if (source) {
@@ -334,38 +318,31 @@ class Booth {
    * @prop {boolean} [publish]
    *
    * @param {AdvanceOptions} [opts]
-   * @param {import('redlock').Lock} [reuseLock]
    * @returns {Promise<PopulatedHistoryEntry|null>}
    */
-  async advance(opts = {}, reuseLock = undefined) {
-    let lock;
-    try {
-      if (reuseLock) {
-        lock = await reuseLock.extend(10_000);
-      } else {
-        lock = await this.#locker.acquire(['booth:advancing'], 10_000);
-      }
-    } catch (err) {
-      throw new Error('Another advance is still in progress.');
-    }
+  async #advanceLocked(opts = {}) {
+    const publish = opts.publish ?? true;
+    const remove = opts.remove || (
+      !await this.#uw.waitlist.isCycleEnabled()
+    );
 
     const previous = await this.getCurrentEntry();
     let next;
     try {
-      next = await this.getNextEntry(opts);
+      next = await this.#getNextEntry({ remove });
     } catch (err) {
       // If the next user's playlist was empty, remove them from the waitlist
       // and try advancing again.
-      if (err.code === 'PLAYLIST_IS_EMPTY') {
+      if (err instanceof EmptyPlaylistError) {
         this.#logger.info('user has empty playlist, skipping on to the next');
-        await this.cycleWaitlist(previous, opts);
-        return this.advance({ ...opts, remove: true }, lock);
+        await this.#cycleWaitlist(previous, { remove });
+        return this.#advanceLocked({ publish, remove: true });
       }
       throw err;
     }
 
     if (previous) {
-      await this.saveStats(previous);
+      await this.#saveStats(previous);
 
       this.#logger.info({
         id: previous._id,
@@ -383,34 +360,38 @@ class Booth {
         artist: next.media.artist,
         title: next.media.title,
       }, 'next track');
-      const sourceData = await this.getSourceDataForPlayback(next);
+      const sourceData = await this.#getSourceDataForPlayback(next);
       if (sourceData) {
         next.media.sourceData = sourceData;
       }
       await next.save();
     } else {
-      this.maybeStop();
+      this.#maybeStop();
     }
 
-    await this.cycleWaitlist(previous, opts);
+    await this.#cycleWaitlist(previous, { remove });
 
     if (next) {
-      await this.update(next);
+      await this.#update(next);
       await cyclePlaylist(next.playlist);
-      this.play(next);
+      this.#play(next);
     } else {
       await this.clear();
     }
 
-    if (opts.publish !== false) {
-      await this.publish(next);
+    if (publish !== false) {
+      await this.#publishAdvanceComplete(next);
     }
 
-    lock.release().catch(() => {
-      // Don't really care if this fails, it'll expire in some seconds anyway.
-    });
-
     return next;
+  }
+
+  /**
+   * @param {AdvanceOptions} [opts]
+   * @returns {Promise<PopulatedHistoryEntry|null>}
+   */
+  advance(opts = {}) {
+    return this.#locker.using(['booth:advancing'], 10_000, () => this.#advanceLocked(opts));
   }
 }
 

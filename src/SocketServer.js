@@ -85,10 +85,17 @@ class SocketServer {
 
   #wss;
 
+  #closing = false;
+
   /** @type {Connection[]} */
   #connections = [];
 
   #pinger;
+
+  /**
+   * Update online guests count and broadcast an update if necessary.
+   */
+  #recountGuests;
 
   /**
    * Handlers for commands that come in from clients.
@@ -172,8 +179,8 @@ class SocketServer {
       this.ping();
     }, ms('10 seconds'));
 
-    this.recountGuests = debounce(() => {
-      this.recountGuestsInternal().catch((error) => {
+    this.#recountGuests = debounce(() => {
+      this.#recountGuestsInternal().catch((error) => {
         this.#logger.error({ err: error }, 'counting guests failed');
       });
     }, ms('2 seconds'));
@@ -531,12 +538,12 @@ class SocketServer {
     connection.on('close', ({ banned }) => {
       if (banned) {
         this.#logger.info({ userId: user.id }, 'removing connection after ban');
-        this.remove(connection);
         disconnectUser(this.#uw, user._id);
-      } else {
+      } else if (!this.#closing) {
         this.#logger.info({ userId: user.id }, 'lost connection');
-        this.replace(connection, this.createLostConnection(user));
+        this.add(this.createLostConnection(user));
       }
+      this.remove(connection);
     });
     connection.on(
       'command',
@@ -594,7 +601,7 @@ class SocketServer {
     this.#logger.trace({ type: connection.constructor.name, userId }, 'add connection');
 
     this.#connections.push(connection);
-    this.recountGuests();
+    this.#recountGuests();
   }
 
   /**
@@ -611,7 +618,7 @@ class SocketServer {
     this.#connections.splice(i, 1);
 
     connection.removed();
-    this.recountGuests();
+    this.#recountGuests();
   }
 
   /**
@@ -666,13 +673,16 @@ class SocketServer {
   async destroy() {
     clearInterval(this.#pinger);
 
+    this.#closing = true;
     for (const connection of this.#wss.clients) {
-      connection.terminate();
+      connection.close();
     }
 
     const closeWsServer = promisify(this.#wss.close.bind(this.#wss));
     await closeWsServer();
     await this.#redisSubscription.quit();
+
+    this.#recountGuests.cancel();
   }
 
   /**
@@ -740,17 +750,7 @@ class SocketServer {
     return parseInt(rawCount, 10);
   }
 
-  /**
-   * Update online guests count and broadcast an update if necessary.
-   *
-   * @private
-   */
-  recountGuests() { // eslint-disable-line class-methods-use-this
-    // assigned in constructor()
-  }
-
-  /** @private */
-  async recountGuestsInternal() {
+  async #recountGuestsInternal() {
     const { redis } = this.#uw;
     const guests = this.#connections
       .filter((connection) => connection instanceof GuestConnection)
