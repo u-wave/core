@@ -4,6 +4,20 @@ All notable changes to this project will be documented in this file.
 
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## 0.5.0-alpha.12 / 30 Oct 2022
+This is an alpha release, but new servers should use this version rather than an older "stable" one.
+
+Features:
+ * Waitlist cycle can be disabled in the admin menu. (#519)
+ * Waitlist lock state is now a setting in the admin menu. (#519)
+
+Internal:
+ * Test with MongoDB 6.0. (#536)
+ * Test with Node.js 19. (539)
+ * Replace use of deprecated `url` module by `URL` class. (#540)
+ * Replace LGTM.com by Github Code Scanning. (#462)
+ * Dependency updates.
+
 ## 0.5.0-alpha.11 / 27 Jun 2022
 This is an alpha release, but new servers should use this version rather than an older "stable" one.
 
