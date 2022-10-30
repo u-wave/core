@@ -91,6 +91,10 @@ function createErrorClass(name, {
       this.code = code;
       this.i18nKey = i18nKey;
       this.data = data;
+      // http-errors overwrites the prototype of the error, so it will
+      // point to the superclass.
+      // Patch it back to make `instanceof DerivedError` work correctly.
+      Object.setPrototypeOf(this, Error.prototype);
     }
 
     getMessage(translate = t) {
