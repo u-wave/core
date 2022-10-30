@@ -1,3 +1,5 @@
+'use strict';
+
 const path = require('path');
 const fs = require('fs').promises;
 const serveStatic = require('serve-static');
@@ -47,7 +49,7 @@ class FSAssets {
 
   /**
    * @param {string} key
-   * @param {Buffer|ArrayBuffer|string} content
+   * @param {Buffer|string} content
    * @returns {Promise<string>} The actual key used.
    */
   async store(key, content) {
