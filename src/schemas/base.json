@@ -20,7 +20,7 @@
     },
     "logo": {
       "type": "string",
-      "format": "image",
+      "format": "asset",
       "title": "Server logo",
       "description": ""
     }
