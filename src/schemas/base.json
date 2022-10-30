@@ -17,6 +17,12 @@
       "format": "uri",
       "title": "URL",
       "description": "Publically accessible URL of this server."
+    },
+    "logo": {
+      "type": "string",
+      "format": "image",
+      "title": "Server logo",
+      "description": ""
     }
   },
   "required": ["name", "url"]

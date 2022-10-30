@@ -186,7 +186,10 @@ class UwaveServer extends EventEmitter {
       uw.config.register(baseSchema['uw:key'], baseSchema);
     });
 
-    boot.use(assets);
+    boot.use(assets, {
+      basedir: '/tmp/u-wave-basedir',
+    });
+
     boot.use(passport, {
       secret: this.options.secret,
     });
@@ -201,6 +204,10 @@ class UwaveServer extends EventEmitter {
       onError: this.options.onError,
     });
     boot.use(SocketServer.plugin);
+
+    boot.use(async (uw) => {
+      uw.express.use('/assets', uw.assets.middleware());
+    });
 
     boot.use(acl);
     boot.use(chat);

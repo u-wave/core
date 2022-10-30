@@ -1,18 +1,24 @@
 'use strict';
 
-const path = require('path');
-const fs = require('fs').promises;
-const serveStatic = require('serve-static');
+const { finished, pipeline } = require('stream');
+const mime = require('mime');
+const BlobStore = require('fs-blob-store');
 
 class FSAssets {
+  #uw;
+
+  #store;
+
   /**
    * @typedef {object} FSAssetsOptions
    * @prop {string} [publicPath]
    * @prop {string} basedir
    *
+   * @param {import('../Uwave')} uw
    * @param {FSAssetsOptions} options
    */
-  constructor(options) {
+  constructor(uw, options) {
+    this.#uw = uw;
     this.options = {
       publicPath: '/assets/',
       ...options,
@@ -21,22 +27,8 @@ class FSAssets {
     if (!this.options.basedir) {
       throw new TypeError('u-wave: fs-assets: missing basedir');
     }
-  }
 
-  /**
-   * @type {string}
-   * @private
-   */
-  get basedir() {
-    return this.options.basedir;
-  }
-
-  /**
-   * @param {string} key
-   * @private
-   */
-  path(key) {
-    return path.resolve(this.basedir, key);
+    this.#store = new BlobStore(this.options.basedir);
   }
 
   /**
@@ -48,31 +40,87 @@ class FSAssets {
   }
 
   /**
-   * @param {string} key
+   * @typedef {object} StoreOptions
+   * @prop {string} category
+   * @prop {import('mongodb').ObjectId} userID
+   *
+   * @param {string} name
    * @param {Buffer|string} content
+   * @param {StoreOptions} options
    * @returns {Promise<string>} The actual key used.
    */
-  async store(key, content) {
-    const fullPath = this.path(key);
-    // TODO check if fullPath is "below" basedir
-    await fs.writeFile(fullPath, content);
-    return path.relative(this.basedir, fullPath);
+  async store(name, content, { category, userID }) {
+    const { Asset } = this.#uw.models;
+
+    const key = `${category}/${userID}/${name}`;
+    const path = await new Promise((resolve, reject) => {
+      /** @type {import('stream').Writable} */
+      const ws = this.#store.createWriteStream({ key }, (err, meta) => {
+        if (err) {
+          reject(err);
+        } else {
+          resolve(meta.key);
+        }
+      });
+      ws.end(content);
+    });
+
+    try {
+      await Asset.create({
+        name,
+        path,
+        category,
+        user: userID,
+      });
+    } catch (error) {
+      this.#store.remove({ key: path }, () => {
+        // ignore
+      });
+      throw error;
+    }
+
+    return path;
   }
 
   /**
    * @param {string} key
    * @returns {Promise<Buffer>}
    */
-  async get(key) {
-    const fullPath = this.path(key);
-    return fs.readFile(fullPath);
+  get(key) {
+    return new Promise((resolve, reject) => {
+      /** @type {import('stream').Readable} */
+      const rs = this.#store.createReadStream({ key });
+
+      /** @type {Buffer[]} */
+      const chunks = [];
+      finished(rs, (err) => {
+        if (err) {
+          reject(err);
+        } else {
+          resolve(Buffer.concat(chunks));
+        }
+      });
+
+      rs.on('data', (chunk) => {
+        chunks.push(chunk);
+      });
+    });
   }
 
+  /**
+   * @returns {import('express').RequestHandler}
+   */
   middleware() {
-    return serveStatic(this.basedir, {
-      index: false,
-      redirect: false,
-    });
+    // Note this is VERY inefficient!
+    // Perhaps it will be improved in the future : )
+    return (req, res, next) => {
+      const key = req.url;
+      const type = mime.getType(key);
+      if (type) {
+        res.setHeader('content-type', type);
+      }
+      pipeline(this.#store.createReadStream({ key }), res, next);
+    };
   }
 }
 
@@ -81,7 +129,7 @@ class FSAssets {
  * @param {FSAssetsOptions} options
  */
 async function assetsPlugin(uw, options) {
-  uw.assets = new FSAssets(options);
+  uw.assets = new FSAssets(uw, options);
 }
 
 module.exports = assetsPlugin;
