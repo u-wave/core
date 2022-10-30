@@ -61,6 +61,11 @@ async function updateConfig(req) {
   });
 }
 
+/**
+ * @param {import('ajv').SchemaObject} schema
+ * @param {string} path
+ * @returns {import('ajv').SchemaObject|null}
+ */
 function getPath(schema, path) {
   const parts = path.split('.');
   let descended = schema;

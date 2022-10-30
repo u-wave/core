@@ -26,6 +26,7 @@
     "node": ">= 14.17.0"
   },
   "dependencies": {
+    "abstract-blob-store": "^3.3.5",
     "ajv": "^8.0.5",
     "ajv-formats": "^2.0.2",
     "avvio": "^8.0.0",
@@ -77,6 +78,7 @@
   "devDependencies": {
     "@tsconfig/node14": "^1.0.1",
     "@types/bcryptjs": "^2.4.2",
+    "@types/busboy": "^1.5.0",
     "@types/cookie": "^0.5.0",
     "@types/cookie-parser": "^1.4.2",
     "@types/cors": "^2.8.10",
