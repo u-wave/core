@@ -1,5 +1,6 @@
 'use strict';
 
+const assert = require('assert');
 const mongoose = require('mongoose');
 const {
   HTTPError,
@@ -171,6 +172,8 @@ async function addVote(uw, userID, direction) {
     .srem('booth:downvotes', userID)
     .sadd(direction > 0 ? 'booth:upvotes' : 'booth:downvotes', userID)
     .exec();
+  assert(results);
+
   const replacedUpvote = results[0][1] !== 0;
   const replacedDownvote = results[1][1] !== 0;
 
@@ -313,7 +316,8 @@ async function favorite(req) {
 
   // `.media` has the same shape as `.item`, but is guaranteed to exist and have
   // the same properties as when the playlist item was actually played.
-  const playlistItem = await PlaylistItem.create(historyEntry.media.toJSON());
+  const itemProps = historyEntry.media.toJSON();
+  const playlistItem = await PlaylistItem.create(itemProps);
 
   playlist.media.push(playlistItem.id);
 

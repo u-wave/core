@@ -1,13 +1,10 @@
 'use strict';
 
-const createDebug = require('debug');
 const {
   APIError,
   CombinedError,
   RateLimitError,
 } = require('../errors');
-
-const debug = createDebug('uwave:http:error');
 
 /**
  * @typedef {object} SerializedError
@@ -37,12 +34,10 @@ function serializeError(err) {
     return err.errors.flatMap((error) => serializeError(error));
   }
 
-  debug(err);
-
   if (err instanceof APIError) {
     return [{
-      status: err.status || 500,
-      code: err.code || 'api-error',
+      status: err.status ?? 500,
+      code: err.code ?? 'api-error',
       title: err.message,
     }];
   }
@@ -63,7 +58,7 @@ function serializeError(err) {
   if (err.expose) {
     /** @type {SerializedError} */
     const apiError = {
-      status: err.status || 400,
+      status: err.status ?? 400,
       code: err.code,
       title: err.message,
     };

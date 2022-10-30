@@ -348,7 +348,7 @@ exports.addPlaylistItems = /** @type {const} */ ({
             artist: { type: 'string' },
             title: { type: 'string' },
           },
-          required: ['sourceType', 'sourceID', 'artist', 'title'],
+          required: ['sourceType', 'sourceID'],
         },
       },
     },

@@ -1,7 +1,6 @@
 'use strict';
 
 const bcrypt = require('bcryptjs');
-const debug = require('debug')('uwave:users');
 const escapeStringRegExp = require('escape-string-regexp');
 const Page = require('../Page');
 const { IncorrectPasswordError, UserNotFoundError } = require('../errors');
@@ -27,11 +26,14 @@ function getDefaultAvatar(user) {
 class UsersRepository {
   #uw;
 
+  #logger;
+
   /**
    * @param {import('../Uwave')} uw
    */
   constructor(uw) {
     this.#uw = uw;
+    this.#logger = uw.logger.child({ ns: 'uwave:users' });
   }
 
   /**
@@ -126,9 +128,9 @@ class UsersRepository {
     const { Authentication } = this.#uw.models;
 
     /** @type {null | (import('../models').Authentication & { user: User })} */
-    const auth = await Authentication.findOne({
+    const auth = /** @type {any} */ (await Authentication.findOne({
       email: email.toLowerCase(),
-    }).populate('user').exec();
+    }).populate('user').exec());
     if (!auth || !auth.hash) {
       throw new UserNotFoundError({ email });
     }
@@ -174,12 +176,12 @@ class UsersRepository {
   }) {
     const { User, Authentication } = this.#uw.models;
 
-    debug('find or create social', type, id);
+    this.#logger.info({ type, id }, 'find or create social');
 
-    /** @type {null | (import('../models').Authentication & { user: User })} */
-    // @ts-expect-error TS2322: the type check fails because the `user` property actually contains
-    // an ObjectId in this return value. We are definitely filling in a User object below before
-    // using this variable.
+    // we need this type assertion because the `user` property actually contains
+    // an ObjectId in this return value. We are definitely filling in a User object
+    // below before using this variable.
+    /** @type {null | (Omit<import('../models').Authentication, 'user'> & { user: User })} */
     let auth = await Authentication.findOne({ type, id });
     if (auth) {
       await auth.populate('user');
@@ -242,7 +244,7 @@ class UsersRepository {
   }) {
     const { User, Authentication } = this.#uw.models;
 
-    debug('create user', username, email.toLowerCase());
+    this.#logger.info({ username, email: email.toLowerCase() }, 'create user');
 
     const hash = await encryptPassword(password);
 
@@ -316,7 +318,7 @@ class UsersRepository {
     const user = await this.getUser(id);
     if (!user) throw new UserNotFoundError({ id });
 
-    debug('update user', user.id, user.username, update);
+    this.#logger.info({ userId: user.id, update }, 'update user');
 
     const moderator = options && options.moderator;
 

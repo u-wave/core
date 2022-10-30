@@ -2,7 +2,6 @@
 
 const { groupBy, shuffle } = require('lodash');
 const escapeStringRegExp = require('escape-string-regexp');
-const debug = require('debug')('uwave:playlists');
 const {
   PlaylistNotFoundError,
   PlaylistItemNotFoundError,
@@ -14,6 +13,8 @@ const Page = require('../Page');
 const routes = require('../routes/playlists');
 
 /**
+ * @typedef {import('mongoose').PipelineStage} PipelineStage
+ * @typedef {import('mongoose').PipelineStage.Facet['$facet'][string]} FacetPipelineStage
  * @typedef {import('mongodb').ObjectId} ObjectId
  * @typedef {import('../models').User} User
  * @typedef {import('../models').Playlist} Playlist
@@ -27,8 +28,8 @@ const routes = require('../routes/playlists');
  * @typedef {object} PlaylistItemDesc
  * @prop {string} sourceType
  * @prop {string|number} sourceID
- * @prop {string} artist
- * @prop {string} title
+ * @prop {string} [artist]
+ * @prop {string} [title]
  * @prop {number} [start]
  * @prop {number} [end]
  */
@@ -73,8 +74,8 @@ function toPlaylistItem(itemProps, media) {
   const { start, end } = getStartEnd(itemProps, media);
   return {
     media,
-    artist: artist || media.artist,
-    title: title || media.title,
+    artist: artist ?? media.artist,
+    title: title ?? media.title,
     start,
     end,
   };
@@ -83,11 +84,14 @@ function toPlaylistItem(itemProps, media) {
 class PlaylistsRepository {
   #uw;
 
+  #logger;
+
   /**
    * @param {import('../Uwave')} uw
    */
   constructor(uw) {
     this.#uw = uw;
+    this.#logger = uw.logger.child({ ns: 'uwave:playlists' });
   }
 
   /**
@@ -151,7 +155,7 @@ class PlaylistsRepository {
 
     // If this is the user's first playlist, immediately activate it.
     if (user.activePlaylist == null) {
-      debug(`activating first playlist for ${user.id} ${user.username}`);
+      this.#logger.info({ userId: user.id, playlistId: playlist.id }, 'activating first playlist');
       user.activePlaylist = playlist._id;
       await user.save();
     }
@@ -244,7 +248,7 @@ class PlaylistsRepository {
   async getPlaylistItems(playlist, filter, pagination) {
     const { Playlist } = this.#uw.models;
 
-    /** @type {object[]} */
+    /** @type {PipelineStage[]} */
     const aggregate = [
       // find the playlist
       { $match: { _id: playlist._id } },
@@ -271,10 +275,11 @@ class PlaylistsRepository {
       });
     }
 
+    /** @type {FacetPipelineStage} */
     const aggregateCount = [
       { $count: 'filtered' },
     ];
-    /** @type {object[]} */
+    /** @type {FacetPipelineStage} */
     const aggregateItems = [
       { $skip: pagination.offset },
       { $limit: pagination.limit },

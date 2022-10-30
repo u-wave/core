@@ -222,7 +222,7 @@ async function getPlaylistItems(req) {
   const { user } = req;
   const { playlists } = req.uwave;
   const { id } = req.params;
-  const filter = req.query.filter || undefined;
+  const filter = req.query.filter ?? undefined;
   const pagination = getOffsetPagination(req.query);
 
   const playlist = await playlists.getUserPlaylist(user, new ObjectId(id));

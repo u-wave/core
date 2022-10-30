@@ -1,13 +1,13 @@
 'use strict';
 
-const ms = require('ms');
-const RedLock = require('redlock');
-const createDebug = require('debug');
+const assert = require('assert');
+const RedLock = require('redlock').default;
 const { omit } = require('lodash');
 const { EmptyPlaylistError, PlaylistItemNotFoundError } = require('../errors');
 const routes = require('../routes/booth');
 
 /**
+ * @typedef {import('type-fest').JsonObject} JsonObject
  * @typedef {import('../models').User} User
  * @typedef {import('../models').Playlist} Playlist
  * @typedef {import('../models').PlaylistItem} PlaylistItem
@@ -20,8 +20,6 @@ const routes = require('../routes/booth');
  * @typedef {Omit<HistoryEntry, 'user' | 'playlist' | 'media'>
  *     & PopulateUser & PopulatePlaylist & PopulateMedia} PopulatedHistoryEntry
  */
-
-const debug = createDebug('uwave:advance');
 
 /**
  * @param {Playlist} playlist
@@ -38,6 +36,8 @@ async function cyclePlaylist(playlist) {
 class Booth {
   #uw;
 
+  #logger;
+
   /** @type {ReturnType<typeof setTimeout>|null} */
   #timeout = null;
 
@@ -49,6 +49,7 @@ class Booth {
   constructor(uw) {
     this.#uw = uw;
     this.#locker = new RedLock([this.#uw.redis]);
+    this.#logger = uw.logger.child({ ns: 'uwave:booth' });
   }
 
   /** @internal */
@@ -57,7 +58,7 @@ class Booth {
     if (current && this.#timeout === null) {
       // Restart the advance timer after a server restart, if a track was
       // playing before the server restarted.
-      const duration = (current.media.end - current.media.start) * ms('1 second');
+      const duration = (current.media.end - current.media.start) * 1000;
       const endTime = Number(current.playedAt) + duration;
       if (endTime > Date.now()) {
         this.#timeout = setTimeout(
@@ -68,11 +69,14 @@ class Booth {
         this.advance();
       }
     }
+
+    /** @type {import('../Uwave').Boot} */ (this.#uw).onClose(() => {
+      this.#onStop();
+    });
   }
 
-  /** @internal */
-  onStop() {
-    this.maybeStop();
+  #onStop() {
+    this.#maybeStop();
   }
 
   /**
@@ -91,7 +95,7 @@ class Booth {
   /**
    * Get vote counts for the currently playing media.
    *
-   * @returns {Promise<{ upvotes: number, downvotes: number, favorites: number }>}
+   * @returns {Promise<{ upvotes: string[], downvotes: string[], favorites: string[] }>}
    */
   async getCurrentVoteStats() {
     const { redis } = this.#uw;
@@ -101,12 +105,12 @@ class Booth {
       .smembers('booth:downvotes')
       .smembers('booth:favorites')
       .exec();
+    assert(results);
 
-    // TODO what if there is an error?
     const voteStats = {
-      upvotes: results[0][1],
-      downvotes: results[1][1],
-      favorites: results[2][1],
+      upvotes: /** @type {string[]} */ (results[0][1]),
+      downvotes: /** @type {string[]} */ (results[1][1]),
+      favorites: /** @type {string[]} */ (results[2][1]),
     };
 
     return voteStats;
@@ -114,9 +118,8 @@ class Booth {
 
   /**
    * @param {HistoryEntry} entry
-   * @private
    */
-  async saveStats(entry) {
+  async #saveStats(entry) {
     const stats = await this.getCurrentVoteStats();
 
     Object.assign(entry, stats);
@@ -126,9 +129,8 @@ class Booth {
   /**
    * @param {{ remove?: boolean }} options
    * @returns {Promise<User|null>}
-   * @private
    */
-  async getNextDJ(options) {
+  async #getNextDJ(options) {
     const { User } = this.#uw.models;
     /** @type {string|null} */
     let userID = await this.#uw.redis.lindex('waitlist', 0);
@@ -146,13 +148,12 @@ class Booth {
   /**
    * @param {{ remove?: boolean }} options
    * @returns {Promise<PopulatedHistoryEntry | null>}
-   * @private
    */
-  async getNextEntry(options) {
+  async #getNextEntry(options) {
     const { HistoryEntry, PlaylistItem } = this.#uw.models;
     const { playlists } = this.#uw;
 
-    const user = await this.getNextDJ(options);
+    const user = await this.#getNextDJ(options);
     if (!user || !user.activePlaylist) {
       return null;
     }
@@ -189,9 +190,8 @@ class Booth {
   /**
    * @param {HistoryEntry|null} previous
    * @param {{ remove?: boolean }} options
-   * @private
    */
-  async cycleWaitlist(previous, options) {
+  async #cycleWaitlist(previous, options) {
     const waitlistLen = await this.#uw.redis.llen('waitlist');
     if (waitlistLen > 0) {
       await this.#uw.redis.lpop('waitlist');
@@ -215,9 +215,8 @@ class Booth {
 
   /**
    * @param {PopulatedHistoryEntry} next
-   * @private
    */
-  update(next) {
+  #update(next) {
     return this.#uw.redis.multi()
       .del('booth:upvotes', 'booth:downvotes', 'booth:favorites')
       .set('booth:historyID', next.id)
@@ -225,10 +224,7 @@ class Booth {
       .exec();
   }
 
-  /**
-   * @private
-   */
-  maybeStop() {
+  #maybeStop() {
     if (this.#timeout) {
       clearTimeout(this.#timeout);
       this.#timeout = null;
@@ -237,21 +233,13 @@ class Booth {
 
   /**
    * @param {PopulatedHistoryEntry} entry
-   * @private
    */
-  play(entry) {
-    this.maybeStop();
+  #play(entry) {
+    this.#maybeStop();
     this.#timeout = setTimeout(
       () => this.advance(),
-      (entry.media.end - entry.media.start) * ms('1 second'),
+      (entry.media.end - entry.media.start) * 1000,
     );
-  }
-
-  /**
-   * @private
-   */
-  getWaitlist() {
-    return this.#uw.redis.lrange('waitlist', 0, -1);
   }
 
   /**
@@ -279,9 +267,10 @@ class Booth {
 
   /**
    * @param {PopulatedHistoryEntry|null} next
-   * @private
    */
-  async publish(next) {
+  async #publishAdvanceComplete(next) {
+    const { waitlist } = this.#uw;
+
     if (next) {
       this.#uw.publish('advance:complete', {
         historyID: next.id,
@@ -298,20 +287,25 @@ class Booth {
     } else {
       this.#uw.publish('advance:complete', null);
     }
-    this.#uw.publish('waitlist:update', await this.getWaitlist());
+    this.#uw.publish('waitlist:update', await waitlist.getUserIDs());
   }
 
   /**
    * @param {PopulatedHistoryEntry} entry
-   * @private
    */
-  async getSourceDataForPlayback(entry) {
+  async #getSourceDataForPlayback(entry) {
     const { sourceID, sourceType } = entry.media.media;
     const source = this.#uw.source(sourceType);
     if (source) {
-      debug('Running %s pre-play hook for %s', source.type, sourceID);
-      const sourceData = await source.play(entry.user, entry.media.media);
-      debug('sourceData', sourceData);
+      this.#logger.trace({ sourceType: source.type, sourceID }, 'running pre-play hook');
+      /** @type {JsonObject | undefined} */
+      let sourceData;
+      try {
+        sourceData = await source.play(entry.user, entry.media.media);
+        this.#logger.trace({ sourceType: source.type, sourceID, sourceData }, 'pre-play hook result');
+      } catch (error) {
+        this.#logger.error({ sourceType: source.type, sourceID, err: error }, 'pre-play hook failed');
+      }
       return sourceData;
     }
 
@@ -324,79 +318,80 @@ class Booth {
    * @prop {boolean} [publish]
    *
    * @param {AdvanceOptions} [opts]
-   * @param {import('redlock').Lock} [reuseLock]
    * @returns {Promise<PopulatedHistoryEntry|null>}
    */
-  async advance(opts = {}, reuseLock = undefined) {
-    let lock;
-    try {
-      if (reuseLock) {
-        lock = await reuseLock.extend(ms('10 seconds'));
-      } else {
-        lock = await this.#locker.lock('booth:advancing', ms('10 seconds'));
-      }
-    } catch (err) {
-      throw new Error('Another advance is still in progress.');
-    }
+  async #advanceLocked(opts = {}) {
+    const publish = opts.publish ?? true;
+    const remove = opts.remove || (
+      !await this.#uw.waitlist.isCycleEnabled()
+    );
 
     const previous = await this.getCurrentEntry();
     let next;
     try {
-      next = await this.getNextEntry(opts);
+      next = await this.#getNextEntry({ remove });
     } catch (err) {
       // If the next user's playlist was empty, remove them from the waitlist
       // and try advancing again.
-      if (err.code === 'PLAYLIST_IS_EMPTY') {
-        debug('user has empty playlist, skipping on to the next');
-        await this.cycleWaitlist(previous, opts);
-        return this.advance({ ...opts, remove: true }, lock);
+      if (err instanceof EmptyPlaylistError) {
+        this.#logger.info('user has empty playlist, skipping on to the next');
+        await this.#cycleWaitlist(previous, { remove });
+        return this.#advanceLocked({ publish, remove: true });
       }
       throw err;
     }
 
     if (previous) {
-      await this.saveStats(previous);
+      await this.#saveStats(previous);
 
-      debug(
-        'previous track:',
-        previous.media.artist,
-        '—',
-        previous.media.title,
-        `👍 ${previous.upvotes.length} `
-        + `★ ${previous.favorites.length} `
-        + `👎 ${previous.downvotes.length}`,
-      );
+      this.#logger.info({
+        id: previous._id,
+        artist: previous.media.artist,
+        title: previous.media.title,
+        upvotes: previous.upvotes.length,
+        favorites: previous.favorites.length,
+        downvotes: previous.downvotes.length,
+      }, 'previous track stats');
     }
 
     if (next) {
-      const sourceData = await this.getSourceDataForPlayback(next);
+      this.#logger.info({
+        id: next._id,
+        artist: next.media.artist,
+        title: next.media.title,
+      }, 'next track');
+      const sourceData = await this.#getSourceDataForPlayback(next);
       if (sourceData) {
         next.media.sourceData = sourceData;
       }
       await next.save();
     } else {
-      this.maybeStop();
+      this.#maybeStop();
     }
 
-    await this.cycleWaitlist(previous, opts);
+    await this.#cycleWaitlist(previous, { remove });
 
     if (next) {
-      await this.update(next);
+      await this.#update(next);
       await cyclePlaylist(next.playlist);
-      this.play(next);
+      this.#play(next);
     } else {
       await this.clear();
     }
 
-    if (opts.publish !== false) {
-      await this.publish(next);
+    if (publish !== false) {
+      await this.#publishAdvanceComplete(next);
     }
 
-    lock.unlock().catch(() => {
-      // Don't really care if this fails, it'll expire in some seconds anyway.
-    });
-
     return next;
+  }
+
+  /**
+   * @param {AdvanceOptions} [opts]
+   * @returns {Promise<PopulatedHistoryEntry|null>}
+   */
+  advance(opts = {}) {
+    return this.#locker.using(['booth:advancing'], 10_000, () => this.#advanceLocked(opts));
   }
 }
 
@@ -411,9 +406,6 @@ async function boothPlugin(uw) {
     if (!err) {
       await uw.booth.onStart();
     }
-  });
-  uw.onClose(() => {
-    uw.booth.onStop();
   });
 }
 

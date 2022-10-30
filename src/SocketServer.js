@@ -6,7 +6,7 @@ const sjson = require('secure-json-parse');
 const WebSocket = require('ws');
 const Ajv = require('ajv').default;
 const ms = require('ms');
-const debug = require('debug')('uwave:api:sockets');
+const { stdSerializers } = require('pino');
 const { socketVote } = require('./controllers/booth');
 const { disconnectUser } = require('./controllers/users');
 const AuthRegistry = require('./AuthRegistry');
@@ -47,35 +47,6 @@ const ajv = new Ajv({
   useDefaults: false,
 });
 
-function missingServerOption() {
-  return new TypeError(`
-Exactly one of "options.server" and "options.port" is required. These
-options are used to attach the WebSocket server to the correct HTTP server.
-
-An example of how to attach the WebSocket server to an existing HTTP server
-using Express:
-
-    const { createSocketServer } = require('u-wave-http-api');
-    const app = express();
-    const server = app.listen(80);
-
-    createSocketServer(uwave, {
-      server: server,
-      /* ... */
-    });
-
-Alternatively, you can provide a port for the socket server to listen on:
-
-    const { createSocketServer } = require('u-wave-http-api');
-    const app = express();
-
-    createSocketServer(uwave, {
-      port: 6042,
-      /* ... */
-    });
-  `);
-}
-
 /**
  * @template {object} T
  * @param {T} object
@@ -108,14 +79,23 @@ class SocketServer {
 
   #uw;
 
+  #logger;
+
   #redisSubscription;
 
   #wss;
+
+  #closing = false;
 
   /** @type {Connection[]} */
   #connections = [];
 
   #pinger;
+
+  /**
+   * Update online guests count and broadcast an update if necessary.
+   */
+  #recountGuests;
 
   /**
    * Handlers for commands that come in from clients.
@@ -150,26 +130,21 @@ class SocketServer {
    * @param {number} [options.port]
    */
   constructor(uw, options) {
-    if (!uw || !('mongo' in uw)) {
-      throw new TypeError('Expected a u-wave-core instance in the first parameter. If you are '
-        + 'developing, you may have to upgrade your u-wave-* modules.');
-    }
-
-    if (!options.server && !options.port) {
-      throw missingServerOption();
-    }
-
-    if (!options.secret) {
-      throw new TypeError('"options.secret" is empty. This option is used to sign authentication '
-        + 'keys, and is required for security reasons.');
+    if (!uw) {
+      throw new TypeError(`The "uw" argument must be of type UwaveServer. Received ${typeof uw}`);
     }
 
     this.#uw = uw;
+    this.#logger = uw.logger.child({ ns: 'uwave:sockets' }, {
+      serializers: {
+        req: stdSerializers.req,
+      },
+    });
     this.#redisSubscription = uw.redis.duplicate();
 
     this.options = {
-      /** @type {(socket: import('ws') | undefined, err: Error) => void} */
-      onError: (socket, err) => {
+      /** @type {(_socket: import('ws') | undefined, err: Error) => void} */
+      onError: (_socket, err) => {
         throw err;
       },
       timeout: 30,
@@ -184,8 +159,8 @@ class SocketServer {
       port: options.server ? undefined : options.port,
     });
 
-    this.#redisSubscription.subscribe('uwave', 'v1').catch((error) => {
-      debug(error);
+    this.#redisSubscription.subscribe('uwave').catch((error) => {
+      this.#logger.error(error);
     });
     this.#redisSubscription.on('message', (channel, command) => {
       // this returns a promise, but we don't handle the error case:
@@ -196,23 +171,23 @@ class SocketServer {
     this.#wss.on('error', (error) => {
       this.onError(error);
     });
-    this.#wss.on('connection', (socket) => {
-      this.onSocketConnected(socket);
+    this.#wss.on('connection', (socket, request) => {
+      this.onSocketConnected(socket, request);
     });
 
     this.#pinger = setInterval(() => {
       this.ping();
     }, ms('10 seconds'));
 
-    this.recountGuests = debounce(() => {
-      this.recountGuestsInternal().catch((error) => {
-        debug('counting guests failed:', error);
+    this.#recountGuests = debounce(() => {
+      this.#recountGuestsInternal().catch((error) => {
+        this.#logger.error({ err: error }, 'counting guests failed');
       });
     }, ms('2 seconds'));
 
     this.#clientActions = {
       sendChat: (user, message) => {
-        debug('sendChat', user, message);
+        this.#logger.trace({ user, message }, 'sendChat');
         this.#uw.chat.send(user, message);
       },
       vote: (user, direction) => {
@@ -423,7 +398,7 @@ class SocketServer {
        * Broadcast a ban event.
        */
       'user:ban': ({
-        moderatorID, userID, permanent, duration, expiresAt,
+        moderatorID, userID, permanent = false, duration, expiresAt,
       }) => {
         this.broadcast('ban', {
           moderatorID, userID, permanent, duration, expiresAt,
@@ -475,10 +450,11 @@ class SocketServer {
 
   /**
    * @param {import('ws')} socket
+   * @param {import('http').IncomingMessage} request
    * @private
    */
-  onSocketConnected(socket) {
-    debug('new connection');
+  onSocketConnected(socket, request) {
+    this.#logger.info({ req: request }, 'new connection');
 
     socket.on('error', (error) => {
       this.onSocketError(socket, error);
@@ -492,7 +468,7 @@ class SocketServer {
    * @private
    */
   onSocketError(socket, error) {
-    debug('socket error:', error);
+    this.#logger.warn({ err: error }, 'socket error');
 
     this.options.onError(socket, error);
   }
@@ -502,7 +478,7 @@ class SocketServer {
    * @private
    */
   onError(error) {
-    debug('server error:', error);
+    this.#logger.error({ err: error }, 'server error');
 
     this.options.onError(undefined, error);
   }
@@ -533,10 +509,9 @@ class SocketServer {
       this.remove(connection);
     });
     connection.on('authenticate', async (user) => {
-      debug('connecting', user.id, user.username);
       const isReconnect = await connection.isReconnect(user);
+      this.#logger.info({ userId: user.id, isReconnect }, 'authenticated socket');
       if (isReconnect) {
-        debug('is reconnection');
         const previousConnection = this.getLostConnection(user);
         if (previousConnection) this.remove(previousConnection);
       }
@@ -562,13 +537,13 @@ class SocketServer {
     const connection = new AuthedConnection(this.#uw, socket, user);
     connection.on('close', ({ banned }) => {
       if (banned) {
-        debug('removing connection after ban', user.id, user.username);
-        this.remove(connection);
+        this.#logger.info({ userId: user.id }, 'removing connection after ban');
         disconnectUser(this.#uw, user._id);
-      } else {
-        debug('lost connection', user.id, user.username);
-        this.replace(connection, this.createLostConnection(user));
+      } else if (!this.#closing) {
+        this.#logger.info({ userId: user.id }, 'lost connection');
+        this.add(this.createLostConnection(user));
       }
+      this.remove(connection);
     });
     connection.on(
       'command',
@@ -577,7 +552,7 @@ class SocketServer {
        * @param {import('type-fest').JsonValue} data
        */
       (command, data) => {
-        debug('command', user.id, user.username, command, data);
+        this.#logger.trace({ userId: user.id, command, data }, 'command');
         if (has(this.#clientActions, command)) {
           // Ignore incorrect input
           const validate = this.#clientActionSchemas[command];
@@ -604,7 +579,7 @@ class SocketServer {
   createLostConnection(user) {
     const connection = new LostConnection(this.#uw, user, this.options.timeout);
     connection.on('close', () => {
-      debug('left', user.id, user.username);
+      this.#logger.info({ userId: user.id }, 'user left');
       this.remove(connection);
       // Only register that the user left if they didn't have another connection
       // still open.
@@ -622,10 +597,11 @@ class SocketServer {
    * @private
    */
   add(connection) {
-    debug('adding', String(connection));
+    const userId = 'user' in connection ? connection.user.id : null;
+    this.#logger.trace({ type: connection.constructor.name, userId }, 'add connection');
 
     this.#connections.push(connection);
-    this.recountGuests();
+    this.#recountGuests();
   }
 
   /**
@@ -635,13 +611,14 @@ class SocketServer {
    * @private
    */
   remove(connection) {
-    debug('removing', String(connection));
+    const userId = 'user' in connection ? connection.user.id : null;
+    this.#logger.trace({ type: connection.constructor.name, userId }, 'remove connection');
 
     const i = this.#connections.indexOf(connection);
     this.#connections.splice(i, 1);
 
     connection.removed();
-    this.recountGuests();
+    this.#recountGuests();
   }
 
   /**
@@ -677,17 +654,13 @@ class SocketServer {
     }
     const { command, data } = json;
 
-    debug(channel, command, data);
+    this.#logger.trace({ channel, command, data }, 'server message');
 
-    if (channel === 'v1') {
-      this.broadcast(command, data);
-    } else if (channel === 'uwave') {
-      if (has(this.#serverActions, command)) {
-        const action = this.#serverActions[command];
-        if (action !== undefined) { // the types for `ServerActions` allow undefined, so...
-          // @ts-expect-error TS2345 `data` is validated
-          action(data);
-        }
+    if (has(this.#serverActions, command)) {
+      const action = this.#serverActions[command];
+      if (action !== undefined) { // the types for `ServerActions` allow undefined, so...
+        // @ts-expect-error TS2345 `data` is validated
+        action(data);
       }
     }
   }
@@ -700,13 +673,16 @@ class SocketServer {
   async destroy() {
     clearInterval(this.#pinger);
 
+    this.#closing = true;
     for (const connection of this.#wss.clients) {
-      connection.terminate();
+      connection.close();
     }
 
     const closeWsServer = promisify(this.#wss.close.bind(this.#wss));
     await closeWsServer();
     await this.#redisSubscription.quit();
+
+    this.#recountGuests.cancel();
   }
 
   /**
@@ -735,10 +711,15 @@ class SocketServer {
    * @param {import('type-fest').JsonValue} data Command data.
    */
   broadcast(command, data) {
-    debug('broadcast', command, data);
+    this.#logger.trace({
+      command,
+      data,
+      to: this.#connections.map((connection) => (
+        'user' in connection ? connection.user.id : null
+      )),
+    }, 'broadcast');
 
     this.#connections.forEach((connection) => {
-      debug('  to', connection.toString());
       connection.send(command, data);
     });
   }
@@ -769,17 +750,7 @@ class SocketServer {
     return parseInt(rawCount, 10);
   }
 
-  /**
-   * Update online guests count and broadcast an update if necessary.
-   *
-   * @private
-   */
-  recountGuests() { // eslint-disable-line class-methods-use-this
-    // assigned in constructor()
-  }
-
-  /** @private */
-  async recountGuestsInternal() {
+  async #recountGuestsInternal() {
     const { redis } = this.#uw;
     const guests = this.#connections
       .filter((connection) => connection instanceof GuestConnection)

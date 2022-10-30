@@ -1,0 +1,22 @@
+{
+  "$schema": "https://json-schema.org/draft/2019-09/schema",
+  "$id": "https://ns.u-wave.net/config/waitlist.json#",
+  "uw:key": "u-wave:waitlist",
+  "type": "object",
+  "title": "DJ Queue",
+  "description": "Configure how the waitlist works: cycles, locking, etc.",
+  "properties": {
+    "cycle": {
+      "title": "Cycle the waitlist",
+      "description": "When enabled, users are automatically added back to the waitlist after their media has played. In busy servers, you can disable this to allow more active people to play more often.",
+      "type": "boolean",
+      "default": true
+    },
+    "locked": {
+      "title": "Lock down the waitlist",
+      "description": "While locked, only users with the `waitlist.join.locked` permission can join the wait list. This can be useful for themed events and the like.",
+      "type": "boolean",
+      "default": false
+    }
+  }
+}

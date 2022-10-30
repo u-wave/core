@@ -1,9 +1,11 @@
 'use strict';
 
-const EventEmitter = require('events');
+const { EventEmitter } = require('events');
 const Ajv = require('ajv/dist/2019').default;
 const formats = require('ajv-formats').default;
 const { omit } = require('lodash');
+const jsonMergePatch = require('json-merge-patch');
+const sjson = require('secure-json-parse');
 const ValidationError = require('../errors/ValidationError');
 
 /** @typedef {import('../models').User} User */
@@ -18,16 +20,24 @@ const ValidationError = require('../errors/ValidationError');
 class ConfigStore {
   #uw;
 
+  #logger;
+
+  #subscriber;
+
   #ajv;
 
+  #emitter;
+
   /** @type {Map<string, import('ajv').ValidateFunction<unknown>>} */
-  #registry = new Map();
+  #validators = new Map();
 
   /**
    * @param {import('../Uwave')} uw
    */
   constructor(uw) {
     this.#uw = uw;
+    this.#logger = uw.logger.child({ ns: 'uwave:config' });
+    this.#subscriber = uw.redis.duplicate();
     this.#ajv = new Ajv({
       useDefaults: true,
       // Allow unknown keywords (`uw:xyz`)
@@ -40,33 +50,74 @@ class ConfigStore {
     this.#ajv.addSchema(require('../schemas/definitions.json'));
     /* eslint-enable global-require */
 
-    const emitter = new EventEmitter();
-    this.on = emitter.on.bind(emitter);
-    this.off = emitter.removeListener.bind(emitter);
-    this.emit = emitter.emit.bind(emitter);
+    this.#emitter = new EventEmitter();
+    this.#subscriber.subscribe('uwave').catch((error) => {
+      this.#logger.error(error);
+    });
+    this.#subscriber.on('message', (_channel, command) => {
+      this.#onServerMessage(command);
+    });
+  }
+
+  /**
+   * @param {string} rawCommand
+   */
+  async #onServerMessage(rawCommand) {
+    /**
+     * @type {undefined|{
+     *   command: string,
+     *   data: import('../redisMessages').ServerActionParameters['configStore:update'],
+     * }}
+     */
+    const json = sjson.safeParse(rawCommand);
+    if (!json) {
+      return;
+    }
+    const { command, data } = json;
+    if (command !== 'configStore:update') {
+      return;
+    }
+
+    try {
+      const updatedSettings = await this.get(data.key);
+      this.#emitter.emit(data.key, updatedSettings, data.user, data.patch);
+    } catch (error) {
+      this.#logger.error({ err: error }, 'could not retrieve settings after update');
+    }
+  }
+
+  /**
+   * @template {object} TSettings
+   * @param {string} key
+   * @param {(settings: TSettings, user: string|null, patch: Partial<TSettings>) => void} listener
+   */
+  subscribe(key, listener) {
+    this.#emitter.on(key, listener);
+    return () => this.#emitter.off(key, listener);
   }
 
   /**
    * @param {string} key
    * @param {object} values
-   * @private
+   * @returns {Promise<object|null>} The old values.
    */
-  async save(key, values) {
+  async #save(key, values) {
     const { Config } = this.#uw.models;
 
-    await Config.findByIdAndUpdate(
+    const previousValues = await Config.findByIdAndUpdate(
       key,
       { _id: key, ...values },
       { upsert: true },
     );
+
+    return omit(previousValues, '_id');
   }
 
   /**
    * @param {string} key
    * @returns {Promise<object|null>}
-   * @private
    */
-  async load(key) {
+  async #load(key) {
     const { Config } = this.#uw.models;
 
     const model = await Config.findById(key);
@@ -85,7 +136,7 @@ class ConfigStore {
    * @public
    */
   register(key, schema) {
-    this.#registry.set(key, this.#ajv.compile(schema));
+    this.#validators.set(key, this.#ajv.compile(schema));
   }
 
   /**
@@ -97,10 +148,10 @@ class ConfigStore {
    * @public
    */
   async get(key) {
-    const validate = this.#registry.get(key);
+    const validate = this.#validators.get(key);
     if (!validate) return undefined;
 
-    const config = (await this.load(key)) || {};
+    const config = (await this.#load(key)) ?? {};
     // Allowed to fail--just fills in defaults
     validate(config);
 
@@ -117,17 +168,23 @@ class ConfigStore {
    * @param {{ user?: User }} [options]
    * @public
    */
-  async set(key, settings, { user } = {}) {
-    const validate = this.#registry.get(key);
+  async set(key, settings, options = {}) {
+    const { user } = options;
+    const validate = this.#validators.get(key);
     if (validate) {
       if (!validate(settings)) {
         throw new ValidationError(validate.errors, this.#ajv);
       }
     }
 
-    await this.save(key, settings);
+    const oldSettings = await this.#save(key, settings);
+    const patch = jsonMergePatch.generate(oldSettings, settings) ?? Object.create(null);
 
-    this.emit('set', key, settings, user);
+    this.#uw.publish('configStore:update', {
+      key,
+      user: user ? user.id : null,
+      patch,
+    });
   }
 
   /**
@@ -140,7 +197,7 @@ class ConfigStore {
 
     const all = await Config.find();
     const object = Object.create(null);
-    for (const [key, validate] of this.#registry.entries()) {
+    for (const [key, validate] of this.#validators.entries()) {
       const model = all.find((m) => m._id === key);
       object[key] = model ? model.toJSON() : {};
       delete object[key]._id;
@@ -155,7 +212,7 @@ class ConfigStore {
   getSchema() {
     const properties = Object.create(null);
     const required = [];
-    for (const [key, validate] of this.#registry.entries()) {
+    for (const [key, validate] of this.#validators.entries()) {
       properties[key] = validate.schema;
       required.push(key);
     }
@@ -166,19 +223,18 @@ class ConfigStore {
       required,
     };
   }
+
+  async destroy() {
+    await this.#subscriber.quit();
+  }
 }
 
 /**
- * @param {import('../Uwave')} uw
+ * @param {import('../Uwave').Boot} uw
  */
 async function configStorePlugin(uw) {
   uw.config = new ConfigStore(uw);
-  uw.config.on('set', (key, value, user) => {
-    uw.publish('configStore:update', {
-      key,
-      user: user ? user.id : null,
-    });
-  });
+  uw.onClose(() => uw.config.destroy());
 }
 
 module.exports = configStorePlugin;

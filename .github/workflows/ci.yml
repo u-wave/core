@@ -8,11 +8,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout sources
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
       - name: Install Node.js
-        uses: actions/setup-node@v2
+        uses: actions/setup-node@v3
         with:
-          node-version: 14.x
+          node-version: lts/*
       - name: Install dependencies
         run: npm install
       - name: Check code style
@@ -22,11 +22,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout sources
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
       - name: Install Node.js
-        uses: actions/setup-node@v2
+        uses: actions/setup-node@v3
         with:
-          node-version: 14.x
+          node-version: lts/*
       - name: Install dependencies
         run: npm install
       - name: Check types
@@ -35,20 +35,26 @@ jobs:
     name: Tests
     strategy:
       matrix:
-        node-version: [12.x, 14.x, 16.x]
+        node-version: ['14.x', '16.x', '18.x', '19.x']
+        mongo-version: ['5.0', '6.0']
+        include:
+          - node-version: 'lts/*'
+            mongo-version: '4.2'
+          - node-version: 'lts/*'
+            mongo-version: '4.4'
     runs-on: ubuntu-latest
     services:
       redis:
         image: redis:6
         ports: ['6379:6379']
       mongodb:
-        image: mongo:4.2-bionic
+        image: mongo:${{matrix.mongo-version}}
         ports: ['27017:27017']
     steps:
       - name: Checkout sources
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
       - name: Install Node.js ${{matrix.node-version}}
-        uses: actions/setup-node@v2
+        uses: actions/setup-node@v3
         with:
           node-version: ${{matrix.node-version}}
       - name: Install dependencies
@@ -59,7 +65,7 @@ jobs:
           REDIS_URL: '127.0.0.1:6379'
           MONGODB_HOST: '127.0.0.1:27017'
       - name: Submit coverage
-        if: matrix.node-version == '14.x'
+        if: matrix.node-version == '16.x'
         uses: coverallsapp/github-action@1.1.3
         with:
           github-token: ${{secrets.GITHUB_TOKEN}}

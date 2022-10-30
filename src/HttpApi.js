@@ -1,13 +1,13 @@
 'use strict';
 
-const { URL } = require('url');
+const { randomUUID } = require('crypto');
 const express = require('express');
 const bodyParser = require('body-parser');
 const cookieParser = require('cookie-parser');
 const cors = require('cors');
-const helmet = require('helmet');
+const helmet = require('helmet').default;
 const http = require('http');
-const debug = require('debug')('uwave:http-api');
+const pinoHttp = require('pino-http').default;
 
 // routes
 const authenticate = require('./routes/authenticate');
@@ -69,7 +69,7 @@ function defaultCreatePasswordResetEmail({ token, requestUrl }) {
  */
 
 /**
- * @param {import('./Uwave')} uw
+ * @param {import('./Uwave').Boot} uw
  * @param {HttpApiOptions} options
  */
 async function httpApi(uw, options) {
@@ -82,23 +82,30 @@ async function httpApi(uw, options) {
     throw new TypeError('"options.onError" must be a function.');
   }
 
+  const logger = uw.logger.child({
+    ns: 'uwave:http-api',
+  });
+
   uw.config.register(optionsSchema['uw:key'], optionsSchema);
 
   /** @type {HttpApiSettings} */
   // @ts-expect-error TS2322: get() always returns a validated object here
   let runtimeOptions = await uw.config.get(optionsSchema['uw:key']);
-  uw.config.on('set', (key, value) => {
-    if (key === 'u-wave:api') {
-      runtimeOptions = value;
-    }
+  const unsubscribe = uw.config.subscribe('u-wave:api', /** @param {HttpApiSettings} settings */ (settings) => {
+    runtimeOptions = settings;
   });
 
-  debug('setup', runtimeOptions);
+  logger.debug(runtimeOptions, 'start HttpApi');
   uw.httpApi = Object.assign(express.Router(), {
     authRegistry: new AuthRegistry(uw.redis),
   });
 
   uw.httpApi
+    .use(pinoHttp({
+      genReqId: () => randomUUID(),
+      quietReqLogger: true,
+      logger,
+    }))
     .use(bodyParser.json())
     .use(cookieParser())
     .use(uw.passport.initialize())
@@ -113,7 +120,7 @@ async function httpApi(uw, options) {
       mailTransport: options.mailTransport,
       recaptcha: options.recaptcha,
       createPasswordResetEmail:
-        options.createPasswordResetEmail || defaultCreatePasswordResetEmail,
+        options.createPasswordResetEmail ?? defaultCreatePasswordResetEmail,
     }))
     .use('/bans', bans())
     .use('/import', imports())
@@ -138,23 +145,27 @@ async function httpApi(uw, options) {
       callback(null, matchOrigin(origin, runtimeOptions.allowedOrigins));
     },
   };
-  // @ts-expect-error TS2769: Not sure why the overload doesn't match, but it should :)
   uw.express.options('/api/*', cors(corsOptions));
   uw.express.use('/api', cors(corsOptions), uw.httpApi);
   // An older name
   uw.express.use('/v1', cors(corsOptions), uw.httpApi);
+
+  uw.onClose(() => {
+    unsubscribe();
+    uw.server.close();
+  });
 }
 
 /**
- * @param {import('./Uwave')} uw
+ * @param {import('./Uwave').Boot} uw
  */
 async function errorHandling(uw) {
-  debug('after');
-  uw.httpApi.use(errorHandler());
-  uw.express.use(/** @type {import('express').ErrorRequestHandler} */ (error, req, res, next) => {
-    debug(error);
-    next(error);
-  });
+  uw.logger.debug({ ns: 'uwave:http-api' }, 'setup HTTP error handling');
+  uw.httpApi.use(errorHandler({
+    onError(_req, error) {
+      uw.logger.error({ err: error, ns: 'uwave:http-api' });
+    },
+  }));
 }
 
 httpApi.errorHandling = errorHandling;

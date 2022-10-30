@@ -1,11 +1,12 @@
 'use strict';
 
-const debug = require('debug')('uwave:http:search');
 const { isEqual } = require('lodash');
 const { SourceNotFoundError } = require('../errors');
 const toListResponse = require('../utils/toListResponse');
 
+/** @typedef {import('mongodb').ObjectId} ObjectId */
 /** @typedef {import('../models').Playlist} Playlist */
+/** @typedef {import('../models').Media} Media */
 /** @typedef {import('../plugins/playlists').PlaylistItemDesc} PlaylistItemDesc */
 
 // TODO should be deprecated once the Web client uses the better single-source route.
@@ -19,7 +20,7 @@ async function searchAll(req) {
   const sourceNames = uw.sources.map((source) => source.type);
   const searches = uw.sources.map((source) => (
     source.search(user, query).catch((error) => {
-      debug(error);
+      req.log.warn(error, { ns: 'uwave:search' });
       // Default to empty search on failure, for now.
       return [];
     })
@@ -36,12 +37,12 @@ async function searchAll(req) {
 
 /**
  * @param {import('../Uwave')} uw
- * @param {Map<string, Record<string, unknown>>} updates
+ * @param {Map<ObjectId, Media['sourceData']>} updates
  */
 async function updateSourceData(uw, updates) {
   const { Media } = uw.models;
   const ops = [];
-  debug('updating source data', [...updates.keys()]);
+  uw.logger.debug({ ns: 'uwave:search', forMedia: [...updates.keys()] }, 'updating source data');
   for (const [id, sourceData] of updates.entries()) {
     ops.push({
       updateOne: {
@@ -90,15 +91,16 @@ async function search(req) {
   // Track medias whose `sourceData` property no longer matches that from the source.
   // This can happen because the media was actually changed, but also because of new
   // features in the source implementation.
+  /** @type {Map<ObjectId, Media['sourceData']>} */
   const mediasNeedSourceDataUpdate = new Map();
 
-  /** @type {import('../models').Media[]} */
+  /** @type {Media[]} */
   const mediasInSearchResults = await Media.find({
     sourceType: sourceName,
     sourceID: { $in: Array.from(searchResultsByID.keys()) },
   });
 
-  /** @type {Map<string, import('../models').Media>} */
+  /** @type {Map<string, Media>} */
   const mediaBySourceID = new Map();
   mediasInSearchResults.forEach((media) => {
     mediaBySourceID.set(media.sourceID, media);
@@ -111,7 +113,7 @@ async function search(req) {
 
   // don't wait for this to complete
   updateSourceData(uw, mediasNeedSourceDataUpdate).catch((error) => {
-    debug('sourceData update failed', error);
+    uw.logger.error({ ns: 'uwave:search', err: error }, 'sourceData update failed');
   });
 
   // Only include related playlists if requested
@@ -120,7 +122,7 @@ async function search(req) {
       mediasInSearchResults.map((media) => media._id),
       { author: user._id },
     ).catch((error) => {
-      debug('playlists containing media lookup failed', error);
+      uw.logger.error({ ns: 'uwave:search', err: error }, 'playlists containing media lookup failed');
       // just omit the related playlists if we timed out or crashed
       return new Map();
     });

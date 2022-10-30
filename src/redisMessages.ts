@@ -1,3 +1,5 @@
+import { JsonObject } from 'type-fest'; // eslint-disable-line import/no-unresolved, node/no-missing-import, node/no-unpublished-import
+
 export type ServerActionParameters = {
   'advance:complete': {
     historyID: string,
@@ -14,7 +16,7 @@ export type ServerActionParameters = {
         sourceID: string,
         artist: string,
         title: string,
-        sourceData: object,
+        sourceData: JsonObject,
       }
     },
     playedAt: number,
@@ -53,6 +55,7 @@ export type ServerActionParameters = {
   'configStore:update': {
     key: string,
     user: string | null,
+    patch: Record<string, import('type-fest').JsonValue>,
   },
 
   'booth:vote': {

@@ -2,11 +2,10 @@
 
 const EventEmitter = require('events');
 const Ultron = require('ultron');
-const createDebug = require('debug');
-
-const debug = createDebug('uwave:api:sockets:guest');
 
 class GuestConnection extends EventEmitter {
+  #logger;
+
   /**
    * @param {import('../Uwave')} uw
    * @param {import('ws')} socket
@@ -17,6 +16,7 @@ class GuestConnection extends EventEmitter {
     this.uw = uw;
     this.socket = socket;
     this.options = options;
+    this.#logger = uw.logger.child({ ns: 'uwave:sockets', connectionType: 'GuestConnection', userId: null });
 
     this.events = new Ultron(socket);
 
@@ -44,7 +44,7 @@ class GuestConnection extends EventEmitter {
     const { authRegistry } = this.options;
 
     const userID = await authRegistry.getTokenUser(token);
-    if (!userID) {
+    if (!userID || typeof userID !== 'string') {
       throw new Error('Invalid token');
     }
     const userModel = await users.getUser(userID);
@@ -86,7 +86,7 @@ class GuestConnection extends EventEmitter {
   }
 
   close() {
-    debug('close');
+    this.#logger.info('close');
     this.socket.close();
   }
 

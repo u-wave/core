@@ -4,7 +4,6 @@ const { Passport } = require('passport');
 const { Strategy: LocalStrategy } = require('passport-local');
 const { Strategy: GoogleStrategy } = require('passport-google-oauth20');
 const { callbackify } = require('util');
-const debug = require('debug')('uwave:passport');
 const JWTStrategy = require('../auth/JWTStrategy');
 
 const schema = require('../schemas/socialAuth.json');
@@ -29,14 +28,17 @@ const schema = require('../schemas/socialAuth.json');
 class PassportPlugin extends Passport {
   #uw;
 
+  #logger;
+
   /**
-   * @param {import('../Uwave')} uw
+   * @param {import('../Uwave').Boot} uw
    * @param {{ secret: Buffer|string }} options
    */
   constructor(uw, options) {
     super();
 
     this.#uw = uw;
+    this.#logger = uw.logger.child({ ns: 'uwave:authentication' });
 
     /**
      * @param {Express.User} user
@@ -77,11 +79,10 @@ class PassportPlugin extends Passport {
     this.use('jwt', new JWTStrategy(options.secret, (user) => uw.users.getUser(user.id)));
 
     uw.config.register(schema['uw:key'], schema);
-    uw.config.on('set', (key, settings) => {
-      if (key === schema['uw:key']) {
-        this.applyAuthStrategies(settings);
-      }
+    const unsubscribe = uw.config.subscribe(schema['uw:key'], /** @param {SocialAuthSettings} settings */ (settings) => {
+      this.applyAuthStrategies(settings);
     });
+    uw.onClose(unsubscribe);
   }
 
   /**
@@ -95,7 +96,7 @@ class PassportPlugin extends Passport {
       this.applyAuthStrategies(settings);
     } catch (error) {
       // The schema doesn't _quite_ protect against all possible misconfiguration
-      debug('applying social auth settings failed', error);
+      this.#logger.error({ err: error }, 'applying social auth settings failed');
     }
   }
 
@@ -138,11 +139,11 @@ class PassportPlugin extends Passport {
    * @private
    */
   applyAuthStrategies(settings) {
-    debug('reapplying settings');
+    this.#logger.info('reapplying settings');
     this.unuse('google');
 
     if (settings && settings.google && settings.google.enabled) {
-      debug('enable google');
+      this.#logger.info('enable google');
       this.use('google', new GoogleStrategy({
         callbackURL: '/auth/service/google/callback',
         ...settings.google,
@@ -153,11 +154,10 @@ class PassportPlugin extends Passport {
 }
 
 /**
- * @param {import('../Uwave')} uw
+ * @param {import('../Uwave').Boot} uw
  * @param {{ secret: Buffer|string }} options
  */
 async function passportPlugin(uw, options) {
-  debug('setup');
   uw.passport = new PassportPlugin(uw, options);
   await uw.passport.loadRuntimeConfiguration();
 }

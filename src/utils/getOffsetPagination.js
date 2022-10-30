@@ -16,10 +16,9 @@ const parseNumber = (str, defaultN) => {
  * @param {import('qs').ParsedQs} query
  * @param {{ defaultSize?: number, maxSize?: number }} [options]
  */
-function getOffsetPagination(
-  query,
-  { defaultSize = 100, maxSize = 100 } = {},
-) {
+function getOffsetPagination(query, options = {}) {
+  const { defaultSize = 100, maxSize = 100 } = options;
+
   // TODO(goto-bus-stop) we can maybe narrow the input type here because validation
   // already ran on that object. Saves a few expect-error comments.
   if (typeof query.page === 'object') {

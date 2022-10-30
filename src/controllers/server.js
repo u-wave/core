@@ -37,7 +37,7 @@ async function getConfig(req) {
   const combinedSchema = config.getSchema();
   const schema = combinedSchema.properties[key];
 
-  return toItemResponse(values || {}, {
+  return toItemResponse(values ?? {}, {
     url: req.fullUrl,
     meta: includeSchema ? { schema } : {},
   });
@@ -51,7 +51,7 @@ async function updateConfig(req) {
   const { key } = req.params;
   const values = req.body;
 
-  await config.set(key, values);
+  await config.set(key, values, { user: req.user });
 
   return toItemResponse({}, {
     url: req.fullUrl,
