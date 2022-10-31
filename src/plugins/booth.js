@@ -43,6 +43,9 @@ class Booth {
 
   #locker;
 
+  /** @type {Promise<unknown>|null} */
+  #awaitAdvance = null;
+
   /**
    * @param {import('../Uwave')} uw
    */
@@ -62,17 +65,26 @@ class Booth {
       const endTime = Number(current.playedAt) + duration;
       if (endTime > Date.now()) {
         this.#timeout = setTimeout(
-          () => this.advance(),
+          () => this.#advanceAutomatically(),
           endTime - Date.now(),
         );
       } else {
-        this.advance();
+        this.#advanceAutomatically();
       }
     }
 
-    /** @type {import('../Uwave').Boot} */ (this.#uw).onClose(() => {
+    /** @type {import('../Uwave').Boot} */ (this.#uw).onClose(async () => {
       this.#onStop();
+      await this.#awaitAdvance;
     });
+  }
+
+  async #advanceAutomatically() {
+    try {
+      await this.advance();
+    } catch (error) {
+      this.#logger.error({ err: error }, 'advance failed');
+    }
   }
 
   #onStop() {
@@ -237,7 +249,7 @@ class Booth {
   #play(entry) {
     this.#maybeStop();
     this.#timeout = setTimeout(
-      () => this.advance(),
+      () => this.#advanceAutomatically(),
       (entry.media.end - entry.media.start) * 1000,
     );
   }
@@ -316,6 +328,7 @@ class Booth {
    * @typedef {object} AdvanceOptions
    * @prop {boolean} [remove]
    * @prop {boolean} [publish]
+   * @prop {import('redlock').RedlockAbortSignal} [signal]
    *
    * @param {AdvanceOptions} [opts]
    * @returns {Promise<PopulatedHistoryEntry|null>}
@@ -339,6 +352,10 @@ class Booth {
         return this.#advanceLocked({ publish, remove: true });
       }
       throw err;
+    }
+
+    if (opts.signal?.aborted) {
+      throw opts.signal.error;
     }
 
     if (previous) {
@@ -391,7 +408,13 @@ class Booth {
    * @returns {Promise<PopulatedHistoryEntry|null>}
    */
   advance(opts = {}) {
-    return this.#locker.using(['booth:advancing'], 10_000, () => this.#advanceLocked(opts));
+    const result = this.#locker.using(
+      ['booth:advancing'],
+      10_000,
+      (signal) => this.#advanceLocked({ ...opts, signal }),
+    );
+    this.#awaitAdvance = result;
+    return result;
   }
 }
 
