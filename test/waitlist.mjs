@@ -15,13 +15,12 @@ describe('Waitlist', () => {
     uw.source({
       name: 'test-source',
       api: 2,
-      async get(context, ids) {
+      async get(_context, ids) {
         return ids.map((id) => ({
           sourceID: id,
           artist: `artist ${id}`,
           title: `title ${id}`,
-          start: 0,
-          end: 60,
+          duration: 60,
         }));
       },
       async search() {
@@ -76,7 +75,7 @@ describe('Waitlist', () => {
     });
   });
 
-  describe.skip('POST /waitlist', () => {
+  describe('POST /waitlist', () => {
     it('requires authentication', async () => {
       await supertest(uw.server)
         .post('/api/waitlist')

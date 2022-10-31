@@ -47,8 +47,7 @@ describe('Playlists', () => {
           sourceID: id,
           artist: `artist ${id}`,
           title: `title ${id}`,
-          start: 0,
-          end: 60,
+          duration: 60,
         }));
       },
       async search() {
