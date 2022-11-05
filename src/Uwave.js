@@ -14,6 +14,7 @@ const { i18n } = require('./locale');
 
 const models = require('./models');
 const configStore = require('./plugins/configStore');
+const assets = require('./plugins/assets');
 const booth = require('./plugins/booth');
 const chat = require('./plugins/chat');
 const motd = require('./plugins/motd');
@@ -25,6 +26,8 @@ const acl = require('./plugins/acl');
 const waitlist = require('./plugins/waitlist');
 const passport = require('./plugins/passport');
 const migrations = require('./plugins/migrations');
+
+const baseSchema = require('./schemas/base.json');
 
 const DEFAULT_MONGO_URL = 'mongodb://localhost:27017/uwave';
 const DEFAULT_REDIS_URL = 'redis://localhost:6379';
@@ -82,6 +85,10 @@ class UwaveServer extends EventEmitter {
   /** @type {import('./plugins/configStore').ConfigStore} */
   // @ts-expect-error TS2564 Definitely assigned in a plugin
   config;
+
+  /** @type {import('./plugins/assets').Assets} */
+  // @ts-expect-error TS2564 Definitely assigned in a plugin
+  assets;
 
   /** @type {import('./plugins/history').HistoryRepository} */
   // @ts-expect-error TS2564 Definitely assigned in a plugin
@@ -173,7 +180,15 @@ class UwaveServer extends EventEmitter {
 
     boot.use(models);
     boot.use(migrations);
+
     boot.use(configStore);
+    boot.use(async (uw) => {
+      uw.config.register(baseSchema['uw:key'], baseSchema);
+    });
+
+    boot.use(assets, {
+      basedir: '/tmp/u-wave-basedir',
+    });
 
     boot.use(passport, {
       secret: this.options.secret,
@@ -189,6 +204,10 @@ class UwaveServer extends EventEmitter {
       onError: this.options.onError,
     });
     boot.use(SocketServer.plugin);
+
+    boot.use(async (uw) => {
+      uw.express.use('/assets', uw.assets.middleware());
+    });
 
     boot.use(acl);
     boot.use(chat);

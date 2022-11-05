@@ -104,6 +104,8 @@ async function getState(req) {
       });
   }
 
+  const baseConfig = await uw.config.get('u-wave:base');
+
   const stateShape = {
     motd,
     user: user ? serializeUser(user) : null,
@@ -138,6 +140,8 @@ async function getState(req) {
     state.playlists = state.playlists.map(serializePlaylist);
   }
 
+  // TODO dynamically return all the public-facing config.
+  state.config = { 'u-wave:base': baseConfig };
   return state;
 }
 

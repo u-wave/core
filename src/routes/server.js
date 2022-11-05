@@ -29,6 +29,11 @@ function serverRoutes() {
       '/config/:key',
       protect('admin'),
       route(controller.updateConfig),
+    )
+    .put(
+      '/config/asset/:key',
+      protect('admin'),
+      route(controller.uploadFile),
     );
 }
 

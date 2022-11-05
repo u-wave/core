@@ -9,6 +9,7 @@ const migrationSchema = require('./Migration');
 const playlistSchema = require('./Playlist');
 const playlistItemSchema = require('./PlaylistItem');
 const userSchema = require('./User');
+const assetSchema = require('./Asset');
 
 /**
  * @typedef {import('./AclRole').AclRole} AclRole
@@ -20,6 +21,7 @@ const userSchema = require('./User');
  * @typedef {import('./Playlist').Playlist} Playlist
  * @typedef {import('./PlaylistItem').PlaylistItem} PlaylistItem
  * @typedef {import('./User').User} User
+ * @typedef {import('./Asset').Asset} Asset
  * @typedef {{
  *  AclRole: import('mongoose').Model<AclRole, {}, {}>,
  *  Authentication: import('mongoose').Model<Authentication, {}, {}>,
@@ -30,6 +32,7 @@ const userSchema = require('./User');
  *  Playlist: import('mongoose').Model<Playlist, {}, {}>,
  *  PlaylistItem: import('mongoose').Model<PlaylistItem, {}, {}>,
  *  User: import('mongoose').Model<User, {}, {}>,
+ *  Asset: import('mongoose').Model<Asset, {}, {}>,
  * }} Models
  */
 
@@ -47,6 +50,7 @@ async function models(uw) {
     Playlist: uw.mongo.model('Playlist', playlistSchema),
     PlaylistItem: uw.mongo.model('PlaylistItem', playlistItemSchema),
     User: uw.mongo.model('User', userSchema),
+    Asset: uw.mongo.model('Asset', assetSchema),
   };
 }
 
