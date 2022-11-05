@@ -4,6 +4,12 @@ All notable changes to this project will be documented in this file.
 
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## 0.5.0-alpha.13 / 05 Nov 2022
+This is an alpha release, but new servers should use this version rather than an older "stable" one.
+
+Internal:
+ * Finish booth advances while shutting down the server. (#543)
+
 ## 0.5.0-alpha.12 / 30 Oct 2022
 This is an alpha release, but new servers should use this version rather than an older "stable" one.
 
