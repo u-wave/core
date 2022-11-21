@@ -119,7 +119,7 @@
     "sinon": "^14.0.0",
     "supertest": "^6.1.3",
     "type-fest": "^3.0.0",
-    "typescript": "~4.8.2"
+    "typescript": "~4.9.3"
   },
   "scripts": {
     "lint": "eslint --cache .",
