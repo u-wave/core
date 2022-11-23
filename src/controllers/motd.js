@@ -19,13 +19,13 @@ async function getMotd(req) {
 /**
  * @type {import('../types').AuthenticatedController<{}, {}, { motd: string | null }>}
  */
-async function setMotd(req) {
+async function setMotd(req, res) {
   const { motd } = req.uwave;
   const { motd: newValue } = req.body;
 
   await motd.set(newValue);
 
-  return getMotd(req);
+  return getMotd(req, res);
 }
 
 exports.getMotd = getMotd;

@@ -86,7 +86,7 @@ function createErrorClass(name, {
       // @ts-expect-error TS2345 This is actually unsafe but the generic TData type
       // is hard to express correctly in JSDoc.
       const i18nKey = getString(data);
-      super(t(i18nKey, data));
+      super(t(i18nKey, data) ?? undefined);
       this.name = name;
       this.code = code;
       this.i18nKey = i18nKey;
