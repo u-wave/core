@@ -116,7 +116,7 @@
     "nodemon": "^2.0.2",
     "pino-colada": "^2.2.2",
     "recaptcha-test-keys": "^1.0.0",
-    "sinon": "^14.0.0",
+    "sinon": "^15.0.0",
     "supertest": "^6.1.3",
     "type-fest": "^3.0.0",
     "typescript": "~4.9.3"
