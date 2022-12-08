@@ -440,7 +440,7 @@ describe('Playlists', () => {
       assertItemsAndIncludedMedia(page5.body);
     });
 
-    it.only('supports filter strings', async () => {
+    it('supports filter strings', async () => {
       const token = await uw.test.createTestSessionToken(user);
 
       const items = await generateItems(7);
