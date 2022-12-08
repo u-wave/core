@@ -308,7 +308,7 @@ class PlaylistsRepository {
     return new Page(items, {
       pageSize: pagination.limit,
       // `count` can be the empty array if the playlist has no items
-      filtered: count.length === 1 ? count[0].filtered : playlist.media.length,
+      filtered: filter ? (count[0]?.filtered ?? 0) : playlist.media.length,
       total: playlist.media.length,
 
       current: pagination,

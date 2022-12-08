@@ -439,6 +439,62 @@ describe('Playlists', () => {
       assertItemsAndIncludedMedia(page4.body);
       assertItemsAndIncludedMedia(page5.body);
     });
+
+    it('supports filter strings', async () => {
+      const token = await uw.test.createTestSessionToken(user);
+
+      const items = await generateItems(7);
+      for (const item of items) {
+        item.title = `${item.title} matches_the_filter`;
+      }
+      await uw.playlists.addPlaylistItems(playlist, items);
+
+      const res = await supertest(uw.server)
+        .get(`/api/playlists/${playlist.id}/media?filter=matches_the_filter`)
+        .set('Cookie', `uwsession=${token}`)
+        .send()
+        .expect(200);
+
+      sinon.assert.match(res.body, {
+        meta: {
+          included: {
+            media: ['media'],
+          },
+          // Default page size
+          offset: 0,
+          pageSize: 100,
+          // Filtered size
+          results: 7,
+          // Playlist size
+          total: 207,
+        },
+      });
+      assert.strictEqual(res.body.data.length, 7);
+
+      assertItemsAndIncludedMedia(res.body);
+
+      const emptyRes = await supertest(uw.server)
+        .get(`/api/playlists/${playlist.id}/media?filter=matches_nothing_and_returns_empty`)
+        .set('Cookie', `uwsession=${token}`)
+        .send()
+        .expect(200);
+
+      sinon.assert.match(emptyRes.body, {
+        meta: {
+          included: {
+            media: ['media'],
+          },
+          // Default page size
+          offset: 0,
+          pageSize: 100,
+          // Filtered size
+          results: 0,
+          // Playlist size
+          total: 207,
+        },
+      });
+      assert.strictEqual(emptyRes.body.data.length, 0);
+    });
   });
 
   describe('POST /playlists/:id/media', () => {
