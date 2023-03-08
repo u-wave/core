@@ -35,11 +35,17 @@
           "title": "Enable BetterTTV emotes",
           "default": false
         },
+        "ffz": {
+          "type": "boolean",
+          "title": "Enable FrankerFaceZ emotes",
+          "default": false
+        },
         "seventv": {
           "type": "boolean",
           "title": "Enable 7TV emotes",
           "default": false
         },
+
         "channels": {
           "type": "array",
           "title": "Channels",

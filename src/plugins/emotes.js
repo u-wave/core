@@ -13,12 +13,15 @@ const schema = require('../schemas/emotes.json');
  *   clientSecret: string | null,
  *   useTwitchGlobalEmotes: boolean,
  *   bttv: boolean,
+ *   ffz: boolean,
  *   seventv: boolean,
  *   channels: string[],
  * }} TwitchSettings
  * @typedef {{ twitch: TwitchSettings }} EmotesSettings
  *
  * @typedef {{ id: string, code: string, imageType: string, animated: boolean }} BTTVEmote
+ * @typedef {{ id: string, name: string }} FFZEmote
+ * @typedef {{ emoticons: FFZEmote[] }} FFZEmoteSet
  * @typedef {{ id: string, name: string, data: { animated: boolean } }} SevenTVEmote
  * @typedef {{ name: string, url: URL }} Emote
  */
@@ -93,6 +96,51 @@ async function getBTTVEmotes(channels) {
     getBTTVGlobalEmotes(),
     ...channels.map((channelId) => getBTTVChannelEmotes(channelId)),
   ]);
+
+  return list.flat();
+}
+
+/**
+* @param {FFZEmote} emote
+* @returns {Emote}
+*/
+function fromFFZEmote(emote) {
+  return {
+    name: emote.name,
+    url: new URL(`https://cdn.frankerfacez.com/emoticon/${emote.id}/2`),
+  };
+}
+
+/**
+ * @param {string} channelName
+ * @returns {Promise<Emote[]>}
+ */
+async function getFFZChannelEmotes(channelName) {
+  let channel = null;
+  try {
+    channel = /** @type {{ sets: Record<number, FFZEmoteSet> }} */ (
+      await fetchJSON(`https://api.frankerfacez.com/v1/room/${channelName}`)
+    );
+  } catch (err) {
+    if (!(err instanceof NotFound)) {
+      throw err;
+    }
+  }
+  if (!channel) {
+    return [];
+  }
+
+  return Object.values(channel.sets)
+    .flatMap((set) => set.emoticons)
+    .map(fromFFZEmote);
+}
+
+/**
+ * @param {string[]} channels
+ * @returns {Promise<Emote[]>}
+ */
+async function getFFZEmotes(channels) {
+  const list = await Promise.all(channels.map((channelId) => getFFZChannelEmotes(channelId)));
 
   return list.flat();
 }
@@ -231,6 +279,10 @@ class Emotes {
 
     if (options.bttv) {
       promises.push(getBTTVEmotes(channels));
+    }
+
+    if (options.ffz) {
+      promises.push(getFFZEmotes(options.channels));
     }
 
     if (options.seventv) {
