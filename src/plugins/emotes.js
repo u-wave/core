@@ -131,6 +131,14 @@ async function loadTTVEmotes(options) {
   return emotes;
 }
 
+/**
+ * EXPERIMENTAL: load emotes from Twitch emote services.
+ *
+ * Before considering this stable:
+ * - error handling must be improved.
+ * - we should also add support for Twitch emotes themselves.
+ * - global emotes from the emote services should be optional.
+ */
 class Emotes {
   #uw;
 
