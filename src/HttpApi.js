@@ -12,7 +12,6 @@ const pinoHttp = require('pino-http').default;
 // routes
 const authenticate = require('./routes/authenticate');
 const bans = require('./routes/bans');
-const emotes = require('./routes/emotes');
 const search = require('./routes/search');
 const server = require('./routes/server');
 const users = require('./routes/users');
@@ -124,7 +123,6 @@ async function httpApi(uw, options) {
         options.createPasswordResetEmail ?? defaultCreatePasswordResetEmail,
     }))
     .use('/bans', bans())
-    .use('/emotes', emotes())
     .use('/import', imports())
     .use('/now', now())
     .use('/search', search())

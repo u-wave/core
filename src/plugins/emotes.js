@@ -3,6 +3,7 @@
 const { AppTokenAuthProvider } = require('@twurple/auth');
 const { ApiClient } = require('@twurple/api');
 const fetch = require('node-fetch').default;
+const routes = require('../routes/emotes');
 const schema = require('../schemas/emotes.json');
 
 /**
@@ -171,6 +172,7 @@ class Emotes {
  */
 async function emotesPlugin(uw) {
   uw.emotes = new Emotes(uw); // eslint-disable-line no-param-reassign
+  uw.httpApi.use('/emotes', routes());
 }
 
 module.exports = emotesPlugin;
