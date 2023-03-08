@@ -7,6 +7,7 @@ const addFormats = require('ajv-formats').default;
 const ytSource = require('u-wave-source-youtube');
 const scSource = require('u-wave-source-soundcloud');
 const announce = require('u-wave-announce');
+const emotes = require('../src/plugins/emotes');
 const uwave = require('..');
 const pkg = require('../package.json');
 const argv = require('minimist')(process.argv.slice(2));
@@ -48,6 +49,9 @@ const envSchema = {
     },
     YOUTUBE_API_KEY: {
       type: 'string',
+    },
+    EXPERIMENTAL_EMOTES: {
+      type: 'boolean',
     },
   },
 };
@@ -110,6 +114,11 @@ uw.on('redisError', (err) => {
 });
 
 uw.use(announce);
+
+if (config.EXPERIMENTAL_EMOTES) {
+  console.warn('Using experimental third-party emotes integration');
+  uw.use(emotes);
+}
 
 if (config.YOUTUBE_API_KEY) {
   uw.source(ytSource,  {

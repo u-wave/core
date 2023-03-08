@@ -136,6 +136,8 @@ export type ServerActionParameters = {
     moderatorID: string,
   },
   'http-api:socket:close': string,
+
+  'emotes:reload': null,
 };
 
 export type ServerActions = {

@@ -1,0 +1,49 @@
+{
+  "$schema": "https://json-schema.org/draft/2019-09/schema",
+  "$id": "https://ns.u-wave.net/config/emotes.json#",
+  "uw:key": "u-wave:emotes",
+  "uw:access": "admin",
+  "type": "object",
+  "title": "Emotes",
+  "description": "Add custom emotes for use in the chat.",
+  "properties": {
+    "twitch": {
+      "type": "object",
+      "title": "Twitch Emotes",
+      "properties": {
+        "clientId": {
+          "type": "string",
+          "title": "Twitch App Token: Client ID",
+          "default": null,
+          "nullable": true
+        },
+        "clientSecret": {
+          "type": "string",
+          "title": "Twitch App Token: Client Secret",
+          "default": null,
+          "nullable": true
+        },
+
+        "bttv": {
+          "type": "boolean",
+          "title": "Enable BetterTTV emotes",
+          "default": false
+        },
+        "seventv": {
+          "type": "boolean",
+          "title": "Enable 7TV emotes",
+          "default": false
+        },
+        "channels": {
+          "type": "array",
+          "title": "Channels",
+          "description": "Use emotes from these channel names",
+          "items": { "type": "string" },
+          "default": []
+        }
+      },
+      "default": {}
+    }
+  },
+  "required": []
+}

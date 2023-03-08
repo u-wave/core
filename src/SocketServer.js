@@ -428,6 +428,10 @@ class SocketServer {
           }
         });
       },
+
+      'emotes:reload': () => {
+        this.broadcast('reloadEmotes', null);
+      },
     };
   }
 

@@ -26,6 +26,8 @@
     "node": ">= 14.17.0"
   },
   "dependencies": {
+    "@twurple/api": "^6.0.6",
+    "@twurple/auth": "^6.0.6",
     "ajv": "^8.0.5",
     "ajv-formats": "^2.0.2",
     "avvio": "^8.0.0",
