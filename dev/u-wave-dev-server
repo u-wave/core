@@ -50,6 +50,9 @@ async function start() {
     timeout: 10,
   });
 
+  const emotes = require('../src/plugins/emotes');
+  uw.use(emotes);
+
   uw.use(async function configureExpress(uw) {
     uw.express.set('json spaces', 2);
   });
