@@ -9,6 +9,7 @@ const schema = require('../schemas/emotes.json');
  * @typedef {{ clientId: string | null, clientSecret: string | null, bttv: boolean, seventv: boolean, channels: string[] }} TwitchSettings
  * @typedef {{ twitch: TwitchSettings }} EmotesSettings
  * @typedef {{ id: string, code: string, imageType: string, animated: boolean }} BTTVEmote
+ * @typedef {{ id: string, name: string }} SevenTVEmote
  */
 
 /**
@@ -55,6 +56,39 @@ async function loadBTTVEmotes(channels) {
 }
 
 /**
+ * @param {string[]} channels
+ * @returns {Promise<Record<string, URL>>}
+ */
+async function loadSevenTVEmotes(channels) {
+  /** @type {Record<string, URL>} */
+  const emotes = {};
+
+  /**
+   * @param {string} channelId
+   * @returns {Promise<SevenTVEmote[]>}
+   */
+  async function loadChannelEmotes(channelId) {
+    /** @type {{ emote_set: { emotes: SevenTVEmote[] } }} */
+    const channel = await fetchJSON(`https://7tv.io/v3/users/twitch/${channelId}`);
+
+    return channel.emote_set.emotes;
+  }
+
+  /** @type {Promise<{ emotes: SevenTVEmote[] }>} */
+  const global = fetchJSON('https://7tv.io/v3/emote-sets/global');
+  const list = await Promise.all([
+    global.then((data) => data.emotes),
+    ...channels.map((channelId) => loadChannelEmotes(channelId)),
+  ]);
+
+  for (const emote of list.flat()) {
+    emotes[emote.name] = new URL(`https://cdn.7tv.app/emote/${emote.id}/2x.png`);
+  }
+
+  return emotes;
+}
+
+/**
  * @param {TwitchSettings} options
  * @returns {Promise<Record<string, URL>>}
  */
@@ -79,6 +113,10 @@ async function loadTTVEmotes(options) {
 
   if (options.bttv) {
     Object.assign(emotes, await loadBTTVEmotes(channels));
+  }
+
+  if (options.seventv) {
+    Object.assign(emotes, await loadSevenTVEmotes(channels));
   }
 
   return emotes;
