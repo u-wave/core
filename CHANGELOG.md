@@ -4,6 +4,12 @@ All notable changes to this project will be documented in this file.
 
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## 0.5.0-alpha.15 / 08 Mar 2023
+This is an alpha release, but new servers should use this version rather than an older "stable" one.
+
+Features:
+ * Add experimental BTTV / 7TV emote integrations. (#554)
+
 ## 0.5.0-alpha.14 / 08 Dec 2022
 This is an alpha release, but new servers should use this version rather than an older "stable" one.
 
