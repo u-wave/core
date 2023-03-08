@@ -7,8 +7,15 @@ const routes = require('../routes/emotes');
 const schema = require('../schemas/emotes.json');
 
 /**
- * @typedef {{ clientId: string | null, clientSecret: string | null, bttv: boolean, seventv: boolean, channels: string[] }} TwitchSettings
+ * @typedef {{
+ *   clientId: string | null,
+ *   clientSecret: string | null,
+ *   bttv: boolean,
+ *   seventv: boolean,
+ *   channels: string[],
+ * }} TwitchSettings
  * @typedef {{ twitch: TwitchSettings }} EmotesSettings
+ *
  * @typedef {{ id: string, code: string, imageType: string, animated: boolean }} BTTVEmote
  * @typedef {{ id: string, name: string, data: { animated: boolean } }} SevenTVEmote
  */
