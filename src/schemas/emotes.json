@@ -24,9 +24,20 @@
           "nullable": true
         },
 
+        "useTwitchGlobalEmotes": {
+          "type": "boolean",
+          "title": "Enable global Twitch emotes",
+          "default": false
+        },
+
         "bttv": {
           "type": "boolean",
           "title": "Enable BetterTTV emotes",
+          "default": false
+        },
+        "ffz": {
+          "type": "boolean",
+          "title": "Enable FrankerFaceZ emotes",
           "default": false
         },
         "seventv": {
@@ -34,6 +45,7 @@
           "title": "Enable 7TV emotes",
           "default": false
         },
+
         "channels": {
           "type": "array",
           "title": "Channels",
