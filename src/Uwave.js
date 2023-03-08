@@ -16,6 +16,7 @@ const models = require('./models');
 const configStore = require('./plugins/configStore');
 const booth = require('./plugins/booth');
 const chat = require('./plugins/chat');
+const emotes = require('./plugins/emotes');
 const motd = require('./plugins/motd');
 const playlists = require('./plugins/playlists');
 const users = require('./plugins/users');
@@ -82,6 +83,10 @@ class UwaveServer extends EventEmitter {
   /** @type {import('./plugins/configStore').ConfigStore} */
   // @ts-expect-error TS2564 Definitely assigned in a plugin
   config;
+
+  /** @type {import('./plugins/emotes').Emotes} */
+  // @ts-expect-error TS2564 Definitely assigned in a plugin
+  emotes;
 
   /** @type {import('./plugins/history').HistoryRepository} */
   // @ts-expect-error TS2564 Definitely assigned in a plugin
@@ -192,6 +197,7 @@ class UwaveServer extends EventEmitter {
 
     boot.use(acl);
     boot.use(chat);
+    boot.use(emotes);
     boot.use(motd);
     boot.use(playlists);
     boot.use(users);
