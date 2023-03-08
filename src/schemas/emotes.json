@@ -24,6 +24,12 @@
           "nullable": true
         },
 
+        "useTwitchGlobalEmotes": {
+          "type": "boolean",
+          "title": "Enable global Twitch emotes",
+          "default": false
+        },
+
         "bttv": {
           "type": "boolean",
           "title": "Enable BetterTTV emotes",

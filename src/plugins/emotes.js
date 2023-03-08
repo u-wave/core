@@ -10,6 +10,7 @@ const schema = require('../schemas/emotes.json');
  * @typedef {{
  *   clientId: string | null,
  *   clientSecret: string | null,
+ *   useTwitchGlobalEmotes: boolean,
  *   bttv: boolean,
  *   seventv: boolean,
  *   channels: string[],
@@ -120,6 +121,14 @@ async function loadTTVEmotes(options) {
     }))
   ).filter((id) => id != null));
 
+  const twitchEmotes = await Promise.all([
+    options.useTwitchGlobalEmotes ? client.chat.getGlobalEmotes() : [],
+    ...channels.map((channelId) => client.chat.getChannelEmotes(channelId)),
+  ]);
+  for (const emote of twitchEmotes.flat()) {
+    emotes[emote.name] = new URL(emote.getImageUrl(2));
+  }
+
   if (options.bttv) {
     Object.assign(emotes, await loadBTTVEmotes(channels));
   }
@@ -136,7 +145,6 @@ async function loadTTVEmotes(options) {
  *
  * Before considering this stable:
  * - error handling must be improved.
- * - we should also add support for Twitch emotes themselves.
  * - global emotes from the emote services should be optional.
  */
 class Emotes {
