@@ -10,7 +10,7 @@ const schema = require('../schemas/emotes.json');
  * @typedef {{ clientId: string | null, clientSecret: string | null, bttv: boolean, seventv: boolean, channels: string[] }} TwitchSettings
  * @typedef {{ twitch: TwitchSettings }} EmotesSettings
  * @typedef {{ id: string, code: string, imageType: string, animated: boolean }} BTTVEmote
- * @typedef {{ id: string, name: string }} SevenTVEmote
+ * @typedef {{ id: string, name: string, data: { animated: boolean } }} SevenTVEmote
  */
 
 /**
@@ -83,7 +83,8 @@ async function loadSevenTVEmotes(channels) {
   ]);
 
   for (const emote of list.flat()) {
-    emotes[emote.name] = new URL(`https://cdn.7tv.app/emote/${emote.id}/2x.png`);
+    const ext = emote.data.animated ? 'gif' : 'png';
+    emotes[emote.name] = new URL(`https://cdn.7tv.app/emote/${emote.id}/2x.${ext}`);
   }
 
   return emotes;
