@@ -4,6 +4,12 @@ All notable changes to this project will be documented in this file.
 
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## 0.5.0-alpha.16 / 08 Mar 2023
+This is an alpha release, but new servers should use this version rather than an older "stable" one.
+
+Bugfixes:
+ * Fix some crashes in the new emote integrations, and support Twitch and FrankerFaceZ emotes. (#555)
+
 ## 0.5.0-alpha.15 / 08 Mar 2023
 This is an alpha release, but new servers should use this version rather than an older "stable" one.
 
