@@ -220,9 +220,9 @@ class UsersRepository {
         ]);
       } catch (e) {
         if (!auth.isNew) {
-          await auth.remove();
+          await auth.deleteOne();
         }
-        await user.remove();
+        await user.deleteOne();
         throw e;
       }
 
@@ -271,9 +271,9 @@ class UsersRepository {
       await user.save();
     } catch (e) {
       if (!auth.isNew) {
-        await auth.remove();
+        await auth.deleteOne();
       }
-      await user.remove();
+      await user.deleteOne();
       throw e;
     }
 
