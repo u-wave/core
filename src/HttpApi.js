@@ -4,6 +4,8 @@ const { randomUUID } = require('crypto');
 const express = require('express');
 const bodyParser = require('body-parser');
 const cookieParser = require('cookie-parser');
+const session = require('express-session');
+const RedisSessionStore = require('connect-redis')(session);
 const cors = require('cors');
 const helmet = require('helmet').default;
 const http = require('http');
@@ -108,6 +110,17 @@ async function httpApi(uw, options) {
     }))
     .use(bodyParser.json())
     .use(cookieParser())
+    .use(session({
+      name: 'uwsid',
+      cookie: {
+        secure: true,
+        httpOnly: true,
+      },
+      store: new RedisSessionStore({
+        client: uw.redis,
+      }),
+      secret: options.secret.toString('hex'),
+    }))
     .use(uw.passport.initialize())
     .use(addFullUrl())
     .use(attachUwaveMeta(uw.httpApi, uw))
@@ -121,6 +134,7 @@ async function httpApi(uw, options) {
       recaptcha: options.recaptcha,
       createPasswordResetEmail:
         options.createPasswordResetEmail ?? defaultCreatePasswordResetEmail,
+      cookieSecure: true,
     }))
     .use('/bans', bans())
     .use('/import', imports())
