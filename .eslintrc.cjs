@@ -14,6 +14,14 @@ module.exports = {
   rules: {
     'import/extensions': ['error', 'ignorePackages'],
     'import/prefer-default-export': 'off',
+    'import/no-extraneous-dependencies': ['error', {
+      devDependencies: [
+        'test/**',
+        'dev/**',
+        '**/.eslintrc.js',
+      ],
+      optionalDependencies: false,
+    }],
     // MongoDB IDs
     'no-underscore-dangle': ['error', { allow: ['_id'] }],
     // Used by plugins

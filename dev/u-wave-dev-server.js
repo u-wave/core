@@ -5,10 +5,9 @@ import explain from 'explain-error';
 import announce from 'u-wave-announce';
 import ytSource from 'u-wave-source-youtube';
 import scSource from 'u-wave-source-soundcloud';
-import recaptchaTestKeys from 'recaptcha-test-keys';
 import pino from 'pino';
 import dotenv from 'dotenv';
-import uwave from 'u-wave-core';
+import uwave from '../src/index.js';
 import emotes from '../src/plugins/emotes.js';
 
 const argv = minimist(process.argv.slice(2));
@@ -51,8 +50,8 @@ async function start() {
 
   uw.use(emotes);
 
-  uw.use(async function configureExpress(uw) {
-    uw.express.set('json spaces', 2);
+  uw.use(async (instance) => {
+    instance.express.set('json spaces', 2);
   });
 
   uw.on('mongoError', (err) => {
@@ -68,13 +67,13 @@ async function start() {
     seed: Buffer.from('8286a5e55c62d93a042b8c56c8face52c05354c288807d941751f0e9060c2ded', 'hex'),
   });
 
-  uw.use(async function configureSources(uw) {
+  uw.use(async (instance) => {
     if (process.env.YOUTUBE_API_KEY) {
-      uw.source(ytSource, {
+      instance.source(ytSource, {
         key: process.env.YOUTUBE_API_KEY,
       });
     }
-    uw.source(scSource, {
+    instance.source(scSource, {
       key: process.env.SOUNDCLOUD_API_KEY,
     });
   });
@@ -83,7 +82,4 @@ async function start() {
   logger.info('Now listening', { port });
 }
 
-start().catch((error) => {
-  logger.error(error);
-  process.exit(1);
-});
+await start();

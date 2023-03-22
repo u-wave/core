@@ -1,16 +1,21 @@
 #!/usr/bin/env node
 
+/* eslint-disable no-console,no-process-exit */
 import 'make-promises-safe';
+import fs from 'node:fs';
 import explain from 'explain-error';
 import Ajv from 'ajv';
 import addFormats from 'ajv-formats';
 import ytSource from 'u-wave-source-youtube';
 import scSource from 'u-wave-source-soundcloud';
 import announce from 'u-wave-announce';
-import emotes from '../src/plugins/emotes.js';
-import uwave from 'u-wave-core';
-import pkg from '../package.json';
 import minimist from 'minimist';
+import uwave from '../src/index.js';
+import emotes from '../src/plugins/emotes.js';
+
+const pkg = JSON.parse(
+  fs.readFileSync(new URL('../package.json', import.meta.url), 'utf8'),
+);
 
 const argv = minimist(process.argv.slice(2));
 
@@ -123,7 +128,7 @@ if (config.EXPERIMENTAL_EMOTES) {
 }
 
 if (config.YOUTUBE_API_KEY) {
-  uw.source(ytSource,  {
+  uw.source(ytSource, {
     key: config.YOUTUBE_API_KEY,
   });
 }
