@@ -301,7 +301,7 @@ async function verifyCaptcha(responseString, options) {
       secret: options.secret,
     }),
   });
-  const body = await response.json();
+  const body = /** @type {{ success: boolean }} */ (await response.json());
 
   if (!body.success) {
     options.logger?.warn(body, 'recaptcha: validation failure');

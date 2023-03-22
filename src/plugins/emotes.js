@@ -44,7 +44,7 @@ async function fetchJSON(url) {
     throw new Error('Unexpected response');
   }
 
-  const json = await res.json();
+  const json = /** @type {T} */ (await res.json());
   return json;
 }
 

@@ -2,7 +2,7 @@
   "extends": "@tsconfig/node16/tsconfig.json",
   "compilerOptions": {
     "strict": true,
-    "module": "node16",
+    "module": "es2022",
     "useUnknownInCatchVariables": false,
     "allowJs": true,
     "checkJs": true,
