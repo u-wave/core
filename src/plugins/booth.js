@@ -1,4 +1,4 @@
-import assert from 'assert';
+import assert from 'node:assert';
 import RedLock from 'redlock';
 import lodash from 'lodash';
 import { EmptyPlaylistError, PlaylistItemNotFoundError } from '../errors/index.js';

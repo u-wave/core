@@ -1,4 +1,4 @@
-import fs from 'fs';
+import fs from 'node:fs';
 import Ajv from 'ajv/dist/2019.js';
 import addFormats from 'ajv-formats';
 import ValidationError from '../errors/ValidationError.js';

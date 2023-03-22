@@ -1,4 +1,4 @@
-import EventEmitter from 'events';
+import EventEmitter from 'node:events';
 import Ultron from 'ultron';
 
 class GuestConnection extends EventEmitter {

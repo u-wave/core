@@ -1,5 +1,5 @@
 import ms from 'ms';
-import { promisify } from 'util';
+import { promisify } from 'node:util';
 import RateLimiterBase from 'ratelimiter';
 import wrapMiddleware from '../utils/wrapMiddleware.js';
 import { RateLimitError } from '../errors/index.js';

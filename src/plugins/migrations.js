@@ -1,4 +1,4 @@
-import { fileURLToPath } from 'url';
+import { fileURLToPath } from 'node:url';
 import RedLock from 'redlock';
 import { Umzug } from 'umzug';
 

@@ -1,4 +1,4 @@
-import fs from 'fs';
+import fs from 'node:fs';
 import httpErrors from 'http-errors';
 import { AppTokenAuthProvider } from '@twurple/auth';
 import { ApiClient } from '@twurple/api';

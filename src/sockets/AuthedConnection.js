@@ -1,4 +1,4 @@
-import EventEmitter from 'events';
+import EventEmitter from 'node:events';
 import Ultron from 'ultron';
 import WebSocket from 'ws';
 import sjson from 'secure-json-parse';

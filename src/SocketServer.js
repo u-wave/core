@@ -1,4 +1,4 @@
-import { promisify } from 'util';
+import { promisify } from 'node:util';
 import lodash from 'lodash';
 import sjson from 'secure-json-parse';
 import { WebSocketServer } from 'ws';

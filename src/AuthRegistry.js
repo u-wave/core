@@ -1,6 +1,6 @@
-import assert from 'assert';
-import crypto from 'crypto';
-import { promisify } from 'util';
+import assert from 'node:assert';
+import crypto from 'node:crypto';
+import { promisify } from 'node:util';
 
 const randomBytes = promisify(crypto.randomBytes);
 

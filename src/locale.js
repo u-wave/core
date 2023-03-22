@@ -1,4 +1,4 @@
-import fs from 'fs';
+import fs from 'node:fs';
 import i18next from 'i18next';
 import YAML from 'yaml';
 

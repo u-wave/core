@@ -1,5 +1,5 @@
-import fs from 'fs';
-import EventEmitter from 'events';
+import fs from 'node:fs';
+import EventEmitter from 'node:events';
 import Ajv from 'ajv/dist/2019.js';
 import formats from 'ajv-formats';
 import lodash from 'lodash';
