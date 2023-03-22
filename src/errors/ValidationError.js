@@ -1,6 +1,4 @@
-'use strict';
-
-const UwaveError = require('./UwaveError');
+import UwaveError from './UwaveError.js';
 
 class ValidationError extends UwaveError {
   /**
@@ -19,4 +17,4 @@ class ValidationError extends UwaveError {
   }
 }
 
-module.exports = ValidationError;
+export default ValidationError;

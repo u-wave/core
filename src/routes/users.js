@@ -1,13 +1,11 @@
-'use strict';
-
-const { Router } = require('express');
-const route = require('../route');
-const validations = require('../validations');
-const protect = require('../middleware/protect');
-const schema = require('../middleware/schema');
-const rateLimit = require('../middleware/rateLimit');
-const controller = require('../controllers/users');
-const { NameChangeRateLimitError } = require('../errors');
+import { Router } from 'express';
+import route from '../route.js';
+import * as validations from '../validations.js';
+import protect from '../middleware/protect.js';
+import schema from '../middleware/schema.js';
+import rateLimit from '../middleware/rateLimit.js';
+import * as controller from '../controllers/users.js';
+import { NameChangeRateLimitError } from '../errors/index.js';
 
 function userRoutes() {
   return Router()
@@ -84,4 +82,4 @@ function userRoutes() {
     );
 }
 
-module.exports = userRoutes;
+export default userRoutes;

@@ -1,6 +1,6 @@
-'use strict';
+import lodash from 'lodash';
 
-const { escapeRegExp } = require('lodash');
+const { escapeRegExp } = lodash;
 
 /**
  * @template TArg,TRet
@@ -52,4 +52,4 @@ function matchOrigin(origin, allowedOrigins) {
   return getAllowedOriginsRegExp(allowedOrigins).test(origin);
 }
 
-module.exports = matchOrigin;
+export default matchOrigin;

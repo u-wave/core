@@ -1,18 +1,16 @@
-'use strict';
-
-const {
+import {
   HTTPError,
   PermissionError,
   UserNotFoundError,
-} = require('../errors');
-const skipIfCurrentDJ = require('../utils/skipIfCurrentDJ');
-const removeFromWaitlist = require('../utils/removeFromWaitlist');
-const getOffsetPagination = require('../utils/getOffsetPagination');
-const toItemResponse = require('../utils/toItemResponse');
-const toListResponse = require('../utils/toListResponse');
-const toPaginatedResponse = require('../utils/toPaginatedResponse');
-const beautifyDuplicateKeyError = require('../utils/beautifyDuplicateKeyError');
-const { muteUser, unmuteUser } = require('./chat');
+} from '../errors/index.js';
+import skipIfCurrentDJ from '../utils/skipIfCurrentDJ.js';
+import removeFromWaitlist from '../utils/removeFromWaitlist.js';
+import getOffsetPagination from '../utils/getOffsetPagination.js';
+import toItemResponse from '../utils/toItemResponse.js';
+import toListResponse from '../utils/toListResponse.js';
+import toPaginatedResponse from '../utils/toPaginatedResponse.js';
+import beautifyDuplicateKeyError from '../utils/beautifyDuplicateKeyError.js';
+import { muteUser, unmuteUser } from './chat.js';
 
 /**
  * @typedef {object} GetUsersQuery
@@ -182,7 +180,7 @@ async function changeAvatar() {
 }
 
 /**
- * @param {import('../Uwave')} uw
+ * @param {import('../Uwave').default} uw
  * @param {import('mongodb').ObjectId} userID
  */
 async function disconnectUser(uw, userID) {
@@ -231,14 +229,16 @@ async function getHistory(req) {
   });
 }
 
-exports.getUsers = getUsers;
-exports.getUser = getUser;
-exports.getUserRoles = getUserRoles;
-exports.addUserRole = addUserRole;
-exports.removeUserRole = removeUserRole;
-exports.changeUsername = changeUsername;
-exports.changeAvatar = changeAvatar;
-exports.disconnectUser = disconnectUser;
-exports.getHistory = getHistory;
-exports.muteUser = muteUser;
-exports.unmuteUser = unmuteUser;
+export {
+  getUsers,
+  getUser,
+  getUserRoles,
+  addUserRole,
+  removeUserRole,
+  changeUsername,
+  changeAvatar,
+  disconnectUser,
+  getHistory,
+  muteUser,
+  unmuteUser,
+};

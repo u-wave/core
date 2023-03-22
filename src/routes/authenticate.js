@@ -1,11 +1,9 @@
-'use strict';
-
-const { Router } = require('express');
-const route = require('../route');
-const validations = require('../validations');
-const protect = require('../middleware/protect');
-const schema = require('../middleware/schema');
-const controller = require('../controllers/authenticate');
+import { Router } from 'express';
+import route from '../route.js';
+import * as validations from '../validations.js';
+import protect from '../middleware/protect.js';
+import schema from '../middleware/schema.js';
+import * as controller from '../controllers/authenticate.js';
 
 /**
  * @param {import('../controllers/authenticate').AuthenticateOptions} options
@@ -109,4 +107,4 @@ function authenticateRoutes(passport, options) {
   return auth;
 }
 
-module.exports = authenticateRoutes;
+export default authenticateRoutes;

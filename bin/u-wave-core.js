@@ -1,16 +1,18 @@
 #!/usr/bin/env node
 
-require('make-promises-safe');
-const explain = require('explain-error');
-const Ajv = require('ajv').default;
-const addFormats = require('ajv-formats').default;
-const ytSource = require('u-wave-source-youtube');
-const scSource = require('u-wave-source-soundcloud');
-const announce = require('u-wave-announce');
-const emotes = require('../src/plugins/emotes');
-const uwave = require('..');
-const pkg = require('../package.json');
-const argv = require('minimist')(process.argv.slice(2));
+import 'make-promises-safe';
+import explain from 'explain-error';
+import Ajv from 'ajv';
+import addFormats from 'ajv-formats';
+import ytSource from 'u-wave-source-youtube';
+import scSource from 'u-wave-source-soundcloud';
+import announce from 'u-wave-announce';
+import emotes from '../src/plugins/emotes.js';
+import uwave from 'u-wave-core';
+import pkg from '../package.json';
+import minimist from 'minimist';
+
+const argv = minimist(process.argv.slice(2));
 
 const ajv = new Ajv({
   removeAdditional: true,

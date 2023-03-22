@@ -1,12 +1,13 @@
-'use strict';
+import fs from 'fs';
+import EventEmitter from 'events';
+import Ajv from 'ajv/dist/2019.js';
+import formats from 'ajv-formats';
+import lodash from 'lodash';
+import jsonMergePatch from 'json-merge-patch';
+import sjson from 'secure-json-parse';
+import ValidationError from '../errors/ValidationError.js';
 
-const { EventEmitter } = require('events');
-const Ajv = require('ajv/dist/2019').default;
-const formats = require('ajv-formats').default;
-const { omit } = require('lodash');
-const jsonMergePatch = require('json-merge-patch');
-const sjson = require('secure-json-parse');
-const ValidationError = require('../errors/ValidationError');
+const { omit } = lodash;
 
 /** @typedef {import('../models').User} User */
 
@@ -32,7 +33,7 @@ class ConfigStore {
   #validators = new Map();
 
   /**
-   * @param {import('../Uwave')} uw
+   * @param {import('../Uwave').Boot} uw
    */
   constructor(uw) {
     this.#uw = uw;
@@ -45,10 +46,12 @@ class ConfigStore {
       strictTypes: true,
     });
     formats(this.#ajv);
-    /* eslint-disable global-require */
-    this.#ajv.addMetaSchema(require('ajv/dist/refs/json-schema-draft-07.json'));
-    this.#ajv.addSchema(require('../schemas/definitions.json'));
-    /* eslint-enable global-require */
+    this.#ajv.addMetaSchema(JSON.parse(
+      fs.readFileSync(new URL('../../node_modules/ajv/dist/refs/json-schema-draft-07.json', import.meta.url), 'utf8'),
+    ));
+    this.#ajv.addSchema(JSON.parse(
+      fs.readFileSync(new URL('../schemas/definitions.json', import.meta.url), 'utf8'),
+    ));
 
     this.#emitter = new EventEmitter();
     this.#subscriber.subscribe('uwave').catch((error) => {
@@ -237,5 +240,5 @@ async function configStorePlugin(uw) {
   uw.onClose(() => uw.config.destroy());
 }
 
-module.exports = configStorePlugin;
-module.exports.ConfigStore = ConfigStore;
+export default configStorePlugin;
+export { ConfigStore };

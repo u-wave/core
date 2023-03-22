@@ -1,9 +1,7 @@
-'use strict';
-
 /**
  * @param {import('../models').Playlist | import('../models/Playlist').LeanPlaylist} model
  */
-function serializePlaylist(model) {
+export function serializePlaylist(model) {
   return {
     _id: 'id' in model ? model.id : model._id.toString(),
     name: model.name,
@@ -19,7 +17,7 @@ function serializePlaylist(model) {
  *   '_id' | 'username' | 'slug' | 'roles' | 'avatar' |
  *   'createdAt' | 'updatedAt' | 'lastSeenAt'>} model
  */
-function serializeUser(model) {
+export function serializeUser(model) {
   return {
     _id: model._id.toString(),
     username: model.username,
@@ -31,6 +29,3 @@ function serializeUser(model) {
     lastSeenAt: model.lastSeenAt.toISOString(),
   };
 }
-
-exports.serializePlaylist = serializePlaylist;
-exports.serializeUser = serializeUser;

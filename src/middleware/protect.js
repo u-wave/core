@@ -1,7 +1,5 @@
-'use strict';
-
-const { LoginRequiredError, PermissionError } = require('../errors');
-const wrapMiddleware = require('../utils/wrapMiddleware');
+import { LoginRequiredError, PermissionError } from '../errors/index.js';
+import wrapMiddleware from '../utils/wrapMiddleware.js';
 
 /**
  * @param {string} [role]
@@ -19,4 +17,4 @@ function protect(role) {
   });
 }
 
-module.exports = protect;
+export default protect;

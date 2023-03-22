@@ -1,10 +1,5 @@
-'use strict';
-
-const {
-  UserNotFoundError,
-  CannotSelfMuteError,
-} = require('../errors');
-const toItemResponse = require('../utils/toItemResponse');
+import { UserNotFoundError, CannotSelfMuteError } from '../errors/index.js';
+import toItemResponse from '../utils/toItemResponse.js';
 
 /**
  * @typedef {object} MuteUserParams
@@ -108,8 +103,10 @@ async function deleteMessage(req) {
   return toItemResponse({});
 }
 
-exports.muteUser = muteUser;
-exports.unmuteUser = unmuteUser;
-exports.deleteAll = deleteAll;
-exports.deleteByUser = deleteByUser;
-exports.deleteMessage = deleteMessage;
+export {
+  muteUser,
+  unmuteUser,
+  deleteAll,
+  deleteByUser,
+  deleteMessage,
+};

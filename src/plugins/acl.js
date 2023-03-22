@@ -1,7 +1,5 @@
-'use strict';
-
-const defaultRoles = require('../config/defaultRoles');
-const routes = require('../routes/acl');
+import defaultRoles from '../config/defaultRoles.js';
+import routes from '../routes/acl.js';
 
 /**
  * @typedef {import('../models').AclRole} AclRole
@@ -26,7 +24,7 @@ class Acl {
   #logger;
 
   /**
-   * @param {import('../Uwave')} uw
+   * @param {import('../Uwave').default} uw
    */
   constructor(uw) {
     this.#uw = uw;
@@ -237,5 +235,5 @@ async function acl(uw) {
   });
 }
 
-module.exports = acl;
-module.exports.Acl = Acl;
+export default acl;
+export { Acl };

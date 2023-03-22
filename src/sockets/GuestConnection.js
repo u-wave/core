@@ -1,15 +1,13 @@
-'use strict';
-
-const EventEmitter = require('events');
-const Ultron = require('ultron');
+import EventEmitter from 'events';
+import Ultron from 'ultron';
 
 class GuestConnection extends EventEmitter {
   #logger;
 
   /**
-   * @param {import('../Uwave')} uw
-   * @param {import('ws')} socket
-   * @param {{ authRegistry: import('../AuthRegistry') }} options
+   * @param {import('../Uwave').default} uw
+   * @param {import('ws').WebSocket} socket
+   * @param {{ authRegistry: import('../AuthRegistry').default }} options
    */
   constructor(uw, socket, options) {
     super();
@@ -100,4 +98,4 @@ class GuestConnection extends EventEmitter {
   }
 }
 
-module.exports = GuestConnection;
+export default GuestConnection;

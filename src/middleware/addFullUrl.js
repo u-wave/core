@@ -1,5 +1,3 @@
-'use strict';
-
 /**
  * @returns {import('express').RequestHandler}
  */
@@ -12,4 +10,4 @@ function addFullUrl() {
   };
 }
 
-module.exports = addFullUrl;
+export default addFullUrl;

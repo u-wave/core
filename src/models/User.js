@@ -1,7 +1,5 @@
-'use strict';
-
-const mongoose = require('mongoose');
-const { slugify } = require('transliteration');
+import mongoose from 'mongoose';
+import { slugify } from 'transliteration';
 
 const { Schema } = mongoose;
 const { Types } = mongoose.Schema;
@@ -96,4 +94,4 @@ userSchema.pre('validate', function preValidate(next) {
   next();
 });
 
-module.exports = userSchema;
+export default userSchema;

@@ -1,8 +1,6 @@
-'use strict';
-
-const { Router } = require('express');
-const route = require('../route');
-const controller = require('../controllers/now');
+import { Router } from 'express';
+import route from '../route.js';
+import * as controller from '../controllers/now.js';
 
 function nowRoute() {
   return Router()
@@ -13,4 +11,4 @@ function nowRoute() {
     );
 }
 
-module.exports = nowRoute;
+export default nowRoute;

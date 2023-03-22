@@ -1,11 +1,11 @@
-'use strict';
+import httpErrors from 'http-errors';
+import wrapMiddleware from '../utils/wrapMiddleware.js';
 
-const { BadRequest } = require('http-errors');
-const wrapMiddleware = require('../utils/wrapMiddleware');
+const { BadRequest } = httpErrors;
 
 function requireActiveConnection() {
   /**
-   * @param {import('../Uwave')} uwave
+   * @param {import('../Uwave').default} uwave
    * @param {import('../models').User} user
    */
   async function isConnected(uwave, user) {
@@ -21,4 +21,4 @@ function requireActiveConnection() {
   });
 }
 
-module.exports = requireActiveConnection;
+export default requireActiveConnection;

@@ -1,12 +1,10 @@
-'use strict';
-
-const { Router } = require('express');
-const route = require('../route');
-const validations = require('../validations');
-const protect = require('../middleware/protect');
-const requireActiveConnection = require('../middleware/requireActiveConnection');
-const schema = require('../middleware/schema');
-const controller = require('../controllers/waitlist');
+import { Router } from 'express';
+import route from '../route.js';
+import * as validations from '../validations.js';
+import protect from '../middleware/protect.js';
+import requireActiveConnection from '../middleware/requireActiveConnection.js';
+import schema from '../middleware/schema.js';
+import * as controller from '../controllers/waitlist.js';
 
 function waitlistRoutes() {
   return Router()
@@ -51,4 +49,4 @@ function waitlistRoutes() {
     );
 }
 
-module.exports = waitlistRoutes;
+export default waitlistRoutes;

@@ -1,6 +1,5 @@
-'use strict';
-
-const {
+import fs from 'fs';
+import {
   PermissionError,
   UserNotFoundError,
   EmptyPlaylistError,
@@ -8,10 +7,12 @@ const {
   AlreadyInWaitlistError,
   UserNotInWaitlistError,
   UserIsPlayingError,
-} = require('../errors');
-const routes = require('../routes/waitlist');
+} from '../errors/index.js';
+import routes from '../routes/waitlist.js';
 
-const schema = require('../schemas/waitlist.json');
+const schema = JSON.parse(
+  fs.readFileSync(new URL('../schemas/waitlist.json', import.meta.url), 'utf8'),
+);
 
 /**
  * @typedef {import('../models').User} User
@@ -368,5 +369,5 @@ async function waitlistPlugin(uw) {
   uw.httpApi.use('/waitlist', routes());
 }
 
-module.exports = waitlistPlugin;
-module.exports.Waitlist = Waitlist;
+export default waitlistPlugin;
+export { Waitlist };

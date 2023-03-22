@@ -1,11 +1,11 @@
-'use strict';
+import lodash from 'lodash';
 
 const {
   isPlainObject,
   cloneDeep,
   get: getPath,
   set: setPath,
-} = require('lodash');
+} = lodash;
 
 /**
  * @typedef {Record<string, string[]>} IncludedOptions
@@ -115,4 +115,4 @@ function toListResponse(list, options = {}) {
   };
 }
 
-module.exports = toListResponse;
+export default toListResponse;

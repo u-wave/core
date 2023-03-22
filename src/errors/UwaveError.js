@@ -1,5 +1,3 @@
-'use strict';
-
 /**
  * @deprecated
  */
@@ -26,4 +24,4 @@ class UwaveError extends Error {
   }
 }
 
-module.exports = UwaveError;
+export default UwaveError;

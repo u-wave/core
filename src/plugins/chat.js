@@ -1,7 +1,5 @@
-'use strict';
-
-const { randomUUID } = require('crypto');
-const routes = require('../routes/chat');
+import { randomUUID } from 'crypto';
+import routes from '../routes/chat.js';
 
 /**
  * @typedef {import('../models').User} User
@@ -22,7 +20,7 @@ class Chat {
   #options;
 
   /**
-   * @param {import('../Uwave')} uw
+   * @param {import('../Uwave').default} uw
    * @param {Partial<ChatOptions>} [options]
    */
   constructor(uw, options = {}) {
@@ -117,7 +115,7 @@ class Chat {
 }
 
 /**
- * @param {import('../Uwave')} uw
+ * @param {import('../Uwave').default} uw
  * @param {Partial<ChatOptions>} [options]
  */
 async function chat(uw, options = {}) {
@@ -125,5 +123,5 @@ async function chat(uw, options = {}) {
   uw.httpApi.use('/chat', routes());
 }
 
-module.exports = chat;
-module.exports.Chat = Chat;
+export default chat;
+export { Chat };

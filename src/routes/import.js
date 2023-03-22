@@ -1,9 +1,7 @@
-'use strict';
-
-const { Router } = require('express');
-const route = require('../route');
-const protect = require('../middleware/protect');
-const controller = require('../controllers/import');
+import { Router } from 'express';
+import route from '../route.js';
+import protect from '../middleware/protect.js';
+import * as controller from '../controllers/import.js';
 
 function importRoutes() {
   return Router()
@@ -21,4 +19,4 @@ function importRoutes() {
     );
 }
 
-module.exports = importRoutes;
+export default importRoutes;

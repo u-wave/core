@@ -1,6 +1,4 @@
-'use strict';
-
-const toItemResponse = require('../utils/toItemResponse');
+import toItemResponse from '../utils/toItemResponse.js';
 
 /**
  * @type {import('../types').Controller<{}, {}, {}>}
@@ -28,5 +26,4 @@ async function setMotd(req, res) {
   return getMotd(req, res);
 }
 
-exports.getMotd = getMotd;
-exports.setMotd = setMotd;
+export { getMotd, setMotd };

@@ -1,8 +1,7 @@
-'use strict';
-
-const Ajv = require('ajv/dist/2019').default;
-const addFormats = require('ajv-formats').default;
-const ValidationError = require('../errors/ValidationError');
+import fs from 'fs';
+import Ajv from 'ajv/dist/2019.js';
+import addFormats from 'ajv-formats';
+import ValidationError from '../errors/ValidationError.js';
 
 const ajv = new Ajv({
   coerceTypes: false,
@@ -12,8 +11,8 @@ const ajv = new Ajv({
   allErrors: true,
 });
 addFormats(ajv);
-ajv.addMetaSchema(require('ajv/dist/refs/json-schema-draft-07.json'));
-ajv.addSchema(require('../schemas/definitions.json'));
+ajv.addMetaSchema(JSON.parse(fs.readFileSync(new URL('../../node_modules/ajv/dist/refs/json-schema-draft-07.json', import.meta.url), 'utf8')));
+ajv.addSchema(JSON.parse(fs.readFileSync(new URL('../schemas/definitions.json', import.meta.url), 'utf8')));
 
 /** @type {import('ajv').ValidateFunction<unknown>} */
 function alwaysTrue() {
@@ -51,4 +50,4 @@ function schema({ body, params, query }) {
   };
 }
 
-module.exports = schema;
+export default schema;

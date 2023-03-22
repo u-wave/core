@@ -1,11 +1,11 @@
 {
-  "extends": "@tsconfig/node14/tsconfig.json",
+  "extends": "@tsconfig/node16/tsconfig.json",
   "compilerOptions": {
     "strict": true,
+    "module": "node16",
     "useUnknownInCatchVariables": false,
     "allowJs": true,
     "checkJs": true,
-    "resolveJsonModule": true,
     "outDir": "types",
     "declaration": true,
     "emitDeclarationOnly": true

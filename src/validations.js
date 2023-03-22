@@ -1,8 +1,6 @@
-'use strict';
-
 // Validations for authentication routes:
 
-exports.register = /** @type {const} */ ({
+export const register = /** @type {const} */ ({
   body: {
     type: 'object',
     properties: {
@@ -23,7 +21,7 @@ exports.register = /** @type {const} */ ({
   },
 });
 
-exports.login = /** @type {const} */ ({
+export const login = /** @type {const} */ ({
   query: {
     type: 'object',
     properties: {
@@ -55,7 +53,7 @@ exports.login = /** @type {const} */ ({
   },
 });
 
-exports.requestPasswordReset = /** @type {const} */ ({
+export const requestPasswordReset = /** @type {const} */ ({
   body: {
     type: 'object',
     properties: {
@@ -69,7 +67,7 @@ exports.requestPasswordReset = /** @type {const} */ ({
   },
 });
 
-exports.passwordReset = /** @type {const} */ ({
+export const passwordReset = /** @type {const} */ ({
   params: {
     type: 'object',
     properties: {
@@ -93,7 +91,7 @@ exports.passwordReset = /** @type {const} */ ({
 
 // Validations for ACL routes:
 
-exports.createAclRole = /** @type {const} */ ({
+export const createAclRole = /** @type {const} */ ({
   params: {
     type: 'object',
     properties: {
@@ -113,7 +111,7 @@ exports.createAclRole = /** @type {const} */ ({
   },
 });
 
-exports.deleteAclRole = /** @type {const} */ ({
+export const deleteAclRole = /** @type {const} */ ({
   params: {
     type: 'object',
     properties: {
@@ -125,7 +123,7 @@ exports.deleteAclRole = /** @type {const} */ ({
 
 // Validations for booth routes:
 
-exports.skipBooth = /** @type {const} */ ({
+export const skipBooth = /** @type {const} */ ({
   body: {
     type: 'object',
     properties: {
@@ -140,7 +138,7 @@ exports.skipBooth = /** @type {const} */ ({
   },
 });
 
-exports.replaceBooth = /** @type {const} */ ({
+export const replaceBooth = /** @type {const} */ ({
   body: {
     type: 'object',
     properties: {
@@ -150,7 +148,7 @@ exports.replaceBooth = /** @type {const} */ ({
   },
 });
 
-exports.getVote = /** @type {const} */ ({
+export const getVote = /** @type {const} */ ({
   params: {
     type: 'object',
     properties: {
@@ -160,7 +158,7 @@ exports.getVote = /** @type {const} */ ({
   },
 });
 
-exports.vote = /** @type {const} */ ({
+export const vote = /** @type {const} */ ({
   params: {
     type: 'object',
     properties: {
@@ -177,7 +175,7 @@ exports.vote = /** @type {const} */ ({
   },
 });
 
-exports.favorite = /** @type {const} */ ({
+export const favorite = /** @type {const} */ ({
   body: {
     type: 'object',
     properties: {
@@ -188,7 +186,7 @@ exports.favorite = /** @type {const} */ ({
   },
 });
 
-exports.getRoomHistory = /** @type {const} */ ({
+export const getRoomHistory = /** @type {const} */ ({
   query: {
     anyOf: [
       {
@@ -214,7 +212,7 @@ exports.getRoomHistory = /** @type {const} */ ({
 
 // Validations for chat routes:
 
-exports.deleteChatByUser = /** @type {const} */ ({
+export const deleteChatByUser = /** @type {const} */ ({
   params: {
     type: 'object',
     properties: {
@@ -224,7 +222,7 @@ exports.deleteChatByUser = /** @type {const} */ ({
   },
 });
 
-exports.deleteChatMessage = /** @type {const} */ ({
+export const deleteChatMessage = /** @type {const} */ ({
   params: {
     type: 'object',
     properties: {
@@ -236,7 +234,7 @@ exports.deleteChatMessage = /** @type {const} */ ({
 
 // Validations for MOTD routes:
 
-exports.setMotd = /** @type {const} */ ({
+export const setMotd = /** @type {const} */ ({
   body: {
     type: 'object',
     properties: {
@@ -266,7 +264,7 @@ const playlistItemParams = /** @type {const} */ ({
   required: ['id', 'itemID'],
 });
 
-exports.getPlaylists = /** @type {const} */ ({
+export const getPlaylists = /** @type {const} */ ({
   query: {
     type: 'object',
     properties: {
@@ -275,7 +273,7 @@ exports.getPlaylists = /** @type {const} */ ({
   },
 });
 
-exports.createPlaylist = /** @type {const} */ ({
+export const createPlaylist = /** @type {const} */ ({
   body: {
     type: 'object',
     properties: {
@@ -285,15 +283,15 @@ exports.createPlaylist = /** @type {const} */ ({
   },
 });
 
-exports.getPlaylist = /** @type {const} */ ({
+export const getPlaylist = /** @type {const} */ ({
   params: playlistParams,
 });
 
-exports.deletePlaylist = /** @type {const} */ ({
+export const deletePlaylist = /** @type {const} */ ({
   params: playlistParams,
 });
 
-exports.updatePlaylist = /** @type {const} */ ({
+export const updatePlaylist = /** @type {const} */ ({
   params: playlistParams,
   body: {
     type: 'object',
@@ -304,7 +302,7 @@ exports.updatePlaylist = /** @type {const} */ ({
   },
 });
 
-exports.renamePlaylist = /** @type {const} */ ({
+export const renamePlaylist = /** @type {const} */ ({
   params: playlistParams,
   body: {
     type: 'object',
@@ -315,7 +313,7 @@ exports.renamePlaylist = /** @type {const} */ ({
   },
 });
 
-exports.getPlaylistItems = /** @type {const} */ ({
+export const getPlaylistItems = /** @type {const} */ ({
   params: playlistParams,
   query: {
     type: 'object',
@@ -331,7 +329,7 @@ exports.getPlaylistItems = /** @type {const} */ ({
   },
 });
 
-exports.addPlaylistItems = /** @type {const} */ ({
+export const addPlaylistItems = /** @type {const} */ ({
   params: playlistParams,
   body: {
     type: 'object',
@@ -380,7 +378,7 @@ exports.addPlaylistItems = /** @type {const} */ ({
   },
 });
 
-exports.removePlaylistItems = /** @type {const} */ ({
+export const removePlaylistItems = /** @type {const} */ ({
   params: playlistParams,
   body: {
     type: 'object',
@@ -394,7 +392,7 @@ exports.removePlaylistItems = /** @type {const} */ ({
   },
 });
 
-exports.movePlaylistItems = /** @type {const} */ ({
+export const movePlaylistItems = /** @type {const} */ ({
   params: playlistParams,
   body: {
     type: 'object',
@@ -431,15 +429,15 @@ exports.movePlaylistItems = /** @type {const} */ ({
   },
 });
 
-exports.shufflePlaylistItems = /** @type {const} */ ({
+export const shufflePlaylistItems = /** @type {const} */ ({
   params: playlistParams,
 });
 
-exports.getPlaylistItem = /** @type {const} */ ({
+export const getPlaylistItem = /** @type {const} */ ({
   params: playlistItemParams,
 });
 
-exports.updatePlaylistItem = /** @type {const} */ ({
+export const updatePlaylistItem = /** @type {const} */ ({
   params: playlistItemParams,
   body: {
     type: 'object',
@@ -452,13 +450,13 @@ exports.updatePlaylistItem = /** @type {const} */ ({
   },
 });
 
-exports.removePlaylistItem = /** @type {const} */ ({
+export const removePlaylistItem = /** @type {const} */ ({
   params: playlistItemParams,
 });
 
 // Validations for search routes:
 
-exports.searchAll = /** @type {const} */ ({
+export const searchAll = /** @type {const} */ ({
   query: {
     type: 'object',
     properties: {
@@ -468,7 +466,7 @@ exports.searchAll = /** @type {const} */ ({
   },
 });
 
-exports.search = /** @type {const} */ ({
+export const search = /** @type {const} */ ({
   query: {
     type: 'object',
     properties: {
@@ -496,11 +494,11 @@ const userParams = /** @type {const} */ ({
   required: ['id'],
 });
 
-exports.getUser = /** @type {const} */ ({
+export const getUser = /** @type {const} */ ({
   params: userParams,
 });
 
-exports.muteUser = /** @type {const} */ ({
+export const muteUser = /** @type {const} */ ({
   params: userParams,
   body: {
     type: 'object',
@@ -511,11 +509,11 @@ exports.muteUser = /** @type {const} */ ({
   },
 });
 
-exports.unmuteUser = /** @type {const} */ ({
+export const unmuteUser = /** @type {const} */ ({
   params: userParams,
 });
 
-exports.addUserRole = /** @type {const} */ ({
+export const addUserRole = /** @type {const} */ ({
   params: {
     type: 'object',
     properties: {
@@ -526,7 +524,7 @@ exports.addUserRole = /** @type {const} */ ({
   },
 });
 
-exports.removeUserRole = /** @type {const} */ ({
+export const removeUserRole = /** @type {const} */ ({
   params: {
     type: 'object',
     properties: {
@@ -537,7 +535,7 @@ exports.removeUserRole = /** @type {const} */ ({
   },
 });
 
-exports.setUserName = /** @type {const} */ ({
+export const setUserName = /** @type {const} */ ({
   params: userParams,
   body: {
     type: 'object',
@@ -548,7 +546,7 @@ exports.setUserName = /** @type {const} */ ({
   },
 });
 
-exports.setUserAvatar = /** @type {const} */ ({
+export const setUserAvatar = /** @type {const} */ ({
   params: userParams,
   body: {
     type: 'object',
@@ -559,7 +557,7 @@ exports.setUserAvatar = /** @type {const} */ ({
   },
 });
 
-exports.setUserStatus = /** @type {const} */ ({
+export const setUserStatus = /** @type {const} */ ({
   params: userParams,
   body: {
     type: 'object',
@@ -570,7 +568,7 @@ exports.setUserStatus = /** @type {const} */ ({
   },
 });
 
-exports.getUserHistory = /** @type {const} */ ({
+export const getUserHistory = /** @type {const} */ ({
   params: userParams,
   query: {
     oneOf: [
@@ -583,7 +581,7 @@ exports.getUserHistory = /** @type {const} */ ({
 
 // Validations for Waitlist routes:
 
-exports.joinWaitlist = /** @type {const} */ ({
+export const joinWaitlist = /** @type {const} */ ({
   body: {
     type: 'object',
     properties: {
@@ -593,7 +591,7 @@ exports.joinWaitlist = /** @type {const} */ ({
   },
 });
 
-exports.moveWaitlist = /** @type {const} */ ({
+export const moveWaitlist = /** @type {const} */ ({
   body: {
     type: 'object',
     properties: {
@@ -607,7 +605,7 @@ exports.moveWaitlist = /** @type {const} */ ({
   },
 });
 
-exports.lockWaitlist = /** @type {const} */ ({
+export const lockWaitlist = /** @type {const} */ ({
   body: {
     type: 'object',
     properties: {

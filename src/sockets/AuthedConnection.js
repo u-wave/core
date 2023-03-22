@@ -1,16 +1,14 @@
-'use strict';
-
-const EventEmitter = require('events');
-const Ultron = require('ultron');
-const WebSocket = require('ws');
-const sjson = require('secure-json-parse');
+import EventEmitter from 'events';
+import Ultron from 'ultron';
+import WebSocket from 'ws';
+import sjson from 'secure-json-parse';
 
 class AuthedConnection extends EventEmitter {
   #logger;
 
   /**
-   * @param {import('../Uwave')} uw
-   * @param {import('ws')} socket
+   * @param {import('../Uwave').default} uw
+   * @param {import('ws').WebSocket} socket
    * @param {import('../models').User} user
    */
   constructor(uw, socket, user) {
@@ -110,4 +108,4 @@ class AuthedConnection extends EventEmitter {
   }
 }
 
-module.exports = AuthedConnection;
+export default AuthedConnection;

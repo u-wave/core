@@ -1,8 +1,6 @@
-'use strict';
-
-const { Router } = require('express');
-const route = require('../route');
-const controller = require('../controllers/emotes');
+import { Router } from 'express';
+import route from '../route.js';
+import * as controller from '../controllers/emotes.js';
 
 function emotesRoutes() {
   return Router()
@@ -13,4 +11,4 @@ function emotesRoutes() {
     );
 }
 
-module.exports = emotesRoutes;
+export default emotesRoutes;

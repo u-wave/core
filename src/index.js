@@ -1,18 +1,14 @@
-'use strict';
-
-const Uwave = require('./Uwave');
-const HttpApi = require('./HttpApi');
-const SocketServer = require('./SocketServer');
+/* eslint-disable import/extensions */
+import Uwave from './Uwave.js';
+import HttpApi from './HttpApi.js';
+import SocketServer from './SocketServer.js';
 
 /**
- * @param {Uwave.Options} opts
+ * @param {import('./Uwave').Options} opts
+ * @returns {Uwave}
  */
-module.exports = function uwave(opts) {
+export default function uwave(opts) {
   return new Uwave(opts);
-};
+}
 
-Object.assign(module.exports, {
-  Uwave,
-  HttpApi,
-  SocketServer,
-});
+export { Uwave, HttpApi, SocketServer };

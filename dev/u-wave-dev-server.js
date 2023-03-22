@@ -1,16 +1,17 @@
-#!/usr/bin/env node
+import 'make-promises-safe';
+import minimist from 'minimist';
+import concat from 'concat-stream';
+import explain from 'explain-error';
+import announce from 'u-wave-announce';
+import ytSource from 'u-wave-source-youtube';
+import scSource from 'u-wave-source-soundcloud';
+import recaptchaTestKeys from 'recaptcha-test-keys';
+import pino from 'pino';
+import dotenv from 'dotenv';
+import uwave from 'u-wave-core';
+import emotes from '../src/plugins/emotes.js';
 
-require('make-promises-safe');
-const { Buffer } = require('buffer');
-const argv = require('minimist')(process.argv.slice(2));
-const concat = require('concat-stream');
-const explain = require('explain-error');
-const announce = require('u-wave-announce');
-const ytSource = require('u-wave-source-youtube');
-const scSource = require('u-wave-source-soundcloud');
-const recaptchaTestKeys = require('recaptcha-test-keys');
-const pino = require('pino');
-const dotenv = require('dotenv');
+const argv = minimist(process.argv.slice(2));
 
 dotenv.config();
 
@@ -36,8 +37,6 @@ const testTransport = {
 async function start() {
   const port = Number(argv.port ?? process.env.PORT ?? 6042);
 
-  const uwave = require('..');
-
   const secret = Buffer.from('none', 'utf8');
 
   const uw = uwave({
@@ -50,7 +49,6 @@ async function start() {
     timeout: 10,
   });
 
-  const emotes = require('../src/plugins/emotes');
   uw.use(emotes);
 
   uw.use(async function configureExpress(uw) {

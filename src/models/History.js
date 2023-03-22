@@ -1,6 +1,4 @@
-'use strict';
-
-const mongoose = require('mongoose');
+import mongoose from 'mongoose';
 
 const { Schema } = mongoose;
 const { Types } = mongoose.Schema;
@@ -83,4 +81,4 @@ const schema = new Schema({
   minimize: false,
 });
 
-module.exports = schema;
+export default schema;

@@ -1,16 +1,16 @@
-'use strict';
-
-const { groupBy, shuffle } = require('lodash');
-const escapeStringRegExp = require('escape-string-regexp');
-const {
+import lodash from 'lodash';
+import escapeStringRegExp from 'escape-string-regexp';
+import {
   PlaylistNotFoundError,
   PlaylistItemNotFoundError,
   ItemNotInPlaylistError,
   MediaNotFoundError,
   UserNotFoundError,
-} = require('../errors');
-const Page = require('../Page');
-const routes = require('../routes/playlists');
+} from '../errors/index.js';
+import Page from '../Page.js';
+import routes from '../routes/playlists.js';
+
+const { groupBy, shuffle } = lodash;
 
 /**
  * @typedef {import('mongoose').PipelineStage} PipelineStage
@@ -87,7 +87,7 @@ class PlaylistsRepository {
   #logger;
 
   /**
-   * @param {import('../Uwave')} uw
+   * @param {import('../Uwave').default} uw
    */
   constructor(uw) {
     this.#uw = uw;
@@ -601,12 +601,12 @@ class PlaylistsRepository {
 }
 
 /**
- * @param {import('../Uwave')} uw
+ * @param {import('../Uwave').default} uw
  */
 async function playlistsPlugin(uw) {
   uw.playlists = new PlaylistsRepository(uw);
   uw.httpApi.use('/playlists', routes());
 }
 
-module.exports = playlistsPlugin;
-module.exports.PlaylistsRepository = PlaylistsRepository;
+export default playlistsPlugin;
+export { PlaylistsRepository };

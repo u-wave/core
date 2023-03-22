@@ -1,23 +1,22 @@
-'use strict';
-
-const { URLSearchParams } = require('url');
-const cookie = require('cookie');
-const jwt = require('jsonwebtoken');
-const randomString = require('random-string');
-const fetch = require('node-fetch').default;
-const ms = require('ms');
-const htmlescape = require('htmlescape');
-const { BadRequest } = require('http-errors');
-const {
+import cookie from 'cookie';
+import jwt from 'jsonwebtoken';
+import randomString from 'random-string';
+import nodeFetch from 'node-fetch';
+import ms from 'ms';
+import htmlescape from 'htmlescape';
+import httpErrors from 'http-errors';
+import {
   BannedError,
   ReCaptchaError,
   InvalidResetTokenError,
   UserNotFoundError,
-} = require('../errors');
-const sendEmail = require('../email');
-const beautifyDuplicateKeyError = require('../utils/beautifyDuplicateKeyError');
-const toItemResponse = require('../utils/toItemResponse');
-const toListResponse = require('../utils/toListResponse');
+} from '../errors/index.js';
+import sendEmail from '../email.js';
+import beautifyDuplicateKeyError from '../utils/beautifyDuplicateKeyError.js';
+import toItemResponse from '../utils/toItemResponse.js';
+import toListResponse from '../utils/toListResponse.js';
+
+const { BadRequest } = httpErrors;
 
 /**
  * @typedef {object} AuthenticateOptions
@@ -129,14 +128,14 @@ async function login(req, res) {
 }
 
 /**
- * @param {import('../Uwave')} uw
+ * @param {import('../Uwave').default} uw
  * @param {import('../models').User} user
  * @param {string} service
  */
 async function getSocialAvatar(uw, user, service) {
   const { Authentication } = uw.models;
 
-  /** @type {import('../models').Authentication?} */
+  /** @type {import('../models').Authentication|null} */
   const auth = await Authentication.findOne({
     user: user._id,
     type: service,
@@ -291,7 +290,7 @@ async function getSocketToken(req) {
  */
 async function verifyCaptcha(responseString, options) {
   options.logger?.info('recaptcha: sending siteverify request');
-  const response = await fetch('https://www.google.com/recaptcha/api/siteverify', {
+  const response = await nodeFetch('https://www.google.com/recaptcha/api/siteverify', {
     method: 'post',
     headers: {
       'content-type': 'application/x-www-form-urlencoded',
@@ -464,15 +463,17 @@ async function removeSession() {
   throw new Error('Unimplemented');
 }
 
-exports.changePassword = changePassword;
-exports.getAuthStrategies = getAuthStrategies;
-exports.getCurrentUser = getCurrentUser;
-exports.getSocketToken = getSocketToken;
-exports.login = login;
-exports.logout = logout;
-exports.refreshSession = refreshSession;
-exports.register = register;
-exports.removeSession = removeSession;
-exports.reset = reset;
-exports.socialLoginCallback = socialLoginCallback;
-exports.socialLoginFinish = socialLoginFinish;
+export {
+  changePassword,
+  getAuthStrategies,
+  getCurrentUser,
+  getSocketToken,
+  login,
+  logout,
+  refreshSession,
+  register,
+  removeSession,
+  reset,
+  socialLoginCallback,
+  socialLoginFinish,
+};

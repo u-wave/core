@@ -1,9 +1,7 @@
-'use strict';
-
-const has = require('has');
-const { Strategy } = require('passport');
-const jwt = require('jsonwebtoken');
-const { BannedError } = require('../errors');
+import has from 'has';
+import { Strategy } from 'passport';
+import jwt from 'jsonwebtoken';
+import { BannedError } from '../errors/index.js';
 
 /** @typedef {import('../models').User} User */
 
@@ -113,4 +111,4 @@ class JWTStrategy extends Strategy {
   }
 }
 
-module.exports = JWTStrategy;
+export default JWTStrategy;

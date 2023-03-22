@@ -1,12 +1,10 @@
-'use strict';
-
-const routes = require('../routes/motd');
+import routes from '../routes/motd.js';
 
 class MOTD {
   #uw;
 
   /**
-   * @param {import('../Uwave')} uw
+   * @param {import('../Uwave').default} uw
    */
   constructor(uw) {
     this.#uw = uw;
@@ -33,12 +31,12 @@ class MOTD {
 }
 
 /**
- * @param {import('../Uwave')} uw
+ * @param {import('../Uwave').default} uw
  */
 async function motdPlugin(uw) {
   uw.motd = new MOTD(uw);
   uw.httpApi.use('/motd', routes());
 }
 
-module.exports = motdPlugin;
-module.exports.MOTD = MOTD;
+export default motdPlugin;
+export { MOTD };

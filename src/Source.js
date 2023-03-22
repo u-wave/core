@@ -1,6 +1,4 @@
-'use strict';
-
-const { SourceNoImportError } = require('./errors');
+import { SourceNoImportError } from './errors/index.js';
 
 /**
  * @typedef {import('./models').User} User
@@ -36,7 +34,7 @@ const { SourceNoImportError } = require('./errors');
  */
 class SourceContext {
   /**
-   * @param {import('./Uwave')} uw
+   * @param {import('./Uwave').default} uw
    * @param {Source} source
    * @param {User} user
    */
@@ -81,7 +79,7 @@ class ImportContext extends SourceContext {
  */
 class Source {
   /**
-   * @param {import('./Uwave')} uw
+   * @param {import('./Uwave').default} uw
    * @param {string} sourceType
    * @param {SourcePlugin} sourcePlugin
    */
@@ -197,6 +195,8 @@ class Source {
   }
 }
 
-exports.SourceContext = SourceContext;
-exports.ImportContext = ImportContext;
-exports.Source = Source;
+export {
+  SourceContext,
+  ImportContext,
+  Source,
+};

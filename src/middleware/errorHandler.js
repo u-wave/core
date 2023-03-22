@@ -1,10 +1,8 @@
-'use strict';
-
-const {
+import {
   APIError,
   CombinedError,
   RateLimitError,
-} = require('../errors');
+} from '../errors/index.js';
 
 /**
  * @typedef {object} SerializedError
@@ -101,4 +99,4 @@ function errorHandler(options = {}) {
   };
 }
 
-module.exports = errorHandler;
+export default errorHandler;
