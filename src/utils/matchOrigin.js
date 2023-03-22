@@ -1,6 +1,4 @@
-import lodash from 'lodash';
-
-const { escapeRegExp } = lodash;
+import escapeRegExp from 'escape-string-regexp';
 
 /**
  * @template TArg,TRet
