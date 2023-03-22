@@ -1,19 +1,19 @@
-'use strict';
+import { promisify } from 'node:util';
+import lodash from 'lodash';
+import sjson from 'secure-json-parse';
+import { WebSocketServer } from 'ws';
+import Ajv from 'ajv';
+import ms from 'ms';
+import { stdSerializers } from 'pino';
+import { socketVote } from './controllers/booth.js';
+import { disconnectUser } from './controllers/users.js';
+import AuthRegistry from './AuthRegistry.js';
+import GuestConnection from './sockets/GuestConnection.js';
+import AuthedConnection from './sockets/AuthedConnection.js';
+import LostConnection from './sockets/LostConnection.js';
+import { serializeUser } from './utils/serialize.js';
 
-const { promisify } = require('util');
-const { debounce, isEmpty } = require('lodash');
-const sjson = require('secure-json-parse');
-const WebSocket = require('ws');
-const Ajv = require('ajv').default;
-const ms = require('ms');
-const { stdSerializers } = require('pino');
-const { socketVote } = require('./controllers/booth');
-const { disconnectUser } = require('./controllers/users');
-const AuthRegistry = require('./AuthRegistry');
-const GuestConnection = require('./sockets/GuestConnection');
-const AuthedConnection = require('./sockets/AuthedConnection');
-const LostConnection = require('./sockets/LostConnection');
-const { serializeUser } = require('./utils/serialize');
+const { debounce, isEmpty } = lodash;
 
 /**
  * @typedef {import('./models').User} User
@@ -121,7 +121,7 @@ class SocketServer {
   /**
    * Create a socket server.
    *
-   * @param {import('./Uwave')} uw üWave Core instance.
+   * @param {import('./Uwave').default} uw üWave Core instance.
    * @param {object} options Socket server options.
    * @param {number} [options.timeout] Time in seconds to wait for disconnected
    *     users to reconnect before removing them.
@@ -154,7 +154,7 @@ class SocketServer {
     // TODO put this behind a symbol, it's just public for tests
     this.authRegistry = new AuthRegistry(uw.redis);
 
-    this.#wss = new WebSocket.Server({
+    this.#wss = new WebSocketServer({
       server: options.server,
       port: options.server ? undefined : options.port,
     });
@@ -532,7 +532,7 @@ class SocketServer {
   /**
    * Create a connection instance for an authenticated user.
    *
-   * @param {WebSocket} socket
+   * @param {import('ws').WebSocket} socket
    * @param {User} user
    * @returns {AuthedConnection}
    * @private
@@ -768,4 +768,4 @@ class SocketServer {
   }
 }
 
-module.exports = SocketServer;
+export default SocketServer;

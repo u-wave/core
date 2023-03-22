@@ -1,14 +1,12 @@
-'use strict';
-
-const aclRoleSchema = require('./AclRole');
-const authenticationSchema = require('./Authentication');
-const configSchema = require('./Config');
-const historySchema = require('./History');
-const mediaSchema = require('./Media');
-const migrationSchema = require('./Migration');
-const playlistSchema = require('./Playlist');
-const playlistItemSchema = require('./PlaylistItem');
-const userSchema = require('./User');
+import aclRoleSchema from './AclRole.js';
+import authenticationSchema from './Authentication.js';
+import configSchema from './Config.js';
+import historySchema from './History.js';
+import mediaSchema from './Media.js';
+import migrationSchema from './Migration.js';
+import playlistSchema from './Playlist.js';
+import playlistItemSchema from './PlaylistItem.js';
+import userSchema from './User.js';
 
 /**
  * @typedef {import('./AclRole').AclRole} AclRole
@@ -34,7 +32,7 @@ const userSchema = require('./User');
  */
 
 /**
- * @param {import('../Uwave')} uw
+ * @param {import('../Uwave').default} uw
  */
 async function models(uw) {
   uw.models = {
@@ -50,4 +48,4 @@ async function models(uw) {
   };
 }
 
-module.exports = models;
+export default models;

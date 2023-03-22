@@ -1,30 +1,26 @@
-'use strict';
-
-const EventEmitter = require('events');
-const { promisify } = require('util');
-const mongoose = require('mongoose');
-const Redis = require('ioredis').default;
-const avvio = require('avvio');
-const { pino } = require('pino');
-
-const httpApi = require('./HttpApi');
-const SocketServer = require('./SocketServer');
-const { Source } = require('./Source');
-const { i18n } = require('./locale');
-
-const models = require('./models');
-const configStore = require('./plugins/configStore');
-const booth = require('./plugins/booth');
-const chat = require('./plugins/chat');
-const motd = require('./plugins/motd');
-const playlists = require('./plugins/playlists');
-const users = require('./plugins/users');
-const bans = require('./plugins/bans');
-const history = require('./plugins/history');
-const acl = require('./plugins/acl');
-const waitlist = require('./plugins/waitlist');
-const passport = require('./plugins/passport');
-const migrations = require('./plugins/migrations');
+import EventEmitter from 'node:events';
+import { promisify } from 'node:util';
+import mongoose from 'mongoose';
+import Redis from 'ioredis';
+import avvio from 'avvio';
+import { pino } from 'pino';
+import httpApi, { errorHandling } from './HttpApi.js';
+import SocketServer from './SocketServer.js';
+import { Source } from './Source.js';
+import { i18n } from './locale.js';
+import models from './models/index.js';
+import configStore from './plugins/configStore.js';
+import booth from './plugins/booth.js';
+import chat from './plugins/chat.js';
+import motd from './plugins/motd.js';
+import playlists from './plugins/playlists.js';
+import users from './plugins/users.js';
+import bans from './plugins/bans.js';
+import history from './plugins/history.js';
+import acl from './plugins/acl.js';
+import waitlist from './plugins/waitlist.js';
+import passport from './plugins/passport.js';
+import migrations from './plugins/migrations.js';
 
 const DEFAULT_MONGO_URL = 'mongodb://localhost:27017/uwave';
 const DEFAULT_REDIS_URL = 'redis://localhost:6379';
@@ -44,7 +40,7 @@ const DEFAULT_REDIS_URL = 'redis://localhost:6379';
  *   mongo?: string,
  *   redis?: string | RedisOptions,
  *   logger?: import('pino').LoggerOptions,
- * } & httpApi.HttpApiOptions} Options
+ * } & import('./HttpApi').HttpApiOptions} Options
  */
 
 class UwaveServer extends EventEmitter {
@@ -118,7 +114,7 @@ class UwaveServer extends EventEmitter {
   // @ts-expect-error TS2564 Definitely assigned in a plugin
   httpApi;
 
-  /** @type {import('./SocketServer')} */
+  /** @type {import('./SocketServer').default} */
   // @ts-expect-error TS2564 Definitely assigned in a plugin
   socketServer;
 
@@ -203,7 +199,7 @@ class UwaveServer extends EventEmitter {
     boot.use(waitlist);
     boot.use(booth);
 
-    boot.use(httpApi.errorHandling);
+    boot.use(errorHandling);
   }
 
   /**
@@ -331,4 +327,4 @@ class UwaveServer extends EventEmitter {
   }
 }
 
-module.exports = UwaveServer;
+export default UwaveServer;

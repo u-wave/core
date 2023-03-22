@@ -1,12 +1,13 @@
-'use strict';
+import fs from 'node:fs';
+import { Passport } from 'passport';
+import { Strategy as LocalStrategy } from 'passport-local';
+import { Strategy as GoogleStrategy } from 'passport-google-oauth20';
+import { callbackify } from 'util';
+import JWTStrategy from '../auth/JWTStrategy.js';
 
-const { Passport } = require('passport');
-const { Strategy: LocalStrategy } = require('passport-local');
-const { Strategy: GoogleStrategy } = require('passport-google-oauth20');
-const { callbackify } = require('util');
-const JWTStrategy = require('../auth/JWTStrategy');
-
-const schema = require('../schemas/socialAuth.json');
+const schema = JSON.parse(
+  fs.readFileSync(new URL('../schemas/socialAuth.json', import.meta.url), 'utf8'),
+);
 
 /**
  * @typedef {import('../models/User').User} User
@@ -162,5 +163,5 @@ async function passportPlugin(uw, options) {
   await uw.passport.loadRuntimeConfiguration();
 }
 
-module.exports = passportPlugin;
-module.exports.Passport = PassportPlugin;
+export default passportPlugin;
+export { PassportPlugin as Passport };

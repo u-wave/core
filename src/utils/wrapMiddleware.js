@@ -1,5 +1,3 @@
-'use strict';
-
 /**
  * Wrap `async` middleware into an express style callback.
  *
@@ -19,4 +17,4 @@ function wrapMiddleware(middleware) {
   };
 }
 
-module.exports = wrapMiddleware;
+export default wrapMiddleware;

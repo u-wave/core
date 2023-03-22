@@ -1,6 +1,4 @@
-'use strict';
-
-const { HTTPError } = require('../errors');
+import { HTTPError } from '../errors/index.js';
 
 const MONGO_DUPLICATE_KEY_ERROR = 11000;
 const MONGO_DUPLICATE_KEY_ERROR2 = 11001;
@@ -35,4 +33,4 @@ function beautifyDuplicateKeyError(error) {
   return error;
 }
 
-module.exports = beautifyDuplicateKeyError;
+export default beautifyDuplicateKeyError;

@@ -1,7 +1,7 @@
-'use strict';
+import lodash from 'lodash';
+import Page from '../Page.js';
 
-const { clamp } = require('lodash');
-const Page = require('../Page');
+const { clamp } = lodash;
 
 const DEFAULT_PAGE_SIZE = 50;
 const MAX_PAGE_SIZE = 100;
@@ -22,7 +22,7 @@ class HistoryRepository {
   #uw;
 
   /**
-   * @param {import('../Uwave')} uw
+   * @param {import('../Uwave').default} uw
    */
   constructor(uw) {
     this.#uw = uw;
@@ -82,11 +82,11 @@ class HistoryRepository {
 }
 
 /**
- * @param {import('../Uwave')} uw
+ * @param {import('../Uwave').default} uw
  */
 async function history(uw) {
   uw.history = new HistoryRepository(uw);
 }
 
-module.exports = history;
-module.exports.HistoryRepository = HistoryRepository;
+export default history;
+export { HistoryRepository };

@@ -1,14 +1,11 @@
-'use strict';
+import mongoose from 'mongoose';
+import { getBoothData } from './booth.js';
+import { serializePlaylist, serializeUser } from '../utils/serialize.js';
 
-const { ObjectId } = require('mongoose').mongo;
-const { getBoothData } = require('./booth');
-const {
-  serializePlaylist,
-  serializeUser,
-} = require('../utils/serialize');
+const { ObjectId } = mongoose.mongo;
 
 /**
- * @param {import('../Uwave')} uw
+ * @param {import('../Uwave').default} uw
  * @param {Promise<import('../models').Playlist | null>} activePlaylist
  */
 async function getFirstItem(uw, activePlaylist) {
@@ -34,7 +31,7 @@ function toInt(str) {
 }
 
 /**
- * @param {import('../Uwave')} uw
+ * @param {import('../Uwave').default} uw
  */
 async function getOnlineUsers(uw) {
   const { User } = uw.models;
@@ -56,7 +53,7 @@ async function getOnlineUsers(uw) {
 }
 
 /**
- * @param {import('../Uwave')} uw
+ * @param {import('../Uwave').default} uw
  */
 async function getGuestsCount(uw) {
   const guests = await uw.redis.get('http-api:guests');
@@ -141,4 +138,4 @@ async function getState(req) {
   return state;
 }
 
-exports.getState = getState;
+export { getState };

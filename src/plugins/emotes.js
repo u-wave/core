@@ -1,11 +1,14 @@
-'use strict';
+import fs from 'node:fs';
+import httpErrors from 'http-errors';
+import { AppTokenAuthProvider } from '@twurple/auth';
+import { ApiClient } from '@twurple/api';
+import nodeFetch from 'node-fetch';
+import routes from '../routes/emotes.js';
 
-const { NotFound } = require('http-errors');
-const { AppTokenAuthProvider } = require('@twurple/auth');
-const { ApiClient } = require('@twurple/api');
-const fetch = require('node-fetch').default;
-const routes = require('../routes/emotes');
-const schema = require('../schemas/emotes.json');
+const { NotFound } = httpErrors;
+const schema = JSON.parse(
+  fs.readFileSync(new URL('../schemas/emotes.json', import.meta.url), 'utf8'),
+);
 
 /**
  * @typedef {{
@@ -32,7 +35,7 @@ const schema = require('../schemas/emotes.json');
  * @returns {Promise<T>}
  */
 async function fetchJSON(url) {
-  const res = await fetch(url);
+  const res = await nodeFetch(url);
 
   if (!res.ok) {
     if (res.status === 404) {
@@ -41,7 +44,7 @@ async function fetchJSON(url) {
     throw new Error('Unexpected response');
   }
 
-  const json = await res.json();
+  const json = /** @type {T} */ (await res.json());
   return json;
 }
 
@@ -328,5 +331,5 @@ async function emotesPlugin(uw) {
   uw.httpApi.use('/emotes', routes());
 }
 
-module.exports = emotesPlugin;
-module.exports.Emotes = Emotes;
+export default emotesPlugin;
+export { Emotes };

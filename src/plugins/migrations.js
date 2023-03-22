@@ -1,11 +1,9 @@
-'use strict';
-
-const path = require('path');
-const RedLock = require('redlock').default;
-const { Umzug } = require('umzug');
+import { fileURLToPath } from 'node:url';
+import RedLock from 'redlock';
+import { Umzug } from 'umzug';
 
 /**
- * @typedef {import('../Uwave')} Uwave
+ * @typedef {import('../Uwave').default} Uwave
  */
 
 /**
@@ -49,12 +47,12 @@ const mongooseStorage = {
 };
 
 /**
- * @typedef {import('umzug').InputMigrations<import('../Uwave')>} MigrateOptions
+ * @typedef {import('umzug').InputMigrations<Uwave>} MigrateOptions
  * @typedef {(opts: MigrateOptions) => Promise<void>} Migrate
  */
 
 /**
- * @param {import('../Uwave')} uw
+ * @param {Uwave} uw
  */
 async function migrationsPlugin(uw) {
   const redLock = new RedLock([uw.redis]);
@@ -75,8 +73,8 @@ async function migrationsPlugin(uw) {
   uw.migrate = migrate;
 
   await uw.migrate({
-    glob: ['*.js', { cwd: path.join(__dirname, '../migrations') }],
+    glob: ['*.cjs', { cwd: fileURLToPath(new URL('../migrations', import.meta.url)) }],
   });
 }
 
-module.exports = migrationsPlugin;
+export default migrationsPlugin;

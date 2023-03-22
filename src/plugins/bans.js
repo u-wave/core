@@ -1,11 +1,9 @@
-'use strict';
+import lodash from 'lodash';
+import escapeStringRegExp from 'escape-string-regexp';
+import { UserNotFoundError } from '../errors/index.js';
+import Page from '../Page.js';
 
-const { clamp, omit } = require('lodash');
-const escapeStringRegExp = require('escape-string-regexp');
-const {
-  UserNotFoundError,
-} = require('../errors');
-const Page = require('../Page');
+const { clamp, omit } = lodash;
 
 /**
  * @typedef {import('../models').User} User
@@ -32,7 +30,7 @@ class Bans {
   #uw;
 
   /**
-   * @param {import('../Uwave')} uw
+   * @param {import('../Uwave').default} uw
    */
   constructor(uw) {
     this.#uw = uw;
@@ -169,11 +167,11 @@ class Bans {
 }
 
 /**
- * @param {import('../Uwave')} uw
+ * @param {import('../Uwave').default} uw
  */
 async function bans(uw) {
   uw.bans = new Bans(uw); // eslint-disable-line no-param-reassign
 }
 
-module.exports = bans;
-module.exports.Bans = Bans;
+export default bans;
+export { Bans };

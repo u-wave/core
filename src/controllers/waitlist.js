@@ -1,7 +1,5 @@
-'use strict';
-
-const toItemResponse = require('../utils/toItemResponse');
-const toListResponse = require('../utils/toListResponse');
+import toItemResponse from '../utils/toItemResponse.js';
+import toListResponse from '../utils/toListResponse.js';
 
 /**
  * @type {import('../types').Controller}
@@ -114,9 +112,11 @@ async function lockWaitlist(req) {
   return toItemResponse({ locked: lock }, { url: req.fullUrl });
 }
 
-exports.getWaitlist = getWaitlist;
-exports.addToWaitlist = addToWaitlist;
-exports.moveWaitlist = moveWaitlist;
-exports.removeFromWaitlist = removeFromWaitlist;
-exports.clearWaitlist = clearWaitlist;
-exports.lockWaitlist = lockWaitlist;
+export {
+  getWaitlist,
+  addToWaitlist,
+  moveWaitlist,
+  removeFromWaitlist,
+  clearWaitlist,
+  lockWaitlist,
+};

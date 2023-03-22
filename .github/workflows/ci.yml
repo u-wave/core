@@ -65,7 +65,7 @@ jobs:
           REDIS_URL: '127.0.0.1:6379'
           MONGODB_HOST: '127.0.0.1:27017'
       - name: Submit coverage
-        if: matrix.node-version == '16.x'
+        if: matrix.node-version == '18.x'
         uses: coverallsapp/github-action@v1.2.4
         with:
           github-token: ${{secrets.GITHUB_TOKEN}}

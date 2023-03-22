@@ -1,10 +1,4 @@
-'use strict';
-
-const {
-  SourceNotFoundError,
-  SourceNoImportError,
-  APIError,
-} = require('../errors');
+import { SourceNotFoundError, SourceNoImportError, APIError } from '../errors/index.js';
 
 /**
  * @param {import('../types').Request} req
@@ -52,4 +46,4 @@ async function importAction(req) {
   }
 }
 
-exports.importAction = importAction;
+export { importAction };

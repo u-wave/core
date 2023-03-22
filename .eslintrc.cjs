@@ -12,9 +12,16 @@ module.exports = {
   },
 
   rules: {
-    // We're not transpiling
-    strict: ['error', 'global'],
-
+    'import/extensions': ['error', 'ignorePackages'],
+    'import/prefer-default-export': 'off',
+    'import/no-extraneous-dependencies': ['error', {
+      devDependencies: [
+        'test/**',
+        'dev/**',
+        '**/.eslintrc.js',
+      ],
+      optionalDependencies: false,
+    }],
     // MongoDB IDs
     'no-underscore-dangle': ['error', { allow: ['_id'] }],
     // Used by plugins
@@ -43,8 +50,9 @@ module.exports = {
 
   overrides: [
     {
-      files: ['*.js'],
+      files: ['*.cjs'],
       rules: {
+        strict: ['error', 'global'],
         '@typescript-eslint/no-var-requires': 'off',
       },
     },

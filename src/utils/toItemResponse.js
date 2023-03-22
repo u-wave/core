@@ -1,5 +1,3 @@
-'use strict';
-
 /**
  * @param {object?} item
  * @param {{ url?: string, meta?: object }} options
@@ -15,4 +13,4 @@ function toItemResponse(item, {
   };
 }
 
-module.exports = toItemResponse;
+export default toItemResponse;

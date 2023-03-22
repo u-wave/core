@@ -1,6 +1,4 @@
-'use strict';
-
-const nodemailer = require('nodemailer');
+import nodemailer from 'nodemailer';
 
 /**
  * @param {string} emailAddress
@@ -26,4 +24,4 @@ async function sendEmail(emailAddress, options) {
   await transporter.sendMail(mailOptions);
 }
 
-module.exports = sendEmail;
+export default sendEmail;

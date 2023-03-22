@@ -1,9 +1,7 @@
-'use strict';
-
-const { UserNotFoundError } = require('../errors');
-const getOffsetPagination = require('../utils/getOffsetPagination');
-const toItemResponse = require('../utils/toItemResponse');
-const toPaginatedResponse = require('../utils/toPaginatedResponse');
+import { UserNotFoundError } from '../errors/index.js';
+import getOffsetPagination from '../utils/getOffsetPagination.js';
+import toItemResponse from '../utils/toItemResponse.js';
+import toPaginatedResponse from '../utils/toPaginatedResponse.js';
 
 /**
  * @typedef {object} GetBansQuery
@@ -86,6 +84,8 @@ async function removeBan(req) {
   });
 }
 
-exports.getBans = getBans;
-exports.addBan = addBan;
-exports.removeBan = removeBan;
+export {
+  getBans,
+  addBan,
+  removeBan,
+};

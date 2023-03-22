@@ -1,5 +1,3 @@
-'use strict';
-
 /**
  * @template TItem
  * @template TPagination
@@ -48,4 +46,4 @@ class Page {
   }
 }
 
-module.exports = Page;
+export default Page;

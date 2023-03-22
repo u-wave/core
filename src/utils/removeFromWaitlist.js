@@ -1,14 +1,12 @@
-'use strict';
-
 /**
- * @param {import('../Uwave')} uw
+ * @param {import('../Uwave').default} uw
  */
 function getWaitingUserIDs(uw) {
   return uw.redis.lrange('waitlist', 0, -1);
 }
 
 /**
- * @param {import('../Uwave')} uw
+ * @param {import('../Uwave').default} uw
  * @param {import('mongodb').ObjectId} userID
  */
 async function removeFromWaitlist(uw, userID) {
@@ -23,4 +21,4 @@ async function removeFromWaitlist(uw, userID) {
   }
 }
 
-module.exports = removeFromWaitlist;
+export default removeFromWaitlist;

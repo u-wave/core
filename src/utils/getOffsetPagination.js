@@ -1,5 +1,3 @@
-'use strict';
-
 /**
  * @param {string} str
  * @param {number} defaultN
@@ -40,4 +38,4 @@ function getOffsetPagination(query, options = {}) {
   };
 }
 
-module.exports = getOffsetPagination;
+export default getOffsetPagination;

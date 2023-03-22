@@ -1,16 +1,12 @@
-'use strict';
+import mongoose from 'mongoose';
+import { HTTPError, PlaylistNotFoundError, PlaylistItemNotFoundError } from '../errors/index.js';
+import { serializePlaylist } from '../utils/serialize.js';
+import getOffsetPagination from '../utils/getOffsetPagination.js';
+import toItemResponse from '../utils/toItemResponse.js';
+import toListResponse from '../utils/toListResponse.js';
+import toPaginatedResponse from '../utils/toPaginatedResponse.js';
 
-const { ObjectId } = require('mongoose').mongo;
-const {
-  HTTPError,
-  PlaylistNotFoundError,
-  PlaylistItemNotFoundError,
-} = require('../errors');
-const { serializePlaylist } = require('../utils/serialize');
-const getOffsetPagination = require('../utils/getOffsetPagination');
-const toItemResponse = require('../utils/toItemResponse');
-const toListResponse = require('../utils/toListResponse');
-const toPaginatedResponse = require('../utils/toPaginatedResponse');
+const { ObjectId } = mongoose.mongo;
 
 /**
  * @typedef {object} GetPlaylistsQuery
@@ -272,7 +268,7 @@ async function addPlaylistItems(req) {
     throw new PlaylistNotFoundError({ id });
   }
 
-  /** @type {ObjectId|null} */
+  /** @type {import('mongodb').ObjectId|null} */
   let afterID = null;
   if (at === 'start') {
     afterID = null;
@@ -353,6 +349,7 @@ async function movePlaylistItems(req) {
     throw new PlaylistNotFoundError({ id });
   }
 
+  /** @type {import('mongodb').ObjectId|null} */
   let afterID = null;
   if (at === 'start') {
     afterID = null;
@@ -484,18 +481,20 @@ async function removePlaylistItem(req) {
   return toItemResponse(result, { url: req.fullUrl });
 }
 
-exports.getPlaylists = getPlaylists;
-exports.getPlaylist = getPlaylist;
-exports.createPlaylist = createPlaylist;
-exports.deletePlaylist = deletePlaylist;
-exports.updatePlaylist = updatePlaylist;
-exports.renamePlaylist = renamePlaylist;
-exports.activatePlaylist = activatePlaylist;
-exports.getPlaylistItems = getPlaylistItems;
-exports.addPlaylistItems = addPlaylistItems;
-exports.removePlaylistItems = removePlaylistItems;
-exports.movePlaylistItems = movePlaylistItems;
-exports.shufflePlaylistItems = shufflePlaylistItems;
-exports.getPlaylistItem = getPlaylistItem;
-exports.updatePlaylistItem = updatePlaylistItem;
-exports.removePlaylistItem = removePlaylistItem;
+export {
+  getPlaylists,
+  getPlaylist,
+  createPlaylist,
+  deletePlaylist,
+  updatePlaylist,
+  renamePlaylist,
+  activatePlaylist,
+  getPlaylistItems,
+  addPlaylistItems,
+  removePlaylistItems,
+  movePlaylistItems,
+  shufflePlaylistItems,
+  getPlaylistItem,
+  updatePlaylistItem,
+  removePlaylistItem,
+};

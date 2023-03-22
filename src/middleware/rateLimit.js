@@ -1,10 +1,8 @@
-'use strict';
-
-const ms = require('ms');
-const { promisify } = require('util');
-const RateLimiterBase = require('ratelimiter');
-const wrapMiddleware = require('../utils/wrapMiddleware');
-const { RateLimitError } = require('../errors');
+import ms from 'ms';
+import { promisify } from 'node:util';
+import RateLimiterBase from 'ratelimiter';
+import wrapMiddleware from '../utils/wrapMiddleware.js';
+import { RateLimitError } from '../errors/index.js';
 
 class RateLimiter extends RateLimiterBase {}
 RateLimiter.prototype.getAsync = promisify(RateLimiter.prototype.get);
@@ -44,4 +42,4 @@ function rateLimit(prefix, opts) {
   });
 }
 
-module.exports = rateLimit;
+export default rateLimit;

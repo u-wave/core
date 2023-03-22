@@ -1,23 +1,21 @@
-'use strict';
-
-const assert = require('assert');
-const mongoose = require('mongoose');
-const {
+import assert from 'node:assert';
+import mongoose from 'mongoose';
+import {
   HTTPError,
   PermissionError,
   HistoryEntryNotFoundError,
   PlaylistNotFoundError,
   CannotSelfFavoriteError,
-} = require('../errors');
-const getOffsetPagination = require('../utils/getOffsetPagination');
-const toItemResponse = require('../utils/toItemResponse');
-const toListResponse = require('../utils/toListResponse');
-const toPaginatedResponse = require('../utils/toPaginatedResponse');
+} from '../errors/index.js';
+import getOffsetPagination from '../utils/getOffsetPagination.js';
+import toItemResponse from '../utils/toItemResponse.js';
+import toListResponse from '../utils/toListResponse.js';
+import toPaginatedResponse from '../utils/toPaginatedResponse.js';
 
 const { ObjectId } = mongoose.Types;
 
 /**
- * @param {import('../Uwave')} uw
+ * @param {import('../Uwave').default} uw
  */
 async function getBoothData(uw) {
   const { booth } = uw;
@@ -56,7 +54,7 @@ async function getBooth(req) {
 }
 
 /**
- * @param {import('../Uwave')} uw
+ * @param {import('../Uwave').default} uw
  * @returns {Promise<string|null>}
  */
 function getCurrentDJ(uw) {
@@ -64,7 +62,7 @@ function getCurrentDJ(uw) {
 }
 
 /**
- * @param {import('../Uwave')} uw
+ * @param {import('../Uwave').default} uw
  * @param {string|null} moderatorID - `null` if a user is skipping their own turn.
  * @param {string} userID
  * @param {string|null} reason
@@ -162,7 +160,7 @@ async function replaceBooth(req) {
 }
 
 /**
- * @param {import('../Uwave')} uw
+ * @param {import('../Uwave').default} uw
  * @param {string} userID
  * @param {1|-1} direction
  */
@@ -191,7 +189,7 @@ async function addVote(uw, userID, direction) {
 /**
  * Old way of voting: over the WebSocket
  *
- * @param {import('../Uwave')} uw
+ * @param {import('../Uwave').default} uw
  * @param {string} userID
  * @param {1|-1} direction
  */
@@ -369,12 +367,14 @@ async function getHistory(req) {
   });
 }
 
-exports.favorite = favorite;
-exports.getBooth = getBooth;
-exports.getBoothData = getBoothData;
-exports.getHistory = getHistory;
-exports.getVote = getVote;
-exports.replaceBooth = replaceBooth;
-exports.skipBooth = skipBooth;
-exports.socketVote = socketVote;
-exports.vote = vote;
+export {
+  favorite,
+  getBooth,
+  getBoothData,
+  getHistory,
+  getVote,
+  replaceBooth,
+  skipBooth,
+  socketVote,
+  vote,
+};

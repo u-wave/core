@@ -1,10 +1,10 @@
-'use strict';
+import assert from 'node:assert';
+import RedLock from 'redlock';
+import lodash from 'lodash';
+import { EmptyPlaylistError, PlaylistItemNotFoundError } from '../errors/index.js';
+import routes from '../routes/booth.js';
 
-const assert = require('assert');
-const RedLock = require('redlock').default;
-const { omit } = require('lodash');
-const { EmptyPlaylistError, PlaylistItemNotFoundError } = require('../errors');
-const routes = require('../routes/booth');
+const { omit } = lodash;
 
 /**
  * @typedef {import('type-fest').JsonObject} JsonObject
@@ -47,7 +47,7 @@ class Booth {
   #awaitAdvance = null;
 
   /**
-   * @param {import('../Uwave')} uw
+   * @param {import('../Uwave').Boot} uw
    */
   constructor(uw) {
     this.#uw = uw;
@@ -73,7 +73,7 @@ class Booth {
       }
     }
 
-    /** @type {import('../Uwave').Boot} */ (this.#uw).onClose(async () => {
+    this.#uw.onClose(async () => {
       this.#onStop();
       await this.#awaitAdvance;
     });
@@ -432,5 +432,5 @@ async function boothPlugin(uw) {
   });
 }
 
-module.exports = boothPlugin;
-module.exports.Booth = Booth;
+export default boothPlugin;
+export { Booth };

@@ -1,16 +1,16 @@
-#!/usr/bin/env node
+import 'make-promises-safe';
+import minimist from 'minimist';
+import concat from 'concat-stream';
+import explain from 'explain-error';
+import announce from 'u-wave-announce';
+import ytSource from 'u-wave-source-youtube';
+import scSource from 'u-wave-source-soundcloud';
+import pino from 'pino';
+import dotenv from 'dotenv';
+import uwave from '../src/index.js';
+import emotes from '../src/plugins/emotes.js';
 
-require('make-promises-safe');
-const { Buffer } = require('buffer');
-const argv = require('minimist')(process.argv.slice(2));
-const concat = require('concat-stream');
-const explain = require('explain-error');
-const announce = require('u-wave-announce');
-const ytSource = require('u-wave-source-youtube');
-const scSource = require('u-wave-source-soundcloud');
-const recaptchaTestKeys = require('recaptcha-test-keys');
-const pino = require('pino');
-const dotenv = require('dotenv');
+const argv = minimist(process.argv.slice(2));
 
 dotenv.config();
 
@@ -36,8 +36,6 @@ const testTransport = {
 async function start() {
   const port = Number(argv.port ?? process.env.PORT ?? 6042);
 
-  const uwave = require('..');
-
   const secret = Buffer.from('none', 'utf8');
 
   const uw = uwave({
@@ -50,11 +48,10 @@ async function start() {
     timeout: 10,
   });
 
-  const emotes = require('../src/plugins/emotes');
   uw.use(emotes);
 
-  uw.use(async function configureExpress(uw) {
-    uw.express.set('json spaces', 2);
+  uw.use(async (instance) => {
+    instance.express.set('json spaces', 2);
   });
 
   uw.on('mongoError', (err) => {
@@ -70,13 +67,13 @@ async function start() {
     seed: Buffer.from('8286a5e55c62d93a042b8c56c8face52c05354c288807d941751f0e9060c2ded', 'hex'),
   });
 
-  uw.use(async function configureSources(uw) {
+  uw.use(async (instance) => {
     if (process.env.YOUTUBE_API_KEY) {
-      uw.source(ytSource, {
+      instance.source(ytSource, {
         key: process.env.YOUTUBE_API_KEY,
       });
     }
-    uw.source(scSource, {
+    instance.source(scSource, {
       key: process.env.SOUNDCLOUD_API_KEY,
     });
   });
@@ -85,7 +82,4 @@ async function start() {
   logger.info('Now listening', { port });
 }
 
-start().catch((error) => {
-  logger.error(error);
-  process.exit(1);
-});
+await start();

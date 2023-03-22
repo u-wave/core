@@ -1,5 +1,3 @@
-'use strict';
-
 /**
  * @template {Record<string, string>} TParams
  * @template {import('qs').ParsedQs} TQuery
@@ -25,4 +23,4 @@ function route(handler) {
   };
 }
 
-module.exports = route;
+export default route;

@@ -1,4 +1,5 @@
-'use strict';
+import httpErrors from 'http-errors';
+import { t } from '../locale.js';
 
 const {
   HttpError,
@@ -8,8 +9,7 @@ const {
   NotFound,
   TooManyRequests,
   UnprocessableEntity,
-} = require('http-errors');
-const { t } = require('../locale');
+} = httpErrors;
 
 class APIError extends Error {
   /** @type {number|undefined} */
@@ -257,31 +257,33 @@ const UserIsPlayingError = createErrorClass('UserIsPlayingError', {
   base: BadRequest,
 });
 
-exports.APIError = APIError;
-exports.CombinedError = CombinedError;
-exports.HTTPError = HTTPError;
-exports.PermissionError = PermissionError;
-exports.LoginRequiredError = LoginRequiredError;
-exports.BannedError = BannedError;
-exports.RateLimitError = RateLimitError;
-exports.NameChangeRateLimitError = NameChangeRateLimitError;
-exports.InvalidEmailError = InvalidEmailError;
-exports.InvalidUsernameError = InvalidUsernameError;
-exports.InvalidResetTokenError = InvalidResetTokenError;
-exports.ReCaptchaError = ReCaptchaError;
-exports.IncorrectPasswordError = IncorrectPasswordError;
-exports.UserNotFoundError = UserNotFoundError;
-exports.PlaylistNotFoundError = PlaylistNotFoundError;
-exports.PlaylistItemNotFoundError = PlaylistItemNotFoundError;
-exports.HistoryEntryNotFoundError = HistoryEntryNotFoundError;
-exports.MediaNotFoundError = MediaNotFoundError;
-exports.ItemNotInPlaylistError = ItemNotInPlaylistError;
-exports.CannotSelfFavoriteError = CannotSelfFavoriteError;
-exports.CannotSelfMuteError = CannotSelfMuteError;
-exports.SourceNotFoundError = SourceNotFoundError;
-exports.SourceNoImportError = SourceNoImportError;
-exports.EmptyPlaylistError = EmptyPlaylistError;
-exports.WaitlistLockedError = WaitlistLockedError;
-exports.AlreadyInWaitlistError = AlreadyInWaitlistError;
-exports.UserNotInWaitlistError = UserNotInWaitlistError;
-exports.UserIsPlayingError = UserIsPlayingError;
+export {
+  APIError,
+  CombinedError,
+  HTTPError,
+  PermissionError,
+  LoginRequiredError,
+  BannedError,
+  RateLimitError,
+  NameChangeRateLimitError,
+  InvalidEmailError,
+  InvalidUsernameError,
+  InvalidResetTokenError,
+  ReCaptchaError,
+  IncorrectPasswordError,
+  UserNotFoundError,
+  PlaylistNotFoundError,
+  PlaylistItemNotFoundError,
+  HistoryEntryNotFoundError,
+  MediaNotFoundError,
+  ItemNotInPlaylistError,
+  CannotSelfFavoriteError,
+  CannotSelfMuteError,
+  SourceNotFoundError,
+  SourceNoImportError,
+  EmptyPlaylistError,
+  WaitlistLockedError,
+  AlreadyInWaitlistError,
+  UserNotInWaitlistError,
+  UserIsPlayingError,
+};

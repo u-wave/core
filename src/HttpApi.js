@@ -1,34 +1,35 @@
-'use strict';
-
-const { randomUUID } = require('crypto');
-const express = require('express');
-const bodyParser = require('body-parser');
-const cookieParser = require('cookie-parser');
-const cors = require('cors');
-const helmet = require('helmet').default;
-const http = require('http');
-const pinoHttp = require('pino-http').default;
+import fs from 'node:fs';
+import { randomUUID } from 'node:crypto';
+import express from 'express';
+import bodyParser from 'body-parser';
+import cookieParser from 'cookie-parser';
+import cors from 'cors';
+import helmet from 'helmet';
+import http from 'node:http';
+import pinoHttp from 'pino-http';
 
 // routes
-const authenticate = require('./routes/authenticate');
-const bans = require('./routes/bans');
-const search = require('./routes/search');
-const server = require('./routes/server');
-const users = require('./routes/users');
-const now = require('./routes/now');
-const imports = require('./routes/import');
+import authenticate from './routes/authenticate.js';
+import bans from './routes/bans.js';
+import search from './routes/search.js';
+import server from './routes/server.js';
+import users from './routes/users.js';
+import now from './routes/now.js';
+import imports from './routes/import.js';
 
 // middleware
-const addFullUrl = require('./middleware/addFullUrl');
-const attachUwaveMeta = require('./middleware/attachUwaveMeta');
-const rateLimit = require('./middleware/rateLimit');
-const errorHandler = require('./middleware/errorHandler');
+import addFullUrl from './middleware/addFullUrl.js';
+import attachUwaveMeta from './middleware/attachUwaveMeta.js';
+import rateLimit from './middleware/rateLimit.js';
+import errorHandler from './middleware/errorHandler.js';
 
 // utils
-const AuthRegistry = require('./AuthRegistry');
-const matchOrigin = require('./utils/matchOrigin');
+import AuthRegistry from './AuthRegistry.js';
+import matchOrigin from './utils/matchOrigin.js';
 
-const optionsSchema = require('./schemas/httpApi.json');
+const optionsSchema = JSON.parse(
+  fs.readFileSync(new URL('./schemas/httpApi.json', import.meta.url), 'utf8'),
+);
 
 /**
  * @param {{ token: string, requestUrl: string }} options
@@ -168,6 +169,5 @@ async function errorHandling(uw) {
   }));
 }
 
-httpApi.errorHandling = errorHandling;
-
-module.exports = httpApi;
+export default httpApi;
+export { errorHandling };

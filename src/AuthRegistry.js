@@ -1,8 +1,6 @@
-'use strict';
-
-const assert = require('assert');
-const crypto = require('crypto');
-const { promisify } = require('util');
+import assert from 'node:assert';
+import crypto from 'node:crypto';
+import { promisify } from 'node:util';
 
 const randomBytes = promisify(crypto.randomBytes);
 
@@ -48,4 +46,4 @@ class AuthRegistry {
   }
 }
 
-module.exports = AuthRegistry;
+export default AuthRegistry;

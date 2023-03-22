@@ -1,11 +1,9 @@
-'use strict';
-
-const { Router } = require('express');
-const route = require('../route');
-const validations = require('../validations');
-const protect = require('../middleware/protect');
-const schema = require('../middleware/schema');
-const controller = require('../controllers/motd');
+import { Router } from 'express';
+import route from '../route.js';
+import * as validations from '../validations.js';
+import protect from '../middleware/protect.js';
+import schema from '../middleware/schema.js';
+import * as controller from '../controllers/motd.js';
 
 function motdRoutes() {
   return Router()
@@ -23,4 +21,4 @@ function motdRoutes() {
     );
 }
 
-module.exports = motdRoutes;
+export default motdRoutes;

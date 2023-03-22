@@ -1,8 +1,8 @@
-'use strict';
+import lodash from 'lodash';
+import { SourceNotFoundError } from '../errors/index.js';
+import toListResponse from '../utils/toListResponse.js';
 
-const { isEqual } = require('lodash');
-const { SourceNotFoundError } = require('../errors');
-const toListResponse = require('../utils/toListResponse');
+const { isEqual } = lodash;
 
 /** @typedef {import('mongodb').ObjectId} ObjectId */
 /** @typedef {import('../models').Playlist} Playlist */
@@ -36,7 +36,7 @@ async function searchAll(req) {
 }
 
 /**
- * @param {import('../Uwave')} uw
+ * @param {import('../Uwave').default} uw
  * @param {Map<ObjectId, Media['sourceData']>} updates
  */
 async function updateSourceData(uw, updates) {
@@ -147,5 +147,7 @@ async function search(req) {
   });
 }
 
-exports.search = search;
-exports.searchAll = searchAll;
+export {
+  search,
+  searchAll,
+};

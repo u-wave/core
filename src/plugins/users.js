@@ -1,9 +1,7 @@
-'use strict';
-
-const bcrypt = require('bcryptjs');
-const escapeStringRegExp = require('escape-string-regexp');
-const Page = require('../Page');
-const { IncorrectPasswordError, UserNotFoundError } = require('../errors');
+import bcrypt from 'bcryptjs';
+import escapeStringRegExp from 'escape-string-regexp';
+import Page from '../Page.js';
+import { IncorrectPasswordError, UserNotFoundError } from '../errors/index.js';
 
 /**
  * @typedef {import('../models').User} User
@@ -29,7 +27,7 @@ class UsersRepository {
   #logger;
 
   /**
-   * @param {import('../Uwave')} uw
+   * @param {import('../Uwave').default} uw
    */
   constructor(uw) {
     this.#uw = uw;
@@ -353,11 +351,11 @@ class UsersRepository {
 }
 
 /**
- * @param {import('../Uwave')} uw
+ * @param {import('../Uwave').default} uw
  */
 async function usersPlugin(uw) {
   uw.users = new UsersRepository(uw);
 }
 
-module.exports = usersPlugin;
-module.exports.UsersRepository = UsersRepository;
+export default usersPlugin;
+export { UsersRepository };

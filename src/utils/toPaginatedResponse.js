@@ -1,7 +1,5 @@
-'use strict';
-
-const qs = require('qs');
-const toListResponse = require('./toListResponse');
+import qs from 'qs';
+import toListResponse from './toListResponse.js';
 
 /**
  * @param {string} base
@@ -20,8 +18,8 @@ function appendQuery(base, query) {
 /**
  * @template {any} TItem
  * @template {{ offset: number }} TPagination
- * @param {import('../Page')<TItem, TPagination>} page
- * @param {{ baseUrl?: string, included?: toListResponse.IncludedOptions }} options
+ * @param {import('../Page').default<TItem, TPagination>} page
+ * @param {{ baseUrl?: string, included?: import('./toListResponse').IncludedOptions }} options
  */
 function toPaginatedResponse(
   page,
@@ -44,4 +42,4 @@ function toPaginatedResponse(
   });
 }
 
-module.exports = toPaginatedResponse;
+export default toPaginatedResponse;

@@ -1,6 +1,4 @@
-'use strict';
-
-const toListResponse = require('../utils/toListResponse');
+import toListResponse from '../utils/toListResponse.js';
 
 /**
  * @type {import('../types').Controller}
@@ -17,4 +15,4 @@ async function getEmotes(req) {
   return toListResponse(list, { url: req.fullUrl });
 }
 
-exports.getEmotes = getEmotes;
+export { getEmotes };

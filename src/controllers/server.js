@@ -1,6 +1,4 @@
-'use strict';
-
-const toItemResponse = require('../utils/toItemResponse');
+import toItemResponse from '../utils/toItemResponse.js';
 
 /**
  * @type {import('../types').Controller}
@@ -58,7 +56,7 @@ async function updateConfig(req) {
   });
 }
 
-module.exports = {
+export {
   getServerTime,
   getAllConfig,
   getConfig,

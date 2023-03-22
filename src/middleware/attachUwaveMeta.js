@@ -1,9 +1,7 @@
-'use strict';
-
 /**
  *
  * @param {import('../HttpApi').HttpApi} httpApi
- * @param {import('../Uwave')} uw
+ * @param {import('../Uwave').default} uw
  * @returns {import('express').RequestHandler}
  */
 function attachUwaveMeta(httpApi, uw) {
@@ -16,4 +14,4 @@ function attachUwaveMeta(httpApi, uw) {
   };
 }
 
-module.exports = attachUwaveMeta;
+export default attachUwaveMeta;

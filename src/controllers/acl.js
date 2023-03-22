@@ -1,6 +1,4 @@
-'use strict';
-
-const toItemResponse = require('../utils/toItemResponse');
+import toItemResponse from '../utils/toItemResponse.js';
 
 /**
  * @type {import('../types').AuthenticatedController}
@@ -53,6 +51,8 @@ async function deleteRole(req) {
   });
 }
 
-exports.list = list;
-exports.createRole = createRole;
-exports.deleteRole = deleteRole;
+export {
+  list,
+  createRole,
+  deleteRole,
+};

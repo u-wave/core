@@ -1,12 +1,10 @@
-'use strict';
-
-const EventEmitter = require('events');
+import EventEmitter from 'node:events';
 
 class LostConnection extends EventEmitter {
   #logger;
 
   /**
-   * @param {import('../Uwave')} uw
+   * @param {import('../Uwave').default} uw
    * @param {import('../models').User} user
    */
   constructor(uw, user, timeout = 30) {
@@ -90,4 +88,4 @@ class LostConnection extends EventEmitter {
   }
 }
 
-module.exports = LostConnection;
+export default LostConnection;
