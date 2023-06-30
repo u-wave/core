@@ -5,16 +5,18 @@ import nodeFetch from 'node-fetch';
 import ms from 'ms';
 import htmlescape from 'htmlescape';
 import httpErrors from 'http-errors';
+import { createTransport } from 'nodemailer';
+import { render } from '@react-email/render';
 import {
   BannedError,
   ReCaptchaError,
   InvalidResetTokenError,
   UserNotFoundError,
 } from '../errors/index.js';
-import sendEmail from '../email.js';
 import beautifyDuplicateKeyError from '../utils/beautifyDuplicateKeyError.js';
 import toItemResponse from '../utils/toItemResponse.js';
 import toListResponse from '../utils/toListResponse.js';
+import PasswordResetEmail from '../emails/password-reset.js';
 
 const { BadRequest } = httpErrors;
 
@@ -24,8 +26,6 @@ const { BadRequest } = httpErrors;
  * @prop {string} [origin]
  * @prop {import('nodemailer').Transport} [mailTransport]
  * @prop {{ secret: string }} [recaptcha]
- * @prop {(options: { token: string, requestUrl: string }) =>
- *   import('nodemailer').SendMailOptions} createPasswordResetEmail
  * @prop {boolean} [cookieSecure]
  * @prop {string} [cookiePath]
  *
@@ -366,7 +366,7 @@ async function reset(req) {
   const uw = req.uwave;
   const { Authentication } = uw.models;
   const { email } = req.body;
-  const { mailTransport, createPasswordResetEmail } = req.authOptions;
+  const { mailTransport } = req.authOptions;
 
   const auth = await Authentication.findOne({
     email: email.toLowerCase(),
@@ -380,14 +380,18 @@ async function reset(req) {
   await uw.redis.set(`reset:${token}`, auth.user.toString());
   await uw.redis.expire(`reset:${token}`, 24 * 60 * 60);
 
-  const message = await createPasswordResetEmail({
+  const transport = createTransport(mailTransport);
+  const emailContents = PasswordResetEmail({
     token,
-    requestUrl: req.fullUrl,
+    publicUrl: new URL(req.fullUrl).origin,
   });
 
-  await sendEmail(email, {
-    mailTransport,
-    email: message,
+  await transport.sendMail({
+    to: email,
+    from: `noreply@${new URL(req.fullUrl).hostname}`,
+    subject: 'üWave Password Reset Request',
+    html: render(emailContents),
+    text: render(emailContents, { plainText: true }),
   });
 
   return toItemResponse({});

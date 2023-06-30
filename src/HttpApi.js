@@ -32,26 +32,6 @@ const optionsSchema = JSON.parse(
 );
 
 /**
- * @param {{ token: string, requestUrl: string }} options
- * @returns {import('nodemailer').SendMailOptions}
- */
-function defaultCreatePasswordResetEmail({ token, requestUrl }) {
-  const parsed = new URL(requestUrl);
-  const { hostname } = parsed;
-  const resetLink = new URL(`/reset/${token}`, parsed);
-  return {
-    from: `noreply@${hostname}`,
-    subject: 'üWave Password Reset Request',
-    text: `
-      Hello,
-
-      To reset your password, please visit:
-      ${resetLink}
-    `,
-  };
-}
-
-/**
  * @typedef {express.Router & { authRegistry: AuthRegistry }} HttpApi
  */
 
@@ -62,8 +42,6 @@ function defaultCreatePasswordResetEmail({ token, requestUrl }) {
  * @prop {(error: Error) => void} [onError]
  * @prop {{ secret: string }} [recaptcha]
  * @prop {import('nodemailer').Transport} [mailTransport]
- * @prop {(options: { token: string, requestUrl: string }) =>
- *   import('nodemailer').SendMailOptions} [createPasswordResetEmail]
  *
  * @typedef {object} HttpApiSettings - Runtime options for the HTTP API.
  * @prop {string[]} allowedOrigins
@@ -120,8 +98,6 @@ async function httpApi(uw, options) {
       secret: options.secret,
       mailTransport: options.mailTransport,
       recaptcha: options.recaptcha,
-      createPasswordResetEmail:
-        options.createPasswordResetEmail ?? defaultCreatePasswordResetEmail,
     }))
     .use('/bans', bans())
     .use('/import', imports())
