@@ -23,6 +23,7 @@
     "node": ">= 14.17.0"
   },
   "dependencies": {
+    "@react-email/components": "^0.0.7",
     "@twurple/api": "^6.0.6",
     "@twurple/auth": "^6.0.6",
     "ajv": "^8.0.5",
@@ -59,6 +60,8 @@
     "qs": "^6.9.1",
     "random-string": "^0.2.0",
     "ratelimiter": "^3.4.0",
+    "react": "^18.2.0",
+    "react-email": "^1.9.4",
     "redlock": "5.0.0-beta.2",
     "secure-json-parse": "^2.4.0",
     "transliteration": "^2.1.11",
