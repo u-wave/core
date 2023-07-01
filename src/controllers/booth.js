@@ -15,7 +15,7 @@ import toPaginatedResponse from '../utils/toPaginatedResponse.js';
 const { ObjectId } = mongoose.Types;
 
 /**
- * @param {import('../Uwave').default} uw
+ * @param {import('../Uwave.js').default} uw
  */
 async function getBoothData(uw) {
   const { booth } = uw;
@@ -43,7 +43,7 @@ async function getBoothData(uw) {
 }
 
 /**
- * @type {import('../types').Controller}
+ * @type {import('../types.js').Controller}
  */
 async function getBooth(req) {
   const uw = req.uwave;
@@ -54,7 +54,7 @@ async function getBooth(req) {
 }
 
 /**
- * @param {import('../Uwave').default} uw
+ * @param {import('../Uwave.js').default} uw
  * @returns {Promise<string|null>}
  */
 function getCurrentDJ(uw) {
@@ -62,7 +62,7 @@ function getCurrentDJ(uw) {
 }
 
 /**
- * @param {import('../Uwave').default} uw
+ * @param {import('../Uwave.js').default} uw
  * @param {string|null} moderatorID - `null` if a user is skipping their own turn.
  * @param {string} userID
  * @param {string|null} reason
@@ -93,7 +93,7 @@ async function doSkip(uw, moderatorID, userID, reason, opts = {}) {
  */
 
 /**
- * @type {import('../types').AuthenticatedController<{}, {}, SkipBoothBody>}
+ * @type {import('../types.js').AuthenticatedController<{}, {}, SkipBoothBody>}
  */
 async function skipBooth(req) {
   const { user } = req;
@@ -131,7 +131,7 @@ async function skipBooth(req) {
  */
 
 /**
- * @type {import('../types').AuthenticatedController<{}, {}, ReplaceBoothBody>}
+ * @type {import('../types.js').AuthenticatedController<{}, {}, ReplaceBoothBody>}
  */
 async function replaceBooth(req) {
   const uw = req.uwave;
@@ -160,7 +160,7 @@ async function replaceBooth(req) {
 }
 
 /**
- * @param {import('../Uwave').default} uw
+ * @param {import('../Uwave.js').default} uw
  * @param {string} userID
  * @param {1|-1} direction
  */
@@ -189,7 +189,7 @@ async function addVote(uw, userID, direction) {
 /**
  * Old way of voting: over the WebSocket
  *
- * @param {import('../Uwave').default} uw
+ * @param {import('../Uwave.js').default} uw
  * @param {string} userID
  * @param {1|-1} direction
  */
@@ -212,7 +212,7 @@ async function socketVote(uw, userID, direction) {
  */
 
 /**
- * @type {import('../types').AuthenticatedController<GetVoteParams>}
+ * @type {import('../types.js').AuthenticatedController<GetVoteParams>}
  */
 async function getVote(req) {
   const { uwave: uw, user } = req;
@@ -253,7 +253,7 @@ async function getVote(req) {
  */
 
 /**
- * @type {import('../types').AuthenticatedController<VoteParams, {}, VoteBody>}
+ * @type {import('../types.js').AuthenticatedController<VoteParams, {}, VoteBody>}
  */
 async function vote(req) {
   const { uwave: uw, user } = req;
@@ -290,7 +290,7 @@ async function vote(req) {
  */
 
 /**
- * @type {import('../types').AuthenticatedController<{}, {}, FavoriteBody>}
+ * @type {import('../types.js').AuthenticatedController<{}, {}, FavoriteBody>}
  */
 async function favorite(req) {
   const { user } = req;
@@ -339,10 +339,10 @@ async function favorite(req) {
 
 /**
  * @typedef {object} GetRoomHistoryQuery
- * @prop {import('../types').PaginationQuery & { media?: string }} [filter]
+ * @prop {import('../types.js').PaginationQuery & { media?: string }} [filter]
  */
 /**
- * @type {import('../types').Controller<never, GetRoomHistoryQuery, never>}
+ * @type {import('../types.js').Controller<never, GetRoomHistoryQuery, never>}
  */
 async function getHistory(req) {
   const filter = {};

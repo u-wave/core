@@ -16,7 +16,7 @@ import { serializeUser } from './utils/serialize.js';
 const { debounce, isEmpty } = lodash;
 
 /**
- * @typedef {import('./models').User} User
+ * @typedef {import('./models/index.js').User} User
  */
 
 /**
@@ -59,7 +59,7 @@ function has(object, property) {
 
 class SocketServer {
   /**
-   * @param {import('./Uwave').Boot} uw
+   * @param {import('./Uwave.js').Boot} uw
    * @param {{ secret: Buffer|string }} options
    */
   static async plugin(uw, options) {
@@ -114,14 +114,14 @@ class SocketServer {
   /**
    * Handlers for commands that come in from the server side.
    *
-   * @type {import('./redisMessages').ServerActions}
+   * @type {import('./redisMessages.js').ServerActions}
    */
   #serverActions;
 
   /**
    * Create a socket server.
    *
-   * @param {import('./Uwave').default} uw üWave Core instance.
+   * @param {import('./Uwave.js').default} uw üWave Core instance.
    * @param {object} options Socket server options.
    * @param {number} [options.timeout] Time in seconds to wait for disconnected
    *     users to reconnect before removing them.
@@ -143,7 +143,7 @@ class SocketServer {
     this.#redisSubscription = uw.redis.duplicate();
 
     this.options = {
-      /** @type {(_socket: import('ws') | undefined, err: Error) => void} */
+      /** @type {(_socket: import('ws').WebSocket | undefined, err: Error) => void} */
       onError: (_socket, err) => {
         throw err;
       },
@@ -453,7 +453,7 @@ class SocketServer {
   }
 
   /**
-   * @param {import('ws')} socket
+   * @param {import('ws').WebSocket} socket
    * @param {import('http').IncomingMessage} request
    * @private
    */
@@ -467,7 +467,7 @@ class SocketServer {
   }
 
   /**
-   * @param {import('ws')} socket
+   * @param {import('ws').WebSocket} socket
    * @param {Error} error
    * @private
    */
@@ -502,7 +502,7 @@ class SocketServer {
   /**
    * Create a connection instance for an unauthenticated user.
    *
-   * @param {import('ws')} socket
+   * @param {import('ws').WebSocket} socket
    * @private
    */
   createGuestConnection(socket) {

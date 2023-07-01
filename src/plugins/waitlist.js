@@ -15,7 +15,7 @@ const schema = JSON.parse(
 );
 
 /**
- * @typedef {import('../models').User} User
+ * @typedef {import('../models/index.js').User} User
  *
  * @typedef {{ cycle: boolean, locked: boolean }} WaitlistSettings
  */
@@ -81,7 +81,7 @@ class Waitlist {
   #uw;
 
   /**
-   * @param {import('../Uwave').Boot} uw
+   * @param {import('../Uwave.js').Boot} uw
    */
   constructor(uw) {
     this.#uw = uw;
@@ -361,7 +361,7 @@ class Waitlist {
 }
 
 /**
- * @param {import('../Uwave').Boot} uw
+ * @param {import('../Uwave.js').Boot} uw
  * @returns {Promise<void>}
  */
 async function waitlistPlugin(uw) {

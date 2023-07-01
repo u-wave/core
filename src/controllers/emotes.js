@@ -1,7 +1,7 @@
 import toListResponse from '../utils/toListResponse.js';
 
 /**
- * @type {import('../types').Controller}
+ * @type {import('../types.js').Controller}
  */
 async function getEmotes(req) {
   const { emotes } = req.uwave;

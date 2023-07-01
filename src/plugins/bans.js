@@ -6,9 +6,9 @@ import Page from '../Page.js';
 const { clamp, omit } = lodash;
 
 /**
- * @typedef {import('../models').User} User
- * @typedef {import('../models/User').LeanUser} LeanUser
- * @typedef {import('../models/User').LeanBanned} LeanBanned
+ * @typedef {import('../models/index.js').User} User
+ * @typedef {import('../models/User.js').LeanUser} LeanUser
+ * @typedef {import('../models/User.js').LeanBanned} LeanBanned
  * @typedef {LeanBanned & { user: Omit<LeanUser, 'banned'> }} Ban
  */
 
@@ -30,7 +30,7 @@ class Bans {
   #uw;
 
   /**
-   * @param {import('../Uwave').default} uw
+   * @param {import('../Uwave.js').default} uw
    */
   constructor(uw) {
     this.#uw = uw;
@@ -75,7 +75,7 @@ class Bans {
 
     const total = await User.find().where(queryFilter).countDocuments();
 
-    /** @type {(import('../models/User').LeanUser & { banned: LeanBanned })[]} */
+    /** @type {(import('../models/User.js').LeanUser & { banned: LeanBanned })[]} */
     const bannedUsers = await User.find()
       .where(queryFilter)
       .skip(offset)
@@ -167,7 +167,7 @@ class Bans {
 }
 
 /**
- * @param {import('../Uwave').default} uw
+ * @param {import('../Uwave.js').default} uw
  */
 async function bans(uw) {
   uw.bans = new Bans(uw); // eslint-disable-line no-param-reassign

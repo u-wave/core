@@ -4,7 +4,7 @@ class MOTD {
   #uw;
 
   /**
-   * @param {import('../Uwave').default} uw
+   * @param {import('../Uwave.js').default} uw
    */
   constructor(uw) {
     this.#uw = uw;
@@ -31,7 +31,7 @@ class MOTD {
 }
 
 /**
- * @param {import('../Uwave').default} uw
+ * @param {import('../Uwave.js').default} uw
  */
 async function motdPlugin(uw) {
   uw.motd = new MOTD(uw);

@@ -3,7 +3,7 @@ import RedLock from 'redlock';
 import { Umzug } from 'umzug';
 
 /**
- * @typedef {import('../Uwave').default} Uwave
+ * @typedef {import('../Uwave.js').default} Uwave
  */
 
 /**

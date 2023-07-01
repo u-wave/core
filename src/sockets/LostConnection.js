@@ -4,8 +4,8 @@ class LostConnection extends EventEmitter {
   #logger;
 
   /**
-   * @param {import('../Uwave').default} uw
-   * @param {import('../models').User} user
+   * @param {import('../Uwave.js').default} uw
+   * @param {import('../models/index.js').User} user
    */
   constructor(uw, user, timeout = 30) {
     super();

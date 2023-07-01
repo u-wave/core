@@ -7,9 +7,9 @@ class AuthedConnection extends EventEmitter {
   #logger;
 
   /**
-   * @param {import('../Uwave').default} uw
+   * @param {import('../Uwave.js').default} uw
    * @param {import('ws').WebSocket} socket
-   * @param {import('../models').User} user
+   * @param {import('../models/index.js').User} user
    */
   constructor(uw, socket, user) {
     super();

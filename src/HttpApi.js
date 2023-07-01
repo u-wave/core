@@ -1,12 +1,12 @@
 import fs from 'node:fs';
+import http from 'node:http';
 import { randomUUID } from 'node:crypto';
 import express from 'express';
 import bodyParser from 'body-parser';
 import cookieParser from 'cookie-parser';
 import cors from 'cors';
 import helmet from 'helmet';
-import http from 'node:http';
-import pinoHttp from 'pino-http';
+import { pinoHttp } from 'pino-http';
 
 // routes
 import authenticate from './routes/authenticate.js';
@@ -70,7 +70,7 @@ function defaultCreatePasswordResetEmail({ token, requestUrl }) {
  */
 
 /**
- * @param {import('./Uwave').Boot} uw
+ * @param {import('./Uwave.js').Boot} uw
  * @param {HttpApiOptions} options
  */
 async function httpApi(uw, options) {
@@ -158,7 +158,7 @@ async function httpApi(uw, options) {
 }
 
 /**
- * @param {import('./Uwave').Boot} uw
+ * @param {import('./Uwave.js').Boot} uw
  */
 async function errorHandling(uw) {
   uw.logger.debug({ ns: 'uwave:http-api' }, 'setup HTTP error handling');

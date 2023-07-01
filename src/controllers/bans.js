@@ -9,7 +9,7 @@ import toPaginatedResponse from '../utils/toPaginatedResponse.js';
  */
 
 /**
- * @type {import('../types').AuthenticatedController<{}, GetBansQuery>}
+ * @type {import('../types.js').AuthenticatedController<{}, GetBansQuery>}
  */
 async function getBans(req) {
   const { bans } = req.uwave;
@@ -35,7 +35,7 @@ async function getBans(req) {
  */
 
 /**
- * @type {import('../types').AuthenticatedController<{}, {}, AddBanBody>}
+ * @type {import('../types.js').AuthenticatedController<{}, {}, AddBanBody>}
  */
 async function addBan(req) {
   const { user: moderator } = req;
@@ -70,7 +70,7 @@ async function addBan(req) {
  */
 
 /**
- * @type {import('../types').AuthenticatedController<RemoveBanParams>}
+ * @type {import('../types.js').AuthenticatedController<RemoveBanParams>}
  */
 async function removeBan(req) {
   const { user: moderator } = req;

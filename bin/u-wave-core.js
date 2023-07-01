@@ -1,7 +1,6 @@
 #!/usr/bin/env node
 
 /* eslint-disable no-console,no-process-exit */
-import 'make-promises-safe';
 import fs from 'node:fs';
 import explain from 'explain-error';
 import Ajv from 'ajv';

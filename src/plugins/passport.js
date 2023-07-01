@@ -10,7 +10,7 @@ const schema = JSON.parse(
 );
 
 /**
- * @typedef {import('../models/User').User} User
+ * @typedef {import('../models/User.js').User} User
  *
  * @typedef {{
  *   callbackURL?: string,
@@ -32,7 +32,7 @@ class PassportPlugin extends Passport {
   #logger;
 
   /**
-   * @param {import('../Uwave').Boot} uw
+   * @param {import('../Uwave.js').Boot} uw
    * @param {{ secret: Buffer|string }} options
    */
   constructor(uw, options) {
@@ -155,7 +155,7 @@ class PassportPlugin extends Passport {
 }
 
 /**
- * @param {import('../Uwave').Boot} uw
+ * @param {import('../Uwave.js').Boot} uw
  * @param {{ secret: Buffer|string }} options
  */
 async function passportPlugin(uw, options) {
