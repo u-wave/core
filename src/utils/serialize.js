@@ -1,5 +1,11 @@
 /**
- * @param {import('../models/index.js').Playlist | import('../models/Playlist.js').LeanPlaylist} model
+ * @typedef {import('../models/index.js').User} User
+ * @typedef {import('../models/index.js').Playlist} Playlist
+ * @typedef {import('../models/Playlist.js').LeanPlaylist} LeanPlaylist
+ */
+
+/**
+ * @param {Playlist | LeanPlaylist} model
  */
 export function serializePlaylist(model) {
   return {
@@ -13,8 +19,7 @@ export function serializePlaylist(model) {
 }
 
 /**
- * @param {Pick<import('../models/index.js').User,
- *   '_id' | 'username' | 'slug' | 'roles' | 'avatar' |
+ * @param {Pick<User, '_id' | 'username' | 'slug' | 'roles' | 'avatar' |
  *   'createdAt' | 'updatedAt' | 'lastSeenAt'>} model
  */
 export function serializeUser(model) {

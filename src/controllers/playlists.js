@@ -122,7 +122,8 @@ const patchableKeys = ['name', 'description'];
  */
 
 /**
- * @type {import('../types.js').AuthenticatedController<UpdatePlaylistParams, {}, UpdatePlaylistBody>}
+ * @type {import('../types.js').AuthenticatedController<
+ *     UpdatePlaylistParams, {}, UpdatePlaylistBody>}
  */
 async function updatePlaylist(req) {
   const { user } = req;
@@ -159,7 +160,8 @@ async function updatePlaylist(req) {
  */
 
 /**
- * @type {import('../types.js').AuthenticatedController<RenamePlaylistParams, {}, RenamePlaylistBody>}
+ * @type {import('../types.js').AuthenticatedController<
+ *     RenamePlaylistParams, {}, RenamePlaylistBody>}
  */
 async function renamePlaylist(req) {
   const { user } = req;
@@ -212,7 +214,8 @@ async function activatePlaylist(req) {
  */
 
 /**
- * @type {import('../types.js').AuthenticatedController<GetPlaylistItemsParams, GetPlaylistItemsQuery>}
+ * @type {import('../types.js').AuthenticatedController<
+ *     GetPlaylistItemsParams, GetPlaylistItemsQuery>}
  */
 async function getPlaylistItems(req) {
   const { user } = req;

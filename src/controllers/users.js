@@ -151,7 +151,8 @@ async function removeUserRole(req) {
  */
 
 /**
- * @type {import('../types.js').AuthenticatedController<ChangeUsernameParams, {}, ChangeUsernameBody>}
+ * @type {import('../types.js').AuthenticatedController<
+ *     ChangeUsernameParams, {}, ChangeUsernameBody>}
  */
 async function changeUsername(req) {
   const { user: moderator } = req;
