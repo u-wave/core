@@ -2,7 +2,7 @@
 # Environment variables must be provided from the outside, eg. using docker-compose.
 # Do `docker container run $THIS_IMAGE --help` to see the list.
 
-FROM node:18-alpine
+FROM node:20-alpine
 
 WORKDIR /u-wave-core
 
