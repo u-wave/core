@@ -2,7 +2,7 @@ import { randomUUID } from 'node:crypto';
 import routes from '../routes/chat.js';
 
 /**
- * @typedef {import('../models').User} User
+ * @typedef {import('../models/index.js').User} User
  *
  * @typedef {object} ChatOptions
  * @prop {number} maxLength
@@ -20,7 +20,7 @@ class Chat {
   #options;
 
   /**
-   * @param {import('../Uwave').default} uw
+   * @param {import('../Uwave.js').default} uw
    * @param {Partial<ChatOptions>} [options]
    */
   constructor(uw, options = {}) {
@@ -115,7 +115,7 @@ class Chat {
 }
 
 /**
- * @param {import('../Uwave').default} uw
+ * @param {import('../Uwave.js').default} uw
  * @param {Partial<ChatOptions>} [options]
  */
 async function chat(uw, options = {}) {

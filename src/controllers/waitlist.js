@@ -2,7 +2,7 @@ import toItemResponse from '../utils/toItemResponse.js';
 import toListResponse from '../utils/toListResponse.js';
 
 /**
- * @type {import('../types').Controller}
+ * @type {import('../types.js').Controller}
  */
 async function getWaitlist(req) {
   const { waitlist } = req.uwave;
@@ -21,7 +21,7 @@ async function getWaitlist(req) {
  * POST waitlist/ entry point: used both for joining the waitlist, and for
  * adding someone else to the waitlist.
  *
- * @type {import('../types').AuthenticatedController<{}, {}, AddToWaitlistBody>}
+ * @type {import('../types.js').AuthenticatedController<{}, {}, AddToWaitlistBody>}
  */
 async function addToWaitlist(req) {
   const { user: moderator } = req;
@@ -42,7 +42,7 @@ async function addToWaitlist(req) {
  */
 
 /**
- * @type {import('../types').AuthenticatedController<{}, {}, MoveWaitlistBody>}
+ * @type {import('../types.js').AuthenticatedController<{}, {}, MoveWaitlistBody>}
  */
 async function moveWaitlist(req) {
   const { user: moderator } = req;
@@ -62,7 +62,7 @@ async function moveWaitlist(req) {
  */
 
 /**
- * @type {import('../types').AuthenticatedController<RemoveFromWaitlistParams>}
+ * @type {import('../types.js').AuthenticatedController<RemoveFromWaitlistParams>}
  */
 async function removeFromWaitlist(req) {
   const { user: moderator } = req;
@@ -77,7 +77,7 @@ async function removeFromWaitlist(req) {
 }
 
 /**
- * @type {import('../types').AuthenticatedController}
+ * @type {import('../types.js').AuthenticatedController}
  */
 async function clearWaitlist(req) {
   const { user: moderator } = req;
@@ -96,7 +96,7 @@ async function clearWaitlist(req) {
  */
 
 /**
- * @type {import('../types').AuthenticatedController<{}, {}, LockWaitlistBody>}
+ * @type {import('../types.js').AuthenticatedController<{}, {}, LockWaitlistBody>}
  */
 async function lockWaitlist(req) {
   const { user: moderator } = req;

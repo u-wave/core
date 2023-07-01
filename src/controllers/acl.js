@@ -1,7 +1,7 @@
 import toItemResponse from '../utils/toItemResponse.js';
 
 /**
- * @type {import('../types').AuthenticatedController}
+ * @type {import('../types.js').AuthenticatedController}
  */
 async function list(req) {
   const { acl } = req.uwave;
@@ -22,7 +22,7 @@ async function list(req) {
  */
 
 /**
- * @type {import('../types').AuthenticatedController<CreateRoleParams, {}, CreateRoleBody>}
+ * @type {import('../types.js').AuthenticatedController<CreateRoleParams, {}, CreateRoleBody>}
  */
 async function createRole(req, res) {
   const { name } = req.params;
@@ -38,7 +38,7 @@ async function createRole(req, res) {
 }
 
 /**
- * @type {import('../types').AuthenticatedController}
+ * @type {import('../types.js').AuthenticatedController}
  */
 async function deleteRole(req) {
   const { name } = req.params;

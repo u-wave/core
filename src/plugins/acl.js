@@ -2,8 +2,8 @@ import defaultRoles from '../config/defaultRoles.js';
 import routes from '../routes/acl.js';
 
 /**
- * @typedef {import('../models').AclRole} AclRole
- * @typedef {import('../models').User} User
+ * @typedef {import('../models/index.js').AclRole} AclRole
+ * @typedef {import('../models/index.js').User} User
  * @typedef {{ roles: AclRole[] }} PopulateRoles
  * @typedef {Omit<AclRole, 'roles'> & PopulateRoles} PopulatedAclRole
  */
@@ -24,7 +24,7 @@ class Acl {
   #logger;
 
   /**
-   * @param {import('../Uwave').default} uw
+   * @param {import('../Uwave.js').default} uw
    */
   constructor(uw) {
     this.#uw = uw;
@@ -224,7 +224,7 @@ class Acl {
 }
 
 /**
- * @param {import('../Uwave').Boot} uw
+ * @param {import('../Uwave.js').Boot} uw
  */
 async function acl(uw) {
   uw.acl = new Acl(uw);

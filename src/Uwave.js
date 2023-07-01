@@ -26,7 +26,7 @@ const DEFAULT_MONGO_URL = 'mongodb://localhost:27017/uwave';
 const DEFAULT_REDIS_URL = 'redis://localhost:6379';
 
 /**
- * @typedef {import('./Source').SourcePlugin} SourcePlugin
+ * @typedef {import('./Source.js').SourcePlugin} SourcePlugin
  */
 
 /**
@@ -40,7 +40,7 @@ const DEFAULT_REDIS_URL = 'redis://localhost:6379';
  *   mongo?: string,
  *   redis?: string | RedisOptions,
  *   logger?: import('pino').LoggerOptions,
- * } & import('./HttpApi').HttpApiOptions} Options
+ * } & import('./HttpApi.js').HttpApiOptions} Options
  */
 
 class UwaveServer extends EventEmitter {
@@ -55,66 +55,66 @@ class UwaveServer extends EventEmitter {
   // @ts-expect-error TS2564 Definitely assigned in a plugin
   express;
 
-  /** @type {import('./models').Models} */
+  /** @type {import('./models/index.js').Models} */
   // @ts-expect-error TS2564 Definitely assigned in a plugin
   models;
 
-  /** @type {import('./plugins/acl').Acl} */
+  /** @type {import('./plugins/acl.js').Acl} */
   // @ts-expect-error TS2564 Definitely assigned in a plugin
   acl;
 
-  /** @type {import('./plugins/bans').Bans} */
+  /** @type {import('./plugins/bans.js').Bans} */
   // @ts-expect-error TS2564 Definitely assigned in a plugin
   bans;
 
-  /** @type {import('./plugins/booth').Booth} */
+  /** @type {import('./plugins/booth.js').Booth} */
   // @ts-expect-error TS2564 Definitely assigned in a plugin
   booth;
 
-  /** @type {import('./plugins/chat').Chat} */
+  /** @type {import('./plugins/chat.js').Chat} */
   // @ts-expect-error TS2564 Definitely assigned in a plugin
   chat;
 
-  /** @type {import('./plugins/configStore').ConfigStore} */
+  /** @type {import('./plugins/configStore.js').ConfigStore} */
   // @ts-expect-error TS2564 Definitely assigned in a plugin
   config;
 
-  /** @type {import('./plugins/emotes').Emotes|null} */
+  /** @type {import('./plugins/emotes.js').Emotes|null} */
   emotes = null;
 
-  /** @type {import('./plugins/history').HistoryRepository} */
+  /** @type {import('./plugins/history.js').HistoryRepository} */
   // @ts-expect-error TS2564 Definitely assigned in a plugin
   history;
 
-  /** @type {import('./plugins/migrations').Migrate} */
+  /** @type {import('./plugins/migrations.js').Migrate} */
   // @ts-expect-error TS2564 Definitely assigned in a plugin
   migrate;
 
-  /** @type {import('./plugins/motd').MOTD} */
+  /** @type {import('./plugins/motd.js').MOTD} */
   // @ts-expect-error TS2564 Definitely assigned in a plugin
   motd;
 
-  /** @type {import('./plugins/passport').Passport} */
+  /** @type {import('./plugins/passport.js').Passport} */
   // @ts-expect-error TS2564 Definitely assigned in a plugin
   passport;
 
-  /** @type {import('./plugins/playlists').PlaylistsRepository} */
+  /** @type {import('./plugins/playlists.js').PlaylistsRepository} */
   // @ts-expect-error TS2564 Definitely assigned in a plugin
   playlists;
 
-  /** @type {import('./plugins/users').UsersRepository} */
+  /** @type {import('./plugins/users.js').UsersRepository} */
   // @ts-expect-error TS2564 Definitely assigned in a plugin
   users;
 
-  /** @type {import('./plugins/waitlist').Waitlist} */
+  /** @type {import('./plugins/waitlist.js').Waitlist} */
   // @ts-expect-error TS2564 Definitely assigned in a plugin
   waitlist;
 
-  /** @type {import('./HttpApi').HttpApi} */
+  /** @type {import('./HttpApi.js').HttpApi} */
   // @ts-expect-error TS2564 Definitely assigned in a plugin
   httpApi;
 
-  /** @type {import('./SocketServer').default} */
+  /** @type {import('./SocketServer.js').default} */
   // @ts-expect-error TS2564 Definitely assigned in a plugin
   socketServer;
 
@@ -304,9 +304,9 @@ class UwaveServer extends EventEmitter {
   /**
    * Publish an event to the üWave channel.
    *
-   * @template {keyof import('./redisMessages').ServerActionParameters} CommandName
+   * @template {keyof import('./redisMessages.js').ServerActionParameters} CommandName
    * @param {CommandName} command
-   * @param {import('./redisMessages').ServerActionParameters[CommandName]} data
+   * @param {import('./redisMessages.js').ServerActionParameters[CommandName]} data
    */
   publish(command, data) {
     this.redis.publish('uwave', JSON.stringify({

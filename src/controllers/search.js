@@ -5,13 +5,13 @@ import toListResponse from '../utils/toListResponse.js';
 const { isEqual } = lodash;
 
 /** @typedef {import('mongodb').ObjectId} ObjectId */
-/** @typedef {import('../models').Playlist} Playlist */
-/** @typedef {import('../models').Media} Media */
-/** @typedef {import('../plugins/playlists').PlaylistItemDesc} PlaylistItemDesc */
+/** @typedef {import('../models/index.js').Playlist} Playlist */
+/** @typedef {import('../models/index.js').Media} Media */
+/** @typedef {import('../plugins/playlists.js').PlaylistItemDesc} PlaylistItemDesc */
 
 // TODO should be deprecated once the Web client uses the better single-source route.
 /**
- * @type {import('../types').AuthenticatedController<never, SearchQuery, never>}
+ * @type {import('../types.js').AuthenticatedController<never, SearchQuery, never>}
  */
 async function searchAll(req) {
   const { user } = req;
@@ -36,7 +36,7 @@ async function searchAll(req) {
 }
 
 /**
- * @param {import('../Uwave').default} uw
+ * @param {import('../Uwave.js').default} uw
  * @param {Map<ObjectId, Media['sourceData']>} updates
  */
 async function updateSourceData(uw, updates) {
@@ -66,7 +66,7 @@ async function updateSourceData(uw, updates) {
 */
 
 /**
- * @type {import('../types').AuthenticatedController<SearchParams, SearchQuery, never>}
+ * @type {import('../types.js').AuthenticatedController<SearchParams, SearchQuery, never>}
  */
 async function search(req) {
   const { user } = req;

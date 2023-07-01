@@ -1,5 +1,5 @@
 /**
- * @param {import('../models').Playlist | import('../models/Playlist').LeanPlaylist} model
+ * @param {import('../models/index.js').Playlist | import('../models/Playlist.js').LeanPlaylist} model
  */
 export function serializePlaylist(model) {
   return {
@@ -13,7 +13,7 @@ export function serializePlaylist(model) {
 }
 
 /**
- * @param {Pick<import('../models').User,
+ * @param {Pick<import('../models/index.js').User,
  *   '_id' | 'username' | 'slug' | 'roles' | 'avatar' |
  *   'createdAt' | 'updatedAt' | 'lastSeenAt'>} model
  */

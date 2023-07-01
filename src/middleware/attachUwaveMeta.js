@@ -1,7 +1,7 @@
 /**
  *
- * @param {import('../HttpApi').HttpApi} httpApi
- * @param {import('../Uwave').default} uw
+ * @param {import('../HttpApi.js').HttpApi} httpApi
+ * @param {import('../Uwave.js').default} uw
  * @returns {import('express').RequestHandler}
  */
 function attachUwaveMeta(httpApi, uw) {

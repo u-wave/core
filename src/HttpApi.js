@@ -70,7 +70,7 @@ function defaultCreatePasswordResetEmail({ token, requestUrl }) {
  */
 
 /**
- * @param {import('./Uwave').Boot} uw
+ * @param {import('./Uwave.js').Boot} uw
  * @param {HttpApiOptions} options
  */
 async function httpApi(uw, options) {
@@ -158,7 +158,7 @@ async function httpApi(uw, options) {
 }
 
 /**
- * @param {import('./Uwave').Boot} uw
+ * @param {import('./Uwave.js').Boot} uw
  */
 async function errorHandling(uw) {
   uw.logger.debug({ ns: 'uwave:http-api' }, 'setup HTTP error handling');

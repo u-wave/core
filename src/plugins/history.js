@@ -7,10 +7,10 @@ const DEFAULT_PAGE_SIZE = 50;
 const MAX_PAGE_SIZE = 100;
 
 /**
- * @typedef {import('../models/History').HistoryMedia} HistoryMedia
- * @typedef {import('../models').HistoryEntry} HistoryEntry
- * @typedef {import('../models').User} User
- * @typedef {import('../models').Media} Media
+ * @typedef {import('../models/History.js').HistoryMedia} HistoryMedia
+ * @typedef {import('../models/index.js').HistoryEntry} HistoryEntry
+ * @typedef {import('../models/index.js').User} User
+ * @typedef {import('../models/index.js').Media} Media
  * @typedef {{ media: Media }} PopulateMedia
  * @typedef {{ user: User }} PopulateUser
  * @typedef {HistoryMedia & PopulateMedia} PopulatedHistoryMedia
@@ -22,7 +22,7 @@ class HistoryRepository {
   #uw;
 
   /**
-   * @param {import('../Uwave').default} uw
+   * @param {import('../Uwave.js').default} uw
    */
   constructor(uw) {
     this.#uw = uw;
@@ -82,7 +82,7 @@ class HistoryRepository {
 }
 
 /**
- * @param {import('../Uwave').default} uw
+ * @param {import('../Uwave.js').default} uw
  */
 async function history(uw) {
   uw.history = new HistoryRepository(uw);

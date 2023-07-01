@@ -1,12 +1,12 @@
 /**
- * @param {import('../Uwave').default} uw
+ * @param {import('../Uwave.js').default} uw
  */
 function getCurrentDJ(uw) {
   return uw.redis.get('booth:currentDJ');
 }
 
 /**
- * @param {import('../Uwave').default} uw
+ * @param {import('../Uwave.js').default} uw
  * @param {import('mongodb').ObjectId} userID
  */
 async function skipIfCurrentDJ(uw, userID) {

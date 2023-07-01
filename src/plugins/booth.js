@@ -8,12 +8,12 @@ const { omit } = lodash;
 
 /**
  * @typedef {import('type-fest').JsonObject} JsonObject
- * @typedef {import('../models').User} User
- * @typedef {import('../models').Playlist} Playlist
- * @typedef {import('../models').PlaylistItem} PlaylistItem
- * @typedef {import('../models').HistoryEntry} HistoryEntry
- * @typedef {import('../models/History').HistoryMedia} HistoryMedia
- * @typedef {import('../models').Media} Media
+ * @typedef {import('../models/index.js').User} User
+ * @typedef {import('../models/index.js').Playlist} Playlist
+ * @typedef {import('../models/index.js').PlaylistItem} PlaylistItem
+ * @typedef {import('../models/index.js').HistoryEntry} HistoryEntry
+ * @typedef {import('../models/History.js').HistoryMedia} HistoryMedia
+ * @typedef {import('../models/index.js').Media} Media
  * @typedef {{ user: User }} PopulateUser
  * @typedef {{ playlist: Playlist }} PopulatePlaylist
  * @typedef {{ media: Omit<HistoryMedia, 'media'> & { media: Media } }} PopulateMedia
@@ -47,7 +47,7 @@ class Booth {
   #awaitAdvance = null;
 
   /**
-   * @param {import('../Uwave').Boot} uw
+   * @param {import('../Uwave.js').Boot} uw
    */
   constructor(uw) {
     this.#uw = uw;
@@ -419,7 +419,7 @@ class Booth {
 }
 
 /**
- * @param {import('../Uwave').Boot} uw
+ * @param {import('../Uwave.js').Boot} uw
  */
 async function boothPlugin(uw) {
   uw.booth = new Booth(uw);

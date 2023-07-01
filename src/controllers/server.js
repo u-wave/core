@@ -1,7 +1,7 @@
 import toItemResponse from '../utils/toItemResponse.js';
 
 /**
- * @type {import('../types').Controller}
+ * @type {import('../types.js').Controller}
  */
 async function getServerTime(req) {
   return toItemResponse({
@@ -10,7 +10,7 @@ async function getServerTime(req) {
 }
 
 /**
- * @type {import('../types').AuthenticatedController}
+ * @type {import('../types.js').AuthenticatedController}
  */
 async function getAllConfig(req) {
   const { config } = req.uwave;
@@ -24,7 +24,7 @@ async function getAllConfig(req) {
 }
 
 /**
- * @type {import('../types').AuthenticatedController}
+ * @type {import('../types.js').AuthenticatedController}
  */
 async function getConfig(req) {
   const { config } = req.uwave;
@@ -42,7 +42,7 @@ async function getConfig(req) {
 }
 
 /**
- * @type {import('../types').AuthenticatedController}
+ * @type {import('../types.js').AuthenticatedController}
  */
 async function updateConfig(req) {
   const { config } = req.uwave;

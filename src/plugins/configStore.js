@@ -9,7 +9,7 @@ import ValidationError from '../errors/ValidationError.js';
 
 const { omit } = lodash;
 
-/** @typedef {import('../models').User} User */
+/** @typedef {import('../models/index.js').User} User */
 
 /**
  * Extensible configuration store.
@@ -33,7 +33,7 @@ class ConfigStore {
   #validators = new Map();
 
   /**
-   * @param {import('../Uwave').Boot} uw
+   * @param {import('../Uwave.js').Boot} uw
    */
   constructor(uw) {
     this.#uw = uw;
@@ -69,7 +69,7 @@ class ConfigStore {
     /**
      * @type {undefined|{
      *   command: string,
-     *   data: import('../redisMessages').ServerActionParameters['configStore:update'],
+     *   data: import('../redisMessages.js').ServerActionParameters['configStore:update'],
      * }}
      */
     const json = sjson.safeParse(rawCommand);
@@ -233,7 +233,7 @@ class ConfigStore {
 }
 
 /**
- * @param {import('../Uwave').Boot} uw
+ * @param {import('../Uwave.js').Boot} uw
  */
 async function configStorePlugin(uw) {
   uw.config = new ConfigStore(uw);

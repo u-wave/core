@@ -1,7 +1,7 @@
 import toItemResponse from '../utils/toItemResponse.js';
 
 /**
- * @type {import('../types').Controller<{}, {}, {}>}
+ * @type {import('../types.js').Controller<{}, {}, {}>}
  */
 async function getMotd(req) {
   const { motd } = req.uwave;
@@ -15,7 +15,7 @@ async function getMotd(req) {
 }
 
 /**
- * @type {import('../types').AuthenticatedController<{}, {}, { motd: string | null }>}
+ * @type {import('../types.js').AuthenticatedController<{}, {}, { motd: string | null }>}
  */
 async function setMotd(req, res) {
   const { motd } = req.uwave;

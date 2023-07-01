@@ -226,7 +226,7 @@ class Emotes {
   #ready = Promise.resolve();
 
   /**
-   * @param {import('../Uwave').Boot} uw
+   * @param {import('../Uwave.js').Boot} uw
    */
   constructor(uw) {
     this.#uw = uw;
@@ -323,7 +323,7 @@ class Emotes {
 }
 
 /**
- * @param {import('../Uwave').Boot} uw
+ * @param {import('../Uwave.js').Boot} uw
  * @returns {Promise<void>}
  */
 async function emotesPlugin(uw) {

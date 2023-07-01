@@ -16,11 +16,11 @@ const { groupBy, shuffle } = lodash;
  * @typedef {import('mongoose').PipelineStage} PipelineStage
  * @typedef {import('mongoose').PipelineStage.Facet['$facet'][string]} FacetPipelineStage
  * @typedef {import('mongodb').ObjectId} ObjectId
- * @typedef {import('../models').User} User
- * @typedef {import('../models').Playlist} Playlist
- * @typedef {import('../models/Playlist').LeanPlaylist} LeanPlaylist
- * @typedef {import('../models').PlaylistItem} PlaylistItem
- * @typedef {import('../models').Media} Media
+ * @typedef {import('../models/index.js').User} User
+ * @typedef {import('../models/index.js').Playlist} Playlist
+ * @typedef {import('../models/Playlist.js').LeanPlaylist} LeanPlaylist
+ * @typedef {import('../models/index.js').PlaylistItem} PlaylistItem
+ * @typedef {import('../models/index.js').Media} Media
  * @typedef {{ media: Media }} PopulateMedia
  */
 
@@ -87,7 +87,7 @@ class PlaylistsRepository {
   #logger;
 
   /**
-   * @param {import('../Uwave').default} uw
+   * @param {import('../Uwave.js').default} uw
    */
   constructor(uw) {
     this.#uw = uw;
@@ -601,7 +601,7 @@ class PlaylistsRepository {
 }
 
 /**
- * @param {import('../Uwave').default} uw
+ * @param {import('../Uwave.js').default} uw
  */
 async function playlistsPlugin(uw) {
   uw.playlists = new PlaylistsRepository(uw);

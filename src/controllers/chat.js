@@ -10,7 +10,7 @@ import toItemResponse from '../utils/toItemResponse.js';
  */
 
 /**
- * @type {import('../types').AuthenticatedController<MuteUserParams, {}, MuteUserBody>}
+ * @type {import('../types.js').AuthenticatedController<MuteUserParams, {}, MuteUserBody>}
  */
 async function muteUser(req) {
   const { user: moderator } = req;
@@ -36,7 +36,7 @@ async function muteUser(req) {
  */
 
 /**
- * @type {import('../types').AuthenticatedController<UnmuteUserParams>}
+ * @type {import('../types.js').AuthenticatedController<UnmuteUserParams>}
  */
 async function unmuteUser(req) {
   const { user: moderator } = req;
@@ -56,7 +56,7 @@ async function unmuteUser(req) {
 }
 
 /**
- * @type {import('../types').AuthenticatedController}
+ * @type {import('../types.js').AuthenticatedController}
  */
 async function deleteAll(req) {
   const { user: moderator } = req;
@@ -73,7 +73,7 @@ async function deleteAll(req) {
  */
 
 /**
- * @type {import('../types').AuthenticatedController<DeleteByUserParams>}
+ * @type {import('../types.js').AuthenticatedController<DeleteByUserParams>}
  */
 async function deleteByUser(req) {
   const { user: moderator } = req;
@@ -91,7 +91,7 @@ async function deleteByUser(req) {
  */
 
 /**
- * @type {import('../types').AuthenticatedController<DeleteMessageParams>}
+ * @type {import('../types.js').AuthenticatedController<DeleteMessageParams>}
  */
 async function deleteMessage(req) {
   const { user: moderator } = req;

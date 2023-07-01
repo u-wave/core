@@ -9,15 +9,15 @@ import playlistItemSchema from './PlaylistItem.js';
 import userSchema from './User.js';
 
 /**
- * @typedef {import('./AclRole').AclRole} AclRole
- * @typedef {import('./Authentication').Authentication} Authentication
- * @typedef {import('./Config').Config} Config
- * @typedef {import('./History').HistoryEntry} HistoryEntry
- * @typedef {import('./Media').Media} Media
- * @typedef {import('./Migration').Migration} Migration
- * @typedef {import('./Playlist').Playlist} Playlist
- * @typedef {import('./PlaylistItem').PlaylistItem} PlaylistItem
- * @typedef {import('./User').User} User
+ * @typedef {import('./AclRole.js').AclRole} AclRole
+ * @typedef {import('./Authentication.js').Authentication} Authentication
+ * @typedef {import('./Config.js').Config} Config
+ * @typedef {import('./History.js').HistoryEntry} HistoryEntry
+ * @typedef {import('./Media.js').Media} Media
+ * @typedef {import('./Migration.js').Migration} Migration
+ * @typedef {import('./Playlist.js').Playlist} Playlist
+ * @typedef {import('./PlaylistItem.js').PlaylistItem} PlaylistItem
+ * @typedef {import('./User.js').User} User
  * @typedef {{
  *  AclRole: import('mongoose').Model<AclRole, {}, {}>,
  *  Authentication: import('mongoose').Model<Authentication, {}, {}>,
@@ -32,7 +32,7 @@ import userSchema from './User.js';
  */
 
 /**
- * @param {import('../Uwave').default} uw
+ * @param {import('../Uwave.js').default} uw
  */
 async function models(uw) {
   uw.models = {
