@@ -45,7 +45,6 @@
     "json-merge-patch": "^1.0.2",
     "jsonwebtoken": "^9.0.0",
     "lodash": "^4.17.15",
-    "make-promises-safe": "^5.1.0",
     "minimist": "^1.2.5",
     "mongoose": "^7.0.1",
     "ms": "^2.1.2",

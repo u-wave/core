@@ -1,4 +1,3 @@
-import 'make-promises-safe';
 import minimist from 'minimist';
 import concat from 'concat-stream';
 import explain from 'explain-error';
