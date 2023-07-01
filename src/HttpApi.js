@@ -1,12 +1,12 @@
 import fs from 'node:fs';
+import http from 'node:http';
 import { randomUUID } from 'node:crypto';
 import express from 'express';
 import bodyParser from 'body-parser';
 import cookieParser from 'cookie-parser';
 import cors from 'cors';
 import helmet from 'helmet';
-import http from 'node:http';
-import pinoHttp from 'pino-http';
+import { pinoHttp } from 'pino-http';
 
 // routes
 import authenticate from './routes/authenticate.js';
