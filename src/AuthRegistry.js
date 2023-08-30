@@ -1,8 +1,8 @@
 import assert from 'node:assert';
-import crypto from 'node:crypto';
+import nodeCrypto from 'node:crypto';
 import { promisify } from 'node:util';
 
-const randomBytes = promisify(crypto.randomBytes);
+const randomBytes = promisify(nodeCrypto.randomBytes);
 
 class AuthRegistry {
   #redis;
