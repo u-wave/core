@@ -20,7 +20,7 @@
     "u-wave-core": "bin/u-wave-core.js"
   },
   "engines": {
-    "node": ">= 16.20.0"
+    "node": ">= 18.18.0"
   },
   "dependencies": {
     "@twurple/api": "^7.0.0",
