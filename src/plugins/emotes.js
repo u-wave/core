@@ -43,10 +43,11 @@ class EmoteMap extends Map {
    */
   insert(emote) {
     const prevUrl = this.get(emote.name);
-    if (prevUrl && prevUrl !== emote.url) {
+    if (prevUrl && prevUrl.href !== emote.url.href) {
       for (let i = 1; i < 20; i += 1) {
         if (!this.has(`${emote.name}~${i}`)) {
           this.set(`${emote.name}~${i}`, emote.url);
+          break;
         }
       }
     } else {
