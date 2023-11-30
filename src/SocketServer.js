@@ -74,8 +74,11 @@ class SocketServer {
       try {
         await uw.socketServer.initLostConnections();
       } catch (err) {
-        // No need to prevent startup for this
+        // No need to prevent startup for this.
+        // We do need to clear the `users` list because the lost connection handlers
+        // will not do so.
         uw.socketServer.#logger.warn({ err }, 'could not initialise lost connections');
+        await uw.redis.del('users');
       }
     });
 
