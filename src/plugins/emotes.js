@@ -42,7 +42,8 @@ class EmoteMap extends Map {
    * @param {Emote} emote
    */
   insert(emote) {
-    if (this.has(emote.name)) {
+    const prevUrl = this.get(emote.name);
+    if (prevUrl && prevUrl !== emote.url) {
       for (let i = 1; i < 20; i += 1) {
         if (!this.has(`${emote.name}~${i}`)) {
           this.set(`${emote.name}~${i}`, emote.url);
