@@ -1,4 +1,5 @@
 import { promisify } from 'node:util';
+import mongoose from 'mongoose';
 import lodash from 'lodash';
 import sjson from 'secure-json-parse';
 import { WebSocketServer } from 'ws';
@@ -14,6 +15,7 @@ import LostConnection from './sockets/LostConnection.js';
 import { serializeUser } from './utils/serialize.js';
 
 const { debounce, isEmpty } = lodash;
+const { ObjectId } = mongoose.mongo;
 
 /**
  * @typedef {import('./models/index.js').User} User
@@ -443,10 +445,14 @@ class SocketServer {
   async initLostConnections() {
     const { User } = this.#uw.models;
     const userIDs = await this.#uw.redis.lrange('users', 0, -1);
-    const disconnectedIDs = userIDs.filter((userID) => !this.connection(userID));
+    const disconnectedIDs = userIDs
+      .filter((userID) => !this.connection(userID))
+      .map((userID) => new ObjectId(userID));
 
     /** @type {User[]} */
-    const disconnectedUsers = await User.where('_id').in(disconnectedIDs);
+    const disconnectedUsers = await User.find({
+      _id: { $in: disconnectedIDs },
+    }).exec();
     disconnectedUsers.forEach((user) => {
       this.add(this.createLostConnection(user));
     });
