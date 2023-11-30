@@ -71,7 +71,12 @@ class SocketServer {
     });
 
     uw.after(async () => {
-      await uw.socketServer.initLostConnections();
+      try {
+        await uw.socketServer.initLostConnections();
+      } catch (err) {
+        // No need to prevent startup for this
+        uw.socketServer.#logger.warn({ err }, 'could not initialise lost connections');
+      }
     });
 
     uw.onClose(async () => {
