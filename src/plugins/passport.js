@@ -77,7 +77,14 @@ class PassportPlugin extends Passport {
       passwordField: 'password',
       session: false,
     }, callbackify(localLogin)));
-    this.use('jwt', new JWTStrategy(options.secret, (user) => uw.users.getUser(user.id)));
+    this.use('jwt', new JWTStrategy(options.secret, async (user) => {
+      try {
+        return await uw.users.getUser(user.id);
+      } catch (err) {
+        this.#logger.warn({ err, user }, 'could not load user from JWT');
+        return null;
+      }
+    }));
 
     uw.config.register(schema['uw:key'], schema);
     const unsubscribe = uw.config.subscribe(schema['uw:key'], /** @param {SocialAuthSettings} settings */ (settings) => {
