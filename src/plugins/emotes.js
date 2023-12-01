@@ -30,6 +30,33 @@ const schema = JSON.parse(
  */
 
 /**
+ * A Map of emote names to URLs.
+ *
+ * @augments {Map<string, URL>}
+ */
+class EmoteMap extends Map {
+  /**
+   * Add an emote to the map. If an emote with the same name already exists,
+   * this tries to add a numeric suffix to distinguish them.
+   *
+   * @param {Emote} emote
+   */
+  insert(emote) {
+    const prevUrl = this.get(emote.name);
+    if (prevUrl && prevUrl.href !== emote.url.href) {
+      for (let i = 1; i < 20; i += 1) {
+        if (!this.has(`${emote.name}~${i}`)) {
+          this.set(`${emote.name}~${i}`, emote.url);
+          break;
+        }
+      }
+    } else {
+      this.set(emote.name, emote.url);
+    }
+  }
+}
+
+/**
  * @template {object} T
  * @param {URL|string} url
  * @returns {Promise<T>}
@@ -220,8 +247,7 @@ class Emotes {
 
   #logger;
 
-  /** @type {Record<string, URL>} */
-  #emotes = Object.create(null);
+  #emotes = new EmoteMap();
 
   #ready = Promise.resolve();
 
@@ -244,19 +270,25 @@ class Emotes {
     this.#ready = this.#reloadEmotes();
   }
 
+  /** Get all known emotes as an array. */
   async getEmotes() {
     await this.#ready;
 
-    return Object.entries(this.#emotes).map(([name, url]) => ({ name, url: url.toString() }));
+    const emotes = [];
+    for (const [name, url] of this.#emotes) {
+      emotes.push({ name, url: url.toString() });
+    }
+
+    return emotes;
   }
 
   /**
    * @param {TwitchSettings} options
-   * @returns {Promise<Record<string, URL>>}
+   * @returns {Promise<EmoteMap>}
    */
   async #loadTTVEmotes(options) {
     if (!options.clientId || !options.clientSecret) {
-      return {};
+      return new EmoteMap();
     }
 
     const client = new ApiClient({
@@ -292,14 +324,13 @@ class Emotes {
       promises.push(getSevenTVEmotes(channels));
     }
 
-    /** @type {Record<string, URL>} */
-    const emotes = {};
+    const emotes = new EmoteMap();
 
     const results = await Promise.allSettled(promises);
     for (const result of results) {
       if (result.status === 'fulfilled') {
         for (const emote of result.value) {
-          emotes[emote.name] = emote.url;
+          emotes.insert(emote);
         }
       } else {
         this.#logger.warn(result.reason);
