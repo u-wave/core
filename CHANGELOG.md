@@ -4,6 +4,19 @@ All notable changes to this project will be documented in this file.
 
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## 0.5.0-alpha.17 / 01 Dec 2023
+This is an alpha release, but new servers should use this version rather than an older "stable" one.
+
+Features:
+ * Duplicate emote names in the emote integrations are now distinguished by adding `~1`, `~2`, etc. suffixes. (#597)
+
+Bugfixes:
+ * Fix startup, authentication, and `/api/now` crashes if Redis or user cookies contain bad data. (#596, c9ed5f1, 693520b)
+
+Internal:
+ * Use ES modules. (#558)
+ * **Breaking:** üWave now requires Node.js 18.18 or above.
+
 ## 0.5.0-alpha.16 / 08 Mar 2023
 This is an alpha release, but new servers should use this version rather than an older "stable" one.
 
