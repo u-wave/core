@@ -93,7 +93,7 @@
     "@types/random-string": "^0.0.31",
     "@types/ratelimiter": "^3.4.1",
     "@types/sinon": "^17.0.0",
-    "@types/supertest": "^2.0.11",
+    "@types/supertest": "^6.0.1",
     "@types/ultron": "^1.1.0",
     "@types/ws": "^8.2.0",
     "@typescript-eslint/eslint-plugin": "^6.0.0",
