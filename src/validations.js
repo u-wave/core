@@ -138,6 +138,15 @@ export const skipBooth = /** @type {const} */ ({
   },
 });
 
+export const leaveBooth = /** @type {const} */ ({
+  body: {
+    type: 'object',
+    properties: {
+      userID: { $ref: 'https://ns.u-wave.net/schemas/definitions.json#/definitions/ObjectID' },
+    },
+  },
+});
+
 export const replaceBooth = /** @type {const} */ ({
   body: {
     type: 'object',

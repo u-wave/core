@@ -6,6 +6,7 @@ import {
   HistoryEntryNotFoundError,
   PlaylistNotFoundError,
   CannotSelfFavoriteError,
+  UserNotFoundError,
 } from '../errors/index.js';
 import getOffsetPagination from '../utils/getOffsetPagination.js';
 import toItemResponse from '../utils/toItemResponse.js';
@@ -49,6 +50,12 @@ async function getBooth(req) {
   const uw = req.uwave;
 
   const data = await getBoothData(uw);
+  if (data && req.user && data.userID === req.user.id) {
+    return toItemResponse({
+      ...data,
+      autoLeave: await uw.booth.getRemoveAfterCurrentPlay(req.user),
+    }, { url: req.fullUrl });
+  }
 
   return toItemResponse(data, { url: req.fullUrl });
 }
@@ -122,6 +129,36 @@ async function skipBooth(req) {
   // TODO I think the typescript error is actually correct so we should fix this
   await doSkip(req.uwave, user.id, userID, reason, opts);
 
+  return toItemResponse({});
+}
+
+/** @typedef {{ userID: string }} LeaveBoothBody */
+
+/**
+ * @type {import('../types.js').AuthenticatedController<{}, {}, LeaveBoothBody>}
+ */
+async function leaveBooth(req) {
+  const { user: self } = req;
+  const { userID } = req.body;
+  const { acl, booth, users } = req.uwave;
+
+  const skippingSelf = userID === self.id;
+
+  if (skippingSelf) {
+    await booth.setRemoveAfterCurrentPlay(self);
+    return toItemResponse({});
+  }
+
+  if (!await acl.isAllowed(self, 'booth.skip.other')) {
+    throw new PermissionError({ requiredRole: 'booth.skip.other' });
+  }
+
+  const user = await users.getUser(userID);
+  if (!user) {
+    throw new UserNotFoundError({ id: userID });
+  }
+
+  await booth.setRemoveAfterCurrentPlay(user);
   return toItemResponse({});
 }
 
@@ -373,6 +410,7 @@ export {
   getBoothData,
   getHistory,
   getVote,
+  leaveBooth,
   replaceBooth,
   skipBooth,
   socketVote,
