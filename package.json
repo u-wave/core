@@ -12,7 +12,10 @@
   ],
   "main": "src/index.js",
   "exports": {
-    ".": "./src/index.js",
+    ".": {
+      "default": "./src/index.js",
+      "types": "./types/index.d.ts"
+    },
     "./package.json": "./package.json"
   },
   "type": "module",
