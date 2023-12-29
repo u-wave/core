@@ -143,6 +143,7 @@ export const leaveBooth = /** @type {const} */ ({
     type: 'object',
     properties: {
       userID: { $ref: 'https://ns.u-wave.net/schemas/definitions.json#/definitions/ObjectID' },
+      autoLeave: { type: 'boolean', default: true },
     },
   },
 });

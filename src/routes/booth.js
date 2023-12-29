@@ -19,8 +19,8 @@ function boothRoutes() {
       schema(validations.skipBooth),
       route(controller.skipBooth),
     )
-    // POST /booth/leave - Auto-remove the current DJ on the next advance.
-    .post(
+    // PUT /booth/leave - Auto-remove the current DJ on the next advance.
+    .put(
       '/leave',
       protect(),
       schema(validations.leaveBooth),

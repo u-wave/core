@@ -35,11 +35,18 @@ const REMOVE_AFTER_CURRENT_PLAY_SCRIPT = {
     local k_dj = KEYS[1]
     local k_remove = KEYS[2]
     local user_id = ARGV[1]
+    local value = ARGV[2]
     local current_dj_id = redis.call('GET', k_dj)
     if current_dj_id == user_id then
-      return redis.call('SET', k_remove, 'true')
+      if value == 'true' then
+        redis.call('SET', k_remove, 'true')
+        return 1
+      else
+        redis.call('DEL', k_remove)
+        return 0
+      end
     else
-      return { err = 'You are not currently playing' }
+      return redis.error_reply('You are not currently playing')
     end
   `,
 };
@@ -449,9 +456,15 @@ class Booth {
 
   /**
    * @param {User} user
+   * @param {boolean} remove
    */
-  async setRemoveAfterCurrentPlay(user) {
-    await this.#uw.redis['uw:removeAfterCurrentPlay'](...REMOVE_AFTER_CURRENT_PLAY_SCRIPT.keys, user._id.toString());
+  async setRemoveAfterCurrentPlay(user, remove) {
+    const newValue = await this.#uw.redis['uw:removeAfterCurrentPlay'](
+      ...REMOVE_AFTER_CURRENT_PLAY_SCRIPT.keys,
+      user._id.toString(),
+      remove,
+    );
+    return newValue === 1;
   }
 
   /**

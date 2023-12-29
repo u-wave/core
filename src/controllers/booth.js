@@ -132,21 +132,21 @@ async function skipBooth(req) {
   return toItemResponse({});
 }
 
-/** @typedef {{ userID: string }} LeaveBoothBody */
+/** @typedef {{ userID: string, autoLeave: boolean }} LeaveBoothBody */
 
 /**
  * @type {import('../types.js').AuthenticatedController<{}, {}, LeaveBoothBody>}
  */
 async function leaveBooth(req) {
   const { user: self } = req;
-  const { userID } = req.body;
+  const { userID, autoLeave } = req.body;
   const { acl, booth, users } = req.uwave;
 
   const skippingSelf = userID === self.id;
 
   if (skippingSelf) {
-    await booth.setRemoveAfterCurrentPlay(self);
-    return toItemResponse({});
+    const value = await booth.setRemoveAfterCurrentPlay(self, autoLeave);
+    return toItemResponse({ autoLeave: value });
   }
 
   if (!await acl.isAllowed(self, 'booth.skip.other')) {
@@ -158,8 +158,8 @@ async function leaveBooth(req) {
     throw new UserNotFoundError({ id: userID });
   }
 
-  await booth.setRemoveAfterCurrentPlay(user);
-  return toItemResponse({});
+  const value = await booth.setRemoveAfterCurrentPlay(user, autoLeave);
+  return toItemResponse({ autoLeave: value });
 }
 
 /**
