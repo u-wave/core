@@ -81,14 +81,18 @@ function createErrorClass(name, {
     : string;
 
   const Error = class extends base {
+    static code = code;
+
+    code = code;
+
+    name = name;
+
     /** @param {TData} [data] */
     constructor(data) {
       // @ts-expect-error TS2345 This is actually unsafe but the generic TData type
       // is hard to express correctly in JSDoc.
       const i18nKey = getString(data);
       super(t(i18nKey, data ?? {}) ?? undefined);
-      this.name = name;
-      this.code = code;
       this.i18nKey = i18nKey;
       this.data = data;
       // http-errors overwrites the prototype of the error, so it will
@@ -101,8 +105,6 @@ function createErrorClass(name, {
       return translate(this.i18nKey);
     }
   };
-
-  Error.code = code;
 
   return Error;
 }
