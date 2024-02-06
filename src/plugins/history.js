@@ -43,7 +43,9 @@ class HistoryRepository {
       MAX_PAGE_SIZE,
     );
 
-    const total = await HistoryEntry.where(filter ?? {}).countDocuments();
+    const total = filter != null
+      ? await HistoryEntry.where(filter).countDocuments()
+      : await HistoryEntry.estimatedDocumentCount();
     /** @type {import('mongoose').PipelineStage[]} */
     const aggregate = [];
     if (filter != null) {
@@ -94,7 +96,7 @@ class HistoryRepository {
    * @param {{ offset?: number, limit?: number }} [pagination]
    */
   getRoomHistory(pagination = {}) {
-    return this.getHistory({}, pagination);
+    return this.getHistory(null, pagination);
   }
 
   /**
