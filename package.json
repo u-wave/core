@@ -100,7 +100,7 @@
     "@types/ultron": "^1.1.0",
     "@types/ws": "^8.2.0",
     "@typescript-eslint/eslint-plugin": "^6.0.0",
-    "@typescript-eslint/parser": "^6.0.0",
+    "@typescript-eslint/parser": "^7.0.1",
     "c8": "^9.0.0",
     "concat-stream": "^2.0.0",
     "delay": "^6.0.0",
