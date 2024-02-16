@@ -29,7 +29,7 @@ class HistoryRepository {
   }
 
   /**
-   * @param {object} filter
+   * @param {object|null} filter
    * @param {{ offset?: number, limit?: number }} [pagination]
    * @returns {Promise<Page<PopulatedHistoryEntry, { offset: number, limit: number }>>}
    */
@@ -43,12 +43,39 @@ class HistoryRepository {
       MAX_PAGE_SIZE,
     );
 
-    const total = await HistoryEntry.where(filter).countDocuments();
-    const query = HistoryEntry.where(filter)
-      .sort({ playedAt: -1 })
-      .skip(offset)
-      .limit(limit)
-      .populate('media.media user');
+    const total = filter != null
+      ? await HistoryEntry.where(filter).countDocuments()
+      : await HistoryEntry.estimatedDocumentCount();
+    /** @type {import('mongoose').PipelineStage[]} */
+    const aggregate = [];
+    if (filter != null) {
+      aggregate.push({ $match: filter });
+    }
+    aggregate.push(
+      { $sort: { playedAt: -1 } },
+      { $skip: offset },
+      { $limit: limit },
+      {
+        $lookup: {
+          from: 'media',
+          localField: 'media.media',
+          foreignField: '_id',
+          as: 'media.media',
+        },
+      },
+      { $unwind: '$media.media' },
+      {
+        $lookup: {
+          from: 'users',
+          localField: 'user',
+          foreignField: '_id',
+          as: 'user',
+        },
+      },
+      { $unwind: '$user' },
+      { $project: { __v: 0, 'media.media.__v': 0, 'user.__v': 0 } },
+    );
+    const query = HistoryEntry.aggregate(aggregate);
 
     /** @type {PopulatedHistoryEntry[]} */
     const results = /** @type {any} */ (await query);
@@ -69,7 +96,7 @@ class HistoryRepository {
    * @param {{ offset?: number, limit?: number }} [pagination]
    */
   getRoomHistory(pagination = {}) {
-    return this.getHistory({}, pagination);
+    return this.getHistory(null, pagination);
   }
 
   /**

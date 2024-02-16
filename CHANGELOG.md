@@ -4,6 +4,12 @@ All notable changes to this project will be documented in this file.
 
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## 0.5.0-alpha.19 / 06 Feb 2024
+This is an alpha release, but new servers should use this version rather than an older "stable" one.
+
+Features:
+ * Improve `/api/booth/history` performance. (#605, 49cb49c)
+
 ## 0.5.0-alpha.17 / 01 Dec 2023
 This is an alpha release, but new servers should use this version rather than an older "stable" one.
 
