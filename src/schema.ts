@@ -145,12 +145,18 @@ export interface ConfigurationTable {
   value: JSONB<JsonObject>,
 }
 
+export interface KeyvalTable {
+  key: string,
+  value: JSONB<JsonValue>,
+}
+
 export interface MigrationTable {
   name: string,
 }
 
 export interface Database {
   configuration: ConfigurationTable,
+  keyval: KeyvalTable,
   migrations: MigrationTable,
   media: MediaTable,
   users: UserTable,
