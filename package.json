@@ -109,14 +109,13 @@
     "@types/supertest": "^7.2.0",
     "@types/ultron": "^1.1.0",
     "@types/ws": "^8.2.0",
-    "c8": "^11.0.0",
+    "@vitest/coverage-v8": "^4.1.0",
     "concat-stream": "^2.0.0",
     "eslint": "^9.12.0",
     "eslint-plugin-import": "^2.30.0",
     "eslint-plugin-n": "^17.10.2",
     "get-port": "^7.0.0",
     "globals": "^17.0.0",
-    "mocha": "^11.0.1",
     "nock": "^14.0.0",
     "nodemon": "^3.0.1",
     "pino-pretty": "^13.0.0",
@@ -125,12 +124,13 @@
     "supertest": "^7.0.0",
     "type-fest": "^5.0.0",
     "typescript": "~5.9.2",
-    "typescript-eslint": "^8.5.0"
+    "typescript-eslint": "^8.5.0",
+    "vitest": "^4.1.0"
   },
   "scripts": {
     "lint": "eslint --cache .",
     "test": "npm run tests-only && npm run types && npm run lint",
-    "tests-only": "c8 --reporter lcov --src src mocha",
+    "tests-only": "vitest run",
     "types": "tsc -p tsconfig.json",
     "start": "nodemon --env-file-if-exists=.env dev/u-wave-dev-server.js | pino-pretty"
   }

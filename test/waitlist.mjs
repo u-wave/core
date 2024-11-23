@@ -1,5 +1,8 @@
 import assert from 'node:assert';
 import { setTimeout } from 'node:timers/promises';
+import {
+  describe, it, beforeEach, afterEach,
+} from 'vitest';
 import supertest from 'supertest';
 import * as sinon from 'sinon';
 import randomString from 'random-string';

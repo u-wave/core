@@ -1,6 +1,9 @@
 import assert from 'node:assert';
 import { randomUUID } from 'node:crypto';
 import { setTimeout } from 'node:timers/promises';
+import {
+  describe, it, beforeEach, afterEach,
+} from 'vitest';
 import * as sinon from 'sinon';
 import supertest from 'supertest';
 import createUwave from './utils/createUwave.mjs';

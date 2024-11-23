@@ -1,4 +1,7 @@
 import supertest from 'supertest';
+import {
+  describe, it, beforeEach, afterEach,
+} from 'vitest';
 import * as sinon from 'sinon';
 import createUwave from './utils/createUwave.mjs';
 

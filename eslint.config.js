@@ -612,7 +612,7 @@ export default ts.config(
     },
   },
   {
-    files: ['eslint.config.js'],
+    files: ['eslint.config.js', 'vitest.config.js'],
     rules: {
       'n/no-unpublished-import': 'off',
       'n/no-unpublished-require': 'off',
@@ -621,7 +621,7 @@ export default ts.config(
   {
     files: ['test/**/*.js'],
     languageOptions: {
-      globals: globals.mocha,
+      globals: globals.vitest,
     },
     rules: {
       'n/no-unpublished-require': 'off',
@@ -630,7 +630,7 @@ export default ts.config(
   {
     files: ['test/**/*.mjs'],
     languageOptions: {
-      globals: globals.mocha,
+      globals: globals.vitest,
     },
     rules: {
       'n/no-unpublished-import': 'off',
