@@ -3,7 +3,6 @@ import { promisify } from 'node:util';
 import cookie from 'cookie';
 import jwt from 'jsonwebtoken';
 import randomString from 'random-string';
-import nodeFetch from 'node-fetch';
 import htmlescape from 'htmlescape';
 import httpErrors from 'http-errors';
 import nodemailer from 'nodemailer';
@@ -292,7 +291,7 @@ async function getSocketToken(req) {
  */
 async function verifyCaptcha(responseString, options) {
   options.logger?.info('recaptcha: sending siteverify request');
-  const response = await nodeFetch('https://www.google.com/recaptcha/api/siteverify', {
+  const response = await fetch('https://www.google.com/recaptcha/api/siteverify', {
     method: 'post',
     headers: {
       'content-type': 'application/x-www-form-urlencoded',
