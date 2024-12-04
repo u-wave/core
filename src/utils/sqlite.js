@@ -255,16 +255,16 @@ export class SqliteDialect {
   }
 
   createAdapter() {
-    return new ky.SqliteAdapter()
+    return new ky.SqliteAdapter();
   }
 
   createQueryCompiler() {
-    return new ky.SqliteQueryCompiler()
+    return new ky.SqliteQueryCompiler();
   }
 
   /** @param {ky.Kysely<unknown>} db */
   createIntrospector(db) {
-    return new ky.SqliteIntrospector(db)
+    return new ky.SqliteIntrospector(db);
   }
 
   createDriver() {
@@ -274,6 +274,7 @@ export class SqliteDialect {
 /** @implements {ky.Driver} */
 export class SqliteDriver {
   #config;
+
   #pool;
 
   /** @param {SqliteDialectConfig} config */
@@ -294,7 +295,7 @@ export class SqliteDriver {
     await this.#pool.ready();
   }
 
-  async acquireConnection () {
+  async acquireConnection() {
     this.#config.logger?.debug({
       size: this.#pool.size,
       available: this.#pool.available,
@@ -340,6 +341,7 @@ export class SqliteDriver {
 /** @implements {ky.DatabaseConnection} */
 class SqliteConnection {
   #db;
+
   /** @type {null | { stmt: import('better-sqlite3').Statement, sql: string }} */
   #cache = null;
 
