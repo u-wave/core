@@ -31,7 +31,7 @@
     "ajv": "^8.0.5",
     "ajv-formats": "^3.0.1",
     "avvio": "^9.0.0",
-    "bcryptjs": "^2.4.3",
+    "bcryptjs": "^3.0.1",
     "better-sqlite3": "^11.2.1",
     "body-parser": "^1.19.0",
     "connect-redis": "^8.0.1",
