@@ -123,7 +123,7 @@
     "nodemon": "^3.0.1",
     "pino-pretty": "^13.0.0",
     "recaptcha-test-keys": "^1.0.0",
-    "sinon": "^19.0.2",
+    "sinon": "^20.0.0",
     "supertest": "^7.0.0",
     "type-fest": "^4.0.0",
     "typescript": "~5.8.2",
