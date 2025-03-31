@@ -33,7 +33,7 @@
     "avvio": "^9.0.0",
     "bcryptjs": "^3.0.1",
     "better-sqlite3": "^11.2.1",
-    "body-parser": "^1.19.0",
+    "body-parser": "^2.2.0",
     "connect-redis": "^8.0.1",
     "cookie": "^1.0.1",
     "cookie-parser": "^1.4.4",
