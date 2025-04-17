@@ -319,17 +319,17 @@ export class SqliteDriver {
 
   /** @param {SqliteConnection} connection */
   async beginTransaction(connection) {
-    connection._beginTransaction();
+    connection.beginTransaction();
   }
 
   /** @param {SqliteConnection} connection */
   async commitTransaction(connection) {
-    connection._commitTransaction();
+    connection.commitTransaction();
   }
 
   /** @param {SqliteConnection} connection */
   async rollbackTransaction(connection) {
-    connection._rollbackTransaction();
+    connection.rollbackTransaction();
   }
 
   async destroy() {
@@ -354,15 +354,15 @@ class SqliteConnection {
     this.#db.close();
   }
 
-  _beginTransaction() {
+  beginTransaction() {
     this.#db.exec('BEGIN IMMEDIATE');
   }
 
-  _commitTransaction() {
+  commitTransaction() {
     this.#db.exec('COMMIT');
   }
 
-  _rollbackTransaction() {
+  rollbackTransaction() {
     this.#db.exec('ROLLBACK');
   }
 
@@ -392,7 +392,6 @@ class SqliteConnection {
 
     const { changes, lastInsertRowid } = stmt.run(compiledQuery.parameters);
     return {
-      numUpdatedOrDeletedRows: changes != null ? BigInt(changes) : undefined,
       numAffectedRows: changes != null ? BigInt(changes) : undefined,
       insertId: lastInsertRowid != null ? BigInt(lastInsertRowid) : undefined,
       rows: [],
