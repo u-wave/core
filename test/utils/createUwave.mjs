@@ -1,8 +1,10 @@
 import 'dotenv/config';
-import { once } from 'events';
-import { spawn } from 'child_process';
+import { once } from 'node:events';
+import { spawn } from 'node:child_process';
+import { unlink } from 'node:fs/promises';
 import getPort from 'get-port';
 import Redis from 'ioredis';
+import randomString from 'random-string';
 import uwave from 'u-wave-core';
 import testPlugin from './plugin.mjs';
 
@@ -61,6 +63,7 @@ async function createUwave(name, options) {
   const redisServer = process.env.REDIS_URL
     ? createRedisConnection()
     : await createIsolatedRedis();
+  const sqlitePath = `testdb_${randomString()}.sqlite`;
 
   const port = await getPort();
 
@@ -68,7 +71,7 @@ async function createUwave(name, options) {
     ...options,
     port,
     redis: redisServer.url,
-    sqlite: ':memory:',
+    sqlite: sqlitePath,
     secret: Buffer.from(`secret_${name}`),
     logger: {
       level: 'error',
@@ -81,6 +84,7 @@ async function createUwave(name, options) {
     try {
       await uw.close();
     } finally {
+      await unlink(sqlitePath);
       await redisServer.close();
     }
   };
