@@ -23,7 +23,7 @@
     "u-wave-core": "bin/u-wave-core.js"
   },
   "engines": {
-    "node": ">= 18.18.0"
+    "node": ">= 20"
   },
   "dependencies": {
     "@twurple/api": "^7.0.0",
@@ -80,7 +80,7 @@
   },
   "devDependencies": {
     "@eslint/js": "^9.12.0",
-    "@tsconfig/node18": "^18.2.2",
+    "@tsconfig/node20": "^20.1.6",
     "@types/better-sqlite3": "^7.6.4",
     "@types/cookie-parser": "^1.4.2",
     "@types/cors": "^2.8.10",
@@ -93,7 +93,7 @@
     "@types/jsonwebtoken": "^9.0.0",
     "@types/lodash": "^4.14.168",
     "@types/ms": "^2.1.0",
-    "@types/node": "~18.18.0",
+    "@types/node": "~20.19.1",
     "@types/node-fetch": "^2.5.8",
     "@types/nodemailer": "^6.4.1",
     "@types/object.groupby": "^1.0.3",
