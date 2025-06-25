@@ -34,7 +34,7 @@
     "bcryptjs": "^3.0.1",
     "better-sqlite3": "^12.1.0",
     "body-parser": "^2.2.0",
-    "connect-redis": "^8.0.1",
+    "connect-redis": "^9.0.0",
     "cookie": "^1.0.1",
     "cookie-parser": "^1.4.4",
     "cors": "^2.8.5",
