@@ -36,31 +36,41 @@ const envSchema = {
     PORT: {
       type: 'number',
       default: 6042,
+      description: 'Port to listen on.',
     },
     MONGODB_URL: {
       type: 'string',
       format: 'uri',
+      description: 'Only for migrations.',
     },
     REDIS_URL: {
       type: 'string',
       format: 'uri',
       default: 'redis://localhost:6379',
+      description: 'URL of the Redis instance to connect to.',
     },
     SQLITE_PATH: {
       type: 'string',
       default: 'uwave.sqlite',
+      description: 'Path to the database file.',
     },
     SECRET: {
       type: 'string',
       format: 'hexadecimal',
       minLength: 64,
       maxLength: 64,
+      description: 'A secret key used for encrypting passwords. Must be a 64-character hexadecimal string (= 256 bits).',
     },
     YOUTUBE_API_KEY: {
       type: 'string',
+      description: 'Your YouTube Data API key.',
     },
     EXPERIMENTAL_EMOTES: {
       type: 'boolean',
+    },
+    TRUST_PROXY: {
+      description: 'Required when using a reverse proxy like Nginx. See https://expressjs.com/en/5x/api.html#trust.proxy.options.table',
+      anyOf: [{ type: 'number' }, { type: 'boolean' }, { type: 'string' }],
     },
   },
 };
@@ -74,15 +84,17 @@ if (argv.h || argv.help || !validConfig) {
   console.log();
   console.log('Environment Variables:');
   console.log('  SECRET');
-  console.log('    A secret key used for encrypting passwords. Must be a 64-character hexadecimal string (= 256 bits).');
+  console.log(`    ${envSchema.properties.SECRET.description}`);
   console.log('  PORT');
-  console.log('    Port to listen on. Defaults to 6042.');
+  console.log(`    ${envSchema.properties.PORT.description} Defaults to ${envSchema.properties.PORT.default}.`);
+  console.log('  TRUST_PROXY');
+  console.log(`    ${envSchema.properties.TRUST_PROXY.description}`);
   console.log('  SQLITE_PATH');
-  console.log('    Path to the database file. Defaults to uwave.sqlite.');
+  console.log(`    ${envSchema.properties.SQLITE_PATH.description} Defaults to ${envSchema.properties.SQLITE_PATH.default}.`);
   console.log('  REDIS_URL');
-  console.log('    URL of the Redis instance to connect to. Defaults to redis://localhost:6379/.');
+  console.log(`    ${envSchema.properties.REDIS_URL.description} Defaults to ${envSchema.properties.REDIS_URL.default}.`);
   console.log('  YOUTUBE_API_KEY [optional]');
-  console.log('    Your YouTube Data API key.');
+  console.log(`    ${envSchema.properties.YOUTUBE_API_KEY.description}`);
   console.log();
 }
 
@@ -107,6 +119,15 @@ const port = Number(argv.port || config.PORT);
 
 const secret = Buffer.from(config.SECRET, 'hex');
 
+let trustProxy = config.TRUST_PROXY;
+if (trustProxy === 'true') {
+  trustProxy = true;
+} else if (trustProxy === 'false') {
+  trustProxy = false;
+} else if (/^\d+/.test(trustProxy)) {
+  trustProxy = Number(trustProxy);
+}
+
 const uw = uwave({
   port,
   redis: config.REDIS_URL,
@@ -114,6 +135,7 @@ const uw = uwave({
   secret,
   // This property is untyped, it is propagated to the also-untyped MongoDB -> SQL migration
   mongo: config.MONGODB_URL,
+  trustProxy,
 });
 
 uw.on('redisError', (err) => {
