@@ -17,6 +17,8 @@ updates:
   ignore:
     # we use the lowest supported version on purpose
     - dependency-name: "@types/node"
+    # newer versions seem bad
+    - dependency-name: "dotenv"
   groups:
     eslint:
       patterns:
