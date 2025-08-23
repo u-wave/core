@@ -95,7 +95,7 @@
     "@types/ms": "^2.1.0",
     "@types/node": "~20.19.1",
     "@types/node-fetch": "^2.5.8",
-    "@types/nodemailer": "^6.4.1",
+    "@types/nodemailer": "^7.0.1",
     "@types/object.groupby": "^1.0.3",
     "@types/passport": "^1.0.6",
     "@types/passport-google-oauth20": "^2.0.7",
