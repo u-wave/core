@@ -124,7 +124,7 @@
     "recaptcha-test-keys": "^1.0.0",
     "sinon": "^21.0.0",
     "supertest": "^7.0.0",
-    "type-fest": "^4.0.0",
+    "type-fest": "^5.0.0",
     "typescript": "~5.9.2",
     "typescript-eslint": "^8.5.0"
   },
