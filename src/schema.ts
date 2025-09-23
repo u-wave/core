@@ -1,5 +1,5 @@
 import type { Kysely as KyselyBase, Generated } from 'kysely';
-import type { JsonObject, JsonValue, Tagged } from 'type-fest'; // eslint-disable-line n/no-missing-import, n/no-unpublished-import
+import type { JsonObject, JsonValue, Tagged } from 'type-fest'; // eslint-disable-line n/no-unpublished-import
 import type { JSONB } from './utils/sqlite';
 
 export type UserID = Tagged<string, 'UserID'>;
