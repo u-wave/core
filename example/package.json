@@ -3,7 +3,6 @@
   "name": "u-wave-example",
   "type": "module",
   "dependencies": {
-    "dotenv": "10.0.0",
     "express": "4.x",
     "u-wave-core": "u-wave/core#default",
     "u-wave-source-soundcloud": "2.0.0",
@@ -11,6 +10,6 @@
     "u-wave-web": "2.0.0-alpha.1"
   },
   "scripts": {
-    "start": "node index.js"
+    "start": "node --env-file-if-exists=.env index.js"
   }
 }

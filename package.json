@@ -111,7 +111,6 @@
     "c8": "^10.0.0",
     "concat-stream": "^2.0.0",
     "delay": "^6.0.0",
-    "dotenv": "^16.0.0",
     "eslint": "^9.12.0",
     "eslint-plugin-import": "^2.30.0",
     "eslint-plugin-n": "^17.10.2",
@@ -133,6 +132,6 @@
     "test": "npm run tests-only && npm run lint",
     "tests-only": "c8 --reporter lcov --src src mocha",
     "types": "tsc -p tsconfig.json",
-    "start": "nodemon dev/u-wave-dev-server.js | pino-pretty"
+    "start": "nodemon --env-file-if-exists=.env dev/u-wave-dev-server.js | pino-pretty"
   }
 }
