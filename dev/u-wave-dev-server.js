@@ -6,13 +6,10 @@ import announce from 'u-wave-announce';
 import ytSource from 'u-wave-source-youtube';
 import scSource from 'u-wave-source-soundcloud';
 import pino from 'pino';
-import dotenv from 'dotenv';
 import uwave from '../src/index.js';
 import emotes from '../src/plugins/emotes.js';
 
 const argv = minimist(process.argv.slice(2));
-
-dotenv.config();
 
 const logger = pino({ level: 'trace' });
 
