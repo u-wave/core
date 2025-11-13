@@ -21,28 +21,6 @@ const KEY_HISTORY_ID = 'booth:historyID';
 const KEY_CURRENT_DJ_ID = 'booth:currentDJ';
 const KEY_REMOVE_AFTER_CURRENT_PLAY = 'booth:removeAfterCurrentPlay';
 
-const REMOVE_AFTER_CURRENT_PLAY_SCRIPT = {
-  keys: [KEY_CURRENT_DJ_ID, KEY_REMOVE_AFTER_CURRENT_PLAY],
-  lua: `
-    local k_dj = KEYS[1]
-    local k_remove = KEYS[2]
-    local user_id = ARGV[1]
-    local value = ARGV[2]
-    local current_dj_id = redis.call('GET', k_dj)
-    if current_dj_id == user_id then
-      if value == 'true' then
-        redis.call('SET', k_remove, 'true')
-        return 1
-      else
-        redis.call('DEL', k_remove)
-        return 0
-      end
-    else
-      return redis.error_reply('You are not currently playing')
-    end
-  `,
-};
-
 class Booth {
   #uw;
 
@@ -63,11 +41,6 @@ class Booth {
     this.#uw = uw;
     this.#locker = new RedLock([this.#uw.redis]);
     this.#logger = uw.logger.child({ ns: 'uwave:booth' });
-
-    uw.redis.defineCommand('uw:removeAfterCurrentPlay', {
-      numberOfKeys: REMOVE_AFTER_CURRENT_PLAY_SCRIPT.keys.length,
-      lua: REMOVE_AFTER_CURRENT_PLAY_SCRIPT.lua,
-    });
   }
 
   /** @internal */
