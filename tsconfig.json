@@ -4,6 +4,7 @@
     "strict": true,
     "module": "es2022",
     "moduleResolution": "node",
+    "allowSyntheticDefaultImports": true,
     "useUnknownInCatchVariables": false,
     "allowJs": true,
     "checkJs": true,
