@@ -109,9 +109,11 @@ class Booth {
   async getCurrentEntry(tx = this.#uw.db) {
     const entry = await tx.selectFrom('keyval')
       .where('key', '=', KEY_HISTORY_ID)
-      .innerJoin('historyEntries', (join) => join
-        .on((eb) => sql`${eb.ref('value')}->>'$'`, '=', 'historyEntries.id')
-      )
+      .innerJoin('historyEntries', (join) => join.on(
+        (eb) => sql`${eb.ref('value')}->>'$'`,
+        '=',
+        (eb) => eb.ref('historyEntries.id'),
+      ))
       .innerJoin('media', 'historyEntries.mediaID', 'media.id')
       .innerJoin('users', 'historyEntries.userID', 'users.id')
       .select([
@@ -149,10 +151,6 @@ class Booth {
           .select((eb) => jsonGroupArray(eb.ref('userID')).as('userIDs'))
           .as('favorites'),
       ])
-      .$call((s) => {
-        console.log(s.compile());
-        return s;
-      })
       .executeTakeFirst();
 
     return entry ? {
@@ -503,23 +501,28 @@ class Booth {
    * @param {boolean} remove
    */
   async setRemoveAfterCurrentPlay(user, remove) {
-    // TODO
-    const newValue = await this.#uw.redis['uw:removeAfterCurrentPlay'](
-      ...REMOVE_AFTER_CURRENT_PLAY_SCRIPT.keys,
-      user.id,
-      remove,
-    );
-    return newValue === 1;
+    const newValue = await this.#uw.db.transaction().execute(async (tx) => {
+      const currentDJ = /** @type {UserID|undefined} */ (await this.#uw.keyv.get(KEY_CURRENT_DJ_ID, tx));
+      if (currentDJ === user.id) {
+        if (remove) {
+          await this.#uw.keyv.set(KEY_REMOVE_AFTER_CURRENT_PLAY, true, tx);
+          return true;
+        }
+        await this.#uw.keyv.delete(KEY_REMOVE_AFTER_CURRENT_PLAY, tx);
+        return false;
+      } else {
+        throw new Error('You are not currently playing');
+      }
+    });
+    return newValue;
   }
 
   /**
    * @param {User} user
    */
   async getRemoveAfterCurrentPlay(user, tx = this.#uw.db) {
-    /** @type {string|undefined} */
-    const currentDJ = await this.#uw.keyv.get(KEY_CURRENT_DJ_ID, tx);
-    /** @type {boolean|undefined} */
-    const removeAfterCurrentPlay = await this.#uw.keyv.get(KEY_REMOVE_AFTER_CURRENT_PLAY, tx);
+    const currentDJ = /** @type {UserID|undefined} */ (await this.#uw.keyv.get(KEY_CURRENT_DJ_ID, tx));
+    const removeAfterCurrentPlay = /** @type {boolean|undefined} */ (await this.#uw.keyv.get(KEY_REMOVE_AFTER_CURRENT_PLAY, tx));
 
     if (currentDJ === user.id) {
       return removeAfterCurrentPlay != null;
