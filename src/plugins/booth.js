@@ -1,4 +1,5 @@
 import RedLock from 'redlock';
+import { sql } from 'kysely';
 import { EmptyPlaylistError, PlaylistItemNotFoundError } from '../errors/index.js';
 import routes from '../routes/booth.js';
 import { randomUUID } from 'node:crypto';
@@ -16,12 +17,12 @@ import { fromJson, jsonb, jsonGroupArray } from '../utils/sqlite.js';
  */
 
 const REDIS_ADVANCING = 'booth:advancing';
-const REDIS_HISTORY_ID = 'booth:historyID';
-const REDIS_CURRENT_DJ_ID = 'booth:currentDJ';
-const REDIS_REMOVE_AFTER_CURRENT_PLAY = 'booth:removeAfterCurrentPlay';
+const KEY_HISTORY_ID = 'booth:historyID';
+const KEY_CURRENT_DJ_ID = 'booth:currentDJ';
+const KEY_REMOVE_AFTER_CURRENT_PLAY = 'booth:removeAfterCurrentPlay';
 
 const REMOVE_AFTER_CURRENT_PLAY_SCRIPT = {
-  keys: [REDIS_CURRENT_DJ_ID, REDIS_REMOVE_AFTER_CURRENT_PLAY],
+  keys: [KEY_CURRENT_DJ_ID, KEY_REMOVE_AFTER_CURRENT_PLAY],
   lua: `
     local k_dj = KEYS[1]
     local k_remove = KEYS[2]
@@ -106,12 +107,11 @@ class Booth {
   }
 
   async getCurrentEntry(tx = this.#uw.db) {
-    const historyID = /** @type {HistoryEntryID} */ (await this.#uw.redis.get(REDIS_HISTORY_ID));
-    if (!historyID) {
-      return null;
-    }
-
-    const entry = await tx.selectFrom('historyEntries')
+    const entry = await tx.selectFrom('keyval')
+      .where('key', '=', KEY_HISTORY_ID)
+      .innerJoin('historyEntries', (join) => join
+        .on((eb) => sql`${eb.ref('value')}->>'$'`, '=', 'historyEntries.id')
+      )
       .innerJoin('media', 'historyEntries.mediaID', 'media.id')
       .innerJoin('users', 'historyEntries.userID', 'users.id')
       .select([
@@ -149,7 +149,10 @@ class Booth {
           .select((eb) => jsonGroupArray(eb.ref('userID')).as('userIDs'))
           .as('favorites'),
       ])
-      .where('historyEntries.id', '=', historyID)
+      .$call((s) => {
+        console.log(s.compile());
+        return s;
+      })
       .executeTakeFirst();
 
     return entry ? {
@@ -192,7 +195,7 @@ class Booth {
     let userID = /** @type {UserID|null} */ (await this.#uw.redis.lindex('waitlist', 0));
     if (!userID && !options.remove) {
       // If the waitlist is empty, the current DJ will play again immediately.
-      userID = /** @type {UserID|null} */ (await this.#uw.redis.get(REDIS_CURRENT_DJ_ID));
+      userID = /** @type {UserID|null} */ (await this.#uw.keyv.get(KEY_CURRENT_DJ_ID, tx));
     }
     if (!userID) {
       return null;
@@ -257,23 +260,19 @@ class Booth {
     }
   }
 
-  async clear() {
-    await this.#uw.redis.del(
-      REDIS_HISTORY_ID,
-      REDIS_CURRENT_DJ_ID,
-      REDIS_REMOVE_AFTER_CURRENT_PLAY,
-    );
+  async clear(tx = this.#uw.db) {
+    await this.#uw.keyv.delete(KEY_REMOVE_AFTER_CURRENT_PLAY, tx);
+    await this.#uw.keyv.delete(KEY_HISTORY_ID, tx);
+    await this.#uw.keyv.delete(KEY_CURRENT_DJ_ID, tx);
   }
 
   /**
    * @param {{ historyEntry: { id: HistoryEntryID }, user: { id: UserID } }} next
    */
-  async #update(next) {
-    await this.#uw.redis.multi()
-      .del(REDIS_REMOVE_AFTER_CURRENT_PLAY)
-      .set(REDIS_HISTORY_ID, next.historyEntry.id)
-      .set(REDIS_CURRENT_DJ_ID, next.user.id)
-      .exec();
+  async #update(next, tx = this.#uw.db) {
+    await this.#uw.keyv.delete(KEY_REMOVE_AFTER_CURRENT_PLAY, tx);
+    await this.#uw.keyv.set(KEY_HISTORY_ID, next.historyEntry.id, tx);
+    await this.#uw.keyv.set(KEY_CURRENT_DJ_ID, next.user.id, tx);
   }
 
   #maybeStop() {
@@ -392,7 +391,7 @@ class Booth {
     const { playlists } = this.#uw;
 
     const publish = opts.publish ?? true;
-    const removeAfterCurrent = (await this.#uw.redis.del(REDIS_REMOVE_AFTER_CURRENT_PLAY)) === 1;
+    const removeAfterCurrent = (await this.#uw.redis.del(KEY_REMOVE_AFTER_CURRENT_PLAY)) === 1;
     const remove = opts.remove || removeAfterCurrent || (
       !await this.#uw.waitlist.isCycleEnabled()
     );
@@ -504,6 +503,7 @@ class Booth {
    * @param {boolean} remove
    */
   async setRemoveAfterCurrentPlay(user, remove) {
+    // TODO
     const newValue = await this.#uw.redis['uw:removeAfterCurrentPlay'](
       ...REMOVE_AFTER_CURRENT_PLAY_SCRIPT.keys,
       user.id,
@@ -515,11 +515,12 @@ class Booth {
   /**
    * @param {User} user
    */
-  async getRemoveAfterCurrentPlay(user) {
-    const [currentDJ, removeAfterCurrentPlay] = await this.#uw.redis.mget(
-      REDIS_CURRENT_DJ_ID,
-      REDIS_REMOVE_AFTER_CURRENT_PLAY,
-    );
+  async getRemoveAfterCurrentPlay(user, tx = this.#uw.db) {
+    /** @type {string|undefined} */
+    const currentDJ = await this.#uw.keyv.get(KEY_CURRENT_DJ_ID, tx);
+    /** @type {boolean|undefined} */
+    const removeAfterCurrentPlay = await this.#uw.keyv.get(KEY_REMOVE_AFTER_CURRENT_PLAY, tx);
+
     if (currentDJ === user.id) {
       return removeAfterCurrentPlay != null;
     }

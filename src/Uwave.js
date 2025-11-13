@@ -7,6 +7,7 @@ import { CamelCasePlugin, Kysely, SqliteDialect } from 'kysely';
 import httpApi, { errorHandling } from './HttpApi.js';
 import SocketServer from './SocketServer.js';
 import { Source } from './Source.js';
+import KeyValue from './KeyValue.js';
 import { i18n } from './locale.js';
 import configStore from './plugins/configStore.js';
 import booth from './plugins/booth.js';
@@ -20,7 +21,7 @@ import acl from './plugins/acl.js';
 import waitlist from './plugins/waitlist.js';
 import passport from './plugins/passport.js';
 import migrations from './plugins/migrations.js';
-import { SqliteDateColumnsPlugin, connect as connectSqlite, fromJson, json, jsonb } from './utils/sqlite.js';
+import { SqliteDateColumnsPlugin, connect as connectSqlite } from './utils/sqlite.js';
 
 const DEFAULT_SQLITE_PATH = './uwave.sqlite';
 const DEFAULT_REDIS_URL = 'redis://localhost:6379';
@@ -179,35 +180,6 @@ class UwaveServer extends EventEmitter {
       this.redis.quit(),
       this.db.destroy(),
     ]));
-
-    class KeyValue {
-      #db;
-
-      /** @param {Kysely<import('./schema.js').Database>} db */
-      constructor(db) {
-        this.#db = db;
-      }
-
-      /** @param {string} key */
-      async get(key, db = this.#db) {
-        const row = await db.selectFrom('keyval')
-          .select((eb) => json(eb.ref('value')).as('value'))
-          .where('key', '=', key)
-          .executeTakeFirst();
-        return row != null ? fromJson(row.value) : null;
-      }
-
-      /**
-       * @param {string} key
-       * @param {import('type-fest').JsonValue} value
-       */
-      async set(key, value, db = this.#db) {
-        await db.insertInto('keyval')
-          .values({ key, value: jsonb(value) })
-          .onConflict((oc) => oc.column('key').doUpdateSet({ value: jsonb(value) }))
-          .execute();
-      }
-    }
 
     this.keyv = new KeyValue(this.db);
 
