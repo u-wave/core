@@ -15,68 +15,15 @@ const schema = JSON.parse(
   fs.readFileSync(new URL('../schemas/waitlist.json', import.meta.url), 'utf8'),
 );
 
+const KEY_WAITLIST = 'waitlist';
+const KEY_CURRENT_DJ_ID = 'booth:currentDJ';
+const KEY_HISTORY_ID = 'booth:historyID';
+
 /**
  * @typedef {import('../schema.js').UserID} UserID
  * @typedef {import('../schema.js').User} User
  * @typedef {{ cycle: boolean, locked: boolean }} WaitlistSettings
  */
-
-const ADD_TO_WAITLIST_SCRIPT = {
-  keys: ['waitlist', 'booth:currentDJ'],
-  lua: `
-    local k_waitlist = KEYS[1]
-    local k_dj = KEYS[2]
-    local user_id = ARGV[1]
-    local position = ARGV[2]
-    local is_in_waitlist = redis.call('LPOS', k_waitlist, user_id)
-    local current_dj = redis.call('GET', k_dj)
-    if is_in_waitlist or current_dj == user_id then
-      return { err = '${AlreadyInWaitlistError.code}' }
-    end
-
-    local before_id = nil
-    if position then
-      before_id = redis.call('LINDEX', k_waitlist, position)
-    end
-
-    if before_id then
-      redis.call('LINSERT', k_waitlist, 'BEFORE', before_id)
-    else
-      redis.call('RPUSH', k_waitlist, user_id)
-    end
-
-    return redis.call('LRANGE', k_waitlist, 0, -1)
-  `,
-};
-
-const MOVE_WAITLIST_SCRIPT = {
-  keys: ['waitlist', 'booth:currentDJ'],
-  lua: `
-    local k_waitlist = KEYS[1]
-    local k_dj = KEYS[2]
-    local user_id = ARGV[1]
-    local position = ARGV[2]
-    local is_in_waitlist = redis.call('LPOS', k_waitlist, user_id)
-    if not is_in_waitlist then
-      return { err = '${UserNotInWaitlistError.code}' }
-    end
-    local current_dj = redis.call('GET', k_dj)
-    if current_dj == user_id then
-      return { err = '${UserIsPlayingError.code}' }
-    end
-
-    local before_id = redis.call('LINDEX', k_waitlist, position)
-
-    redis.call('LREM', k_waitlist, 0, user_id);
-    if before_id then
-      redis.call('LINSERT', k_waitlist, 'BEFORE', before_id, user_id);
-    else
-      redis.call('RPUSH', k_waitlist, user_id)
-    end
-
-    return redis.call('LRANGE', k_waitlist, 0, -1)
-  `,
-};
 
 class Waitlist {
   #uw;
@@ -88,14 +35,6 @@ class Waitlist {
     this.#uw = uw;
 
     uw.config.register(schema['uw:key'], schema);
-    uw.redis.defineCommand('uw:addToWaitlist', {
-      numberOfKeys: ADD_TO_WAITLIST_SCRIPT.keys.length,
-      lua: ADD_TO_WAITLIST_SCRIPT.lua,
-    });
-    uw.redis.defineCommand('uw:moveWaitlist', {
-      numberOfKeys: MOVE_WAITLIST_SCRIPT.keys.length,
-      lua: MOVE_WAITLIST_SCRIPT.lua,
-    });
 
     const unsubscribe = uw.config.subscribe(
       schema['uw:key'],
@@ -121,20 +60,20 @@ class Waitlist {
   }
 
   async #isBoothEmpty() {
-    return !(await this.#uw.redis.get('booth:historyID'));
+    return !(await this.#uw.keyv.get(KEY_HISTORY_ID));
   }
 
   /**
    * @param {User} user
    * @returns {Promise<boolean>}
    */
-  async #hasPlayablePlaylist(user) {
+  async #hasPlayablePlaylist(user, tx = this.#uw.db) {
     const { playlists } = this.#uw;
     if (!user.activePlaylistID) {
       return false;
     }
 
-    const playlist = await playlists.getUserPlaylist(user, user.activePlaylistID);
+    const playlist = await playlists.getUserPlaylist(user, user.activePlaylistID, tx);
     return playlist && playlist.size > 0;
   }
 
@@ -167,8 +106,28 @@ class Waitlist {
   /**
    * @returns {Promise<UserID[]>}
    */
-  getUserIDs() {
-    return /** @type {Promise<UserID[]>} */ (this.#uw.redis.lrange('waitlist', 0, -1));
+  async getUserIDs(tx = this.#uw.db) {
+    const userIDs = /** @type {UserID[] | null} */ (await this.#uw.keyv.get(KEY_WAITLIST, tx));
+    return userIDs ?? [];
+  }
+
+  /**
+   * @param {UserID|null} previous
+   * @param {{ remove?: boolean }} options
+   */
+  async cycle(previous, options) {
+    // TODO: This must happen in a transaction
+    const waitlist = await this.getUserIDs();
+    if (waitlist.length > 0) {
+      waitlist.shift();
+      if (previous && !options.remove) {
+        // The previous DJ should only be added to the waitlist again if it was
+        // not empty. If it was empty, the previous DJ is already in the booth.
+        waitlist.push(previous);
+      }
+
+      await this.#uw.keyv.set(KEY_WAITLIST, waitlist);
+    }
   }
 
   /**
@@ -202,27 +161,31 @@ class Waitlist {
       throw new EmptyPlaylistError();
     }
 
-    try {
-      const waitlist = /** @type {UserID[]} */ (await this.#uw.redis['uw:addToWaitlist'](...ADD_TO_WAITLIST_SCRIPT.keys, user.id));
+    const waitlist = await this.getUserIDs();
+    const isInWaitlist = waitlist.includes(user.id);
+    const currentDJ = /** @type {UserID|null} */ (
+      await this.#uw.keyv.get(KEY_CURRENT_DJ_ID)
+    );
+    if (isInWaitlist || currentDJ === user.id) {
+      throw new AlreadyInWaitlistError();
+    }
 
-      if (isAddingOtherUser) {
-        this.#uw.publish('waitlist:add', {
-          userID: user.id,
-          moderatorID: moderator.id,
-          position: waitlist.indexOf(user.id),
-          waitlist,
-        });
-      } else {
-        this.#uw.publish('waitlist:join', {
-          userID: user.id,
-          waitlist,
-        });
-      }
-    } catch (error) {
-      if (error.message === AlreadyInWaitlistError.code) {
-        throw new AlreadyInWaitlistError();
-      }
-      throw error;
+    waitlist.push(user.id);
+
+    await this.#uw.keyv.set(KEY_WAITLIST, waitlist);
+
+    if (isAddingOtherUser) {
+      this.#uw.publish('waitlist:add', {
+        userID: user.id,
+        moderatorID: moderator.id,
+        position: waitlist.indexOf(user.id),
+        waitlist,
+      });
+    } else {
+      this.#uw.publish('waitlist:join', {
+        userID: user.id,
+        waitlist,
+      });
     }
 
     if (await this.#isBoothEmpty()) {
@@ -248,24 +211,31 @@ class Waitlist {
       throw new EmptyPlaylistError();
     }
 
-    try {
-      const waitlist = /** @type {UserID[]} */ (await this.#uw.redis['uw:moveWaitlist'](...MOVE_WAITLIST_SCRIPT.keys, user.id, position));
-
-      this.#uw.publish('waitlist:move', {
-        userID: user.id,
-        moderatorID: moderator.id,
-        position: waitlist.indexOf(user.id),
-        waitlist,
-      });
-    } catch (error) {
-      if (error.message === UserNotInWaitlistError.code) {
-        throw new UserNotInWaitlistError({ id: user.id });
-      }
-      if (error.message === UserIsPlayingError.code) {
-        throw new UserIsPlayingError({ id: user.id });
-      }
-      throw error;
+    const waitlist = await this.getUserIDs();
+    const previousPosition = waitlist.indexOf(user.id);
+    if (previousPosition === -1) {
+      throw new UserNotInWaitlistError({ id: user.id });
     }
+    const currentDJ = /** @type {UserID|null} */ (
+      await this.#uw.keyv.get(KEY_CURRENT_DJ_ID)
+    );
+    if (currentDJ === user.id) {
+      throw new UserIsPlayingError({ id: user.id });
+    }
+
+    waitlist.splice(previousPosition, 1);
+    // `position` might be _past_ the end of the array,
+    // in which case this is equivalent to a `.push`.
+    waitlist.splice(position, 0, user.id);
+
+    await this.#uw.keyv.set(KEY_WAITLIST, waitlist);
+
+    this.#uw.publish('waitlist:move', {
+      userID: user.id,
+      moderatorID: moderator.id,
+      position: waitlist.indexOf(user.id),
+      waitlist,
+    });
   }
 
   /**
@@ -287,12 +257,23 @@ class Waitlist {
       });
     }
 
-    const removedCount = await this.#uw.redis.lrem('waitlist', 0, user.id);
-    if (removedCount === 0) {
-      throw new UserNotInWaitlistError({ id: user.id });
-    }
+    const waitlist = await this.#uw.db.transaction().execute(async (tx) => {
+      const waitlist = await this.getUserIDs(tx);
+      let index;
+      let removedCount = 0;
+      while ((index = waitlist.indexOf(user.id)) !== -1) {
+        waitlist.splice(index, 1);
+        removedCount += 1;
+      }
 
-    const waitlist = await this.getUserIDs();
+      if (removedCount === 0) {
+        throw new UserNotInWaitlistError({ id: user.id });
+      }
+
+      await this.#uw.keyv.set(KEY_WAITLIST, waitlist, tx);
+      return waitlist;
+    });
+
     if (isRemoving) {
       this.#uw.publish('waitlist:remove', {
         userID: user.id,
@@ -312,7 +293,7 @@ class Waitlist {
    * @returns {Promise<void>}
    */
   async clear({ moderator }) {
-    await this.#uw.redis.del('waitlist');
+    await this.#uw.keyv.delete(KEY_WAITLIST);
 
     const waitlist = await this.getUserIDs();
     if (waitlist.length !== 0) {
