@@ -224,6 +224,8 @@ class Waitlist {
     }
 
     waitlist.splice(previousPosition, 1);
+    // `position` might be _past_ the end of the array,
+    // in which case this is equivalent to a `.push`.
     waitlist.splice(position, 0, user.id);
 
     await this.#uw.keyv.set(KEY_WAITLIST, waitlist);
