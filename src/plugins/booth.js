@@ -163,7 +163,8 @@ class Booth {
    * @param {{ remove?: boolean }} options
    */
   async #getNextDJ(options, tx = this.#uw.db) {
-    let userID = /** @type {UserID|null} */ (await this.#uw.redis.lindex('waitlist', 0));
+    const waitlist = await this.#uw.waitlist.getUserIDs();
+    let userID = waitlist.at(0) ?? null;
     if (!userID && !options.remove) {
       // If the waitlist is empty, the current DJ will play again immediately.
       userID = /** @type {UserID|null} */ (await this.#uw.keyv.get(KEY_CURRENT_DJ_ID, tx));
@@ -220,15 +221,7 @@ class Booth {
    * @param {{ remove?: boolean }} options
    */
   async #cycleWaitlist(previous, options) {
-    const waitlistLen = await this.#uw.redis.llen('waitlist');
-    if (waitlistLen > 0) {
-      await this.#uw.redis.lpop('waitlist');
-      if (previous && !options.remove) {
-        // The previous DJ should only be added to the waitlist again if it was
-        // not empty. If it was empty, the previous DJ is already in the booth.
-        await this.#uw.redis.rpush('waitlist', previous);
-      }
-    }
+    await this.#uw.waitlist.cycle(previous, options);
   }
 
   async clear(tx = this.#uw.db) {
@@ -362,7 +355,7 @@ class Booth {
     const { playlists } = this.#uw;
 
     const publish = opts.publish ?? true;
-    const removeAfterCurrent = (await this.#uw.redis.del(KEY_REMOVE_AFTER_CURRENT_PLAY)) === 1;
+    const removeAfterCurrent = (await this.#uw.keyv.delete(KEY_REMOVE_AFTER_CURRENT_PLAY)) === true;
     const remove = opts.remove || removeAfterCurrent || (
       !await this.#uw.waitlist.isCycleEnabled()
     );
