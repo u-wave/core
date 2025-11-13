@@ -475,7 +475,9 @@ class Booth {
    */
   async setRemoveAfterCurrentPlay(user, remove) {
     const newValue = await this.#uw.db.transaction().execute(async (tx) => {
-      const currentDJ = /** @type {UserID|undefined} */ (await this.#uw.keyv.get(KEY_CURRENT_DJ_ID, tx));
+      const currentDJ = /** @type {UserID|undefined} */ (
+        await this.#uw.keyv.get(KEY_CURRENT_DJ_ID, tx)
+      );
       if (currentDJ === user.id) {
         if (remove) {
           await this.#uw.keyv.set(KEY_REMOVE_AFTER_CURRENT_PLAY, true, tx);
@@ -494,8 +496,12 @@ class Booth {
    * @param {User} user
    */
   async getRemoveAfterCurrentPlay(user, tx = this.#uw.db) {
-    const currentDJ = /** @type {UserID|undefined} */ (await this.#uw.keyv.get(KEY_CURRENT_DJ_ID, tx));
-    const removeAfterCurrentPlay = /** @type {boolean|undefined} */ (await this.#uw.keyv.get(KEY_REMOVE_AFTER_CURRENT_PLAY, tx));
+    const currentDJ = /** @type {UserID|undefined} */ (
+      await this.#uw.keyv.get(KEY_CURRENT_DJ_ID, tx)
+    );
+    const removeAfterCurrentPlay = /** @type {boolean|undefined} */ (
+      await this.#uw.keyv.get(KEY_REMOVE_AFTER_CURRENT_PLAY, tx)
+    );
 
     if (currentDJ === user.id) {
       return removeAfterCurrentPlay != null;
