@@ -194,6 +194,7 @@ class UwaveServer extends EventEmitter {
     boot.use(httpApi, {
       secret: this.options.secret,
       helmet: this.options.helmet,
+      trustProxy: this.options.trustProxy,
       mailTransport: this.options.mailTransport,
       recaptcha: this.options.recaptcha,
       createPasswordResetEmail: this.options.createPasswordResetEmail,

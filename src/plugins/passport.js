@@ -74,7 +74,6 @@ class PassportPlugin extends Passport {
     this.use('local', new LocalStrategy({
       usernameField: 'email',
       passwordField: 'password',
-      session: false,
     }, callbackify(localLogin)));
     this.use('jwt', new JWTStrategy(options.secret, async (claim) => {
       try {

@@ -62,6 +62,7 @@ function defaultCreatePasswordResetEmail({ token, requestUrl }) {
  * @typedef {object} HttpApiOptions - Static options for the HTTP API.
  * @prop {string|Buffer} secret
  * @prop {boolean} [helmet]
+ * @prop {boolean | number | string} [trustProxy]
  * @prop {(error: Error) => void} [onError]
  * @prop {{ secret: string }} [recaptcha]
  * @prop {import('nodemailer').Transport} [mailTransport]
@@ -106,6 +107,9 @@ async function httpApi(uw, options) {
 
   uw.express = express();
   uw.express.set('query parser', /** @param {string} str */ (str) => qs.parse(str, { depth: 1 }));
+  if (options.trustProxy != null) {
+    uw.express.set('trust proxy', options.trustProxy);
+  }
 
   uw.httpApi
     .use(pinoHttp({
