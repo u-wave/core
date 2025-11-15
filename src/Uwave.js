@@ -7,6 +7,7 @@ import { CamelCasePlugin, Kysely, SqliteDialect } from 'kysely';
 import httpApi, { errorHandling } from './HttpApi.js';
 import SocketServer from './SocketServer.js';
 import { Source } from './Source.js';
+import KeyValue from './KeyValue.js';
 import { i18n } from './locale.js';
 import configStore from './plugins/configStore.js';
 import booth from './plugins/booth.js';
@@ -179,6 +180,8 @@ class UwaveServer extends EventEmitter {
       this.redis.quit(),
       this.db.destroy(),
     ]));
+
+    this.keyv = new KeyValue(this.db);
 
     boot.use(migrations);
     boot.use(configStore);

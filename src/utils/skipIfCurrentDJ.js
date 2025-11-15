@@ -2,7 +2,7 @@
  * @param {import('../Uwave.js').default} uw
  */
 function getCurrentDJ(uw) {
-  return uw.redis.get('booth:currentDJ');
+  return uw.keyv.get('booth:currentDJ');
 }
 
 /**

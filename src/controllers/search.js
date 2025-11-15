@@ -23,7 +23,7 @@ async function searchAll(req) {
   const sourceNames = uw.sources.map((source) => source.type);
   const searches = uw.sources.map((source) => (
     source.search(user, query).catch((error) => {
-      req.log.warn(error, { ns: 'uwave:search' });
+      req.log.warn({ err: error, ns: 'uwave:search' });
       // Default to empty search on failure, for now.
       return [];
     })

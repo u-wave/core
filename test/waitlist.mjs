@@ -408,4 +408,148 @@ describe('Waitlist', () => {
       sinon.assert.match(nextWaitlist.body.data, []);
     });
   });
+
+  describe('PUT /waitlist/move', () => {
+    it('requires authentication', async () => {
+      await supertest(uw.server)
+        .put('/api/waitlist/move')
+        .expect(401);
+    });
+
+    it('validates input', async () => {
+      const token = await uw.test.createTestSessionToken(user);
+      await uw.acl.createRole('waitlistMover', ['waitlist.move']);
+      await uw.acl.allow(user, ['waitlistMover']);
+
+      // `userID` must be a UUID.
+      await supertest(uw.server)
+        .put('/api/waitlist/move')
+        .set('Cookie', `uwsession=${token}`)
+        .send({ userID: null })
+        .expect(400);
+
+      // body must be JSON.
+      await supertest(uw.server)
+        .put('/api/waitlist/move')
+        .set('Cookie', `uwsession=${token}`)
+        .expect(400);
+
+      // `position` must be 0 or above.
+      await supertest(uw.server)
+        .put('/api/waitlist/move')
+        .set('Cookie', `uwsession=${token}`)
+        .send({ userID: user.id, position: -1 })
+        .expect(400);
+    });
+
+    it('requires the waitlist.move role', async () => {
+      // Put a few users in the list
+      const users = await createUsers(4);
+      await Promise.all(users.map(createTestPlaylistItem));
+      for (const u of users) {
+        await uw.waitlist.addUser(u.id);
+      }
+
+      const token = await uw.test.createTestSessionToken(user);
+      await uw.acl.allow(user, ['user']);
+
+      const testSubject = users[3];
+
+      await supertest(uw.server)
+        .put('/api/waitlist/move')
+        .set('Cookie', `uwsession=${token}`)
+        .send({ userID: testSubject.id, position: 1 })
+        .expect(403);
+
+      await uw.acl.createRole('mover', ['waitlist.move']);
+      await uw.acl.allow(user, ['mover']);
+
+      await supertest(uw.server)
+        .put('/api/waitlist/move')
+        .set('Cookie', `uwsession=${token}`)
+        .send({ userID: testSubject.id, position: 1 })
+        .expect(200);
+    });
+
+    it('moves user to the given position', async () => {
+      // Put a few users in the list
+      const users = await createUsers(4);
+      await Promise.all(users.map(createTestPlaylistItem));
+      for (const u of users) {
+        await uw.waitlist.addUser(u.id);
+      }
+
+      const token = await uw.test.createTestSessionToken(user);
+      await uw.acl.allow(user, ['user']);
+
+      const testSubject = await uw.test.createUser();
+      await createTestPlaylistItem(testSubject);
+
+      // Put the target user at the end of the list
+      await uw.waitlist.addUser(testSubject.id);
+
+      await uw.acl.createRole('mover', ['waitlist.move']);
+      await uw.acl.allow(user, ['mover']);
+
+      const res = await supertest(uw.server)
+        .get('/api/waitlist')
+        .expect(200);
+      assert.deepStrictEqual(res.body.data, [
+        users[1].id,
+        users[2].id,
+        users[3].id,
+        testSubject.id,
+      ]);
+
+      const movedRes = await supertest(uw.server)
+        .put('/api/waitlist/move')
+        .set('Cookie', `uwsession=${token}`)
+        .send({ userID: testSubject.id, position: 1 })
+        .expect(200);
+      assert.deepStrictEqual(movedRes.body.data, [
+        users[1].id,
+        testSubject.id,
+        users[2].id,
+        users[3].id,
+      ]);
+    });
+
+    it('moves user to a position past the end of the list', async () => {
+      // Put a few users in the list
+      const users = await createUsers(4);
+      await Promise.all(users.map(createTestPlaylistItem));
+      for (const u of users) {
+        await uw.waitlist.addUser(u.id);
+      }
+
+      const token = await uw.test.createTestSessionToken(user);
+      await uw.acl.allow(user, ['user']);
+
+      // This user will be at the top of the waitlist (users[0] is DJ).
+      const testSubject = users[1];
+
+      await uw.acl.createRole('mover', ['waitlist.move']);
+      await uw.acl.allow(user, ['mover']);
+
+      const res = await supertest(uw.server)
+        .get('/api/waitlist')
+        .expect(200);
+      assert.deepStrictEqual(res.body.data, [
+        users[1].id,
+        users[2].id,
+        users[3].id,
+      ]);
+
+      const movedRes = await supertest(uw.server)
+        .put('/api/waitlist/move')
+        .set('Cookie', `uwsession=${token}`)
+        .send({ userID: testSubject.id, position: 5 })
+        .expect(200);
+      assert.deepStrictEqual(movedRes.body.data, [
+        users[2].id,
+        users[3].id,
+        users[1].id,
+      ]);
+    });
+  });
 });

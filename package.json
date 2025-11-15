@@ -62,8 +62,8 @@
     "passport-google-oauth20": "^2.0.0",
     "passport-local": "^1.0.0",
     "pg": "^8.10.0",
-    "pino": "^9.0.0",
-    "pino-http": "^10.1.0",
+    "pino": "^10.0.0",
+    "pino-http": "^11.0.0",
     "qs": "^6.9.1",
     "random-string": "^0.2.0",
     "ratelimiter": "^3.4.0",
@@ -95,7 +95,7 @@
     "@types/ms": "^2.1.0",
     "@types/node": "~20.19.1",
     "@types/node-fetch": "^2.5.8",
-    "@types/nodemailer": "^6.4.1",
+    "@types/nodemailer": "^7.0.1",
     "@types/object.groupby": "^1.0.3",
     "@types/passport": "^1.0.6",
     "@types/passport-google-oauth20": "^2.0.7",
@@ -110,8 +110,7 @@
     "@types/ws": "^8.2.0",
     "c8": "^10.0.0",
     "concat-stream": "^2.0.0",
-    "delay": "^6.0.0",
-    "dotenv": "^16.0.0",
+    "delay": "^7.0.0",
     "eslint": "^9.12.0",
     "eslint-plugin-import": "^2.30.0",
     "eslint-plugin-n": "^17.10.2",
@@ -124,8 +123,8 @@
     "recaptcha-test-keys": "^1.0.0",
     "sinon": "^21.0.0",
     "supertest": "^7.0.0",
-    "type-fest": "^4.0.0",
-    "typescript": "~5.8.2",
+    "type-fest": "^5.0.0",
+    "typescript": "~5.9.2",
     "typescript-eslint": "^8.5.0"
   },
   "scripts": {
@@ -133,6 +132,6 @@
     "test": "npm run tests-only && npm run lint",
     "tests-only": "c8 --reporter lcov --src src mocha",
     "types": "tsc -p tsconfig.json",
-    "start": "nodemon dev/u-wave-dev-server.js | pino-pretty"
+    "start": "nodemon --env-file-if-exists=.env dev/u-wave-dev-server.js | pino-pretty"
   }
 }

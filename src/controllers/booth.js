@@ -19,8 +19,8 @@ import { Permissions } from '../plugins/acl.js';
  * @typedef {import('../schema').HistoryEntryID} HistoryEntryID
  */
 
-const REDIS_HISTORY_ID = 'booth:historyID';
-const REDIS_CURRENT_DJ_ID = 'booth:currentDJ';
+const KEY_HISTORY_ID = 'booth:historyID';
+const KEY_CURRENT_DJ_ID = 'booth:currentDJ';
 
 /**
  * @param {import('../Uwave.js').default} uw
@@ -70,15 +70,15 @@ async function getBooth(req) {
 /**
  * @param {import('../Uwave.js').default} uw
  */
-function getCurrentDJ(uw) {
-  return /** @type {Promise<UserID|null>} */ (uw.redis.get(REDIS_CURRENT_DJ_ID));
+function getCurrentDJ(uw, tx = uw.db) {
+  return /** @type {Promise<UserID|null>} */ (uw.keyv.get(KEY_CURRENT_DJ_ID, tx));
 }
 
 /**
  * @param {import('../Uwave.js').default} uw
  */
-function getCurrentHistoryID(uw) {
-  return /** @type {Promise<HistoryEntryID|null>} */ (uw.redis.get(REDIS_HISTORY_ID));
+function getCurrentHistoryID(uw, tx = uw.db) {
+  return /** @type {Promise<HistoryEntryID|null>} */ (uw.keyv.get(KEY_HISTORY_ID, tx));
 }
 
 /**

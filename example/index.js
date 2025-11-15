@@ -4,9 +4,6 @@ import uwave from 'u-wave-core';
 import createWebClient from 'u-wave-web/middleware';
 import youTubeSource from 'u-wave-source-youtube';
 import soundCloudSource from 'u-wave-source-soundcloud';
-import dotenv from 'dotenv';
-
-dotenv.config();
 
 const port = process.env.PORT ?? 80;
 const secret = Buffer.from(process.env.SECRET, 'hex');
