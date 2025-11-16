@@ -10,7 +10,7 @@ RateLimiter.prototype.getAsync = promisify(RateLimiter.prototype.get);
 /**
  * @param {string} prefix
  * @param {Omit<import('ratelimiter').LimiterOption, 'id' | 'db'>
- *   & { error?: new(data?: import('i18next').TOptions) => Error }} opts
+ *   & { error?: new(data?: Record<string, import('@fluent/bundle').FluentValue>) => Error }} opts
  * @returns {import('express').RequestHandler}
  */
 function rateLimit(prefix, opts) {

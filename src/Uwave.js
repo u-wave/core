@@ -8,7 +8,6 @@ import httpApi, { errorHandling } from './HttpApi.js';
 import SocketServer from './SocketServer.js';
 import { Source } from './Source.js';
 import KeyValue from './KeyValue.js';
-import { i18n } from './locale.js';
 import configStore from './plugins/configStore.js';
 import booth from './plugins/booth.js';
 import chat from './plugins/chat.js';
@@ -143,7 +142,6 @@ class UwaveServer extends EventEmitter {
       ...options.logger,
       redact: ['req.headers.cookie', 'res.headers["set-cookie"]'],
     });
-    this.locale = i18n.cloneInstance();
 
     this.options = {
       sqlite: DEFAULT_SQLITE_PATH,

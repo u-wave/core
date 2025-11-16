@@ -26,6 +26,7 @@
     "node": ">= 20"
   },
   "dependencies": {
+    "@fluent/bundle": "^0.19.1",
     "@twurple/api": "^7.0.0",
     "@twurple/auth": "^7.0.0",
     "ajv": "^8.0.5",
@@ -46,7 +47,6 @@
     "helmet": "^8.0.0",
     "htmlescape": "^1.1.1",
     "http-errors": "^2.0.0",
-    "i18next": "^25.0.1",
     "ioredis": "^5.0.1",
     "json-merge-patch": "^1.0.2",
     "jsonwebtoken": "^9.0.0",
