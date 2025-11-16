@@ -78,6 +78,42 @@ describe('Authentication', () => {
     });
   });
 
+  describe('POST /auth', () => {
+    it('validates inputs', async () => {
+      await supertest(uw.server)
+        .post('/api/auth/login')
+        .expect(400);
+
+      await supertest(uw.server)
+        .post('/api/auth/login')
+        .send({})
+        .expect(400);
+      await supertest(uw.server)
+        .post('/api/auth/login')
+        .send({ email: 'name@example.com' })
+        .expect(400);
+      await supertest(uw.server)
+        .post('/api/auth/login')
+        .send({ email: ['not', 'a', 'string'], password: TEST_PASSWORD })
+        .expect(400);
+      await supertest(uw.server)
+        .post('/api/auth/login')
+        .send({ email: 'name@example.com', password: ['not', 'a', 'string'] })
+        .expect(400);
+      const { body } = await supertest(uw.server)
+        .post('/api/auth/login')
+        .send({ email: 'name@example.com', password: TEST_PASSWORD })
+        .expect(404);
+      // this means the input validation passed ;)
+      sinon.assert.match(body.errors[0], { code: 'user-not-found' });
+
+      await supertest(uw.server)
+        .post('/api/auth/login?session=other')
+        .send({ email: 'name@example.com', password: TEST_PASSWORD })
+        .expect(400);
+    });
+  });
+
   describe('POST /auth/register', () => {
     it('validates inputs', async () => {
       await supertest(uw.server)
