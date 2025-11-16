@@ -22,7 +22,7 @@ async function muteUser(req) {
   const { chat, users } = req.uwave;
 
   if (moderator.id === id) {
-    throw new CannotSelfMuteError({ unmute: false });
+    throw new CannotSelfMuteError({ action: 'mute' });
   }
 
   const user = await users.getUser(id);
@@ -47,7 +47,7 @@ async function unmuteUser(req) {
   const { chat, users } = req.uwave;
 
   if (moderator.id === id) {
-    throw new CannotSelfMuteError({ unmute: true });
+    throw new CannotSelfMuteError({ action: 'unmute' });
   }
 
   const user = await users.getUser(id);

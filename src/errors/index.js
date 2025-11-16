@@ -67,19 +67,15 @@ class HTTPError extends APIError {
  * @param {ErrorName} name
  * @param {{
  *   code: ErrorCode,
- *   string: string | ((data: TData) => string),
+ *   string: string,
  *   base: typeof import('http-errors').HttpError,
  * }} options
  */
 function createErrorClass(name, {
   code,
-  string,
+  string: i18nKey,
   base = HttpError,
 }) {
-  const getString = typeof string !== 'function'
-    ? (() => string)
-    : string;
-
   const Error = class extends base {
     static code = code;
 
@@ -89,9 +85,6 @@ function createErrorClass(name, {
 
     /** @param {TData} [data] */
     constructor(data) {
-      // @ts-expect-error TS2345 This is actually unsafe but the generic TData type
-      // is hard to express correctly in JSDoc.
-      const i18nKey = getString(data);
       super(t(i18nKey, data ?? {}) ?? undefined);
       this.i18nKey = i18nKey;
       this.data = data;
@@ -231,7 +224,7 @@ const CannotSelfFavoriteError = createErrorClass('CannotSelfFavoriteError', {
 
 const CannotSelfMuteError = createErrorClass('CannotSelfMuteError', {
   code: 'no-self-mute',
-  string: ({ unmute }) => (unmute ? 'error-no-self-unmute' : 'error-no-self-mute'),
+  string: 'error-no-self-mute',
   base: Forbidden,
 });
 

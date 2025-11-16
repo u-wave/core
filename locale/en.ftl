@@ -23,8 +23,11 @@ error-empty-playlist = You don't have anything to play. Please add some songs to
 error-history-entry-not-found = History entry not found.
 error-media-not-found = Media object not found.
 error-no-self-favorite = You can't favorite your own plays.
-error-no-self-mute = You can't mute yourself.
-error-no-self-unmute = You can't unmute yourself.
+error-no-self-mute =
+  { $action ->
+    [unmute] You can't unmute yourself.
+    *[mute] You can't mute yourself.
+  }
 error-source-not-found = Source "{ $name }" not found.
 error-source-no-import = Source "{ $name }" does not support importing.
 error-too-many-name-changes = You can only change your username five times per hour. Try again in { $retry-after }.
