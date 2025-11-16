@@ -61,25 +61,21 @@ class HTTPError extends APIError {
 }
 
 /**
- * @template {import('i18next').TOptions} TData
+ * @template {Record<string, import('@fluent/bundle').FluentValue>} TData
  * @template {string} ErrorName
  * @template {string} ErrorCode
  * @param {ErrorName} name
  * @param {{
  *   code: ErrorCode,
- *   string: string | ((data: TData) => string),
+ *   string: string,
  *   base: typeof import('http-errors').HttpError,
  * }} options
  */
 function createErrorClass(name, {
   code,
-  string,
+  string: i18nKey,
   base = HttpError,
 }) {
-  const getString = typeof string !== 'function'
-    ? (() => string)
-    : string;
-
   const Error = class extends base {
     static code = code;
 
@@ -89,9 +85,6 @@ function createErrorClass(name, {
 
     /** @param {TData} [data] */
     constructor(data) {
-      // @ts-expect-error TS2345 This is actually unsafe but the generic TData type
-      // is hard to express correctly in JSDoc.
-      const i18nKey = getString(data);
       super(t(i18nKey, data ?? {}) ?? undefined);
       this.i18nKey = i18nKey;
       this.data = data;
@@ -111,169 +104,169 @@ function createErrorClass(name, {
 
 const PermissionError = createErrorClass('PermissionError', {
   code: 'forbidden',
-  string: 'errors.genericPermission',
+  string: 'error-generic-permission',
   base: Forbidden,
 });
 
 const LoginRequiredError = createErrorClass('LoginRequiredError', {
   code: 'forbidden',
-  string: 'errors.loginRequired',
+  string: 'error-login-required',
   base: Unauthorized,
 });
 
 const BannedError = createErrorClass('BannedError', {
   code: 'banned',
-  string: 'errors.banned',
+  string: 'error-banned',
   base: Forbidden,
 });
 
 const RateLimitError = createErrorClass('RateLimitError', {
   code: 'too-many-requests',
-  string: 'errors.tooManyRequests',
+  string: 'error-too-many-requests',
   base: TooManyRequests,
 });
 
 const NameChangeRateLimitError = createErrorClass('NameChangeRateLimitError', {
   code: 'too-many-requests',
-  string: 'errors.tooManyNameChanges',
+  string: 'error-too-many-name-changes',
   base: TooManyRequests,
 });
 
 const InvalidEmailError = createErrorClass('InvalidEmailError', {
   code: 'invalid-email',
-  string: 'errors.invalidEmail',
+  string: 'error-invalid-email',
   base: UnprocessableEntity,
 });
 
 const UsedEmailError = createErrorClass('UsedEmailError', {
   code: 'invalid-email',
-  string: 'errors.emailInUse',
+  string: 'error-email-in-use',
   base: UnprocessableEntity,
 });
 
 const InvalidUsernameError = createErrorClass('InvalidUsernameError', {
   code: 'invalid-username',
-  string: 'errors.invalidUsername',
+  string: 'error-invalid-username',
   base: UnprocessableEntity,
 });
 
 const UsedUsernameError = createErrorClass('UsedUsernameError', {
   code: 'invalid-username',
-  string: 'errors.usernameInUse',
+  string: 'error-username-in-use',
   base: UnprocessableEntity,
 });
 
 const ReCaptchaError = createErrorClass('ReCaptchaError', {
   code: 'recaptcha-failed',
-  string: 'errors.recaptchaFailed',
+  string: 'error-recaptcha-failed',
   base: BadRequest,
 });
 
 const IncorrectPasswordError = createErrorClass('IncorrectPasswordError', {
   code: 'incorrect-password',
-  string: 'errors.incorrectPassword',
+  string: 'error-incorrect-password',
   base: BadRequest,
 });
 
 const InvalidResetTokenError = createErrorClass('InvalidResetTokenError', {
   code: 'invalid-reset-token',
-  string: 'errors.invalidResetToken',
+  string: 'error-invalid-reset-token',
   base: UnprocessableEntity,
 });
 
 const UserNotFoundError = createErrorClass('UserNotFoundError', {
   code: 'user-not-found',
-  string: 'errors.userNotFound',
+  string: 'error-user-not-found',
   base: NotFound,
 });
 
 const RoleNotFoundError = createErrorClass('RoleNotFoundError', {
   code: 'role-not-found',
-  string: 'errors.roleNotFound',
+  string: 'error-role-not-found',
   base: NotFound,
 });
 
 const PlaylistNotFoundError = createErrorClass('PlaylistNotFoundError', {
   code: 'playlist-not-found',
-  string: 'errors.playlistNotFound',
+  string: 'error-playlist-not-found',
   base: NotFound,
 });
 
 const PlaylistItemNotFoundError = createErrorClass('PlaylistItemNotFoundError', {
   code: 'playlist-item-not-found',
-  string: 'errors.playlistItemNotFound',
+  string: 'error-playlist-item-not-found',
   base: NotFound,
 });
 
 const HistoryEntryNotFoundError = createErrorClass('HistoryEntryNotFoundError', {
   code: 'history-entry-not-found',
-  string: 'errors.historyEntryNotFound',
+  string: 'error-history-entry-not-found',
   base: NotFound,
 });
 
 const MediaNotFoundError = createErrorClass('MediaNotFoundError', {
   code: 'media-not-found',
-  string: 'errors.mediaNotFound',
+  string: 'error-media-not-found',
   base: NotFound,
 });
 
 const ItemNotInPlaylistError = createErrorClass('ItemNotInPlaylistError', {
   code: 'playlist-item-not-found',
-  string: 'errors.itemNotInPlaylist',
+  string: 'error-item-not-in-playlist',
   base: NotFound,
 });
 
 const CannotSelfFavoriteError = createErrorClass('CannotSelfFavoriteError', {
   code: 'no-self-favorite',
-  string: 'errors.noSelfFavorite',
+  string: 'error-no-self-favorite',
   base: Forbidden,
 });
 
 const CannotSelfMuteError = createErrorClass('CannotSelfMuteError', {
   code: 'no-self-mute',
-  string: ({ unmute }) => (unmute ? 'errors.noSelfUnmute' : 'errors.noSelfMute'),
+  string: 'error-no-self-mute',
   base: Forbidden,
 });
 
 const SourceNotFoundError = createErrorClass('SourceNotFoundError', {
   code: 'source-not-found',
-  string: 'errors.sourceNotFound',
+  string: 'error-source-not-found',
   base: NotFound,
 });
 
 const SourceNoImportError = createErrorClass('SourceNoImportError', {
   code: 'source-no-import',
-  string: 'errors.sourceNoImport',
+  string: 'error-source-no-import',
   base: NotFound,
 });
 
 const EmptyPlaylistError = createErrorClass('EmptyPlaylistError', {
   code: 'empty-playlist',
-  string: 'errors.emptyPlaylist',
+  string: 'error-empty-playlist',
   base: Forbidden,
 });
 
 const WaitlistLockedError = createErrorClass('WaitlistLockedError', {
   code: 'waitlist-locked',
-  string: 'errors.waitlistLocked',
+  string: 'error-waitlist-locked',
   base: Forbidden,
 });
 
 const AlreadyInWaitlistError = createErrorClass('AlreadyInWaitlistError', {
   code: 'already-in-waitlist',
-  string: 'errors.alreadyInWaitlist',
+  string: 'error-already-in-waitlist',
   base: BadRequest,
 });
 
 const UserNotInWaitlistError = createErrorClass('UserNotInWaitlistError', {
   code: 'not-in-waitlist',
-  string: 'errors.userNotInWaitlist',
+  string: 'error-user-not-in-waitlist',
   base: NotFound,
 });
 
 const UserIsPlayingError = createErrorClass('UserIsPlayingError', {
   code: 'user-is-playing',
-  string: 'errors.userIsPlaying',
+  string: 'error-user-is-playing',
   base: BadRequest,
 });
 

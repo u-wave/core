@@ -1,21 +1,19 @@
 import fs from 'node:fs';
-import * as i18next from 'i18next';
-import YAML from 'yaml';
+import { FluentBundle, FluentResource } from '@fluent/bundle';
 
-const source = fs.readFileSync(new URL('../locale/en.yaml', import.meta.url), 'utf8');
-const en = YAML.parse(source);
+const en = new FluentBundle(['en-US', 'en']);
+en.addResource(new FluentResource(
+  fs.readFileSync(new URL('../locale/en.ftl', import.meta.url), 'utf8'),
+));
 
-const i18n = i18next.createInstance();
-i18n.init({
-  fallbackLng: 'en',
-  lng: 'en',
-  defaultNS: 'uwave',
-  interpolation: {
-    escapeValue: false,
-  },
-});
-
-i18n.addResourceBundle('en', 'uwave', en.uwave);
-
-export const t = i18n.getFixedT('en', 'uwave');
-export { i18n };
+/**
+ * @param {string} id
+ * @param {Record<string, import('@fluent/bundle').FluentVariable>} [args]
+ */
+export function t(id, args) {
+  const message = en.getMessage(id);
+  if (message == null || message.value == null) {
+    throw new Error(`Translation "${id}" does not exist or is empty`);
+  }
+  return en.formatPattern(message.value, args);
+}

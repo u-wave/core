@@ -16,6 +16,7 @@ import {
 import toItemResponse from '../utils/toItemResponse.js';
 import toListResponse from '../utils/toListResponse.js';
 import { serializeCurrentUser } from '../utils/serialize.js';
+import { t } from '../locale.js';
 
 const { BadRequest } = httpErrors;
 
@@ -140,7 +141,7 @@ async function getSocialAvatar(uw, user, service) {
  */
 async function socialLoginCallback(service, req, res) {
   const { user } = req;
-  const { bans, locale } = req.uwave;
+  const { bans } = req.uwave;
   const { origin } = req.authOptions;
 
   if (await bans.isBanned(user)) {
@@ -184,10 +185,10 @@ async function socialLoginCallback(service, req, res) {
     <html>
       <head>
         <meta charset="utf-8">
-        <title>${locale.t('authentication.successTitle')}</title>
+        <title>${t('login-success-title')}</title>
       </head>
       <body style="background: #151515; color: #fff; font: 12pt 'Open Sans', sans-serif">
-        ${locale.t('authentication.closeThisWindow')}
+        ${t('login-close-this-window')}
         <script>${script}</script>
       </body>
     </html>
