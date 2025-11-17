@@ -82,35 +82,77 @@ describe('Authentication', () => {
     it('validates inputs', async () => {
       await supertest(uw.server)
         .post('/api/auth/login')
-        .expect(400);
+        .expect(400)
+        .expect((res) => sinon.assert.match(res.body.errors[0], { code: 'validation-error' }));
 
       await supertest(uw.server)
         .post('/api/auth/login')
         .send({})
-        .expect(400);
+        .expect(400)
+        .expect((res) => sinon.assert.match(res.body.errors[0], { code: 'validation-error' }));
       await supertest(uw.server)
         .post('/api/auth/login')
         .send({ email: 'name@example.com' })
-        .expect(400);
+        .expect(400)
+        .expect((res) => sinon.assert.match(res.body.errors[0], { code: 'validation-error' }));
       await supertest(uw.server)
         .post('/api/auth/login')
         .send({ email: ['not', 'a', 'string'], password: TEST_PASSWORD })
-        .expect(400);
+        .expect(400)
+        .expect((res) => sinon.assert.match(res.body.errors[0], { code: 'validation-error' }));
       await supertest(uw.server)
         .post('/api/auth/login')
         .send({ email: 'name@example.com', password: ['not', 'a', 'string'] })
-        .expect(400);
-      const { body } = await supertest(uw.server)
+        .expect(400)
+        .expect((res) => sinon.assert.match(res.body.errors[0], { code: 'validation-error' }));
+
+      await supertest(uw.server)
         .post('/api/auth/login')
         .send({ email: 'name@example.com', password: TEST_PASSWORD })
-        .expect(404);
-      // this means the input validation passed ;)
-      sinon.assert.match(body.errors[0], { code: 'user-not-found' });
+        .expect(404)
+        // this means the input validation passed ;)
+        .expect((res) => sinon.assert.match(res.body.errors[0], { code: 'user-not-found' }));
 
       await supertest(uw.server)
         .post('/api/auth/login?session=other')
         .send({ email: 'name@example.com', password: TEST_PASSWORD })
+        .expect(400)
+        .expect((res) => sinon.assert.match(res.body.errors[0], { code: 'validation-error' }));
+    });
+
+    it('rejects incorrect password', async () => {
+      // Create a user to log in as
+      await supertest(uw.server)
+        .post('/api/auth/register')
+        .send({ email: 'name@example.com', username: 'name', password: TEST_PASSWORD })
+        .expect(200);
+
+      const res = await supertest(uw.server)
+        .post('/api/auth/login?session=token')
+        .send({ email: 'name@example.com', password: 'not the password' })
         .expect(400);
+      sinon.assert.match(res.body.errors[0], { code: 'incorrect-password' });
+    });
+
+    it('accepts correct password', async () => {
+      // Create a user to log in as
+      await supertest(uw.server)
+        .post('/api/auth/register')
+        .send({ email: 'name@example.com', username: 'name', password: TEST_PASSWORD })
+        .expect(200);
+
+      const loginRes = await supertest(uw.server)
+        .post('/api/auth/login?session=token')
+        .send({ email: 'name@example.com', password: TEST_PASSWORD })
+        .expect(200);
+
+      const token = loginRes.body.meta.jwt;
+
+      const authRes = await supertest(uw.server)
+        .get('/api/auth')
+        .set('cookie', `uwsession=${token}`)
+        .expect(200);
+      sinon.assert.match(authRes.body.data, { username: 'name' });
     });
   });
 
