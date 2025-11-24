@@ -61,6 +61,6 @@ jobs:
           MONGODB_HOST: '127.0.0.1:27017'
       - name: Submit coverage
         if: matrix.node-version == '22.x'
-        uses: coverallsapp/github-action@v2.3.6
+        uses: coverallsapp/github-action@v2.3.7
         with:
           github-token: ${{secrets.GITHUB_TOKEN}}
