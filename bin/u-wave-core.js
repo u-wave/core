@@ -72,6 +72,20 @@ const envSchema = {
       description: 'Required when using a reverse proxy like Nginx. See https://expressjs.com/en/5x/api.html#trust.proxy.options.table',
       anyOf: [{ type: 'number' }, { type: 'boolean' }, { type: 'string' }],
     },
+
+    SMTP_HOSTNAME: {
+      type: 'string',
+    },
+    SMTP_PORT: {
+      type: 'number',
+      default: 465,
+    },
+    SMTP_USERNAME: {
+      type: 'string',
+    },
+    SMTP_PASSWORD: {
+      type: 'string',
+    },
   },
 };
 
@@ -95,6 +109,8 @@ if (argv.h || argv.help || !validConfig) {
   console.log(`    ${envSchema.properties.REDIS_URL.description} Defaults to ${envSchema.properties.REDIS_URL.default}.`);
   console.log('  YOUTUBE_API_KEY [optional]');
   console.log(`    ${envSchema.properties.YOUTUBE_API_KEY.description}`);
+  console.log('  SMTP_HOSTNAME, SMTP_PORT, SMTP_USERNAME, SMTP_PASSWORD [optional]');
+  console.log('    Configures sending transactional emails, to allow users to request password resets');
   console.log();
 }
 
@@ -128,6 +144,23 @@ if (trustProxy === 'true') {
   trustProxy = Number(trustProxy);
 }
 
+/** @type {undefined | import('nodemailer').TransportOptions} */
+let smtpSettings;
+if (config.SMTP_HOSTNAME) {
+  smtpSettings = {
+    host: config.SMTP_HOSTNAME,
+    port: Number(config.SMTP_PORT),
+    secure: config.SMTP_PORT === '465', // Maybe make this configurable individually in the future
+  };
+
+  if (config.SMTP_USERNAME) {
+    smtpSettings.auth = {
+      user: config.SMTP_USERNAME,
+      pass: config.SMTP_PASSWORD,
+    };
+  }
+}
+
 const uw = uwave({
   port,
   redis: config.REDIS_URL,
@@ -136,6 +169,7 @@ const uw = uwave({
   // This property is untyped, it is propagated to the also-untyped MongoDB -> SQL migration
   mongo: config.MONGODB_URL,
   trustProxy,
+  mailTransport: smtpSettings,
 });
 
 uw.on('redisError', (err) => {
