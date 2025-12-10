@@ -70,7 +70,7 @@
     "redlock": "5.0.0-beta.2",
     "secure-json-parse": "^4.0.0",
     "transliteration": "^2.1.11",
-    "u-wave-announce": "^0.5.1",
+    "u-wave-announce": "=0.6.0-alpha.1",
     "u-wave-source-soundcloud": "^2.0.2",
     "u-wave-source-youtube": "^2.0.0",
     "ultron": "^1.1.1",
