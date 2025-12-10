@@ -1,5 +1,6 @@
 import { randomUUID } from 'node:crypto';
 import { promisify } from 'node:util';
+import { subHours } from 'date-fns';
 import cookie from 'cookie';
 import jwt from 'jsonwebtoken';
 import randomString from 'random-string';
@@ -22,6 +23,7 @@ const { BadRequest } = httpErrors;
 
 /**
  * @typedef {import('../schema').UserID} UserID
+ * @typedef {import('../schema.js').PasswordResetToken} PasswordResetToken
  */
 
 /**
@@ -358,11 +360,24 @@ async function register(req) {
  * @prop {string} email
  */
 
+function generateResetToken() {
+  return /** @type {PasswordResetToken} */ (randomString({ length: 35, special: false }));
+}
+
+const LOCAL_SMTP_TRANSPORT = {
+  host: 'localhost',
+  port: 25,
+  debug: true,
+  tls: {
+    rejectUnauthorized: false,
+  },
+};
+
 /**
  * @param {import('../types.js').Request<{}, {}, RequestPasswordResetBody> & WithAuthOptions} req
  */
 async function reset(req) {
-  const { db, redis } = req.uwave;
+  const { db } = req.uwave;
   const { email } = req.body;
   const { mailTransport, createPasswordResetEmail } = req.authOptions;
 
@@ -374,24 +389,18 @@ async function reset(req) {
     throw new UserNotFoundError({ email });
   }
 
-  const token = randomString({ length: 35, special: false });
+  const token = generateResetToken();
 
-  await redis.set(`reset:${token}`, user.id);
-  await redis.expire(`reset:${token}`, 24 * 60 * 60);
+  await db.insertInto('passwordResets')
+    .values({ userID: user.id, token })
+    .execute();
 
   const message = createPasswordResetEmail({
     token,
     requestUrl: req.fullUrl,
   });
 
-  const transporter = nodemailer.createTransport(mailTransport ?? {
-    host: 'localhost',
-    port: 25,
-    debug: true,
-    tls: {
-      rejectUnauthorized: false,
-    },
-  });
+  const transporter = nodemailer.createTransport(mailTransport ?? LOCAL_SMTP_TRANSPORT);
 
   await transporter.sendMail({ to: email, ...message });
 
@@ -409,28 +418,36 @@ async function reset(req) {
  * @type {import('../types.js').Controller<ChangePasswordParams, {}, ChangePasswordBody>}
  */
 async function changePassword(req) {
-  const { users, redis } = req.uwave;
+  const { users, db } = req.uwave;
   const { reset: resetToken } = req.params;
   const { password } = req.body;
 
-  const userID = /** @type {UserID} */ (await redis.get(`reset:${resetToken}`));
-  if (!userID) {
-    throw new InvalidResetTokenError();
-  }
+  const expirationTime = subHours(new Date(), 2);
 
-  const user = await users.getUser(userID);
-  if (!user) {
-    throw new UserNotFoundError({ id: userID });
-  }
+  return db.transaction().execute(async (tx) => {
+    // Delete in a transaction, so it's rolled back automatically if we hit one of the error cases below.
+    const result = await tx.deleteFrom('passwordResets')
+      .returning(['userID'])
+      .where('token', '=', /** @type {PasswordResetToken} */ (resetToken))
+      .where('createdAt', '>', expirationTime)
+      .executeTakeFirst();
 
-  await users.updatePassword(user.id, password);
+    if (!result) {
+      throw new InvalidResetTokenError();
+    }
 
-  await redis.del(`reset:${resetToken}`);
+    const user = await users.getUser(result.userID, tx);
+    if (!user) {
+      throw new UserNotFoundError({ id: result.userID });
+    }
 
-  return toItemResponse({}, {
-    meta: {
-      message: `Updated password for ${user.username}`,
-    },
+    await users.updatePassword(user.id, password, tx);
+
+    return toItemResponse({}, {
+      meta: {
+        message: `Updated password for ${user.username}`,
+      },
+    });
   });
 }
 
