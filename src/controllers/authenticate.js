@@ -425,7 +425,8 @@ async function changePassword(req) {
   const expirationTime = subHours(new Date(), 2);
 
   return db.transaction().execute(async (tx) => {
-    // Delete in a transaction, so it's rolled back automatically if we hit one of the error cases below.
+    // Delete in a transaction, so it's rolled back automatically
+    // if we hit one of the error cases below.
     const result = await tx.deleteFrom('passwordResets')
       .returning(['userID'])
       .where('token', '=', /** @type {PasswordResetToken} */ (resetToken))
