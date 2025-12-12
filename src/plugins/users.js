@@ -365,11 +365,11 @@ class UsersRepository {
    * @param {UserID} id
    * @param {string} password
    */
-  async updatePassword(id, password) {
-    const { db } = this.#uw;
-
+  async updatePassword(id, password, tx = this.#uw.db) {
+    // TODO(@goto-bus-stop): encrypting the password while in a transaction seems silly.
+    // A tagged type could be used to enforce that the user encrypts the password?
     const hash = await encryptPassword(password);
-    const result = await db.updateTable('users')
+    const result = await tx.updateTable('users')
       .where('id', '=', id)
       .set({ password: hash })
       .executeTakeFirst();

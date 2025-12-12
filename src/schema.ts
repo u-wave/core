@@ -8,6 +8,7 @@ export type PlaylistID = Tagged<string, 'PlaylistID'>;
 export type PlaylistItemID = Tagged<string, 'PlaylistItemID'>;
 export type HistoryEntryID = Tagged<string, 'HistoryEntryID'>;
 export type Permission = Tagged<string, 'Permission'>;
+export type PasswordResetToken = Tagged<string, 'PasswordResetToken'>;
 
 /**
  * The JS type for a given table's rows.
@@ -90,6 +91,14 @@ export interface AuthServiceTable {
   updatedAt: Generated<Date>,
 }
 
+export type PasswordReset = Selected<PasswordResetTable>;
+export interface PasswordResetTable {
+  userID: UserID,
+  token: PasswordResetToken,
+  /** When the password reset token was created. Expiration is derived from this. */
+  createdAt: Generated<Date>,
+}
+
 export type Playlist = Selected<Omit<PlaylistTable, 'items'>>;
 export type PlaylistWithItems = Selected<PlaylistTable>;
 export interface PlaylistTable {
@@ -165,6 +174,7 @@ export interface Database {
   bans: BanTable,
   mutes: MuteTable,
   authServices: AuthServiceTable,
+  passwordResets: PasswordResetTable,
   playlists: PlaylistTable,
   playlistItems: PlaylistItemTable,
   historyEntries: HistoryEntryTable,
