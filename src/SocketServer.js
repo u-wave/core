@@ -11,8 +11,9 @@ import GuestConnection from './sockets/GuestConnection.js';
 import AuthedConnection from './sockets/AuthedConnection.js';
 import LostConnection from './sockets/LostConnection.js';
 import { serializeUser } from './utils/serialize.js';
-import { ulid } from 'ulid';
+import { ulid, encodeTime } from 'ulid';
 import { jsonb } from './utils/sqlite.js';
+import { subMinutes } from 'date-fns';
 
 const { isEmpty } = lodash;
 
@@ -741,6 +742,18 @@ class SocketServer {
     this.#connections.forEach((connection) => {
       connection.ping();
     });
+
+    this.#cleanupMessageQueue().catch((err) => {
+      this.#logger.error({ err }, 'failed to clean up socket message queue');
+    });
+  }
+
+  async #cleanupMessageQueue() {
+    const oldestID = encodeTime(subMinutes(new Date(), 10).getTime());
+
+    await this.#uw.db.deleteFrom('socketMessageQueue')
+      .where('id', '<', oldestID)
+      .execute();
   }
 
   /**
