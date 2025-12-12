@@ -1,4 +1,5 @@
 import EventEmitter from 'node:events';
+import { ulid } from 'ulid';
 import Ultron from 'ultron';
 import WebSocket from 'ws';
 
@@ -32,9 +33,9 @@ class GuestConnection extends EventEmitter {
 
     this.#events.on('message', /** @param {string|Buffer} token */ (token) => {
       this.attemptAuth(token.toString()).then(() => {
-        this.send('authenticated');
+        this.send(ulid(), 'authenticated');
       }).catch((error) => {
-        this.send('error', error.message);
+        this.send(ulid(), 'error', error.message);
       });
     });
 
@@ -48,6 +49,7 @@ class GuestConnection extends EventEmitter {
    * @private
    */
   async attemptAuth(token) {
+    // TODO: support a Last-Event-ID style value provided by the client
     const { bans, users } = this.uw;
     const { authRegistry } = this.options;
 
@@ -67,7 +69,7 @@ class GuestConnection extends EventEmitter {
       throw new Error('You have been banned');
     }
 
-    this.emit('authenticate', userModel, sessionID);
+    this.emit('authenticate', userModel, sessionID, null);
   }
 
   /**
@@ -78,11 +80,12 @@ class GuestConnection extends EventEmitter {
   }
 
   /**
+   * @param {string} id
    * @param {string} command
    * @param {import('type-fest').JsonValue} [data]
    */
-  send(command, data) {
-    this.socket.send(JSON.stringify({ command, data }));
+  send(id, command, data) {
+    this.socket.send(JSON.stringify({ id, command, data }));
   }
 
   #timeSinceLastMessage() {

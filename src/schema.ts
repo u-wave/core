@@ -163,6 +163,13 @@ export interface MigrationTable {
   name: string,
 }
 
+export interface SocketMessageTable {
+  id: string,
+  targetUserID: UserID | null,
+  command: string,
+  data: JSONB<JsonValue>,
+}
+
 export interface Database {
   configuration: ConfigurationTable,
   keyval: KeyvalTable,
@@ -179,6 +186,7 @@ export interface Database {
   playlistItems: PlaylistItemTable,
   historyEntries: HistoryEntryTable,
   feedback: FeedbackTable,
+  socketMessageQueue: SocketMessageTable,
 }
 
 export type Kysely = KyselyBase<Database>;
