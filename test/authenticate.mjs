@@ -360,4 +360,53 @@ describe('Password Reset', () => {
       },
     });
   });
+
+  it('can change the password', async () => {
+    let token;
+
+    const mailTransport = {
+      name: 'test',
+      send(mail, callback) {
+        token = mail.data.token;
+
+        callback(null, {
+          envelope: mail.message.getEnvelope(),
+          messageId: mail.message.messageId(),
+        });
+      },
+    };
+
+    uw = await createUwave('pw_reset', {
+      mailTransport,
+      createPasswordResetEmail({ token }) {
+        return { token };
+      },
+    });
+
+    const user = await uw.test.createUser();
+
+    await supertest(uw.server)
+      .post('/api/auth/password/reset')
+      .send({ email: user.email })
+      .expect(200);
+
+    assert(token != null, 'requesting should have populated token');
+
+    await supertest(uw.server)
+      .post(`/api/auth/password/reset/${token}`)
+      .send({ password: 'newpassword' })
+      .expect(200);
+
+    // Make sure we cannot reuse the token
+    await supertest(uw.server)
+      .post(`/api/auth/password/reset/${token}`)
+      .send({ password: 'CANNOTREUSE' })
+      .expect(422);
+
+    // Make sure we can use the new password
+    await supertest(uw.server)
+      .post('/api/auth/login')
+      .send({ email: user.email, password: 'newpassword' })
+      .expect(200);
+  });
 });
