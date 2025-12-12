@@ -294,6 +294,20 @@ describe('Password Reset', () => {
     }
   });
 
+  it('validates input', async () => {
+    uw = await createUwave('pw_reset');
+
+    await supertest(uw.server)
+      .post('/api/auth/password/reset')
+      .send('email@example.com')
+      .expect(400);
+
+    await supertest(uw.server)
+      .post('/api/auth/password/reset')
+      .send({})
+      .expect(400);
+  });
+
   it('emails a password reset link', async () => {
     const sendSpy = sandbox.spy(mailTransport, 'send');
     uw = await createUwave('pw_reset', {
