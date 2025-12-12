@@ -2,6 +2,8 @@ import EventEmitter from 'node:events';
 import Ultron from 'ultron';
 import WebSocket from 'ws';
 import sjson from 'secure-json-parse';
+import { ulid } from 'ulid';
+import { fromJson, json } from '../utils/sqlite.js';
 
 const PING_TIMEOUT = 5_000;
 const DEAD_TIMEOUT = 30_000;
@@ -12,6 +14,11 @@ class AuthedConnection extends EventEmitter {
   #logger;
 
   #lastMessage = Date.now();
+
+  // Ideally, the client should actually be responsible for this,
+  // because the server only knows if something was *sent*, not if it was received.
+  /** @type {string|null} */
+  #lastEventID = null;
 
   /**
    * @param {import('../Uwave.js').default} uw
@@ -31,7 +38,10 @@ class AuthedConnection extends EventEmitter {
     });
 
     this.#events.on('close', () => {
-      this.emit('close', { banned: this.banned });
+      this.emit('close', {
+        banned: this.banned,
+        lastEventID: this.#lastEventID,
+      });
     });
     this.#events.on('message', (raw) => {
       this.#onMessage(raw);
@@ -40,7 +50,9 @@ class AuthedConnection extends EventEmitter {
       this.#onPong();
     });
 
-    this.sendWaiting();
+    this.#sendWaiting().catch((err) => {
+      this.#logger.error({ err }, 'failed to send waiting messages on reconnect');
+    });
   }
 
   /**
@@ -50,29 +62,29 @@ class AuthedConnection extends EventEmitter {
     return `http-api:disconnected:${this.sessionID}`;
   }
 
-  /**
-   * @private
-   */
-  get messagesKey() {
-    return `http-api:disconnected:${this.sessionID}:messages`;
-  }
-
-  /**
-   * @private
-   */
-  async sendWaiting() {
-    const wasDisconnected = await this.uw.redis.exists(this.key);
-    if (!wasDisconnected) {
+  async #sendWaiting() {
+    const lastEventID = await this.uw.redis.get(this.key);
+    if (!lastEventID) {
       return;
     }
-    /** @type {string[]} */
-    const messages = await this.uw.redis.lrange(this.messagesKey, 0, -1);
+
+    const messages = await this.uw.db.selectFrom('socketMessageQueue')
+      .select([
+        'id',
+        'command',
+        (eb) => json(eb.ref('data')).as('data'),
+      ])
+      .where('id', '>', lastEventID)
+      .where((eb) => eb.or([
+        eb('targetUserID', 'is', null),
+        eb('targetUserID', '=', this.user.id),
+      ]))
+      .execute();
+
     this.#logger.info({ count: messages.length }, 'queued messages');
     messages.forEach((message) => {
-      const { command, data } = sjson.parse(message);
-      this.send(command, data);
+      this.send(message.id, message.command, fromJson(message.data));
     });
-    await this.uw.redis.del(this.key, this.messagesKey);
   }
 
   /**
@@ -91,12 +103,14 @@ class AuthedConnection extends EventEmitter {
   }
 
   /**
+   * @param {string} id
    * @param {string} command
    * @param {import('type-fest').JsonValue} data
    */
-  send(command, data) {
-    this.socket.send(JSON.stringify({ command, data }));
+  send(id, command, data) {
+    this.socket.send(JSON.stringify({ id, command, data }));
     this.#lastMessage = Date.now();
+    this.#lastEventID = id;
   }
 
   #timeSinceLastMessage() {
@@ -119,7 +133,7 @@ class AuthedConnection extends EventEmitter {
   ban() {
     this.#logger.info('ban');
     this.banned = true;
-    this.send('error', 'You have been banned');
+    this.send(ulid(), 'error', 'You have been banned');
     this.socket.close(4001, 'ban');
   }
 

@@ -11,8 +11,9 @@ class LostConnection extends EventEmitter {
    * @param {import('../Uwave.js').default} uw
    * @param {import('../schema.js').User} user
    * @param {string} sessionID
+   * @param {string|null} lastEventID
    */
-  constructor(uw, user, sessionID, timeout = 30) {
+  constructor(uw, user, sessionID, lastEventID, timeout = 30) {
     super();
     this.#uw = uw;
     this.user = user;
@@ -22,50 +23,42 @@ class LostConnection extends EventEmitter {
       ns: 'uwave:sockets', connectionType: 'LostConnection', userID: this.user.id, sessionID,
     });
 
-    this.#initQueued(timeout);
+    if (lastEventID != null) {
+      this.#initQueued(lastEventID, timeout);
+    }
   }
 
   get #key() {
     return `http-api:disconnected:${this.sessionID}`;
   }
 
-  get #messagesKey() {
-    return `http-api:disconnected:${this.sessionID}:messages`;
-  }
-
-  /** @param {number} seconds */
-  #initQueued(seconds) {
+  /**
+   * @param {string} lastEventID
+   * @param {number} seconds
+   */
+  #initQueued(lastEventID, seconds) {
     // We expire the keys after timeout*10, because a server restart near the
     // end of the timeout might mean that someone fails to reconnect. This way
     // we can ensure that everyone still gets the full `timeout` duration to
     // reconnect after a server restart, while also not filling up Redis with
-    // messages to users who left and will never return.
+    // session IDs that left and will never return.
     this.#uw.redis.multi()
-      .set(this.#key, 'true', 'EX', seconds * 10)
-      .ltrim(this.#messagesKey, 0, 0)
-      .expire(this.#messagesKey, seconds * 10)
+      .set(this.#key, lastEventID, 'EX', seconds * 10)
       .exec();
   }
 
   /**
+   * @param {string} id
    * @param {string} command
    * @param {import('type-fest').JsonValue} data
    */
-  send(command, data) {
-    this.#logger.info({ command, data }, 'queue command');
-
-    this.#uw.redis.rpush(
-      this.#messagesKey,
-      JSON.stringify({ command, data }),
-    );
+  send(id, command, data) {
+    this.#logger.info({ id, command, data }, 'queue command');
   }
 
   ping() {
     if (Date.now() > this.#expiresAt) {
       this.close();
-      this.#uw.redis.del(this.#key, this.#messagesKey).catch(() => {
-        // No big deal
-      });
     }
   }
 

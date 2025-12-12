@@ -11,6 +11,8 @@ import GuestConnection from './sockets/GuestConnection.js';
 import AuthedConnection from './sockets/AuthedConnection.js';
 import LostConnection from './sockets/LostConnection.js';
 import { serializeUser } from './utils/serialize.js';
+import { ulid } from 'ulid';
+import { jsonb } from './utils/sqlite.js';
 
 const { isEmpty } = lodash;
 
@@ -472,7 +474,7 @@ class SocketServer {
       .selectAll()
       .execute();
     disconnectedUsers.forEach((user) => {
-      this.add(this.createLostConnection(user, 'TODO: Actual session ID!!'));
+      this.add(this.createLostConnection(user, 'TODO: Actual session ID!!', null));
     });
   }
 
@@ -564,13 +566,13 @@ class SocketServer {
    */
   createAuthedConnection(socket, user, sessionID) {
     const connection = new AuthedConnection(this.#uw, socket, user, sessionID);
-    connection.on('close', ({ banned }) => {
+    connection.on('close', ({ banned, lastEventID }) => {
       if (banned) {
         this.#logger.info({ userId: user.id }, 'removing connection after ban');
         disconnectUser(this.#uw, user.id);
       } else if (!this.#closing) {
         this.#logger.info({ userId: user.id }, 'lost connection');
-        this.add(this.createLostConnection(user, sessionID));
+        this.add(this.createLostConnection(user, sessionID, lastEventID));
       }
       this.remove(connection);
     });
@@ -603,11 +605,18 @@ class SocketServer {
    *
    * @param {User} user
    * @param {string} sessionID
+   * @param {string|null} lastEventID
    * @returns {LostConnection}
    * @private
    */
-  createLostConnection(user, sessionID) {
-    const connection = new LostConnection(this.#uw, user, sessionID, this.options.timeout);
+  createLostConnection(user, sessionID, lastEventID) {
+    const connection = new LostConnection(
+      this.#uw,
+      user,
+      sessionID,
+      lastEventID,
+      this.options.timeout,
+    );
     connection.on('close', () => {
       this.#logger.info({ userId: user.id }, 'user left');
       this.remove(connection);
@@ -739,9 +748,34 @@ class SocketServer {
    *
    * @param {string} command Command name.
    * @param {import('type-fest').JsonValue} data Command data.
+   * @param {import('./schema.js').UserID | null} targetUserID
+   */
+  #recordMessage(command, data, targetUserID = null) {
+    const id = ulid();
+
+    this.#uw.db.insertInto('socketMessageQueue')
+      .values({
+        id,
+        command,
+        data: jsonb(data),
+        targetUserID,
+      })
+      .execute();
+
+    return id;
+  }
+
+  /**
+   * Broadcast a command to all connected clients.
+   *
+   * @param {string} command Command name.
+   * @param {import('type-fest').JsonValue} data Command data.
    */
   broadcast(command, data) {
+    const id = this.#recordMessage(command, data);
+
     this.#logger.trace({
+      id,
       command,
       data,
       to: this.#connections.map((connection) => (
@@ -750,23 +784,24 @@ class SocketServer {
     }, 'broadcast');
 
     this.#connections.forEach((connection) => {
-      connection.send(command, data);
+      connection.send(id, command, data);
     });
   }
 
   /**
    * Send a command to a single user.
    *
-   * @param {User|string} user User or user ID to send the command to.
+   * @param {User|import('./schema.js').UserID} user User or user ID to send the command to.
    * @param {string} command Command name.
    * @param {import('type-fest').JsonValue} data Command data.
    */
   sendTo(user, command, data) {
     const userID = typeof user === 'object' ? user.id : user;
+    const id = this.#recordMessage(command, data, userID);
 
     this.#connections.forEach((connection) => {
       if ('user' in connection && connection.user.id === userID) {
-        connection.send(command, data);
+        connection.send(id, command, data);
       }
     });
   }
