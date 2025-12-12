@@ -25,8 +25,9 @@ class AuthedConnection extends EventEmitter {
    * @param {import('ws').WebSocket} socket
    * @param {import('../schema.js').User} user
    * @param {string} sessionID
+   * @param {string|null} lastEventID
    */
-  constructor(uw, socket, user, sessionID) {
+  constructor(uw, socket, user, sessionID, lastEventID) {
     super();
     this.uw = uw;
     this.socket = socket;
@@ -50,7 +51,7 @@ class AuthedConnection extends EventEmitter {
       this.#onPong();
     });
 
-    this.#sendWaiting().catch((err) => {
+    this.#sendWaiting(lastEventID).catch((err) => {
       this.#logger.error({ err }, 'failed to send waiting messages on reconnect');
     });
   }
@@ -62,8 +63,10 @@ class AuthedConnection extends EventEmitter {
     return `http-api:disconnected:${this.sessionID}`;
   }
 
-  async #sendWaiting() {
-    const lastEventID = await this.uw.redis.get(this.key);
+  /** @param {string|null} clientLastEventID */
+  async #sendWaiting(clientLastEventID) {
+    // Legacy clients may not send a last event ID.
+    const lastEventID = clientLastEventID ?? await this.uw.redis.get(this.key);
     if (!lastEventID) {
       return;
     }

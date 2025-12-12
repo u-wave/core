@@ -539,15 +539,15 @@ class SocketServer {
     connection.on('close', () => {
       this.remove(connection);
     });
-    connection.on('authenticate', async (user, sessionID) => {
+    connection.on('authenticate', async (user, sessionID, lastEventID) => {
       const isReconnect = await connection.isReconnect(sessionID);
-      this.#logger.info({ userId: user.id, isReconnect }, 'authenticated socket');
+      this.#logger.info({ userId: user.id, isReconnect, lastEventID }, 'authenticated socket');
       if (isReconnect) {
         const previousConnection = this.getLostConnection(sessionID);
         if (previousConnection) this.remove(previousConnection);
       }
 
-      this.replace(connection, this.createAuthedConnection(socket, user, sessionID));
+      this.replace(connection, this.createAuthedConnection(socket, user, sessionID, lastEventID));
 
       if (!isReconnect) {
         this.#uw.publish('user:join', { userID: user.id });
@@ -562,11 +562,12 @@ class SocketServer {
    * @param {import('ws').WebSocket} socket
    * @param {User} user
    * @param {string} sessionID
+   * @param {string|null} lastEventID
    * @returns {AuthedConnection}
    * @private
    */
-  createAuthedConnection(socket, user, sessionID) {
-    const connection = new AuthedConnection(this.#uw, socket, user, sessionID);
+  createAuthedConnection(socket, user, sessionID, lastEventID) {
+    const connection = new AuthedConnection(this.#uw, socket, user, sessionID, lastEventID);
     connection.on('close', ({ banned, lastEventID }) => {
       if (banned) {
         this.#logger.info({ userId: user.id }, 'removing connection after ban');

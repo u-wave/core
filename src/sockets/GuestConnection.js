@@ -49,6 +49,7 @@ class GuestConnection extends EventEmitter {
    * @private
    */
   async attemptAuth(token) {
+    // TODO: support a Last-Event-ID style value provided by the client
     const { bans, users } = this.uw;
     const { authRegistry } = this.options;
 
@@ -68,7 +69,7 @@ class GuestConnection extends EventEmitter {
       throw new Error('You have been banned');
     }
 
-    this.emit('authenticate', userModel, sessionID);
+    this.emit('authenticate', userModel, sessionID, null);
   }
 
   /**
