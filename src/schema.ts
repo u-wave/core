@@ -163,6 +163,12 @@ export interface MigrationTable {
   name: string,
 }
 
+export interface SessionTable {
+  id: string, // express-session ID
+  data: JSONB<JsonObject>,
+  createdAt: Generated<Date>,
+}
+
 export interface SocketMessageTable {
   id: string,
   targetUserID: UserID | null,
@@ -186,6 +192,7 @@ export interface Database {
   playlistItems: PlaylistItemTable,
   historyEntries: HistoryEntryTable,
   feedback: FeedbackTable,
+  sessions: SessionTable,
   socketMessageQueue: SocketMessageTable,
 }
 

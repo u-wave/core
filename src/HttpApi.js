@@ -7,7 +7,6 @@ import cookieParser from 'cookie-parser';
 import cors from 'cors';
 import helmet from 'helmet';
 import session from 'express-session';
-import { RedisStore } from 'connect-redis';
 import qs from 'qs';
 import { pinoHttp } from 'pino-http';
 
@@ -29,6 +28,7 @@ import errorHandler from './middleware/errorHandler.js';
 // utils
 import AuthRegistry from './AuthRegistry.js';
 import matchOrigin from './utils/matchOrigin.js';
+import SqliteSessionStore from './utils/SqliteSessionStore.js';
 
 const optionsSchema = JSON.parse(
   fs.readFileSync(new URL('./schemas/httpApi.json', import.meta.url), 'utf8'),
@@ -127,9 +127,7 @@ async function httpApi(uw, options) {
         secure: uw.express.get('env') === 'production',
         httpOnly: true,
       },
-      store: new RedisStore({
-        client: uw.redis,
-      }),
+      store: new SqliteSessionStore(uw.db),
     }))
     .use(uw.passport.initialize())
     .use(addFullUrl())
