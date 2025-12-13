@@ -167,6 +167,7 @@ export interface SessionTable {
   id: string, // express-session ID
   data: JSONB<JsonObject>,
   createdAt: Generated<Date>,
+  expiresAt: Date,
 }
 
 export interface SocketMessageTable {
