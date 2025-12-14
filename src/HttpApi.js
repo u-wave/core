@@ -7,9 +7,9 @@ import cookieParser from 'cookie-parser';
 import cors from 'cors';
 import helmet from 'helmet';
 import session from 'express-session';
-import { RedisStore } from 'connect-redis';
 import qs from 'qs';
 import { pinoHttp } from 'pino-http';
+import { milliseconds } from 'date-fns';
 
 // routes
 import authenticate from './routes/authenticate.js';
@@ -29,6 +29,9 @@ import errorHandler from './middleware/errorHandler.js';
 // utils
 import AuthRegistry from './AuthRegistry.js';
 import matchOrigin from './utils/matchOrigin.js';
+import SqliteSessionStore from './utils/SqliteSessionStore.js';
+
+const SESSION_DURATION = milliseconds({ days: 7 });
 
 const optionsSchema = JSON.parse(
   fs.readFileSync(new URL('./schemas/httpApi.json', import.meta.url), 'utf8'),
@@ -123,13 +126,13 @@ async function httpApi(uw, options) {
       secret: options.secret,
       resave: false,
       saveUninitialized: false,
+      rolling: true,
       cookie: {
         secure: uw.express.get('env') === 'production',
         httpOnly: true,
+        maxAge: SESSION_DURATION,
       },
-      store: new RedisStore({
-        client: uw.redis,
-      }),
+      store: new SqliteSessionStore(uw.db, uw.logger.child({ ns: 'uwave:sessions' })),
     }))
     .use(uw.passport.initialize())
     .use(addFullUrl())
