@@ -1,9 +1,14 @@
+import { sql } from 'kysely';
 import { UserNotFoundError, CannotSelfMuteError } from '../errors/index.js';
+import { fromJson, json } from '../utils/sqlite.js';
 import toItemResponse from '../utils/toItemResponse.js';
+import toListResponse from '../utils/toListResponse.js';
 
 /**
  * @typedef {import('../schema').UserID} UserID
  */
+
+const BACKSCROLL_LENGTH = 20;
 
 /**
  * @typedef {object} MuteUserParams
@@ -106,10 +111,58 @@ async function deleteMessage(req) {
   return toItemResponse({});
 }
 
+/**
+ * @type {import('../types.js').Controller<{}>}
+ */
+async function getBackscroll(req) {
+  const { db, users } = req.uwave;
+
+  const rows = await db.selectFrom('socketMessageQueue')
+    .where('command', '=', 'chatMessage')
+    .innerJoin('users', (join) => join
+      .on('users.id', '=', (eb) => sql`${eb.ref('data')}->>'userID'`)
+    )
+    .select([
+      (eb) => json(eb.ref('data')).as('data'),
+      ...users.publicUserColumns,
+    ])
+    .orderBy('socketMessageQueue.id', 'desc')
+    .limit(BACKSCROLL_LENGTH)
+    .execute()
+
+  const messages = rows.map((row) => {
+    const message = /** @type {import('../redisMessages.js').ServerActionParameters['chat:message']} */ (fromJson(row.data));
+    return {
+      id: message.id,
+      /** Deprecated: timestamp as unixy milliseconds */
+      timestamp: message.timestamp,
+      createdAt: new Date(message.timestamp),
+      message: message.message,
+      user: {
+        id: row.id,
+        username: row.username,
+        slug: row.slug,
+        createdAt: row.createdAt,
+        updatedAt: row.updatedAt,
+        avatar: row.avatar,
+        roles: row.roles == null ? [] : fromJson(row.roles),
+      },
+    };
+  });
+
+  return toListResponse(messages, {
+    included: {
+      user: ['user'],
+    },
+    url: req.fullUrl,
+  });
+}
+
 export {
   muteUser,
   unmuteUser,
   deleteAll,
   deleteByUser,
   deleteMessage,
+  getBackscroll,
 };

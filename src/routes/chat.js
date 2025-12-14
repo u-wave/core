@@ -8,6 +8,7 @@ import { Permissions } from '../plugins/acl.js';
 
 function chatRoutes() {
   return Router()
+    .get('/', route(controller.getBackscroll))
     // DELETE /chat/ - Clear the chat (delete all messages).
     .delete(
       '/',
