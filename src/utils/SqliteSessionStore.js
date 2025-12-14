@@ -1,17 +1,26 @@
 import { Store } from 'express-session';
 import { callbackify } from 'node:util';
-import { fromJson, json, jsonb } from './sqlite.js';
-import { addHours, addMilliseconds } from 'date-fns';
+import {
+  fromJson,
+  json,
+  jsonb,
+  now,
+} from './sqlite.js';
+import { addHours, addMilliseconds, isBefore } from 'date-fns';
 
 export default class SqliteSessionStore extends Store {
   #db;
 
+  #logger;
+
   /**
    * @param {import('kysely').Kysely<import('../schema.js').Database>} db
+   * @param {import('pino').Logger} logger
    */
-  constructor(db) {
+  constructor(db, logger) {
     super();
     this.#db = db;
+    this.#logger = logger;
   }
 
   /**
@@ -25,6 +34,16 @@ export default class SqliteSessionStore extends Store {
     return addHours(new Date(), 1);
   }
 
+  async #cleanup() {
+    const result = await this.#db.deleteFrom('sessions')
+      .where('expiresAt', '<', now)
+      .executeTakeFirst();
+
+    if (result != null) {
+      this.#logger.debug({ sessionsDeleted: result.numDeletedRows }, 'cleaned up stale express-sessions');
+    }
+  }
+
   /**
    * @param {string} sid
    * @param {(
@@ -36,10 +55,18 @@ export default class SqliteSessionStore extends Store {
     callbackify(async () => {
       const row = await this.#db.selectFrom('sessions')
         .where('id', '=', sid)
-        .select((eb) => json(eb.ref('data')).as('data'))
+        .select(['expiresAt', (eb) => json(eb.ref('data')).as('data')])
         .executeTakeFirst();
 
       if (row != null) {
+        if (isBefore(row.expiresAt, new Date())) {
+          this.#cleanup().catch((err) => {
+            this.#logger.warn({ err }, 'automatic express-session cleanup failed');
+          });
+
+          return null;
+        }
+
         return /** @type {import('express-session').SessionData | null} */ (
           /** @type {unknown} */ (fromJson(row.data))
         );
@@ -107,6 +134,15 @@ export default class SqliteSessionStore extends Store {
         .select((eb) => eb.fn.countAll().as('count'))
         .executeTakeFirstOrThrow();
       return Number(count);
+    })(callback);
+  }
+
+  /**
+   * @param {(err?: unknown) => void} callback
+   */
+  clear(callback) {
+    callbackify(async () => {
+      await this.#db.deleteFrom('sessions').execute();
     })(callback);
   }
 }

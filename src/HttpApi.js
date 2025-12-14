@@ -127,7 +127,7 @@ async function httpApi(uw, options) {
         secure: uw.express.get('env') === 'production',
         httpOnly: true,
       },
-      store: new SqliteSessionStore(uw.db),
+      store: new SqliteSessionStore(uw.db, uw.logger.child({ ns: 'uwave:sessions' })),
     }))
     .use(uw.passport.initialize())
     .use(addFullUrl())
