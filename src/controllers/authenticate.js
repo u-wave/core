@@ -1,6 +1,5 @@
 import { randomUUID } from 'node:crypto';
 import { promisify } from 'node:util';
-import { subHours } from 'date-fns';
 import cookie from 'cookie';
 import jwt from 'jsonwebtoken';
 import randomString from 'random-string';
@@ -17,6 +16,7 @@ import {
 import toItemResponse from '../utils/toItemResponse.js';
 import toListResponse from '../utils/toListResponse.js';
 import { serializeCurrentUser } from '../utils/serialize.js';
+import { subHours } from '../utils/date.js';
 import { t } from '../locale.js';
 
 const { BadRequest } = httpErrors;

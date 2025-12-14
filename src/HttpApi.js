@@ -9,7 +9,6 @@ import helmet from 'helmet';
 import session from 'express-session';
 import qs from 'qs';
 import { pinoHttp } from 'pino-http';
-import { milliseconds } from 'date-fns';
 
 // routes
 import authenticate from './routes/authenticate.js';
@@ -30,8 +29,9 @@ import errorHandler from './middleware/errorHandler.js';
 import AuthRegistry from './AuthRegistry.js';
 import matchOrigin from './utils/matchOrigin.js';
 import SqliteSessionStore from './utils/SqliteSessionStore.js';
+import { MS_PER_WEEK } from './utils/date.js';
 
-const SESSION_DURATION = milliseconds({ days: 7 });
+const SESSION_DURATION = MS_PER_WEEK;
 
 const optionsSchema = JSON.parse(
   fs.readFileSync(new URL('./schemas/httpApi.json', import.meta.url), 'utf8'),

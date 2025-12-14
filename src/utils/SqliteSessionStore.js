@@ -6,7 +6,7 @@ import {
   jsonb,
   now,
 } from './sqlite.js';
-import { addHours, addMilliseconds, isBefore } from 'date-fns';
+import { addHours, addMilliseconds, isBefore } from './date.js';
 
 export default class SqliteSessionStore extends Store {
   #db;

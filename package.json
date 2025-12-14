@@ -38,7 +38,6 @@
     "cookie": "^1.0.1",
     "cookie-parser": "^1.4.4",
     "cors": "^2.8.5",
-    "date-fns": "^4.1.0",
     "escape-string-regexp": "^5.0.0",
     "explain-error": "^1.0.4",
     "express": "^5.0.0",
