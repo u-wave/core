@@ -64,6 +64,32 @@ class UsersRepository {
     this.#logger = uw.logger.child({ ns: 'uwave:users' });
   }
 
+  publicUserColumns = /** @type {const} */ ([
+    'users.id',
+    'users.username',
+    'users.slug',
+    'users.activePlaylistID',
+    'users.pendingActivation',
+    'users.createdAt',
+    'users.updatedAt',
+    /** @param {import('kysely').ExpressionBuilder<import('../schema.js').Database, 'users'>} eb */
+    (eb) => avatarColumn(eb).as('avatar'),
+    /** @param {import('kysely').ExpressionBuilder<import('../schema.js').Database, 'users'>} eb */
+    (eb) => userRolesColumn(eb).as('roles'),
+  ]);
+
+  /**
+   * @template {{ roles: import('../utils/sqlite.js').SerializedJSON<string[]> | null }} T
+   * @param {T} user
+   * @returns {Omit<T, 'roles'> & { roles: string[] }}
+   */
+  parsePublicUserColumns(user) {
+    return {
+      ...user,
+      roles: user.roles != null ? fromJson(user.roles) : [],
+    };
+  }
+
   /**
    * @param {string} [filter]
    * @param {{ offset?: number, limit?: number }} [pagination]
@@ -77,17 +103,7 @@ class UsersRepository {
     } = pagination;
 
     let query = db.selectFrom('users')
-      .select([
-        'users.id',
-        'users.username',
-        'users.slug',
-        'users.activePlaylistID',
-        'users.pendingActivation',
-        'users.createdAt',
-        'users.updatedAt',
-        (eb) => avatarColumn(eb).as('avatar'),
-        (eb) => userRolesColumn(eb).as('roles'),
-      ])
+      .select(this.publicUserColumns)
       .offset(offset)
       .limit(limit);
     if (filter != null) {
@@ -113,7 +129,7 @@ class UsersRepository {
       totalQuery,
     ]);
 
-    return new Page(users, {
+    return new Page(users.map(this.parsePublicUserColumns), {
       pageSize: limit,
       filtered: Number(filtered.count),
       total: Number(total.count),
@@ -143,23 +159,10 @@ class UsersRepository {
   async getUsersByIds(ids, tx = this.#uw.db) {
     const users = await tx.selectFrom('users')
       .where('id', 'in', ids)
-      .select([
-        'users.id',
-        'users.username',
-        'users.slug',
-        'users.activePlaylistID',
-        'users.pendingActivation',
-        'users.createdAt',
-        'users.updatedAt',
-        (eb) => avatarColumn(eb).as('avatar'),
-        (eb) => userRolesColumn(eb).as('roles'),
-      ])
+      .select(this.publicUserColumns)
       .execute();
 
-    return users.map((user) => ({
-      ...user,
-      roles: user.roles != null ? fromJson(user.roles) : [],
-    }));
+    return users.map(this.parsePublicUserColumns);
   }
 
   /**
