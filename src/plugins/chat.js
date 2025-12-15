@@ -1,6 +1,7 @@
 import { randomUUID } from 'node:crypto';
 import routes from '../routes/chat.js';
 import { now } from '../utils/sqlite.js';
+import { ChatMutedError } from '../errors/index.js';
 
 /**
  * @typedef {import('../schema.js').UserID} UserID
@@ -102,19 +103,27 @@ class Chat {
 
   /**
    * @param {User} user
-   * @param {string} message
+   * @param {string} text
    */
-  async send(user, message) {
+  async send(user, text) {
     if (await this.isMuted(user)) {
-      return;
+      throw new ChatMutedError();
     }
 
-    this.#uw.publish('chat:message', {
-      id: randomUUID(),
-      userID: user.id,
-      message: this.truncate(message),
-      timestamp: Date.now(),
-    });
+    const id = randomUUID();
+    const userID = user.id;
+    const message = this.truncate(text);
+    const timestamp = Date.now();
+
+    this.#uw.publish('chat:message', { id, userID, message, timestamp });
+
+    return {
+      _id: id,
+      timestamp,
+      createdAt: new Date(timestamp),
+      message,
+      user,
+    };
   }
 
   /**

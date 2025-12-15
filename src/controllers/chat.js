@@ -133,13 +133,13 @@ async function getBackscroll(req) {
   const messages = rows.map((row) => {
     const message = /** @type {import('../redisMessages.js').ServerActionParameters['chat:message']} */ (fromJson(row.data));
     return {
-      id: message.id,
+      _id: message.id,
       /** Deprecated: timestamp as unixy milliseconds */
       timestamp: message.timestamp,
       createdAt: new Date(message.timestamp),
       message: message.message,
       user: {
-        id: row.id,
+        _id: row.id,
         username: row.username,
         slug: row.slug,
         createdAt: row.createdAt,
@@ -158,6 +158,23 @@ async function getBackscroll(req) {
   });
 }
 
+/**
+ * @typedef {object} SendMessageBody
+ * @prop {string} message
+ */
+
+/**
+ * @type {import('../types').AuthenticatedController<{}, {}, SendMessageBody>}
+ */
+async function sendMessage(req) {
+  const { user } = req;
+  const { message } = req.body;
+  const { chat } = req.uwave;
+
+  const result = await chat.send(user, message);
+  return toItemResponse(result);
+}
+
 export {
   muteUser,
   unmuteUser,
@@ -165,4 +182,5 @@ export {
   deleteByUser,
   deleteMessage,
   getBackscroll,
+  sendMessage,
 };

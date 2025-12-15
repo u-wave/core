@@ -64,6 +64,100 @@ describe('Chat', () => {
     });
   });
 
+  describe('POST /chat', () => {
+    it('requires authentication', async () => {
+      await supertest(uw.server)
+        .post('/api/chat')
+        .send({ message: 'blah' })
+        .expect(401);
+    });
+
+    it('requires the chat.send permission', async () => {
+      const user = await uw.test.createUser();
+      const token = await uw.test.createTestSessionToken(user);
+
+      await supertest(uw.server)
+        .post('/api/chat')
+        .set('Cookie', `uwsession=${token}`)
+        .send({ message: 'blah' })
+        .expect(403);
+
+      await uw.acl.createRole('chatSender', ['chat.send']);
+      await uw.acl.allow(user, ['chatSender']);
+
+      await supertest(uw.server)
+        .post('/api/chat')
+        .set('Cookie', `uwsession=${token}`)
+        .send({ message: 'blah' })
+        .expect(200);
+    });
+
+    it('validates input', async () => {
+      const user = await uw.test.createUser();
+      const token = await uw.test.createTestSessionToken(user);
+
+      await uw.acl.createRole('chatSender', ['chat.send']);
+      await uw.acl.allow(user, ['chatSender']);
+
+      await supertest(uw.server)
+        .post('/api/chat')
+        .set('Cookie', `uwsession=${token}`)
+        .send({ not: 'a message' })
+        .expect(400);
+
+      await supertest(uw.server)
+        .post('/api/chat')
+        .set('Cookie', `uwsession=${token}`)
+        .send('text')
+        .expect(400);
+
+      await supertest(uw.server)
+        .post('/api/chat')
+        .set('Cookie', `uwsession=${token}`)
+        .send({ message: null })
+        .expect(400);
+
+      await supertest(uw.server)
+        .post('/api/chat')
+        .set('Cookie', `uwsession=${token}`)
+        .send({ message: '' })
+        .expect(400);
+    });
+
+    it('broadcasts a chat message', async () => {
+      const user = await uw.test.createUser();
+      const token = await uw.test.createTestSessionToken(user);
+      const ws = await uw.test.connectToWebSocketAs(user);
+
+      await uw.acl.createRole('chatSender', ['chat.send']);
+      await uw.acl.allow(user, ['chatSender']);
+
+      const res = await supertest(uw.server)
+        .post('/api/chat')
+        .set('Cookie', `uwsession=${token}`)
+        .send({ message: 'HTTP message text' })
+        .expect(200);
+      sinon.assert.match(res.body.data, {
+        _id: sinon.match.string,
+        message: sinon.match.string,
+      });
+
+      const receivedMessages = [];
+      ws.on('message', (data) => {
+        receivedMessages.push(JSON.parse(data));
+      });
+
+      ws.send(JSON.stringify({ command: 'sendChat', data: 'HTTP message text' }));
+      await retryFor(5_000, () => (
+        receivedMessages.some((message) => (
+          message.command === 'chatMessage'
+          && message.data.userID === user.id
+          && message.data.message === 'HTTP message text'
+        ))
+      ));
+    });
+  });
+
   describe('DELETE /chat/', () => {
     it('requires authentication', async () => {
       await supertest(uw.server)

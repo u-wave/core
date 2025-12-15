@@ -8,7 +8,14 @@ import { Permissions } from '../plugins/acl.js';
 
 function chatRoutes() {
   return Router()
+    // GET /chat/ - Get recent chat messages
     .get('/', route(controller.getBackscroll))
+    // POST /chat/ - Send a chat message
+    .post('/',
+      protect(Permissions.ChatSend),
+      schema(validations.sendChatMessage),
+      route(controller.sendMessage)
+    )
     // DELETE /chat/ - Clear the chat (delete all messages).
     .delete(
       '/',

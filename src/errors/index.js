@@ -228,6 +228,12 @@ const CannotSelfMuteError = createErrorClass('CannotSelfMuteError', {
   base: Forbidden,
 });
 
+const ChatMutedError = createErrorClass('ChatMutedError', {
+  code: 'chat-muted',
+  string: 'errors.chatMuted',
+  base: Forbidden,
+});
+
 const SourceNotFoundError = createErrorClass('SourceNotFoundError', {
   code: 'source-not-found',
   string: 'error-source-not-found',
@@ -295,6 +301,7 @@ export {
   ItemNotInPlaylistError,
   CannotSelfFavoriteError,
   CannotSelfMuteError,
+  ChatMutedError,
   SourceNotFoundError,
   SourceNoImportError,
   EmptyPlaylistError,
