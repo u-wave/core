@@ -64,6 +64,14 @@ describe('Chat', () => {
     });
   });
 
+  describe('GET /chat', () => {
+    it('responds', async () => {
+      await supertest(uw.server)
+        .get('/api/chat')
+        .expect(200);
+    });
+  });
+
   describe('POST /chat', () => {
     it('requires authentication', async () => {
       await supertest(uw.server)
