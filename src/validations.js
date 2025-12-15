@@ -213,7 +213,7 @@ export const getRoomHistory = /** @type {const} */ ({
 // Validations for chat routes:
 
 export const sendChatMessage = /** @type {const} */ ({
-    body: {
+  body: {
     type: 'object',
     properties: {
       message: { type: 'string', minLength: 1 },

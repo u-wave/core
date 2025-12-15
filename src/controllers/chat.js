@@ -6,6 +6,7 @@ import toListResponse from '../utils/toListResponse.js';
 
 /**
  * @typedef {import('../schema').UserID} UserID
+ * @typedef {import('../redisMessages.js').ServerActionParameters} ServerActionParameters
  */
 
 const BACKSCROLL_LENGTH = 20;
@@ -120,18 +121,17 @@ async function getBackscroll(req) {
   const rows = await db.selectFrom('socketMessageQueue')
     .where('command', '=', 'chatMessage')
     .innerJoin('users', (join) => join
-      .on('users.id', '=', (eb) => sql`${eb.ref('data')}->>'userID'`)
-    )
+      .on('users.id', '=', (eb) => sql`${eb.ref('data')}->>'userID'`))
     .select([
       (eb) => json(eb.ref('data')).as('data'),
       ...users.publicUserColumns,
     ])
     .orderBy('socketMessageQueue.id', 'desc')
     .limit(BACKSCROLL_LENGTH)
-    .execute()
+    .execute();
 
   const messages = rows.map((row) => {
-    const message = /** @type {import('../redisMessages.js').ServerActionParameters['chat:message']} */ (fromJson(row.data));
+    const message = /** @type {ServerActionParameters['chat:message']} */ (fromJson(row.data));
     return {
       _id: message.id,
       /** Deprecated: timestamp as unixy milliseconds */

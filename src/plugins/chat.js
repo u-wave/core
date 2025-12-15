@@ -115,7 +115,9 @@ class Chat {
     const message = this.truncate(text);
     const timestamp = Date.now();
 
-    this.#uw.publish('chat:message', { id, userID, message, timestamp });
+    this.#uw.publish('chat:message', {
+      id, userID, message, timestamp,
+    });
 
     return {
       _id: id,
