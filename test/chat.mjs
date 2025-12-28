@@ -2,6 +2,7 @@ import { randomUUID } from 'crypto';
 import assert from 'assert';
 import * as sinon from 'sinon';
 import supertest from 'supertest';
+import delay from 'delay';
 import createUwave from './utils/createUwave.mjs';
 import { retryFor } from './utils/retry.mjs';
 
@@ -65,10 +66,49 @@ describe('Chat', () => {
   });
 
   describe('GET /chat', () => {
-    it('responds', async () => {
+    it('does not require authentication', async () => {
       await supertest(uw.server)
         .get('/api/chat')
         .expect(200);
+    });
+
+    it('returns recent chat messages', async () => {
+      const user = await uw.test.createUser();
+      await uw.acl.allow(user, ['admin']);
+
+      const ws = await uw.test.connectToWebSocketAs(user);
+
+      const receivedMessages = [];
+      ws.on('message', (data) => {
+        receivedMessages.push(JSON.parse(data));
+      });
+
+      // TODO: is it important to serialize this stuff on the server side
+      // so it always gets recorded in the same order?
+      ws.send(JSON.stringify({ command: 'sendChat', data: 'a' }));
+      await delay(50);
+      ws.send(JSON.stringify({ command: 'sendChat', data: 'b' }));
+      await delay(50);
+      ws.send(JSON.stringify({ command: 'sendChat', data: 'c' }));
+
+      await retryFor(1500, () => {
+        assert.strictEqual(
+          receivedMessages.filter((message) => message.command === 'chatMessage' && message.data.userID === user.id).length,
+          3,
+        );
+      });
+
+      const res = await supertest(uw.server)
+        .get('/api/chat')
+        .expect(200);
+      sinon.assert.match(res.body.data, [
+        sinon.match({ user: user.id, message: 'a', createdAt: sinon.match.string }),
+        sinon.match({ user: user.id, message: 'b', createdAt: sinon.match.string }),
+        sinon.match({ user: user.id, message: 'c', createdAt: sinon.match.string }),
+      ]);
+      sinon.assert.match(res.body.included, {
+        user: [sinon.match({ _id: user.id })],
+      });
     });
   });
 

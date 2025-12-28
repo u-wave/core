@@ -130,7 +130,7 @@ async function getBackscroll(req) {
     .limit(BACKSCROLL_LENGTH)
     .execute();
 
-  const messages = rows.map((row) => {
+  const messages = rows.reverse().map((row) => {
     const message = /** @type {ServerActionParameters['chat:message']} */ (fromJson(row.data));
     return {
       _id: message.id,
