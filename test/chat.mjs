@@ -197,7 +197,8 @@ describe('Chat', () => {
         .expect(403);
       sinon.assert.match(res.body.errors[0], { code: 'chat-muted' });
 
-      // Send an unmuted message as well to ~try~ to verify that the muted message _did not_ go through.
+      // Send an unmuted message as well to ~try~ to verify that the
+      // muted message _did not_ go through.
       await supertest(uw.server)
         .post('/api/chat')
         .set('Cookie', `uwsession=${adminToken}`)
@@ -208,6 +209,8 @@ describe('Chat', () => {
         assert(receivedMessages.some((message) => message.command === 'chatMessage' && message.data.userID === adminUser.id));
         assert(!receivedMessages.some((message) => message.command === 'chatMessage' && message.data.userID === mutedUser.id));
       });
+
+      mutedWs.close();
     });
   });
 
