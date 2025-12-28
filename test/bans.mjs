@@ -15,29 +15,31 @@ describe('Bans', () => {
     await uw.destroy();
   });
 
-  describe('isBanned(user)', () => {
-    it('returns false for unbanned users', async () => {
-      assert.strictEqual(await uw.bans.isBanned(user), false);
-    });
-    it('returns true for banned users', async () => {
-      const moderator = await uw.test.createUser();
-      await uw.bans.ban(user, { moderator, permanent: true, duration: 0 });
-      assert.strictEqual(await uw.bans.isBanned(user), true);
-    });
-  });
-
-  describe('ban() and unban()', () => {
-    it('can ban and unban a user', async () => {
-      const moderator = await uw.test.createUser();
-      assert.strictEqual(await uw.bans.isBanned(user), false);
-      await uw.bans.ban(user, {
-        moderator,
-        duration: ms('10 hours'),
+  describe('API', () => {
+    describe('isBanned(user)', () => {
+      it('returns false for unbanned users', async () => {
+        assert.strictEqual(await uw.bans.isBanned(user), false);
       });
-      assert.strictEqual(await uw.bans.isBanned(user), true);
+      it('returns true for banned users', async () => {
+        const moderator = await uw.test.createUser();
+        await uw.bans.ban(user, { moderator, permanent: true, duration: 0 });
+        assert.strictEqual(await uw.bans.isBanned(user), true);
+      });
+    });
 
-      await uw.bans.unban(user.id, { moderator });
-      assert.strictEqual(await uw.bans.isBanned(user), false);
+    describe('ban() and unban()', () => {
+      it('can ban and unban a user', async () => {
+        const moderator = await uw.test.createUser();
+        assert.strictEqual(await uw.bans.isBanned(user), false);
+        await uw.bans.ban(user, {
+          moderator,
+          duration: ms('10 hours'),
+        });
+        assert.strictEqual(await uw.bans.isBanned(user), true);
+
+        await uw.bans.unban(user.id, { moderator });
+        assert.strictEqual(await uw.bans.isBanned(user), false);
+      });
     });
   });
 

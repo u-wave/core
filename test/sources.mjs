@@ -56,79 +56,81 @@ describe('Media Sources', () => {
     },
   };
 
-  it('should register sources from objects', () => {
-    uw.source(testSourceObject);
-    assert(uw.source('test-source') instanceof Source);
-    assert.strictEqual(uw.source('test-source').apiVersion, 1);
-  });
-  it('should register sources from a factory function', () => {
-    uw.source(testSource);
-    assert(uw.source('test-source') instanceof Source);
-    assert.strictEqual(uw.source('test-source').apiVersion, 1);
-  });
-
-  it('should respond to search(query) API calls', async () => {
-    uw.source(testSource);
-    const query = 'search-query';
-    const results = await uw.source('test-source').search(null, query);
-    sinon.assert.match(results, [
-      sinon.match({ sourceType: 'test-source', sourceID: query }),
-    ]);
-  });
-
-  it('should respond to get(ids) API calls', async () => {
-    uw.source(testSource);
-    const results = await uw.source('test-source').get(null, ['one', 'two']);
-    assert.deepStrictEqual(results, [
-      {
-        sourceType: 'test-source',
-        sourceID: 'one',
-        artist: 'artist one',
-        title: 'title one',
-        thumbnail: 'https://placedog.net/280',
-        duration: 60,
-      },
-      {
-        sourceType: 'test-source',
-        sourceID: 'two',
-        artist: 'artist two',
-        title: 'title two',
-        thumbnail: 'https://placedog.net/280',
-        duration: 60,
-      },
-    ]);
-  });
-
-  it('should relay getOne(id) API calls to get()', async () => {
-    const id = 'media-id';
-    let getCalled = false;
-    uw.source({
-      name: 'test-source',
-      async get(ids) {
-        assert.deepStrictEqual(ids, [id]);
-        getCalled = true;
-        return ids.map((sourceID) => ({ sourceID }));
-      },
+  describe('API', () => {
+    it('should register sources from objects', () => {
+      uw.source(testSourceObject);
+      assert(uw.source('test-source') instanceof Source);
+      assert.strictEqual(uw.source('test-source').apiVersion, 1);
+    });
+    it('should register sources from a factory function', () => {
+      uw.source(testSource);
+      assert(uw.source('test-source') instanceof Source);
+      assert.strictEqual(uw.source('test-source').apiVersion, 1);
     });
 
-    assert.strictEqual(getCalled, false);
-
-    const promise = uw.source('test-source').getOne(null, id);
-
-    assert.strictEqual(getCalled, true);
-
-    const results = await promise;
-    assert.deepStrictEqual(results, { sourceType: 'test-source', sourceID: id });
-  });
-
-  it('should respond to play(media) API calls', async () => {
-    uw.source(testSourceWithPlayHook);
-    const sourceData = await uw.source('test-source-with-play').play(null, {
-      sourceID: '1234',
-      sourceType: 'test-source-with-play',
+    it('should respond to search(query) API calls', async () => {
+      uw.source(testSource);
+      const query = 'search-query';
+      const results = await uw.source('test-source').search(null, query);
+      sinon.assert.match(results, [
+        sinon.match({ sourceType: 'test-source', sourceID: query }),
+      ]);
     });
-    assert.deepStrictEqual(sourceData, {
-      urn: 'test-source-with-play:1234',
+
+    it('should respond to get(ids) API calls', async () => {
+      uw.source(testSource);
+      const results = await uw.source('test-source').get(null, ['one', 'two']);
+      assert.deepStrictEqual(results, [
+        {
+          sourceType: 'test-source',
+          sourceID: 'one',
+          artist: 'artist one',
+          title: 'title one',
+          thumbnail: 'https://placedog.net/280',
+          duration: 60,
+        },
+        {
+          sourceType: 'test-source',
+          sourceID: 'two',
+          artist: 'artist two',
+          title: 'title two',
+          thumbnail: 'https://placedog.net/280',
+          duration: 60,
+        },
+      ]);
+    });
+
+    it('should relay getOne(id) API calls to get()', async () => {
+      const id = 'media-id';
+      let getCalled = false;
+      uw.source({
+        name: 'test-source',
+        async get(ids) {
+          assert.deepStrictEqual(ids, [id]);
+          getCalled = true;
+          return ids.map((sourceID) => ({ sourceID }));
+        },
+      });
+
+      assert.strictEqual(getCalled, false);
+
+      const promise = uw.source('test-source').getOne(null, id);
+
+      assert.strictEqual(getCalled, true);
+
+      const results = await promise;
+      assert.deepStrictEqual(results, { sourceType: 'test-source', sourceID: id });
+    });
+
+    it('should respond to play(media) API calls', async () => {
+      uw.source(testSourceWithPlayHook);
+      const sourceData = await uw.source('test-source-with-play').play(null, {
+        sourceID: '1234',
+        sourceType: 'test-source-with-play',
+      });
+      assert.deepStrictEqual(sourceData, {
+        urn: 'test-source-with-play:1234',
+      });
     });
   });
 
