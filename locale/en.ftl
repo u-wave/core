@@ -28,6 +28,7 @@ error-no-self-mute =
     [unmute] You can't unmute yourself.
     *[mute] You can't mute yourself.
   }
+error-muted = You are muted and cannot send chat messages.
 error-source-not-found = Source "{ $name }" not found.
 error-source-no-import = Source "{ $name }" does not support importing.
 error-too-many-name-changes = You can only change your username five times per hour. Try again in { $retry-after }.

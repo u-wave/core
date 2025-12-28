@@ -164,6 +164,51 @@ describe('Chat', () => {
         ))
       ));
     });
+
+    it('does not broadcast chat messages from muted users', async () => {
+      const adminUser = await uw.test.createUser();
+      const adminToken = await uw.test.createTestSessionToken(adminUser);
+      await uw.acl.allow(adminUser, ['admin']);
+      const mutedUser = await uw.test.createUser();
+      const mutedToken = await uw.test.createTestSessionToken(mutedUser);
+
+      await uw.acl.createRole('chatSender', ['chat.send']);
+      await uw.acl.allow(mutedUser, ['chatSender']);
+
+      await supertest(uw.server)
+        .post(`/api/users/${mutedUser.id}/mute`)
+        .set('Cookie', `uwsession=${adminToken}`)
+        .send({ time: 60 /* seconds */ })
+        .expect(200);
+
+      const adminWs = await uw.test.connectToWebSocketAs(adminUser);
+      // We do need to be connected to be allowed to send a message
+      const mutedWs = await uw.test.connectToWebSocketAs(mutedUser);
+
+      const receivedMessages = [];
+      adminWs.on('message', (data) => {
+        receivedMessages.push(JSON.parse(data));
+      });
+
+      const res = await supertest(uw.server)
+        .post('/api/chat')
+        .set('Cookie', `uwsession=${mutedToken}`)
+        .send({ message: 'Should not arrive' })
+        .expect(403);
+      sinon.assert.match(res.body.errors[0], { code: 'chat-muted' });
+
+      // Send an unmuted message as well to ~try~ to verify that the muted message _did not_ go through.
+      await supertest(uw.server)
+        .post('/api/chat')
+        .set('Cookie', `uwsession=${adminToken}`)
+        .send({ message: 'Should arrive' })
+        .expect(200);
+
+      await retryFor(1500, () => {
+        assert(receivedMessages.some((message) => message.command === 'chatMessage' && message.data.userID === adminUser.id));
+        assert(!receivedMessages.some((message) => message.command === 'chatMessage' && message.data.userID === mutedUser.id));
+      });
+    });
   });
 
   describe('DELETE /chat/', () => {

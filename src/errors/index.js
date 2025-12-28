@@ -230,7 +230,7 @@ const CannotSelfMuteError = createErrorClass('CannotSelfMuteError', {
 
 const ChatMutedError = createErrorClass('ChatMutedError', {
   code: 'chat-muted',
-  string: 'errors.chatMuted',
+  string: 'error-muted',
   base: Forbidden,
 });
 
