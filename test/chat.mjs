@@ -19,49 +19,51 @@ describe('Chat', () => {
     await uw.destroy();
   });
 
-  it('can broadcast chat messages', async () => {
-    const user = await uw.test.createUser();
+  describe('WebSocket', () => {
+    it('can broadcast chat messages', async () => {
+      const user = await uw.test.createUser();
 
-    const ws = await uw.test.connectToWebSocketAs(user);
+      const ws = await uw.test.connectToWebSocketAs(user);
 
-    const receivedMessages = [];
-    ws.on('message', (data) => {
-      receivedMessages.push(JSON.parse(data));
+      const receivedMessages = [];
+      ws.on('message', (data) => {
+        receivedMessages.push(JSON.parse(data));
+      });
+
+      ws.send(JSON.stringify({ command: 'sendChat', data: 'Message text' }));
+
+      await retryFor(1500, () => {
+        assert(receivedMessages.some((message) => message.command === 'chatMessage' && message.data.userID === user.id && message.data.message === 'Message text'));
+      });
     });
 
-    ws.send(JSON.stringify({ command: 'sendChat', data: 'Message text' }));
+    it('does not broadcast chat messages from muted users', async () => {
+      const user = await uw.test.createUser();
+      const token = await uw.test.createTestSessionToken(user);
+      await uw.acl.allow(user, ['admin']);
+      const mutedUser = await uw.test.createUser();
 
-    await retryFor(1500, () => {
-      assert(receivedMessages.some((message) => message.command === 'chatMessage' && message.data.userID === user.id && message.data.message === 'Message text'));
-    });
-  });
+      await supertest(uw.server)
+        .post(`/api/users/${mutedUser.id}/mute`)
+        .set('Cookie', `uwsession=${token}`)
+        .send({ time: 60 /* seconds */ })
+        .expect(200);
 
-  it('does not broadcast chat messages from muted users', async () => {
-    const user = await uw.test.createUser();
-    const token = await uw.test.createTestSessionToken(user);
-    await uw.acl.allow(user, ['admin']);
-    const mutedUser = await uw.test.createUser();
+      const ws = await uw.test.connectToWebSocketAs(user);
+      const mutedWs = await uw.test.connectToWebSocketAs(mutedUser);
 
-    await supertest(uw.server)
-      .post(`/api/users/${mutedUser.id}/mute`)
-      .set('Cookie', `uwsession=${token}`)
-      .send({ time: 60 /* seconds */ })
-      .expect(200);
+      const receivedMessages = [];
+      ws.on('message', (data) => {
+        receivedMessages.push(JSON.parse(data));
+      });
 
-    const ws = await uw.test.connectToWebSocketAs(user);
-    const mutedWs = await uw.test.connectToWebSocketAs(mutedUser);
+      ws.send(JSON.stringify({ command: 'sendChat', data: 'unmuted' }));
+      mutedWs.send(JSON.stringify({ command: 'sendChat', data: 'muted' }));
 
-    const receivedMessages = [];
-    ws.on('message', (data) => {
-      receivedMessages.push(JSON.parse(data));
-    });
-
-    ws.send(JSON.stringify({ command: 'sendChat', data: 'unmuted' }));
-    mutedWs.send(JSON.stringify({ command: 'sendChat', data: 'muted' }));
-
-    await retryFor(1500, () => {
-      assert(receivedMessages.some((message) => message.command === 'chatMessage' && message.data.userID === user.id));
-      assert(!receivedMessages.some((message) => message.command === 'chatMessage' && message.data.userID === mutedUser.id));
+      await retryFor(1500, () => {
+        assert(receivedMessages.some((message) => message.command === 'chatMessage' && message.data.userID === user.id));
+        assert(!receivedMessages.some((message) => message.command === 'chatMessage' && message.data.userID === mutedUser.id));
+      });
     });
   });
 
