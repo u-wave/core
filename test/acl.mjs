@@ -18,49 +18,51 @@ describe('ACL', () => {
     await uw.destroy();
   });
 
-  it('can check if a user is not allowed to do something', async () => {
-    assert.strictEqual(await uw.acl.isAllowed(user, 'test.perm'), false);
-  });
+  describe('API', () => {
+    it('can check if a user is not allowed to do something', async () => {
+      assert.strictEqual(await uw.acl.isAllowed(user, 'test.perm'), false);
+    });
 
-  it('disallows nonexistent roles by default', async () => {
-    assert.strictEqual(await uw.acl.isAllowed(user, 'something.that.is.not.allowed'), false);
-  });
+    it('disallows nonexistent roles by default', async () => {
+      assert.strictEqual(await uw.acl.isAllowed(user, 'something.that.is.not.allowed'), false);
+    });
 
-  it('can allow users to do things', async () => {
-    assert.strictEqual(await uw.acl.isAllowed(user, 'test.perm'), false);
+    it('can allow users to do things', async () => {
+      assert.strictEqual(await uw.acl.isAllowed(user, 'test.perm'), false);
 
-    await uw.acl.allow(user, ['testRole']);
-    assert.strictEqual(await uw.acl.isAllowed(user, 'test.perm'), true);
-  });
+      await uw.acl.allow(user, ['testRole']);
+      assert.strictEqual(await uw.acl.isAllowed(user, 'test.perm'), true);
+    });
 
-  it('can create new roles, grouping existing permissions', async () => {
-    await uw.acl.createRole('groupOfPermissions', [
-      'test.perm',
-      'some.other.role',
-      'universe.destroy',
-      'universe.create',
-    ]);
-    await uw.acl.createRole('otherGroupOfPermissions', [
-      'strawberry.eat',
-    ]);
+    it('can create new roles, grouping existing permissions', async () => {
+      await uw.acl.createRole('groupOfPermissions', [
+        'test.perm',
+        'some.other.role',
+        'universe.destroy',
+        'universe.create',
+      ]);
+      await uw.acl.createRole('otherGroupOfPermissions', [
+        'strawberry.eat',
+      ]);
 
-    await uw.acl.allow(user, ['groupOfPermissions']);
-    assert.strictEqual(await uw.acl.isAllowed(user, 'universe.create'), true);
-  });
+      await uw.acl.allow(user, ['groupOfPermissions']);
+      assert.strictEqual(await uw.acl.isAllowed(user, 'universe.create'), true);
+    });
 
-  it('can remove permissions from users', async () => {
-    await uw.acl.allow(user, ['testRole']);
-    assert.strictEqual(await uw.acl.isAllowed(user, 'test.perm'), true);
+    it('can remove permissions from users', async () => {
+      await uw.acl.allow(user, ['testRole']);
+      assert.strictEqual(await uw.acl.isAllowed(user, 'test.perm'), true);
 
-    await uw.acl.disallow(user, ['testRole']);
-    assert.strictEqual(await uw.acl.isAllowed(user, 'test.perm'), false);
-  });
+      await uw.acl.disallow(user, ['testRole']);
+      assert.strictEqual(await uw.acl.isAllowed(user, 'test.perm'), false);
+    });
 
-  it('can delete roles', async () => {
-    await uw.acl.createRole('tempRole', []);
-    assert(Object.keys(await uw.acl.getAllRoles()).includes('tempRole'));
-    await uw.acl.deleteRole('tempRole');
-    assert(!Object.keys(await uw.acl.getAllRoles()).includes('tempRole'));
+    it('can delete roles', async () => {
+      await uw.acl.createRole('tempRole', []);
+      assert(Object.keys(await uw.acl.getAllRoles()).includes('tempRole'));
+      await uw.acl.deleteRole('tempRole');
+      assert(!Object.keys(await uw.acl.getAllRoles()).includes('tempRole'));
+    });
   });
 
   describe('GET /roles', () => {
