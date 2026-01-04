@@ -24,15 +24,6 @@ async function getFirstItem(uw, playlist) {
 }
 
 /**
- * @param {unknown} str
- */
-function toInt(str) {
-  if (typeof str !== 'string') return 0;
-  if (!/^\d+$/.test(str)) return 0;
-  return parseInt(str, 10);
-}
-
-/**
  * @param {import('../Uwave.js').default} uw
  */
 async function getOnlineUsers(uw) {
@@ -46,14 +37,6 @@ async function getOnlineUsers(uw) {
 }
 
 /**
- * @param {import('../Uwave.js').default} uw
- */
-async function getGuestsCount(uw) {
-  const guests = await uw.redis.get('http-api:guests');
-  return toInt(guests);
-}
-
-/**
  * @type {import('../types.js').Controller}
  */
 async function getState(req) {
@@ -62,9 +45,11 @@ async function getState(req) {
   const { passport } = uw;
   const { user, sessionID } = req;
 
+  // XXX: with sqlite there isn't really a point in making this all "parallel",
+  // but maybe it makes sense to keep so it'd reduce network waiting times with
+  // other databases in the future?
   const motd = uw.motd.get();
   const users = getOnlineUsers(uw);
-  const guests = getGuestsCount(uw);
   const roles = uw.acl.getAllRoles();
   const booth = getBoothData(uw);
   const waitlist = uw.waitlist.getUserIDs();
@@ -97,7 +82,7 @@ async function getState(req) {
     motd,
     user: user ? serializeCurrentUser(user) : null,
     users,
-    guests,
+    guests: uw.socketServer.guestCount,
     roles,
     booth,
     waitlist,

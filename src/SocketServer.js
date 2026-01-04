@@ -194,9 +194,7 @@ class SocketServer {
         return;
       }
 
-      this.#recountGuests().catch((error) => {
-        this.#logger.error({ err: error }, 'counting guests failed');
-      });
+      this.#recountGuests();
     }, GUEST_COUNT_INTERVAL);
 
     this.#clientActions = {
@@ -798,24 +796,22 @@ class SocketServer {
     });
   }
 
-  async getGuestCount() {
-    const { redis } = this.#uw;
-    const rawCount = await redis.get('http-api:guests');
-    if (typeof rawCount !== 'string' || !/^\d+$/.test(rawCount)) {
-      return 0;
-    }
-    return parseInt(rawCount, 10);
+  #lastGuestCount = 0;
+
+  /** The number of unauthenticated connections. */
+  get guestCount() {
+    return this.#connections.reduce((acc, connection) => {
+      if (connection instanceof GuestConnection) {
+        return acc + 1;
+      }
+      return acc;
+    }, 0);
   }
 
-  async #recountGuests() {
-    const { redis } = this.#uw;
-    const guests = this.#connections
-      .filter((connection) => connection instanceof GuestConnection)
-      .length;
-
-    const lastGuestCount = await this.getGuestCount();
-    if (guests !== lastGuestCount) {
-      await redis.set('http-api:guests', guests);
+  #recountGuests() {
+    const guests = this.guestCount;
+    if (guests !== this.#lastGuestCount) {
+      this.#lastGuestCount = guests;
       this.broadcast('guests', guests);
     }
   }
