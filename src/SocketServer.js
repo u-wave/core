@@ -16,7 +16,7 @@ import { subMinutes } from './utils/date.js';
 
 const { isEmpty } = lodash;
 
-export const REDIS_ACTIVE_SESSIONS = 'users';
+export const KEY_ACTIVE_SESSIONS = 'users';
 
 const PING_INTERVAL = 10_000;
 const GUEST_COUNT_INTERVAL = 2_000;
@@ -82,7 +82,7 @@ class SocketServer {
         // We do need to clear the `users` list because the lost connection handlers
         // will not do so.
         uw.socketServer.#logger.warn({ err }, 'could not initialise lost connections');
-        await uw.redis.del(REDIS_ACTIVE_SESSIONS);
+        await uw.keyv.delete(KEY_ACTIVE_SESSIONS);
       }
     });
 
@@ -391,11 +391,15 @@ class SocketServer {
         }
       },
       'user:join': async ({ userID }) => {
-        const { users, redis } = this.#uw;
+        const { users, keyv } = this.#uw;
         const user = await users.getUser(userID);
         if (user) {
           // TODO this should not be the socket server code's responsibility
-          await redis.rpush(REDIS_ACTIVE_SESSIONS, user.id);
+          const userIDs = /** @type {import('./schema').UserID[] | null} */ (
+            await keyv.get(KEY_ACTIVE_SESSIONS)
+          ) ?? [];
+          userIDs.push(user.id);
+          await keyv.set(KEY_ACTIVE_SESSIONS, userIDs);
           this.broadcast('join', serializeUser(user));
         }
       },
@@ -453,10 +457,10 @@ class SocketServer {
    * @private
    */
   async initLostConnections() {
-    const { db, redis } = this.#uw;
-    const userIDs = /** @type {import('./schema').UserID[]} */ (
-      await redis.lrange(REDIS_ACTIVE_SESSIONS, 0, -1)
-    );
+    const { db, keyv } = this.#uw;
+    const userIDs = /** @type {import('./schema').UserID[] | null} */ (
+      await keyv.get(KEY_ACTIVE_SESSIONS)
+    ) ?? [];
     const disconnectedIDs = userIDs.filter((userID) => !this.connection(userID));
 
     if (disconnectedIDs.length === 0) {

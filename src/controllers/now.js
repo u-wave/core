@@ -1,7 +1,7 @@
 import { getBoothData } from './booth.js';
 import { serializeCurrentUser, serializePlaylist, serializeUser } from '../utils/serialize.js';
 import { legacyPlaylistItem } from './playlists.js';
-import { REDIS_ACTIVE_SESSIONS } from '../SocketServer.js';
+import { KEY_ACTIVE_SESSIONS } from '../SocketServer.js';
 
 /**
  * @typedef {import('../schema.js').UserID} UserID
@@ -27,7 +27,7 @@ async function getFirstItem(uw, playlist) {
  * @param {import('../Uwave.js').default} uw
  */
 async function getOnlineUsers(uw) {
-  const userIDs = /** @type {UserID[]} */ (await uw.redis.lrange(REDIS_ACTIVE_SESSIONS, 0, -1));
+  const userIDs = /** @type {UserID[] | null} */ (await uw.keyv.get(KEY_ACTIVE_SESSIONS)) ?? [];
   if (userIDs.length === 0) {
     return [];
   }
