@@ -1,6 +1,8 @@
 import lodash from 'lodash';
 import Page from '../Page.js';
-import { fromJson, json, jsonb, jsonGroupArray } from '../utils/sqlite.js';
+import {
+  fromJson, json, jsonb, jsonGroupArray,
+} from '../utils/sqlite.js';
 
 const { clamp } = lodash;
 
