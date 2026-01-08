@@ -1,4 +1,4 @@
-import RedLock from 'redlock';
+import Mutex from 'p-mutex';
 import { sql } from 'kysely';
 import { EmptyPlaylistError, PlaylistItemNotFoundError } from '../errors/index.js';
 import routes from '../routes/booth.js';
@@ -16,7 +16,6 @@ import { fromJson, jsonb, jsonGroupArray } from '../utils/sqlite.js';
  * @typedef {Omit<import('../schema.js').Media, 'createdAt' | 'updatedAt'>} Media
  */
 
-const REDIS_ADVANCING = 'booth:advancing';
 const KEY_HISTORY_ID = 'booth:historyID';
 const KEY_CURRENT_DJ_ID = 'booth:currentDJ';
 const KEY_REMOVE_AFTER_CURRENT_PLAY = 'booth:removeAfterCurrentPlay';
@@ -29,7 +28,7 @@ class Booth {
   /** @type {ReturnType<typeof setTimeout>|null} */
   #timeout = null;
 
-  #locker;
+  #mutex;
 
   /** @type {Promise<unknown>|null} */
   #awaitAdvance = null;
@@ -39,7 +38,7 @@ class Booth {
    */
   constructor(uw) {
     this.#uw = uw;
-    this.#locker = new RedLock([this.#uw.redis]);
+    this.#mutex = new Mutex();
     this.#logger = uw.logger.child({ ns: 'uwave:booth' });
   }
 
@@ -453,11 +452,10 @@ class Booth {
    * @param {AdvanceOptions} [opts]
    */
   advance(opts = {}) {
-    const result = this.#locker.using(
-      [REDIS_ADVANCING],
-      10_000,
-      (signal) => this.#advanceLocked({ ...opts, signal }),
-    );
+    const result = this.#mutex.withLock(() => {
+      const signal = AbortSignal.timeout(10_000);
+      return this.#advanceLocked({ ...opts, signal });
+    });
     this.#awaitAdvance = result;
     return result;
   }

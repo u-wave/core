@@ -1,5 +1,4 @@
 import { fileURLToPath } from 'node:url';
-import RedLock from 'redlock';
 import { Umzug } from 'umzug';
 
 /**
@@ -50,7 +49,6 @@ const kyselyStorage = {
  */
 async function migrationsPlugin(uw) {
   const { schema } = uw.db;
-  const redLock = new RedLock([uw.redis]);
 
   schema.createTable('migrations')
     .ifNotExists()
@@ -66,9 +64,7 @@ async function migrationsPlugin(uw) {
       logger: uw.logger.child({ ns: 'uwave:migrations' }),
     });
 
-    await redLock.using(['migrate'], 10000, async () => {
-      await migrator.up();
-    });
+    await migrator.up();
   }
   uw.migrate = migrate;
 
