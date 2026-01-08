@@ -129,7 +129,7 @@
   },
   "scripts": {
     "lint": "eslint --cache .",
-    "test": "npm run tests-only && npm run lint",
+    "test": "npm run tests-only && npm run types && npm run lint",
     "tests-only": "c8 --reporter lcov --src src mocha",
     "types": "tsc -p tsconfig.json",
     "start": "nodemon --env-file-if-exists=.env dev/u-wave-dev-server.js | pino-pretty"
