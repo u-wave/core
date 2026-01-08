@@ -1,3 +1,4 @@
+import httpErrors from 'http-errors';
 import {
   APIError,
   CombinedError,
@@ -24,7 +25,15 @@ function toErrorResponse(errors) {
 }
 
 /**
- * @param {any} err
+ * @param {unknown} err
+ * @returns {err is import('../errors/ValidationError.js').default}
+ */
+function isValidationError(err) {
+  return typeof err === 'object' && err != null && 'name' in err && err.name === 'ValidationError';
+}
+
+/**
+ * @param {unknown} err
  * @returns {SerializedError[]}
  */
 function serializeError(err) {
@@ -39,28 +48,28 @@ function serializeError(err) {
       title: err.message,
     }];
   }
-  if (err.name === 'ValidationError') {
+  if (isValidationError(err)) {
     return Object.values(err.errors).map((error) => ({
       status: 400,
       code: 'validation-error',
-      title: `${error.dataPath} ${error.message}`,
+      title: `${error.instancePath} ${error.message}`,
     }));
   }
-  if (err.name === 'ReplyError') {
+  if (err instanceof Error && err.name === 'ReplyError') {
     return [{
       status: 410,
       code: 'redis-error',
       title: 'Database error, please try again later.',
     }];
   }
-  if (err.expose) {
+  if (err instanceof httpErrors.HttpError && err.expose) {
     /** @type {SerializedError} */
     const apiError = {
       status: err.status ?? 400,
       code: err.code,
       title: err.message,
     };
-    if (err.path && err.path[0] === 'body') {
+    if ('path' in err && Array.isArray(err.path) && err.path[0] === 'body') {
       apiError.source = `#/${err.path.slice(1).join('/')}`;
     }
     return [apiError];

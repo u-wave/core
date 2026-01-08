@@ -1,3 +1,4 @@
+import assert from 'node:assert';
 import fs from 'node:fs';
 import EventEmitter from 'node:events';
 import Ajv from 'ajv/dist/2019.js';
@@ -196,6 +197,7 @@ class ConfigStore {
     const validate = this.#validators.get(key);
     if (validate) {
       if (!validate(settings)) {
+        assert(validate.errors, 'Unexpected null');
         this.#logger.trace({ key, errors: validate.errors }, 'config validation error');
         throw new ValidationError(validate.errors, this.#ajv);
       }
