@@ -83,7 +83,9 @@ async function getState(req) {
       throw error;
     })
     : Promise.resolve(null);
-  const playlists = user ? uw.playlists.getUserPlaylists(user) : null;
+  const playlists = user
+    ? uw.playlists.getUserPlaylists(user).then((playlists) => playlists.map(serializePlaylist))
+    : null;
   const firstActivePlaylistItem = activePlaylist.then((playlist) => (
     playlist != null ? getFirstItem(uw, playlist) : null
   ));
@@ -110,21 +112,19 @@ async function getState(req) {
   };
 
   const stateKeys = Object.keys(stateShape);
-  // This is a little dirty but maintaining the exact type shape is very hard here.
-  // We could solve that in the future by using a `p-props` style function. The npm
-  // module `p-props` is a bit wasteful though.
-  /** @type {any} */
   const values = Object.values(stateShape);
   const stateValues = await Promise.all(values);
 
-  const state = Object.create(null);
-  for (let i = 0; i < stateKeys.length; i += 1) {
-    state[stateKeys[i]] = stateValues[i];
-  }
-
-  if (state.playlists) {
-    state.playlists = state.playlists.map(serializePlaylist);
-  }
+  const state = (
+    // This is a little dirty but maintaining the exact type shape is very hard here.
+    // We could solve that in the future by using a `p-props` style function. The npm
+    // module `p-props` is a bit wasteful though.
+    /** @type {{
+      [key in keyof typeof stateShape]: Awaited<(typeof stateShape)[key]>
+    }} */ (Object.fromEntries(
+      stateKeys.map((key, i) => [key, stateValues[i]]),
+    ))
+  );
 
   for (const permission of Object.values(state.roles).flat()) {
     // Web client expects all permissions to be roles too.
