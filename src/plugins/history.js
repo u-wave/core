@@ -1,6 +1,6 @@
 import lodash from 'lodash';
 import Page from '../Page.js';
-import { fromJson, json, jsonb } from '../utils/sqlite.js';
+import { fromJson, json, jsonb, jsonGroupArray } from '../utils/sqlite.js';
 
 const { clamp } = lodash;
 
@@ -35,19 +35,19 @@ const historyEntrySelection = /** @type {const} */ ([
   (eb) => eb.selectFrom('feedback')
     .where('historyEntryID', '=', eb.ref('historyEntries.id'))
     .where('vote', '=', 1)
-    .select((eb) => eb.fn.agg('json_group_array', ['userID']).as('userIDs'))
+    .select((eb) => jsonGroupArray(eb.ref('userID')).as('userIDs'))
     .as('upvotes'),
   /** @param {import('kysely').ExpressionBuilder<Database, 'historyEntries'>} eb */
   (eb) => eb.selectFrom('feedback')
     .where('historyEntryID', '=', eb.ref('historyEntries.id'))
     .where('vote', '=', -1)
-    .select((eb) => eb.fn.agg('json_group_array', ['userID']).as('userIDs'))
+    .select((eb) => jsonGroupArray(eb.ref('userID')).as('userIDs'))
     .as('downvotes'),
   /** @param {import('kysely').ExpressionBuilder<Database, 'historyEntries'>} eb */
   (eb) => eb.selectFrom('feedback')
     .where('historyEntryID', '=', eb.ref('historyEntries.id'))
     .where('favorite', '=', 1)
-    .select((eb) => eb.fn.agg('json_group_array', ['userID']).as('userIDs'))
+    .select((eb) => jsonGroupArray(eb.ref('userID')).as('userIDs'))
     .as('favorites'),
 ]);
 
@@ -73,9 +73,9 @@ const historyEntrySelection = /** @type {const} */ ([
  *   'media.title': string,
  *   'media.thumbnail': string,
  *   'media.duration': number,
- *   upvotes: import('../utils/sqlite.js').SerializedJSON<UserID>,
- *   downvotes: import('../utils/sqlite.js').SerializedJSON<UserID>,
- *   favorites: import('../utils/sqlite.js').SerializedJSON<UserID>,
+ *   upvotes: import('../utils/sqlite.js').SerializedJSON<UserID[]> | null,
+ *   downvotes: import('../utils/sqlite.js').SerializedJSON<UserID[]> | null,
+ *   favorites: import('../utils/sqlite.js').SerializedJSON<UserID[]> | null,
  * }} row
  */
 function historyEntryFromRow(row) {
@@ -105,9 +105,9 @@ function historyEntryFromRow(row) {
         duration: row['media.duration'],
       },
     },
-    upvotes: fromJson(row.upvotes),
-    downvotes: fromJson(row.downvotes),
-    favorites: fromJson(row.favorites),
+    upvotes: row.upvotes ? fromJson(row.upvotes) : [],
+    downvotes: row.downvotes ? fromJson(row.downvotes) : [],
+    favorites: row.favorites ? fromJson(row.favorites) : [],
   };
 }
 
