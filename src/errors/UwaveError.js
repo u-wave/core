@@ -1,27 +1,22 @@
 /**
  * @deprecated
+ * @abstract
  */
 class UwaveError extends Error {
   /**
-   * @param {string} message
-   */
-  constructor(message) {
-    super(message);
-    /**
      * Whether this error message should be shown to users.
      */
-    this.expose = false;
+  expose = false;
 
-    /**
+  /**
      * Name.
      */
-    this.name = 'UwaveError';
+  name = 'UwaveError';
 
-    /**
+  /**
      * Flag this as a custom error class.
      */
-    this.isUwaveError = true;
-  }
+  isUwaveError = true;
 }
 
 export default UwaveError;

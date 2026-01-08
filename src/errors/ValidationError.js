@@ -2,7 +2,7 @@ import UwaveError from './UwaveError.js';
 
 class ValidationError extends UwaveError {
   /**
-   * @param {any} errors
+   * @param {import('ajv').ErrorObject[]} errors
    * @param {import('ajv').default} ajv
    */
   constructor(errors, ajv) {

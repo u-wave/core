@@ -1,3 +1,4 @@
+import assert from 'node:assert';
 import fs from 'node:fs';
 import Ajv from 'ajv/dist/2019.js';
 import addFormats from 'ajv-formats';
@@ -21,6 +22,16 @@ function alwaysTrue() {
 alwaysTrue.errors = null;
 
 /**
+ * @template T
+ * @param {T | null | undefined} t
+ * @returns {T}
+ */
+function assertNotNull(t) {
+  assert(t, 'Unexpected null');
+  return t;
+}
+
+/**
  * @typedef {object} Schemas
  * @prop {import('ajv').SchemaObject} [body]
  * @prop {import('ajv').SchemaObject} [params]
@@ -34,15 +45,15 @@ function schema({ body, params, query }) {
   const validateQuery = query ? ajv.compile(query) : alwaysTrue;
   return (req, res, next) => {
     if (!validateParams(req.params)) {
-      next(new ValidationError(validateParams.errors, ajv));
+      next(new ValidationError(assertNotNull(validateParams.errors), ajv));
       return;
     }
     if (!validateQuery(req.query)) {
-      next(new ValidationError(validateQuery.errors, ajv));
+      next(new ValidationError(assertNotNull(validateQuery.errors), ajv));
       return;
     }
     if (!validateBody(req.body)) {
-      next(new ValidationError(validateBody.errors, ajv));
+      next(new ValidationError(assertNotNull(validateBody.errors), ajv));
       return;
     }
     next();
