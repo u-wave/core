@@ -341,7 +341,7 @@ class Booth {
    * @typedef {object} AdvanceOptions
    * @prop {boolean} [remove]
    * @prop {boolean} [publish]
-   * @prop {import('redlock').RedlockAbortSignal} [signal]
+   * @prop {AbortSignal} [signal]
    * @param {AdvanceOptions} [opts]
    * @returns {Promise<{
    *   historyEntry: HistoryEntry,
@@ -376,7 +376,7 @@ class Booth {
     }
 
     if (opts.signal?.aborted) {
-      throw opts.signal.error;
+      throw opts.signal.reason;
     }
 
     if (previous) {
