@@ -276,6 +276,12 @@ const UserIsPlayingError = createErrorClass('UserIsPlayingError', {
   base: BadRequest,
 });
 
+const UnknownConfigError = createErrorClass('UnknownConfigError', {
+  code: 'unknown-config',
+  string: 'error-unknown-config',
+  base: NotFound,
+});
+
 export {
   APIError,
   CombinedError,
@@ -309,4 +315,5 @@ export {
   AlreadyInWaitlistError,
   UserNotInWaitlistError,
   UserIsPlayingError,
+  UnknownConfigError,
 };
