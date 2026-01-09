@@ -1,12 +1,13 @@
 import { Router } from 'express';
+import { rateLimit } from 'express-rate-limit';
 import route from '../route.js';
 import * as validations from '../validations.js';
 import protect from '../middleware/protect.js';
 import schema from '../middleware/schema.js';
-import rateLimit from '../middleware/rateLimit.js';
 import * as controller from '../controllers/users.js';
 import { NameChangeRateLimitError } from '../errors/index.js';
 import { Permissions } from '../plugins/acl.js';
+import ms from 'ms';
 
 function userRoutes() {
   return Router()
@@ -62,10 +63,16 @@ function userRoutes() {
       '/:id/username',
       protect(),
       schema(validations.setUserName),
-      rateLimit('change-username', {
-        max: 5,
-        duration: 60 * 60 * 1000,
-        error: NameChangeRateLimitError,
+      rateLimit({
+        limit: 5,
+        windowMs: 60 * 60 * 1000,
+        identifier: 'name-change',
+        keyGenerator: (req) => String(req.query.id),
+        handler: (_req, res, next) => {
+          next(new NameChangeRateLimitError({
+            'retry-after': ms(Number(res.get('Retry-After')) * 1_000, { long: true }),
+          }));
+        },
       }),
       route(controller.changeUsername),
     )
