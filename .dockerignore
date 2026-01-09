@@ -1,3 +1,4 @@
+*.sqlite
 .git
 node_modules
 /demo
