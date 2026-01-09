@@ -7,6 +7,7 @@ import cookieParser from 'cookie-parser';
 import cors from 'cors';
 import helmet from 'helmet';
 import session from 'express-session';
+import { rateLimit } from 'express-rate-limit';
 import qs from 'qs';
 import { pinoHttp } from 'pino-http';
 
@@ -22,7 +23,6 @@ import imports from './routes/import.js';
 // middleware
 import addFullUrl from './middleware/addFullUrl.js';
 import attachUwaveMeta from './middleware/attachUwaveMeta.js';
-import rateLimit from './middleware/rateLimit.js';
 import errorHandler from './middleware/errorHandler.js';
 
 // utils
@@ -30,6 +30,8 @@ import AuthRegistry from './AuthRegistry.js';
 import matchOrigin from './utils/matchOrigin.js';
 import SqliteSessionStore from './utils/SqliteSessionStore.js';
 import { MS_PER_WEEK } from './utils/date.js';
+import { RateLimitError } from './errors/index.js';
+import ms from 'ms';
 
 const SESSION_DURATION = MS_PER_WEEK;
 
@@ -139,7 +141,15 @@ async function httpApi(uw, options) {
     .use(attachUwaveMeta(uw.httpApi, uw))
     .use(uw.passport.authenticate('jwt', { session: false }))
     .use(uw.passport.session())
-    .use(rateLimit('api-http', { max: 500, duration: 60 * 1000 }));
+    .use(rateLimit({
+      limit: 500,
+      windowMs: 60_000,
+      handler: (_req, res, next) => {
+        next(new RateLimitError({
+          'retry-after': ms(Number(res.get('Retry-After')) * 1_000, { long: true }),
+        }));
+      },
+    }));
 
   uw.httpApi
     .use('/auth', authenticate(uw.passport, {
