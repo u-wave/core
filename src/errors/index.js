@@ -85,7 +85,6 @@ function createErrorClass(name, {
 
     /** @param {TData} [data] */
     constructor(data) {
-      console.log(i18nKey, data);
       super(t(i18nKey, data ?? {}) ?? undefined);
       this.i18nKey = i18nKey;
       this.data = data;
