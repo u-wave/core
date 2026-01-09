@@ -21,6 +21,7 @@ import waitlist from './plugins/waitlist.js';
 import passport from './plugins/passport.js';
 import migrations from './plugins/migrations.js';
 import { SqliteDateColumnsPlugin, connect as connectSqlite } from './utils/sqlite.js';
+import Emittery from 'emittery';
 
 const DEFAULT_SQLITE_PATH = './uwave.sqlite';
 const DEFAULT_REDIS_URL = 'redis://localhost:6379';
@@ -124,6 +125,11 @@ class UwaveServer extends EventEmitter {
   /** @type {import('./SocketServer.js').default} */
   // @ts-expect-error TS2564 Definitely assigned in a plugin
   socketServer;
+
+  /** @type {Emittery<import('./redisMessages.js').ServerActionParameters>} */
+  events = new Emittery({
+    debug: { name: 'u-wave-core' },
+  });
 
   /**
    * @type {Map<string, Source>}
@@ -294,7 +300,7 @@ class UwaveServer extends EventEmitter {
    * @param {import('./redisMessages.js').ServerActionParameters[CommandName]} data
    */
   publish(command, data) {
-    return this.redis.publish('uwave', JSON.stringify({ command, data }));
+    return this.events.emit(command, data);
   }
 
   async listen() {
