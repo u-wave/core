@@ -121,6 +121,11 @@ describe('Runtime Config', () => {
         .get('/api/server/config/something-fake')
         .set('Cookie', `uwsession=${token}`)
         .expect(404);
+
+      await supertest(uw.server)
+        .get('/api/server/config/hasOwnProperty')
+        .set('Cookie', `uwsession=${token}`)
+        .expect(404);
     });
 
     it('includes schema if requested', async () => {
@@ -214,6 +219,12 @@ describe('Runtime Config', () => {
 
       await supertest(uw.server)
         .put('/api/server/config/something-fake')
+        .set('Cookie', `uwsession=${token}`)
+        .send({})
+        .expect(404);
+
+      await supertest(uw.server)
+        .put('/api/server/config/hasOwnProperty')
         .set('Cookie', `uwsession=${token}`)
         .send({})
         .expect(404);
