@@ -1,4 +1,4 @@
-import EventEmitter from 'node:events';
+import Emittery from 'emittery';
 import { ulid } from 'ulid';
 import Ultron from 'ultron';
 import WebSocket from 'ws';
@@ -6,7 +6,13 @@ import WebSocket from 'ws';
 const PING_TIMEOUT = 5_000;
 const DEAD_TIMEOUT = 30_000;
 
-class GuestConnection extends EventEmitter {
+/**
+ * @augments {Emittery<{
+ *  close: undefined,
+ *  authenticate: { user: import('../schema.js').User, sessionID: string, lastEventID: string | null }
+ * }>}
+ */
+class GuestConnection extends Emittery {
   #events;
 
   #logger;
@@ -69,7 +75,7 @@ class GuestConnection extends EventEmitter {
       throw new Error('You have been banned');
     }
 
-    this.emit('authenticate', userModel, sessionID, null);
+    await this.emit('authenticate', { user: userModel, sessionID, lastEventID: null });
   }
 
   /**

@@ -1,4 +1,4 @@
-import EventEmitter from 'node:events';
+import Emittery from 'emittery';
 import Ultron from 'ultron';
 import WebSocket from 'ws';
 import sjson from 'secure-json-parse';
@@ -8,7 +8,13 @@ import { fromJson, json } from '../utils/sqlite.js';
 const PING_TIMEOUT = 5_000;
 const DEAD_TIMEOUT = 30_000;
 
-class AuthedConnection extends EventEmitter {
+/**
+ * @augments {Emittery<{
+ *   command: { command: string, data: import('type-fest').JsonValue },
+ *   close: { banned: boolean, lastEventID: string | null },
+ * }>}
+ */
+class AuthedConnection extends Emittery {
   #events;
 
   #logger;
@@ -19,6 +25,8 @@ class AuthedConnection extends EventEmitter {
   // because the server only knows if something was *sent*, not if it was received.
   /** @type {string|null} */
   #lastEventID = null;
+
+  banned = false;
 
   /**
    * @param {import('../Uwave.js').default} uw
@@ -97,7 +105,7 @@ class AuthedConnection extends EventEmitter {
     this.#lastMessage = Date.now();
     const { command, data } = sjson.safeParse(raw) ?? {};
     if (command) {
-      this.emit('command', command, data);
+      this.emit('command', { command, data });
     }
   }
 

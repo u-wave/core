@@ -512,12 +512,12 @@ class SocketServer {
   /**
    * Get a LostConnection for a user, if one exists.
    *
-   * @param {User} user
+   * @param {string} sessionID
    * @private
    */
-  getLostConnection(user) {
+  getLostConnection(sessionID) {
     return this.#connections.find((connection) => (
-      connection instanceof LostConnection && connection.user.id === user.id
+      connection instanceof LostConnection && connection.sessionID === sessionID
     ));
   }
 
@@ -534,7 +534,7 @@ class SocketServer {
     connection.on('close', () => {
       this.remove(connection);
     });
-    connection.on('authenticate', async (user, sessionID, lastEventID) => {
+    connection.on('authenticate', async ({ user, sessionID, lastEventID }) => {
       const isReconnect = await connection.isReconnect(sessionID);
       this.#logger.info({ userId: user.id, isReconnect, lastEventID }, 'authenticated socket');
       if (isReconnect) {
@@ -575,11 +575,7 @@ class SocketServer {
     });
     connection.on(
       'command',
-      /**
-       * @param {string} command
-       * @param {import('type-fest').JsonValue} data
-       */
-      (command, data) => {
+      ({ command, data }) => {
         this.#logger.trace({ userId: user.id, command, data }, 'command');
         if (has(this.#clientActions, command)) {
           // Ignore incorrect input
