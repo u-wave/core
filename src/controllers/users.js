@@ -4,7 +4,6 @@ import {
   UserNotFoundError,
   UserNotInWaitlistError,
 } from '../errors/index.js';
-import skipIfCurrentDJ from '../utils/skipIfCurrentDJ.js';
 import getOffsetPagination from '../utils/getOffsetPagination.js';
 import toItemResponse from '../utils/toItemResponse.js';
 import toListResponse from '../utils/toListResponse.js';
@@ -190,7 +189,14 @@ async function changeAvatar() {
  * @param {UserID} userID
  */
 async function disconnectUser(uw, userID) {
-  await skipIfCurrentDJ(uw, userID);
+  try {
+    await uw.booth.removeUser(userID);
+  } catch (err) {
+    // It's expected that the user would not be in the waitlist
+    if (!(err instanceof UserNotInWaitlistError)) {
+      throw err;
+    }
+  }
 
   try {
     await uw.waitlist.removeUser(userID);
