@@ -356,8 +356,8 @@ async function favorite(req) {
 }
 
 /**
- * @typedef {object} GetRoomHistoryQuery
- * @prop {import('../types.js').PaginationQuery & { media?: MediaID }} [filter]
+ * @typedef {import('../types.js').PaginationQuery & { media?: MediaID, user?: UserID }}
+ *   GetRoomHistoryQuery
  */
 /**
  * @type {import('../types.js').Controller<never, GetRoomHistoryQuery, never>}
@@ -370,13 +370,16 @@ async function getHistory(req) {
   });
   const { history } = req.uwave;
 
-  if (req.query.filter && req.query.filter.media) {
-    filter['media.media'] = req.query.filter.media;
+  // XXX: This is not actually supported by `history.getHistory()` yet
+  if (req.query.media) {
+    filter.media = req.query.media;
   }
 
-  // TODO: Support filter?
+  if (req.query.user) {
+    filter.user = req.query.user;
+  }
 
-  const roomHistory = await history.getRoomHistory(pagination);
+  const roomHistory = await history.getHistory(pagination, filter);
 
   return toPaginatedResponse(roomHistory, {
     baseUrl: req.fullUrl,
