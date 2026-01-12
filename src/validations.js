@@ -198,11 +198,13 @@ export const getRoomHistory = /** @type {const} */ ({
       {
         type: 'object',
         properties: {
-          filter: {
-            type: 'object',
-            properties: {
-              media: { $ref: 'https://ns.u-wave.net/schemas/definitions.json#/definitions/UUID' },
-            },
+          media: {
+            description: 'Only return plays of the given media ID.',
+            $ref: 'https://ns.u-wave.net/schemas/definitions.json#/definitions/UUID',
+          },
+          user: {
+            description: 'Only return history entries played by the given user.',
+            $ref: 'https://ns.u-wave.net/schemas/definitions.json#/definitions/UUID',
           },
         },
       },

@@ -100,7 +100,7 @@ function historyEntryFromRow(row) {
         _id: row['media.id'],
         sourceType: row['media.sourceType'],
         sourceID: row['media.sourceID'],
-        sourceData: row['media.sourceData'],
+        sourceData: fromJson(row['media.sourceData']),
         artist: row['media.artist'],
         title: row['media.title'],
         thumbnail: row['media.thumbnail'],
