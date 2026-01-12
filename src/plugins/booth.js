@@ -1,6 +1,6 @@
 import Mutex from 'p-mutex';
 import { sql } from 'kysely';
-import { EmptyPlaylistError, PlaylistItemNotFoundError } from '../errors/index.js';
+import { EmptyPlaylistError, PlaylistItemNotFoundError, UserNotInWaitlistError } from '../errors/index.js';
 import routes from '../routes/booth.js';
 import { randomUUID } from 'node:crypto';
 import { fromJson, jsonb, jsonGroupArray } from '../utils/sqlite.js';
@@ -498,6 +498,19 @@ class Booth {
       return removeAfterCurrentPlay != null;
     }
     return null;
+  }
+
+  /**
+   * Remove the given user from the booth. Throw an error if the user is not playing.
+   *
+   * @param {UserID} userID
+   */
+  async removeUser(userID) {
+    const currentDJ = await this.#uw.keyv.get(KEY_CURRENT_DJ_ID);
+    if (userID !== currentDJ) {
+      throw new UserNotInWaitlistError({ id: userID });
+    }
+    await this.advance({ remove: true });
   }
 }
 
