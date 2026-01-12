@@ -1,6 +1,7 @@
 import assert from 'assert';
 import supertest from 'supertest';
 import * as sinon from 'sinon';
+import delay from 'delay';
 import randomString from 'random-string';
 import createUwave from './utils/createUwave.mjs';
 import testSource from './utils/testSource.mjs';
@@ -81,6 +82,8 @@ describe('Waitlist', () => {
         .expect(400);
 
       await uw.test.connectToWebSocketAs(user);
+      // HACK: might stabilise tests? But really it indicates a bug/race condition
+      await delay(100);
 
       await supertest(uw.server)
         .post('/api/waitlist')
