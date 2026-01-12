@@ -1,3 +1,4 @@
+import { UnknownConfigError } from '../errors/index.js';
 import toItemResponse from '../utils/toItemResponse.js';
 
 /**
@@ -35,6 +36,10 @@ async function getConfig(req) {
   const combinedSchema = config.getSchema();
   const schema = combinedSchema.properties[key];
 
+  if (schema === undefined) {
+    throw new UnknownConfigError({ key });
+  }
+
   return toItemResponse(values ?? {}, {
     url: req.fullUrl,
     meta: includeSchema ? { schema } : {},
@@ -48,6 +53,12 @@ async function updateConfig(req) {
   const { config } = req.uwave;
   const { key } = req.params;
   const values = req.body;
+
+  const combinedSchema = config.getSchema();
+  const schema = combinedSchema.properties[key];
+  if (schema === undefined) {
+    throw new UnknownConfigError({ key });
+  }
 
   await config.set(key, values, { user: req.user });
 

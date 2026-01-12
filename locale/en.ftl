@@ -36,3 +36,4 @@ error-waitlist-locked = The waitlist is locked. Only staff can join.
 error-already-in-waitlist = You are already in the waitlist.
 error-user-not-in-waitlist = That user is not in the waitlist.
 error-user-is-playing = That user is currently playing.
+error-unknown-config = Configuration "{ $key }" does not exist.

@@ -85,7 +85,6 @@ function createErrorClass(name, {
 
     /** @param {TData} [data] */
     constructor(data) {
-      console.log(i18nKey, data);
       super(t(i18nKey, data ?? {}) ?? undefined);
       this.i18nKey = i18nKey;
       this.data = data;
@@ -277,6 +276,12 @@ const UserIsPlayingError = createErrorClass('UserIsPlayingError', {
   base: BadRequest,
 });
 
+const UnknownConfigError = createErrorClass('UnknownConfigError', {
+  code: 'unknown-config',
+  string: 'error-unknown-config',
+  base: NotFound,
+});
+
 export {
   APIError,
   CombinedError,
@@ -310,4 +315,5 @@ export {
   AlreadyInWaitlistError,
   UserNotInWaitlistError,
   UserIsPlayingError,
+  UnknownConfigError,
 };
