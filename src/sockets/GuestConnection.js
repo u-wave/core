@@ -9,7 +9,11 @@ const DEAD_TIMEOUT = 30_000;
 /**
  * @augments {Emittery<{
  *  close: undefined,
- *  authenticate: { user: import('../schema.js').User, sessionID: string, lastEventID: string | null }
+ *  authenticate: {
+ *    user: import('../schema.js').User,
+ *    sessionID: string,
+ *    lastEventID: string | null,
+ *  },
  * }>}
  */
 class GuestConnection extends Emittery {

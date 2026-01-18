@@ -25,15 +25,10 @@ describe('Chat', () => {
 
       const ws = await uw.test.connectToWebSocketAs(user);
 
-      const receivedMessages = [];
-      ws.on('message', (data) => {
-        receivedMessages.push(JSON.parse(data));
-      });
-
       ws.send(JSON.stringify({ command: 'sendChat', data: 'Message text' }));
 
       await retryFor(1500, () => {
-        assert(receivedMessages.some((message) => message.command === 'chatMessage' && message.data.userID === user.id && message.data.message === 'Message text'));
+        assert(ws.messages.some((message) => message.command === 'chatMessage' && message.data.userID === user.id && message.data.message === 'Message text'));
       });
     });
 
@@ -52,17 +47,12 @@ describe('Chat', () => {
       const ws = await uw.test.connectToWebSocketAs(user);
       const mutedWs = await uw.test.connectToWebSocketAs(mutedUser);
 
-      const receivedMessages = [];
-      ws.on('message', (data) => {
-        receivedMessages.push(JSON.parse(data));
-      });
-
       ws.send(JSON.stringify({ command: 'sendChat', data: 'unmuted' }));
       mutedWs.send(JSON.stringify({ command: 'sendChat', data: 'muted' }));
 
       await retryFor(1500, () => {
-        assert(receivedMessages.some((message) => message.command === 'chatMessage' && message.data.userID === user.id));
-        assert(!receivedMessages.some((message) => message.command === 'chatMessage' && message.data.userID === mutedUser.id));
+        assert(ws.messages.some((message) => message.command === 'chatMessage' && message.data.userID === user.id));
+        assert(!ws.messages.some((message) => message.command === 'chatMessage' && message.data.userID === mutedUser.id));
       });
     });
   });
@@ -80,11 +70,6 @@ describe('Chat', () => {
 
       const ws = await uw.test.connectToWebSocketAs(user);
 
-      const receivedMessages = [];
-      ws.on('message', (data) => {
-        receivedMessages.push(JSON.parse(data));
-      });
-
       // TODO: is it important to serialize this stuff on the server side
       // so it always gets recorded in the same order?
       ws.send(JSON.stringify({ command: 'sendChat', data: 'a' }));
@@ -95,7 +80,7 @@ describe('Chat', () => {
 
       await retryFor(1500, () => {
         assert.strictEqual(
-          receivedMessages.filter((message) => message.command === 'chatMessage' && message.data.userID === user.id).length,
+          ws.messages.filter((message) => message.command === 'chatMessage' && message.data.userID === user.id).length,
           3,
         );
       });
@@ -192,14 +177,9 @@ describe('Chat', () => {
         message: sinon.match.string,
       });
 
-      const receivedMessages = [];
-      ws.on('message', (data) => {
-        receivedMessages.push(JSON.parse(data));
-      });
-
       ws.send(JSON.stringify({ command: 'sendChat', data: 'HTTP message text' }));
       await retryFor(5_000, () => (
-        receivedMessages.some((message) => (
+        ws.messages.some((message) => (
           message.command === 'chatMessage'
           && message.data.userID === user.id
           && message.data.message === 'HTTP message text'
@@ -227,11 +207,6 @@ describe('Chat', () => {
       // We do need to be connected to be allowed to send a message
       const mutedWs = await uw.test.connectToWebSocketAs(mutedUser);
 
-      const receivedMessages = [];
-      adminWs.on('message', (data) => {
-        receivedMessages.push(JSON.parse(data));
-      });
-
       const res = await supertest(uw.server)
         .post('/api/chat')
         .set('Cookie', `uwsession=${mutedToken}`)
@@ -248,8 +223,8 @@ describe('Chat', () => {
         .expect(200);
 
       await retryFor(1500, () => {
-        assert(receivedMessages.some((message) => message.command === 'chatMessage' && message.data.userID === adminUser.id));
-        assert(!receivedMessages.some((message) => message.command === 'chatMessage' && message.data.userID === mutedUser.id));
+        assert(adminWs.messages.some((message) => message.command === 'chatMessage' && message.data.userID === adminUser.id));
+        assert(!adminWs.messages.some((message) => message.command === 'chatMessage' && message.data.userID === mutedUser.id));
       });
 
       mutedWs.close();
@@ -290,18 +265,13 @@ describe('Chat', () => {
       const otherUser = await uw.test.createUser();
       const ws = await uw.test.connectToWebSocketAs(otherUser);
 
-      const receivedMessages = [];
-      ws.on('message', (data) => {
-        receivedMessages.push(JSON.parse(data));
-      });
-
       await supertest(uw.server)
         .delete('/api/chat')
         .set('Cookie', `uwsession=${token}`)
         .expect(200);
 
       await retryFor(1500, () => {
-        sinon.assert.match(receivedMessages, sinon.match.some(sinon.match.has('command', 'chatDelete')));
+        sinon.assert.match(ws.messages, sinon.match.some(sinon.match.has('command', 'chatDelete')));
       });
     });
   });
@@ -342,18 +312,13 @@ describe('Chat', () => {
       const otherUser = await uw.test.createUser();
       const ws = await uw.test.connectToWebSocketAs(otherUser);
 
-      const receivedMessages = [];
-      ws.on('message', (data) => {
-        receivedMessages.push(JSON.parse(data));
-      });
-
       await supertest(uw.server)
         .delete(`/api/chat/user/${otherUser.id}`)
         .set('Cookie', `uwsession=${token}`)
         .expect(200);
 
       await retryFor(1500, () => {
-        sinon.assert.match(receivedMessages, sinon.match.some(sinon.match({
+        sinon.assert.match(ws.messages, sinon.match.some(sinon.match({
           command: 'chatDeleteByUser',
           data: sinon.match({
             userID: otherUser.id,
@@ -399,18 +364,13 @@ describe('Chat', () => {
       const otherUser = await uw.test.createUser();
       const ws = await uw.test.connectToWebSocketAs(otherUser);
 
-      const receivedMessages = [];
-      ws.on('message', (data) => {
-        receivedMessages.push(JSON.parse(data));
-      });
-
       await supertest(uw.server)
         .delete(`/api/chat/${messageID}`)
         .set('Cookie', `uwsession=${token}`)
         .expect(200);
 
       await retryFor(1500, () => {
-        sinon.assert.match(receivedMessages, sinon.match.some(sinon.match({
+        sinon.assert.match(ws.messages, sinon.match.some(sinon.match({
           command: 'chatDeleteByID',
           data: sinon.match({
             _id: messageID,

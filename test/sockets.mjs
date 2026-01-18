@@ -25,20 +25,15 @@ describe('Sockets', () => {
     const ws = await uw.test.connectToWebSocketAs(user, userSession);
     const wsChatter = await uw.test.connectToWebSocketAs(chatter);
 
-    const receivedMessages = [];
-    ws.on('message', (data) => {
-      receivedMessages.push(JSON.parse(data));
-    });
-
     wsChatter.send(JSON.stringify({ command: 'sendChat', data: 'a' }));
     wsChatter.send(JSON.stringify({ command: 'sendChat', data: 'b' }));
 
     await retryFor(1500, () => {
-      sinon.assert.match(receivedMessages, sinon.match.some(sinon.match({
+      sinon.assert.match(ws.messages, sinon.match.some(sinon.match({
         command: 'chatMessage',
         data: { userID: chatter.id, message: 'a' },
       })));
-      sinon.assert.match(receivedMessages, sinon.match.some(sinon.match({
+      sinon.assert.match(ws.messages, sinon.match.some(sinon.match({
         command: 'chatMessage',
         data: { userID: chatter.id, message: 'b' },
       })));
@@ -55,16 +50,13 @@ describe('Sockets', () => {
 
     // Reconnect & receive the messages
     const ws2 = await uw.test.connectToWebSocketAs(user, userSession);
-    ws2.on('message', (data) => {
-      receivedMessages.push(JSON.parse(data));
-    });
 
     await retryFor(1500, () => {
-      sinon.assert.match(receivedMessages, sinon.match.some(sinon.match({
+      sinon.assert.match(ws2.messages, sinon.match.some(sinon.match({
         command: 'chatMessage',
         data: { userID: chatter.id, message: 'c' },
       })));
-      sinon.assert.match(receivedMessages, sinon.match.some(sinon.match({
+      sinon.assert.match(ws2.messages, sinon.match.some(sinon.match({
         command: 'chatMessage',
         data: { userID: chatter.id, message: 'd' },
       })));
