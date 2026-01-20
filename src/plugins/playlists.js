@@ -369,6 +369,7 @@ class PlaylistsRepository {
     }
 
     try {
+      // Missing `ON DELETE CASCADE`, so we have to do it manually, unfortunately...
       await tx.deleteFrom('playlistItems')
         .where('playlistID', '=', playlist.id)
         .execute();
