@@ -69,7 +69,7 @@
     "random-string": "^0.2.0",
     "secure-json-parse": "^4.0.0",
     "transliteration": "^2.1.11",
-    "u-wave-announce": "=0.6.0-alpha.1",
+    "u-wave-announce": "=0.6.0-alpha.2",
     "u-wave-source-soundcloud": "^2.0.2",
     "u-wave-source-youtube": "^2.0.0",
     "ulid": "^3.0.2",
