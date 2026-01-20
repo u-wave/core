@@ -287,6 +287,121 @@ describe('Playlists', () => {
     });
   });
 
+  describe('DELETE /playlists/:id', () => {
+    it('requires authentication', async () => {
+      const fakeID = 'e2c85d94-344b-4c2a-86bd-95edb939f3e6';
+
+      await supertest(uw.server)
+        .delete(`/api/playlists/${fakeID}`)
+        .expect(401);
+    });
+
+    it('validates input', async () => {
+      const notAnID = 'not-a-uuid';
+      const fakeID = 'e2c85d94-344b-4c2a-86bd-95edb939f3e6';
+      const token = await uw.test.createTestSessionToken(user);
+
+      await supertest(uw.server)
+        .delete(`/api/playlists/${notAnID}`)
+        .set('Cookie', `uwsession=${token}`)
+        .expect(400);
+
+      await supertest(uw.server)
+        .delete(`/api/playlists/${fakeID}`)
+        .set('Cookie', `uwsession=${token}`)
+        .expect(404);
+    });
+
+    it('deletes the playlist', async () => {
+      const token = await uw.test.createTestSessionToken(user);
+
+      const first = await uw.playlists.createPlaylist(user, { name: 'Active Playlist' });
+      assert(first.active, 'first playlist is active and will not be deleted');
+
+      const { active, playlist } = await uw.playlists.createPlaylist(user, { name: 'Test Playlist' });
+      assert(!active, 'second playlist is active and will be deleted');
+
+      // Add some items that should be deleted by cascade
+      const items = await generateItems(20);
+      await uw.playlists.addPlaylistItems(playlist, items);
+
+      await supertest(uw.server)
+        .get('/api/playlists')
+        .set('Cookie', `uwsession=${token}`)
+        .expect(200)
+        .expect((res) => {
+          sinon.assert.match(res.body.data, sinon.match.some(
+            sinon.match({ _id: playlist.id }),
+          ));
+        });
+
+      await supertest(uw.server)
+        .delete(`/api/playlists/${playlist.id}`)
+        .set('Cookie', `uwsession=${token}`)
+        .expect(200);
+
+      await supertest(uw.server)
+        .get('/api/playlists')
+        .set('Cookie', `uwsession=${token}`)
+        .expect(200)
+        .expect((res) => {
+          for (const p of res.body.data) {
+            assert.strictEqual(typeof p._id, 'string');
+            assert.notStrictEqual(p._id, playlist.id, 'playlist should not be in the list anymore');
+          }
+        });
+    });
+
+    it('cannot delete active playlist', async () => {
+      const token = await uw.test.createTestSessionToken(user);
+
+      const { playlist, active } = await uw.playlists.createPlaylist(user, { name: 'Active Playlist' });
+      assert(active, 'first playlist is active');
+
+      await supertest(uw.server)
+        .get('/api/now')
+        .set('Cookie', `uwsession=${token}`)
+        .expect(200)
+        .expect((res) => {
+          assert.strictEqual(res.body.activePlaylist, playlist.id);
+        });
+
+      await supertest(uw.server)
+        .delete(`/api/playlists/${playlist.id}`)
+        .set('Cookie', `uwsession=${token}`)
+        .expect(400)
+        .expect((res) => {
+          sinon.assert.match(res.body.errors[0], {
+            code: 'active-playlist',
+          });
+        });
+    });
+
+    it("does not delete someone else's playlist", async () => {
+      const token = await uw.test.createTestSessionToken(user);
+      const { playlist } = await uw.playlists.createPlaylist(user, { name: 'Test Playlist' });
+      const otherUser = await uw.test.createUser();
+      const otherToken = await uw.test.createTestSessionToken(otherUser);
+
+      // DELETE on someone else's playlist should be a not found error
+      await supertest(uw.server)
+        .delete(`/api/playlists/${playlist.id}`)
+        .set('Cookie', `uwsession=${otherToken}`)
+        .expect(404);
+
+      // Playlist should still exist
+      await supertest(uw.server)
+        .get('/api/playlists')
+        .set('Cookie', `uwsession=${token}`)
+        .expect(200)
+        .expect((res) => {
+          sinon.assert.match(res.body.data, sinon.match.some(
+            sinon.match({ _id: playlist.id }),
+          ));
+        });
+    });
+  });
+
   describe('PUT /playlists/:id/rename', () => {
     it('requires authentication', async () => {
       const fakeID = 'e2c85d94-344b-4c2a-86bd-95edb939f3e6';
