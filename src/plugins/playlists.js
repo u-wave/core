@@ -357,9 +357,21 @@ class PlaylistsRepository {
    * Delete a playlist. An active playlist cannot be deleted.
    *
    * @param {Playlist} playlist
+   * @returns {Promise<void>}
    */
   async deletePlaylist(playlist, tx = this.#uw.db) {
+    // This *must* be executed in a transaction, else it would be possible for
+    // the items to be deleted but not the playlist metadata.
+    // Maybe it'd be better to just require the `tx` parameter, or not support
+    // passing one in?
+    if (!tx.isTransaction) {
+      return tx.transaction().execute((tx) => this.deletePlaylist(playlist, tx));
+    }
+
     try {
+      await tx.deleteFrom('playlistItems')
+        .where('playlistID', '=', playlist.id)
+        .execute();
       await tx.deleteFrom('playlists')
         .where('id', '=', playlist.id)
         .execute();
