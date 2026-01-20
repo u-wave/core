@@ -136,16 +136,18 @@ async function createPlaylist(req) {
 async function deletePlaylist(req) {
   const { user } = req;
   const { id } = req.params;
-  const { playlists } = req.uwave;
+  const { db, playlists } = req.uwave;
 
-  const playlist = await playlists.getUserPlaylist(user, id);
-  if (!playlist) {
-    throw new PlaylistNotFoundError({ id });
-  }
+  await db.transaction().execute(async (tx) => {
+    const playlist = await playlists.getUserPlaylist(user, id, tx);
+    if (!playlist) {
+      throw new PlaylistNotFoundError({ id });
+    }
 
-  await playlists.deletePlaylist(playlist);
+    await playlists.deletePlaylist(playlist, tx);
+  });
 
-  return toItemResponse({}, { url: req.fullUrl });
+  return toItemResponse({});
 }
 
 const patchableKeys = ['name', 'description'];

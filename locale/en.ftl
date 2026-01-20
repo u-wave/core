@@ -20,6 +20,7 @@ error-playlist-not-found = Playlist not found.
 error-playlist-item-not-found = Playlist item not found.
 error-item-not-in-playlist = Item not in playlist.
 error-empty-playlist = You don't have anything to play. Please add some songs to your playlist and try again.
+error-active-playlist = Cannot delete the active playlist.
 error-history-entry-not-found = History entry not found.
 error-media-not-found = Media object not found.
 error-no-self-favorite = You can't favorite your own plays.

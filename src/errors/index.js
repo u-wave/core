@@ -252,6 +252,12 @@ const EmptyPlaylistError = createErrorClass('EmptyPlaylistError', {
   base: Forbidden,
 });
 
+const PlaylistActiveError = createErrorClass('PlaylistActiveError', {
+  code: 'active-playlist',
+  string: 'error-active-playlist',
+  base: BadRequest,
+});
+
 const WaitlistLockedError = createErrorClass('WaitlistLockedError', {
   code: 'waitlist-locked',
   string: 'error-waitlist-locked',
@@ -311,6 +317,7 @@ export {
   SourceNotFoundError,
   SourceNoImportError,
   EmptyPlaylistError,
+  PlaylistActiveError,
   WaitlistLockedError,
   AlreadyInWaitlistError,
   UserNotInWaitlistError,
