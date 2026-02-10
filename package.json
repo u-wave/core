@@ -56,7 +56,7 @@
     "mongoose": "^9.1.4",
     "ms": "^2.1.2",
     "node-fetch": "^3.3.1",
-    "nodemailer": "^7.0.2",
+    "nodemailer": "^8.0.1",
     "object.groupby": "^1.0.1",
     "p-mutex": "^1.0.0",
     "passport": "^0.7.0",
