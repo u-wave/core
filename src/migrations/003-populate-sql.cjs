@@ -3,6 +3,7 @@
 const { randomUUID } = require('node:crypto');
 const mongoose = require('mongoose');
 const { sql } = require('kysely');
+const { default: Redis } = require('ioredis');
 
 const { Types } = mongoose.Schema;
 
@@ -447,6 +448,8 @@ async function up({ context: uw }) {
     return;
   }
 
+  const redis = new Redis(uw.options.redis);
+
   const models = {
     AclRole: mongo.model('AclRole', aclRoleSchema),
     Authentication: mongo.model('Authentication', authenticationSchema),
@@ -459,8 +462,7 @@ async function up({ context: uw }) {
     User: mongo.model('User', userSchema),
   };
 
-  // For now redis is still required.
-  const motd = await uw.redis.get('motd');
+  const motd = await redis.get('motd');
 
   /** @type {Map<string, string>} */
   const mediaIDs = new Map();

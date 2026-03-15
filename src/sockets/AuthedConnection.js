@@ -74,7 +74,7 @@ class AuthedConnection extends Emittery {
   /** @param {string|null} clientLastEventID */
   async #sendWaiting(clientLastEventID) {
     // Legacy clients may not send a last event ID.
-    const lastEventID = clientLastEventID ?? await this.uw.redis.get(this.key);
+    const lastEventID = clientLastEventID ?? await this.uw.redis?.get(this.key);
     if (!lastEventID) {
       return;
     }

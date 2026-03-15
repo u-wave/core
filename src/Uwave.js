@@ -24,7 +24,6 @@ import { SqliteDateColumnsPlugin, connect as connectSqlite } from './utils/sqlit
 import Emittery from 'emittery';
 
 const DEFAULT_SQLITE_PATH = './uwave.sqlite';
-const DEFAULT_REDIS_URL = 'redis://localhost:6379';
 
 class UwCamelCasePlugin extends CamelCasePlugin {
   /**
@@ -56,7 +55,7 @@ class UwCamelCasePlugin extends CamelCasePlugin {
  */
 
 class UwaveServer extends EventEmitter {
-  /** @type {import('ioredis').default} */
+  /** @type {import('ioredis').default | undefined} */
   redis;
 
   /** @type {import('http').Server} */
@@ -151,7 +150,6 @@ class UwaveServer extends EventEmitter {
 
     this.options = {
       sqlite: DEFAULT_SQLITE_PATH,
-      redis: DEFAULT_REDIS_URL,
       ...options,
     };
 
@@ -174,14 +172,14 @@ class UwaveServer extends EventEmitter {
 
     if (typeof options.redis === 'string') {
       this.redis = new Redis(options.redis, { lazyConnect: true });
-    } else {
+    } else if (options.redis != null) {
       this.redis = new Redis({ ...options.redis, lazyConnect: true });
     }
 
     this.configureRedis();
 
     boot.onClose(() => Promise.all([
-      this.redis.quit(),
+      this.redis?.quit(),
       this.db.destroy(),
     ]));
 
@@ -271,6 +269,10 @@ class UwaveServer extends EventEmitter {
    * @private
    */
   configureRedis() {
+    if (this.redis == null) {
+      return;
+    }
+
     const log = this.logger.child({ ns: 'uwave:redis' });
 
     this.redis.on('error', (error) => {

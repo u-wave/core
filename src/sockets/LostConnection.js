@@ -45,7 +45,7 @@ class LostConnection extends Emittery {
     // we can ensure that everyone still gets the full `timeout` duration to
     // reconnect after a server restart, while also not filling up Redis with
     // session IDs that left and will never return.
-    this.#uw.redis.set(this.#key, lastEventID, 'EX', seconds * 10);
+    this.#uw.redis?.set(this.#key, lastEventID, 'EX', seconds * 10);
   }
 
   /**

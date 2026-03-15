@@ -86,7 +86,7 @@ class GuestConnection extends Emittery {
    * @param {string} sessionID
    */
   isReconnect(sessionID) {
-    return this.uw.redis.exists(`http-api:disconnected:${sessionID}`);
+    return this.uw.redis?.exists(`http-api:disconnected:${sessionID}`);
   }
 
   /**
