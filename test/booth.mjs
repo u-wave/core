@@ -1,11 +1,11 @@
-import assert from 'assert';
+import assert from 'node:assert';
+import { randomUUID } from 'node:crypto';
+import { setTimeout } from 'node:timers/promises';
 import * as sinon from 'sinon';
-import delay from 'delay';
 import supertest from 'supertest';
 import createUwave from './utils/createUwave.mjs';
 import testSource from './utils/testSource.mjs';
 import { retryFor } from './utils/retry.mjs';
-import { randomUUID } from 'crypto';
 
 describe('Booth', () => {
   describe('GET /booth', () => {
@@ -162,7 +162,7 @@ describe('Booth', () => {
 
       // Need to just wait, as we can't assert for the absence of something happening
       // without waiting the whole time limit
-      await delay(200);
+      await setTimeout(200);
       assert(
         !ws.messages.some((message) => message.command === 'vote' && message.data.value === -1),
         'should not have re-emitted the vote',

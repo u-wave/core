@@ -1,6 +1,6 @@
 import { randomUUID } from 'node:crypto';
 import { once } from 'node:events';
-import delay from 'delay';
+import { setTimeout } from 'node:timers/promises';
 import * as sinon from 'sinon';
 import createUwave from './utils/createUwave.mjs';
 import { retryFor } from './utils/retry.mjs';
@@ -45,7 +45,7 @@ describe('Sockets', () => {
     await once(ws, 'close');
 
     // TODO: can we have some stricter guarantee on the server side?
-    await delay(100);
+    await setTimeout(100);
 
     wsChatter.send(JSON.stringify({ command: 'sendChat', data: 'c' }));
     wsChatter.send(JSON.stringify({ command: 'sendChat', data: 'd' }));
