@@ -4,6 +4,7 @@ import {
   ItemNotInPlaylistError,
   MediaNotFoundError,
   UserNotFoundError,
+  PlaylistActiveError,
 } from '../errors/index.js';
 import Page from '../Page.js';
 import routes from '../routes/playlists.js';
@@ -13,6 +14,7 @@ import {
   arrayCycle,
   arrayShuffle as arrayShuffle,
   fromJson,
+  isForeignKeyError,
   json,
   jsonb,
   jsonEach,
@@ -249,35 +251,42 @@ class PlaylistsRepository {
   async createPlaylist(user, { name }, tx = this.#uw.db) {
     const id = /** @type {PlaylistID} */ (randomUUID());
 
-    const playlist = await tx.insertInto('playlists')
-      .values({
-        id,
-        name,
-        userID: user.id,
-        items: jsonb([]),
-      })
-      .returning([
-        'id',
-        'userID',
-        'name',
-        (eb) => jsonLength(eb.ref('items')).as('size'),
-        'createdAt',
-        'updatedAt',
-      ])
-      .executeTakeFirstOrThrow();
+    const result = await tx.transaction().execute(async (tx) => {
+      const playlist = await tx.insertInto('playlists')
+        .values({
+          id,
+          name,
+          userID: user.id,
+          items: jsonb([]),
+        })
+        .returning([
+          'id',
+          'userID',
+          'name',
+          (eb) => jsonLength(eb.ref('items')).as('size'),
+          'createdAt',
+          'updatedAt',
+        ])
+        .executeTakeFirstOrThrow();
 
-    let active = false;
-    // If this is the user's first playlist, immediately activate it.
-    if (user.activePlaylistID == null) {
-      this.#logger.info({ userId: user.id, playlistId: playlist.id }, 'activating first playlist');
-      await tx.updateTable('users')
-        .where('users.id', '=', user.id)
+      const updated = await tx.updateTable('users')
+        .where('id', '=', user.id)
+        .where('activePlaylistID', 'is', null)
         .set({ activePlaylistID: playlist.id })
-        .execute();
-      active = true;
+        .returning(['activePlaylistID'])
+        .executeTakeFirst();
+
+      return {
+        playlist,
+        active: updated != null && updated.activePlaylistID === playlist.id,
+      };
+    });
+
+    if (result.active) {
+      this.#logger.info({ userId: user.id, playlistId: result.playlist.id }, 'activated first playlist');
     }
 
-    return { playlist, active };
+    return result;
   }
 
   /**
@@ -345,12 +354,34 @@ class PlaylistsRepository {
   }
 
   /**
+   * Delete a playlist. An active playlist cannot be deleted.
+   *
    * @param {Playlist} playlist
+   * @returns {Promise<void>}
    */
   async deletePlaylist(playlist, tx = this.#uw.db) {
-    await tx.deleteFrom('playlists')
-      .where('id', '=', playlist.id)
-      .execute();
+    // This *must* be executed in a transaction, else it would be possible for
+    // the items to be deleted but not the playlist metadata.
+    // Maybe it'd be better to just require the `tx` parameter, or not support
+    // passing one in?
+    if (!tx.isTransaction) {
+      return tx.transaction().execute((tx) => this.deletePlaylist(playlist, tx));
+    }
+
+    try {
+      // Missing `ON DELETE CASCADE`, so we have to do it manually, unfortunately...
+      await tx.deleteFrom('playlistItems')
+        .where('playlistID', '=', playlist.id)
+        .execute();
+      await tx.deleteFrom('playlists')
+        .where('id', '=', playlist.id)
+        .execute();
+    } catch (err) {
+      if (isForeignKeyError(err)) {
+        throw new PlaylistActiveError();
+      }
+      throw err;
+    }
   }
 
   /**
