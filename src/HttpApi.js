@@ -107,7 +107,7 @@ async function httpApi(uw, options) {
 
   logger.debug(runtimeOptions, 'start HttpApi');
   uw.httpApi = Object.assign(express.Router(), {
-    authRegistry: new AuthRegistry(uw.redis),
+    authRegistry: new AuthRegistry(uw.db),
   });
 
   uw.express = express();

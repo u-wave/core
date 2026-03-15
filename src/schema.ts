@@ -170,6 +170,13 @@ export interface SessionTable {
   expiresAt: Date,
 }
 
+export interface SocketAuthTokenTable {
+  id: string,
+  userID: UserID,
+  sessionID: string,
+  createdAt: Generated<Date>,
+}
+
 export interface SocketMessageTable {
   id: string,
   targetUserID: UserID | null,
@@ -194,6 +201,7 @@ export interface Database {
   historyEntries: HistoryEntryTable,
   feedback: FeedbackTable,
   sessions: SessionTable,
+  socketAuthTokens: SocketAuthTokenTable,
   socketMessageQueue: SocketMessageTable,
 }
 

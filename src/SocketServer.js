@@ -167,7 +167,7 @@ class SocketServer {
     };
 
     // TODO put this behind a symbol, it's just public for tests
-    this.authRegistry = new AuthRegistry(uw.redis);
+    this.authRegistry = new AuthRegistry(uw.db);
 
     this.#wss = new WebSocketServer({
       server: options.server,
