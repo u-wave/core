@@ -9,7 +9,7 @@ import toItemResponse from '../utils/toItemResponse.js';
 import toListResponse from '../utils/toListResponse.js';
 import toPaginatedResponse from '../utils/toPaginatedResponse.js';
 import { muteUser, unmuteUser } from './chat.js';
-import { REDIS_ACTIVE_SESSIONS } from '../SocketServer.js';
+import { KEY_ACTIVE_SESSIONS } from '../SocketServer.js';
 
 /**
  * @typedef {import('../schema').UserID} UserID
@@ -207,7 +207,14 @@ async function disconnectUser(uw, userID) {
     }
   }
 
-  await uw.redis.lrem(REDIS_ACTIVE_SESSIONS, 0, userID);
+  const userIDs = new Set(
+    /** @type {import('../schema.js').UserID[] | null} */ (
+      await uw.keyv.get(KEY_ACTIVE_SESSIONS)
+    ) ?? [],
+  );
+  userIDs.delete(userID);
+
+  await uw.keyv.set(KEY_ACTIVE_SESSIONS, Array.from(userIDs));
 
   uw.publish('user:leave', { userID });
 }

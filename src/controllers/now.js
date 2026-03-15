@@ -1,7 +1,7 @@
 import { getBoothData } from './booth.js';
 import { serializeCurrentUser, serializePlaylist, serializeUser } from '../utils/serialize.js';
 import { legacyPlaylistItem } from './playlists.js';
-import { REDIS_ACTIVE_SESSIONS } from '../SocketServer.js';
+import { KEY_ACTIVE_SESSIONS } from '../SocketServer.js';
 
 /**
  * @typedef {import('../schema.js').UserID} UserID
@@ -24,33 +24,16 @@ async function getFirstItem(uw, playlist) {
 }
 
 /**
- * @param {unknown} str
- */
-function toInt(str) {
-  if (typeof str !== 'string') return 0;
-  if (!/^\d+$/.test(str)) return 0;
-  return parseInt(str, 10);
-}
-
-/**
  * @param {import('../Uwave.js').default} uw
  */
 async function getOnlineUsers(uw) {
-  const userIDs = /** @type {UserID[]} */ (await uw.redis.lrange(REDIS_ACTIVE_SESSIONS, 0, -1));
+  const userIDs = /** @type {UserID[] | null} */ (await uw.keyv.get(KEY_ACTIVE_SESSIONS)) ?? [];
   if (userIDs.length === 0) {
     return [];
   }
 
   const users = await uw.users.getUsersByIds(userIDs);
   return users.map(serializeUser);
-}
-
-/**
- * @param {import('../Uwave.js').default} uw
- */
-async function getGuestsCount(uw) {
-  const guests = await uw.redis.get('http-api:guests');
-  return toInt(guests);
 }
 
 /**
@@ -62,9 +45,11 @@ async function getState(req) {
   const { passport } = uw;
   const { user, sessionID } = req;
 
+  // XXX: with sqlite there isn't really a point in making this all "parallel",
+  // but maybe it makes sense to keep so it'd reduce network waiting times with
+  // other databases in the future?
   const motd = uw.motd.get();
   const users = getOnlineUsers(uw);
-  const guests = getGuestsCount(uw);
   const roles = uw.acl.getAllRoles();
   const booth = getBoothData(uw);
   const waitlist = uw.waitlist.getUserIDs();
@@ -97,7 +82,7 @@ async function getState(req) {
     motd,
     user: user ? serializeCurrentUser(user) : null,
     users,
-    guests,
+    guests: uw.socketServer.guestCount,
     roles,
     booth,
     waitlist,

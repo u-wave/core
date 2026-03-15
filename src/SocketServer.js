@@ -16,7 +16,7 @@ import { subMinutes } from './utils/date.js';
 
 const { isEmpty } = lodash;
 
-export const REDIS_ACTIVE_SESSIONS = 'users';
+export const KEY_ACTIVE_SESSIONS = 'users';
 
 const PING_INTERVAL = 10_000;
 const GUEST_COUNT_INTERVAL = 2_000;
@@ -82,7 +82,7 @@ class SocketServer {
         // We do need to clear the `users` list because the lost connection handlers
         // will not do so.
         uw.socketServer.#logger.warn({ err }, 'could not initialise lost connections');
-        await uw.redis.del(REDIS_ACTIVE_SESSIONS);
+        await uw.keyv.delete(KEY_ACTIVE_SESSIONS);
       }
     });
 
@@ -167,7 +167,7 @@ class SocketServer {
     };
 
     // TODO put this behind a symbol, it's just public for tests
-    this.authRegistry = new AuthRegistry(uw.redis);
+    this.authRegistry = new AuthRegistry(uw.db);
 
     this.#wss = new WebSocketServer({
       server: options.server,
@@ -194,9 +194,7 @@ class SocketServer {
         return;
       }
 
-      this.#recountGuests().catch((error) => {
-        this.#logger.error({ err: error }, 'counting guests failed');
-      });
+      this.#recountGuests();
     }, GUEST_COUNT_INTERVAL);
 
     this.#clientActions = {
@@ -393,11 +391,15 @@ class SocketServer {
         }
       },
       'user:join': async ({ userID }) => {
-        const { users, redis } = this.#uw;
+        const { users, keyv } = this.#uw;
         const user = await users.getUser(userID);
         if (user) {
           // TODO this should not be the socket server code's responsibility
-          await redis.rpush(REDIS_ACTIVE_SESSIONS, user.id);
+          const userIDs = /** @type {import('./schema').UserID[] | null} */ (
+            await keyv.get(KEY_ACTIVE_SESSIONS)
+          ) ?? [];
+          userIDs.push(user.id);
+          await keyv.set(KEY_ACTIVE_SESSIONS, userIDs);
           this.broadcast('join', serializeUser(user));
         }
       },
@@ -455,10 +457,10 @@ class SocketServer {
    * @private
    */
   async initLostConnections() {
-    const { db, redis } = this.#uw;
-    const userIDs = /** @type {import('./schema').UserID[]} */ (
-      await redis.lrange(REDIS_ACTIVE_SESSIONS, 0, -1)
-    );
+    const { db, keyv } = this.#uw;
+    const userIDs = /** @type {import('./schema').UserID[] | null} */ (
+      await keyv.get(KEY_ACTIVE_SESSIONS)
+    ) ?? [];
     const disconnectedIDs = userIDs.filter((userID) => !this.connection(userID));
 
     if (disconnectedIDs.length === 0) {
@@ -798,24 +800,22 @@ class SocketServer {
     });
   }
 
-  async getGuestCount() {
-    const { redis } = this.#uw;
-    const rawCount = await redis.get('http-api:guests');
-    if (typeof rawCount !== 'string' || !/^\d+$/.test(rawCount)) {
-      return 0;
-    }
-    return parseInt(rawCount, 10);
+  #lastGuestCount = 0;
+
+  /** The number of unauthenticated connections. */
+  get guestCount() {
+    return this.#connections.reduce((acc, connection) => {
+      if (connection instanceof GuestConnection) {
+        return acc + 1;
+      }
+      return acc;
+    }, 0);
   }
 
-  async #recountGuests() {
-    const { redis } = this.#uw;
-    const guests = this.#connections
-      .filter((connection) => connection instanceof GuestConnection)
-      .length;
-
-    const lastGuestCount = await this.getGuestCount();
-    if (guests !== lastGuestCount) {
-      await redis.set('http-api:guests', guests);
+  #recountGuests() {
+    const guests = this.guestCount;
+    if (guests !== this.#lastGuestCount) {
+      this.#lastGuestCount = guests;
       this.broadcast('guests', guests);
     }
   }

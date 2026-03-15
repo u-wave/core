@@ -1,17 +1,40 @@
-import assert from 'node:assert';
+import { sql } from 'kysely';
 import nodeCrypto from 'node:crypto';
 import { promisify } from 'node:util';
+import { addMinutes, isAfter } from './utils/date.js';
 
 const randomBytes = promisify(nodeCrypto.randomBytes);
 
+/** @type {import('kysely').RawBuilder<Date>} */
+const earliestValidTokenTime = sql`(strftime('%FT%TZ', 'now', '-60 seconds'))`;
+
 class AuthRegistry {
-  #redis;
+  #db;
+
+  #latestCleanup = new Date();
 
   /**
-   * @param {import('ioredis').default} redis
+   * @param {import('./schema.js').Kysely} db
    */
-  constructor(redis) {
-    this.#redis = redis;
+  constructor(db) {
+    this.#db = db;
+  }
+
+  async #cleanup() {
+    await this.#db.deleteFrom('socketAuthTokens')
+      .where('createdAt', '<', earliestValidTokenTime)
+      .execute();
+  }
+
+  #autoCleanup() {
+    const now = new Date();
+    const nextCleanup = addMinutes(this.#latestCleanup, 1);
+    if (isAfter(now, nextCleanup)) {
+      this.#latestCleanup = now;
+      this.#cleanup().catch((err) => {
+        console.warn(err);
+      });
+    }
   }
 
   /**
@@ -20,7 +43,15 @@ class AuthRegistry {
    */
   async createAuthToken(user, sessionID) {
     const token = (await randomBytes(64)).toString('hex');
-    await this.#redis.set(`http-api:socketAuth:${token}`, `${user.id}/${sessionID}`, 'EX', 60);
+
+    await this.#db.insertInto('socketAuthTokens')
+      .values({
+        id: token,
+        userID: user.id,
+        sessionID,
+      })
+      .execute();
+
     return token;
   }
 
@@ -31,30 +62,16 @@ class AuthRegistry {
     if (token.length !== 128) {
       throw new Error('Invalid token');
     }
-    const result = await this.#redis
-      .multi()
-      .get(`http-api:socketAuth:${token}`)
-      .del(`http-api:socketAuth:${token}`)
-      .exec();
-    assert(result);
 
-    const [err, authParts] = result[0];
-    if (err) {
-      throw err;
-    }
-    if (typeof authParts !== 'string') {
-      throw new Error('Invalid auth parts');
-    }
+    const result = await this.#db.deleteFrom('socketAuthTokens')
+      .where('id', '=', token)
+      .where('createdAt', '>=', earliestValidTokenTime)
+      .returning(['userID', 'sessionID'])
+      .executeTakeFirstOrThrow();
 
-    const index = authParts.indexOf('/');
-    if (index === -1) {
-      throw new Error('Invalid auth parts');
-    }
+    this.#autoCleanup();
 
-    const userID = /** @type {import('./schema.js').UserID} */ (authParts.slice(0, index));
-    const sessionID = authParts.slice(index + 1);
-
-    return { userID, sessionID };
+    return result;
   }
 }
 

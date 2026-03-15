@@ -17,10 +17,26 @@ export function isBefore(date, dateToCompare) {
 
 /**
  * @param {Date} date
+ * @param {Date} dateToCompare
+ */
+export function isAfter(date, dateToCompare) {
+  return +date > +dateToCompare;
+}
+
+/**
+ * @param {Date} date
  * @param {number} millis
  */
 export function addMilliseconds(date, millis) {
   return new Date(+date + millis);
+}
+
+/**
+ * @param {Date} date
+ * @param {number} minutes
+ */
+export function addMinutes(date, minutes) {
+  return new Date(+date + minutes * MS_PER_MINUTE);
 }
 
 /**

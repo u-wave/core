@@ -1,6 +1,6 @@
 import httpErrors from 'http-errors';
 import wrapMiddleware from '../utils/wrapMiddleware.js';
-import { REDIS_ACTIVE_SESSIONS } from '../SocketServer.js';
+import { KEY_ACTIVE_SESSIONS } from '../SocketServer.js';
 
 const { BadRequest } = httpErrors;
 
@@ -10,8 +10,12 @@ function requireActiveConnection() {
    * @param {import('../schema.js').User} user
    */
   async function isConnected(uwave, user) {
-    const onlineIDs = await uwave.redis.lrange(REDIS_ACTIVE_SESSIONS, 0, -1);
-    return onlineIDs.indexOf(user.id) !== -1;
+    const onlineIDs = new Set(
+      /** @type {import('../schema.js').UserID[] | null} */ (
+        await uwave.keyv.get(KEY_ACTIVE_SESSIONS)
+      ) ?? [],
+    );
+    return onlineIDs.has(user.id);
   }
 
   return wrapMiddleware(async (req) => {
