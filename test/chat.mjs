@@ -1,8 +1,8 @@
-import { randomUUID } from 'crypto';
-import assert from 'assert';
+import assert from 'node:assert';
+import { randomUUID } from 'node:crypto';
+import { setTimeout } from 'node:timers/promises';
 import * as sinon from 'sinon';
 import supertest from 'supertest';
-import delay from 'delay';
 import createUwave from './utils/createUwave.mjs';
 import { retryFor } from './utils/retry.mjs';
 
@@ -73,9 +73,9 @@ describe('Chat', () => {
       // TODO: is it important to serialize this stuff on the server side
       // so it always gets recorded in the same order?
       ws.send(JSON.stringify({ command: 'sendChat', data: 'a' }));
-      await delay(50);
+      await setTimeout(50);
       ws.send(JSON.stringify({ command: 'sendChat', data: 'b' }));
-      await delay(50);
+      await setTimeout(50);
       ws.send(JSON.stringify({ command: 'sendChat', data: 'c' }));
 
       await retryFor(1500, () => {
