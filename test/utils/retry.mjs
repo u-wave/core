@@ -1,4 +1,4 @@
-import delay from 'delay';
+import { setTimeout } from 'node:timers/promises';
 
 /** Retry the `fn` until it doesn't throw, or until the duration in milliseconds has elapsed. */
 export async function retryFor(duration, fn) {
@@ -11,7 +11,7 @@ export async function retryFor(duration, fn) {
     } catch (err) {
       caughtError = err;
     }
-    await delay(10);
+    await setTimeout(10);
   }
 
   if (caughtError != null) {
