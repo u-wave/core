@@ -1,6 +1,5 @@
 import { promisify } from 'node:util';
 import lodash from 'lodash';
-import sjson from 'secure-json-parse';
 import { WebSocketServer } from 'ws';
 import Ajv from 'ajv';
 import { stdSerializers } from 'pino';
@@ -96,8 +95,6 @@ class SocketServer {
 
   #logger;
 
-  #redisSubscription;
-
   #wss;
 
   #closing = false;
@@ -134,6 +131,8 @@ class SocketServer {
    */
   #serverActions;
 
+  #unsubscribe;
+
   /**
    * Create a socket server.
    *
@@ -157,7 +156,6 @@ class SocketServer {
         req: stdSerializers.req,
       },
     });
-    this.#redisSubscription = uw.redis.duplicate();
 
     this.options = {
       /** @type {(_socket: import('ws').WebSocket | undefined, err: Error) => void} */
@@ -176,11 +174,8 @@ class SocketServer {
       port: options.server ? undefined : options.port,
     });
 
-    uw.use(() => this.#redisSubscription.subscribe('uwave'));
-    this.#redisSubscription.on('message', (channel, command) => {
-      // this returns a promise, but we don't handle the error case:
-      // there is not much we can do, so just let node.js crash w/ an unhandled rejection
-      this.onServerMessage(channel, command);
+    this.#unsubscribe = uw.events.onAny((command, data) => {
+      this.#onServerMessage(command, data);
     });
 
     this.#wss.on('error', (error) => {
@@ -517,12 +512,12 @@ class SocketServer {
   /**
    * Get a LostConnection for a user, if one exists.
    *
-   * @param {User} user
+   * @param {string} sessionID
    * @private
    */
-  getLostConnection(user) {
+  getLostConnection(sessionID) {
     return this.#connections.find((connection) => (
-      connection instanceof LostConnection && connection.user.id === user.id
+      connection instanceof LostConnection && connection.sessionID === sessionID
     ));
   }
 
@@ -539,7 +534,7 @@ class SocketServer {
     connection.on('close', () => {
       this.remove(connection);
     });
-    connection.on('authenticate', async (user, sessionID, lastEventID) => {
+    connection.on('authenticate', async ({ user, sessionID, lastEventID }) => {
       const isReconnect = await connection.isReconnect(sessionID);
       this.#logger.info({ userId: user.id, isReconnect, lastEventID }, 'authenticated socket');
       if (isReconnect) {
@@ -580,11 +575,7 @@ class SocketServer {
     });
     connection.on(
       'command',
-      /**
-       * @param {string} command
-       * @param {import('type-fest').JsonValue} data
-       */
-      (command, data) => {
+      ({ command, data }) => {
         this.#logger.trace({ userId: user.id, command, data }, 'command');
         if (has(this.#clientActions, command)) {
           // Ignore incorrect input
@@ -678,33 +669,20 @@ class SocketServer {
   }
 
   /**
-   * Handle command messages coming in from Redis.
+   * Handle command messages coming in from elsewhere in the app.
    * Some commands are intended to broadcast immediately to all connected
    * clients, but others require special action.
    *
-   * @param {string} channel
-   * @param {string} rawCommand
-   * @returns {Promise<void>}
-   * @private
+   * @template {keyof import('./redisMessages.js').ServerActionParameters} K
+   * @param {K} command
+   * @param {import('./redisMessages.js').ServerActionParameters[K]} data
    */
-  async onServerMessage(channel, rawCommand) {
-    /**
-     * @type {{ command: string, data: import('type-fest').JsonValue }|undefined}
-     */
-    const json = sjson.safeParse(rawCommand);
-    if (!json) {
-      return;
-    }
-    const { command, data } = json;
+  #onServerMessage(command, data) {
+    this.#logger.trace({ channel: command, command, data }, 'server message');
 
-    this.#logger.trace({ channel, command, data }, 'server message');
-
-    if (has(this.#serverActions, command)) {
-      const action = this.#serverActions[command];
-      if (action !== undefined) { // the types for `ServerActions` allow undefined, so...
-        // @ts-expect-error TS2345 `data` is validated
-        action(data);
-      }
+    const action = this.#serverActions[command];
+    if (action !== undefined) {
+      action(data);
     }
   }
 
@@ -714,9 +692,10 @@ class SocketServer {
    * @returns {Promise<void>}
    */
   async destroy() {
-    clearInterval(this.#pinger);
-
     this.#closing = true;
+
+    this.#unsubscribe();
+    clearInterval(this.#pinger);
     clearInterval(this.#guestCountInterval);
 
     for (const connection of this.#connections) {
@@ -725,7 +704,6 @@ class SocketServer {
 
     const closeWsServer = promisify(this.#wss.close.bind(this.#wss));
     await closeWsServer();
-    await this.#redisSubscription.quit();
   }
 
   /**

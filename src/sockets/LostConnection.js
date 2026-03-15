@@ -1,6 +1,9 @@
-import EventEmitter from 'node:events';
+import Emittery from 'emittery';
 
-class LostConnection extends EventEmitter {
+/**
+ * @augments {Emittery<{ close: undefined }>}
+ */
+class LostConnection extends Emittery {
   #logger;
 
   #expiresAt;

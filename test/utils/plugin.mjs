@@ -3,6 +3,18 @@ import events from 'events';
 import jwt from 'jsonwebtoken';
 import WebSocket from 'ws';
 
+class RecordingWebSocket extends WebSocket {
+  messages = [];
+
+  constructor(url) {
+    super(url);
+
+    this.on('message', (data, isBinary) => {
+      this.messages.push(JSON.parse(isBinary ? data.toString() : data));
+    });
+  }
+}
+
 async function testPlugin(uw) {
   let i = Date.now();
   function createUser() {
@@ -25,7 +37,7 @@ async function testPlugin(uw) {
 
     const token = await uw.socketServer.authRegistry.createAuthToken(user, session ?? randomUUID());
 
-    const ws = new WebSocket(`ws://localhost:${port}`);
+    const ws = new RecordingWebSocket(`ws://localhost:${port}`);
     await events.once(ws, 'open');
 
     ws.send(token);

@@ -4,7 +4,6 @@ import EventEmitter from 'node:events';
 import Ajv from 'ajv/dist/2019.js';
 import formats from 'ajv-formats';
 import jsonMergePatch from 'json-merge-patch';
-import sjson from 'secure-json-parse';
 import ValidationError from '../errors/ValidationError.js';
 import { sql } from 'kysely';
 import { fromJson, json, jsonb } from '../utils/sqlite.js';
@@ -29,11 +28,11 @@ class ConfigStore {
 
   #logger;
 
-  #subscriber;
-
   #ajv;
 
   #emitter = new EventEmitter();
+
+  #unsubscribe;
 
   /** @type {Map<string, import('ajv').ValidateFunction<unknown>>} */
   #validators = new Map();
@@ -44,7 +43,6 @@ class ConfigStore {
   constructor(uw) {
     this.#uw = uw;
     this.#logger = uw.logger.child({ ns: 'uwave:config' });
-    this.#subscriber = uw.redis.duplicate();
     this.#ajv = new Ajv({
       useDefaults: true,
       // Allow unknown keywords (`uw:xyz`)
@@ -59,40 +57,16 @@ class ConfigStore {
       fs.readFileSync(new URL('../schemas/definitions.json', import.meta.url), 'utf8'),
     ));
 
-    this.#subscriber.on('message', (_channel, command) => {
-      this.#onServerMessage(command);
+    this.#unsubscribe = uw.events.on(CONFIG_UPDATE_MESSAGE, async (data) => {
+      this.#logger.trace({ data }, 'handle config update');
+
+      try {
+        const updatedSettings = await this.get(data.key);
+        this.#emitter.emit(data.key, updatedSettings, data.user, data.patch);
+      } catch (error) {
+        this.#logger.error({ err: error }, 'could not retrieve settings after update');
+      }
     });
-
-    uw.use(async () => this.#subscriber.subscribe('uwave'));
-  }
-
-  /**
-   * @param {string} rawCommand
-   */
-  async #onServerMessage(rawCommand) {
-    /**
-     * @type {undefined|{
-     *   command: string,
-     *   data: import('../redisMessages.js').ServerActionParameters['configStore:update'],
-     * }}
-     */
-    const json = sjson.safeParse(rawCommand);
-    if (!json) {
-      return;
-    }
-    const { command, data } = json;
-    if (command !== CONFIG_UPDATE_MESSAGE) {
-      return;
-    }
-
-    this.#logger.trace({ command, data }, 'handle config update');
-
-    try {
-      const updatedSettings = await this.get(data.key);
-      this.#emitter.emit(data.key, updatedSettings, data.user, data.patch);
-    } catch (error) {
-      this.#logger.error({ err: error }, 'could not retrieve settings after update');
-    }
   }
 
   /**
@@ -258,8 +232,8 @@ class ConfigStore {
     };
   }
 
-  async destroy() {
-    await this.#subscriber.quit();
+  destroy() {
+    this.#unsubscribe();
   }
 }
 
@@ -268,7 +242,7 @@ class ConfigStore {
  */
 async function configStorePlugin(uw) {
   uw.config = new ConfigStore(uw);
-  uw.onClose(() => uw.config.destroy());
+  uw.onClose(async () => uw.config.destroy());
 }
 
 export default configStorePlugin;

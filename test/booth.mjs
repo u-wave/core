@@ -119,10 +119,6 @@ describe('Booth', () => {
 
       const token = await uw.test.createTestSessionToken(user);
       const ws = await uw.test.connectToWebSocketAs(user);
-      const receivedMessages = [];
-      ws.on('message', (data, isBinary) => {
-        receivedMessages.push(JSON.parse(isBinary ? data.toString() : data));
-      });
 
       // Prep the DJ account to be able to join the waitlist
       const { playlist } = await uw.playlists.createPlaylist(dj, { name: 'vote' });
@@ -153,11 +149,11 @@ describe('Booth', () => {
         .expect(200);
 
       await retryFor(500, () => {
-        assert(receivedMessages.some((message) => message.command === 'vote' && message.data.value === -1));
+        assert(ws.messages.some((message) => message.command === 'vote' && message.data.value === -1));
       });
 
       // Resubmit vote without changing
-      receivedMessages.length = 0;
+      ws.messages.length = 0;
       await supertest(uw.server)
         .put(`/api/booth/${historyID}/vote`)
         .set('Cookie', `uwsession=${token}`)
@@ -168,7 +164,7 @@ describe('Booth', () => {
       // without waiting the whole time limit
       await delay(200);
       assert(
-        !receivedMessages.some((message) => message.command === 'vote' && message.data.value === -1),
+        !ws.messages.some((message) => message.command === 'vote' && message.data.value === -1),
         'should not have re-emitted the vote',
       );
 
@@ -179,7 +175,7 @@ describe('Booth', () => {
         .expect(200);
 
       await retryFor(500, () => {
-        assert(receivedMessages.some((message) => message.command === 'vote' && message.data.value === 1));
+        assert(ws.messages.some((message) => message.command === 'vote' && message.data.value === 1));
       });
 
       djWs.close();
@@ -382,10 +378,6 @@ describe('Booth', () => {
       const item = await uw.source('test-source').getOne(dj, 'SELF_FAVORITE');
       await uw.playlists.addPlaylistItems(playlist, [item]);
       const ws = await uw.test.connectToWebSocketAs(dj);
-      const receivedMessages = [];
-      ws.on('message', (data, isBinary) => {
-        receivedMessages.push(JSON.parse(isBinary ? data.toString() : data));
-      });
 
       // Prep the favoriter account to grab the song
       const favoriterToken = await uw.test.createTestSessionToken(favoriter);
@@ -429,7 +421,7 @@ describe('Booth', () => {
       });
 
       // Check that an event was emitted
-      sinon.assert.match(receivedMessages, sinon.match.some(sinon.match({
+      sinon.assert.match(ws.messages, sinon.match.some(sinon.match({
         command: 'favorite',
         data: { userID: favoriter.id },
       })));
