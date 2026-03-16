@@ -13,6 +13,7 @@ import LostConnection from './sockets/LostConnection.js';
 import { serializeUser } from './utils/serialize.js';
 import { jsonb } from './utils/sqlite.js';
 import { subMinutes } from './utils/date.js';
+import { ChatMutedError } from './errors/index.js';
 
 const { isEmpty } = lodash;
 
@@ -202,7 +203,14 @@ class SocketServer {
     this.#clientActions = {
       sendChat: (user, message) => {
         this.#logger.trace({ user, message }, 'sendChat');
-        this.#uw.chat.send(user, message);
+        this.#uw.chat.send(user, message).catch((err) => {
+          if (err instanceof ChatMutedError) {
+            return;
+          }
+
+          this.#logger.warn({ err }, 'could not send chat message');
+          // TODO: should this return the error to the client?
+        });
       },
       vote: (user, direction) => {
         socketVote(this.#uw, user.id, direction);
