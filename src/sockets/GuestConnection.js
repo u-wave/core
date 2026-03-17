@@ -19,18 +19,23 @@ const DEAD_TIMEOUT = 30_000;
 class GuestConnection extends Emittery {
   #events;
 
+  /** @type {import('express-session').Store} */
+  #sessionStore;
+
   #logger;
 
   #lastMessage = Date.now();
 
   /**
    * @param {import('../Uwave.js').default} uw
+   * @param {import('express-session').Store} store
    * @param {import('ws').WebSocket} socket
    * @param {{ authRegistry: import('../AuthRegistry.js').default }} options
    */
-  constructor(uw, socket, options) {
+  constructor(uw, store, socket, options) {
     super();
     this.uw = uw;
+    this.#sessionStore = store;
     this.socket = socket;
     this.options = options;
     this.#logger = uw.logger.child({ ns: 'uwave:sockets', connectionType: 'GuestConnection', userId: null });
@@ -86,7 +91,15 @@ class GuestConnection extends Emittery {
    * @param {string} sessionID
    */
   isReconnect(sessionID) {
-    return this.uw.redis?.exists(`http-api:disconnected:${sessionID}`);
+    return new Promise((resolve, reject) => {
+      this.#sessionStore.get(sessionID, (err, result) => {
+        if (err != null) {
+          reject(err);
+        } else {
+          resolve(result != null);
+        }
+      });
+    });
   }
 
   /**

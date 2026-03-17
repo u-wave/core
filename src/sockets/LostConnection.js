@@ -8,44 +8,54 @@ class LostConnection extends Emittery {
 
   #expiresAt;
 
-  #uw;
+  /** @type {import('express-session').Store} */
+  #sessionStore;
 
   /**
    * @param {import('../Uwave.js').default} uw
+   * @param {import('express-session').Store} store
    * @param {import('../schema.js').User} user
    * @param {string} sessionID
    * @param {string|null} lastEventID
    */
-  constructor(uw, user, sessionID, lastEventID, timeout = 30) {
+  constructor(uw, store, user, sessionID, lastEventID, timeout = 30) {
     super();
-    this.#uw = uw;
+    this.#sessionStore = store;
     this.user = user;
     this.sessionID = sessionID;
     this.#expiresAt = Date.now() + timeout * 1_000;
     this.#logger = uw.logger.child({
-      ns: 'uwave:sockets', connectionType: 'LostConnection', userID: this.user.id, sessionID,
+      ns: 'uwave:sockets',
+      connectionType: 'LostConnection',
+      userID: this.user.id,
+      sessionID,
     });
 
     if (lastEventID != null) {
-      this.#initQueued(lastEventID, timeout);
+      this.#initQueued(lastEventID);
     }
-  }
-
-  get #key() {
-    return `http-api:disconnected:${this.sessionID}`;
   }
 
   /**
    * @param {string} lastEventID
-   * @param {number} seconds
    */
-  #initQueued(lastEventID, seconds) {
-    // We expire the keys after timeout*10, because a server restart near the
-    // end of the timeout might mean that someone fails to reconnect. This way
-    // we can ensure that everyone still gets the full `timeout` duration to
-    // reconnect after a server restart, while also not filling up Redis with
-    // session IDs that left and will never return.
-    this.#uw.redis?.set(this.#key, lastEventID, 'EX', seconds * 10);
+  #initQueued(lastEventID) {
+    return new Promise((resolve, reject) => {
+      this.#sessionStore.load(this.sessionID, (err, sessionData) => {
+        if (err != null) {
+          reject(err);
+        } else {
+          // TODO: can i populate `sessionData.cookie` here?
+          this.#sessionStore.set(this.sessionID, { ...sessionData, lastEventID }, (err) => {
+            if (err != null) {
+              reject(err);
+            } else {
+              resolve(undefined);
+            }
+          });
+        }
+      });
+    });
   }
 
   /**

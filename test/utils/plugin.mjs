@@ -32,10 +32,10 @@ async function testPlugin(uw) {
       .executeTakeFirstOrThrow();
   }
 
-  async function connectToWebSocketAs(user, session) {
+  async function connectToWebSocketAs(user, session = randomUUID()) {
     const { port } = uw.server.address();
 
-    const token = await uw.socketServer.authRegistry.createAuthToken(user, session ?? randomUUID());
+    const token = await uw.socketServer.authRegistry.createAuthToken(user, session);
 
     const ws = new RecordingWebSocket(`ws://localhost:${port}`);
     await events.once(ws, 'open');

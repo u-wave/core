@@ -22,6 +22,7 @@ import passport from './plugins/passport.js';
 import migrations from './plugins/migrations.js';
 import { SqliteDateColumnsPlugin, connect as connectSqlite } from './utils/sqlite.js';
 import Emittery from 'emittery';
+import SqliteSessionStore from './utils/SqliteSessionStore.js';
 
 const DEFAULT_SQLITE_PATH = './uwave.sqlite';
 
@@ -192,9 +193,12 @@ class UwaveServer extends EventEmitter {
       secret: this.options.secret,
     });
 
+    const sessionStore = new SqliteSessionStore(this.db, this.logger.child({ ns: 'uwave:sessions' }));
+
     // Initial API setup
     boot.use(httpApi, {
       secret: this.options.secret,
+      sessionStore,
       helmet: this.options.helmet,
       trustProxy: this.options.trustProxy,
       mailTransport: this.options.mailTransport,
@@ -202,7 +206,7 @@ class UwaveServer extends EventEmitter {
       createPasswordResetEmail: this.options.createPasswordResetEmail,
       onError: this.options.onError,
     });
-    boot.use(SocketServer.plugin);
+    boot.use(SocketServer.plugin, { secret: this.options.secret, sessionStore });
 
     boot.use(acl);
     boot.use(chat);

@@ -33,6 +33,12 @@ declare global {
   }
 }
 
+declare module 'express-session' {
+  interface SessionData {
+    lastEventID?: string,
+  }
+}
+
 type DefaultParams = Record<string, string>;
 type DefaultQuery = ParsedQs;
 type DefaultBody = JsonObject;

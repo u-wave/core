@@ -2,7 +2,7 @@ import Emittery from 'emittery';
 import Ultron from 'ultron';
 import WebSocket from 'ws';
 import sjson from 'secure-json-parse';
-import { ulid } from 'ulid';
+import { ulid, decodeTime } from 'ulid';
 import { fromJson, json } from '../utils/sqlite.js';
 
 const PING_TIMEOUT = 5_000;
@@ -21,6 +21,9 @@ class AuthedConnection extends Emittery {
 
   #lastMessage = Date.now();
 
+  /** @type {import('express-session').Store} */
+  #sessionStore;
+
   // Ideally, the client should actually be responsible for this,
   // because the server only knows if something was *sent*, not if it was received.
   /** @type {string|null} */
@@ -30,14 +33,16 @@ class AuthedConnection extends Emittery {
 
   /**
    * @param {import('../Uwave.js').default} uw
+   * @param {import('express-session').Store} store
    * @param {import('ws').WebSocket} socket
    * @param {import('../schema.js').User} user
    * @param {string} sessionID
    * @param {string|null} lastEventID
    */
-  constructor(uw, socket, user, sessionID, lastEventID) {
+  constructor(uw, store, socket, user, sessionID, lastEventID) {
     super();
     this.uw = uw;
+    this.#sessionStore = store;
     this.socket = socket;
     this.#events = new Ultron(this.socket);
     this.user = user;
@@ -64,17 +69,33 @@ class AuthedConnection extends Emittery {
     });
   }
 
-  /**
-   * @private
-   */
-  get key() {
-    return `http-api:disconnected:${this.sessionID}`;
+  async #getLastEventID() {
+    /** @type {import('express-session').SessionData | null | undefined} */
+    const sessionData = await new Promise((resolve, reject) => {
+      this.#sessionStore.get(this.sessionID, (err, sessionData) => {
+        if (err != null) {
+          reject(err);
+        } else {
+          resolve(sessionData);
+        }
+      });
+    });
+
+    if (sessionData == null || sessionData.lastEventID == null) {
+      return;
+    }
+
+    // Only use the session's last event ID if it's within the connection timeout.
+    const time = decodeTime(sessionData.lastEventID);
+    if (time + DEAD_TIMEOUT > Date.now()) {
+      return sessionData.lastEventID;
+    }
   }
 
   /** @param {string|null} clientLastEventID */
   async #sendWaiting(clientLastEventID) {
     // Legacy clients may not send a last event ID.
-    const lastEventID = clientLastEventID ?? await this.uw.redis?.get(this.key);
+    const lastEventID = clientLastEventID ?? await this.#getLastEventID();
     if (!lastEventID) {
       return;
     }
