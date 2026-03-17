@@ -174,8 +174,8 @@ class SocketServer {
       port: options.server ? undefined : options.port,
     });
 
-    this.#unsubscribe = uw.events.onAny((command, data) => {
-      this.#onServerMessage(command, data);
+    this.#unsubscribe = uw.events.onAny(({ name, data }) => {
+      this.#onServerMessage(name, data);
     });
 
     this.#wss.on('error', (error) => {
@@ -536,7 +536,7 @@ class SocketServer {
     connection.on('close', () => {
       this.remove(connection);
     });
-    connection.on('authenticate', async ({ user, sessionID, lastEventID }) => {
+    connection.on('authenticate', async ({ data: { user, sessionID, lastEventID } }) => {
       const isReconnect = await connection.isReconnect(sessionID);
       this.#logger.info({ userId: user.id, isReconnect, lastEventID }, 'authenticated socket');
       if (isReconnect) {
@@ -565,7 +565,7 @@ class SocketServer {
    */
   createAuthedConnection(socket, user, sessionID, lastEventID) {
     const connection = new AuthedConnection(this.#uw, socket, user, sessionID, lastEventID);
-    connection.on('close', ({ banned, lastEventID }) => {
+    connection.on('close', ({ data: { banned, lastEventID } }) => {
       if (banned) {
         this.#logger.info({ userId: user.id }, 'removing connection after ban');
         disconnectUser(this.#uw, user.id);
@@ -577,7 +577,7 @@ class SocketServer {
     });
     connection.on(
       'command',
-      ({ command, data }) => {
+      ({ data: { command, data } }) => {
         this.#logger.trace({ userId: user.id, command, data }, 'command');
         if (has(this.#clientActions, command)) {
           // Ignore incorrect input
