@@ -57,7 +57,7 @@ class ConfigStore {
       fs.readFileSync(new URL('../schemas/definitions.json', import.meta.url), 'utf8'),
     ));
 
-    this.#unsubscribe = uw.events.on(CONFIG_UPDATE_MESSAGE, async (data) => {
+    this.#unsubscribe = uw.events.on(CONFIG_UPDATE_MESSAGE, async ({ data }) => {
       this.#logger.trace({ data }, 'handle config update');
 
       try {
