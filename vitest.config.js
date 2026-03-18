@@ -4,6 +4,7 @@ export default defineConfig({
   test: {
     include: ['./test/*.{js,cjs,mjs}'],
     coverage: {
+      enabled: true,
       provider: 'v8',
       reporter: ['lcov'],
     },
