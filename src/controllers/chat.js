@@ -122,8 +122,8 @@ async function getBackscroll(req) {
     .where('command', '=', 'chatMessage')
     .innerJoin('users', (join) => join
       .on('users.id', '=', (eb) => sql`${eb.ref('data')}->>'userID'`))
-    .select([
-      (eb) => json(eb.ref('data')).as('data'),
+    .select((eb) => [
+      json(eb.ref('data')).as('data'),
       ...users.publicUserColumns,
     ])
     .orderBy('socketMessageQueue.id', 'desc')
