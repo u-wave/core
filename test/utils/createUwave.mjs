@@ -17,7 +17,6 @@ async function createUwave(name, options) {
 
   uw.use(testPlugin);
 
-  uw.destroy = uw.close;
   await uw.listen();
 
   return uw;

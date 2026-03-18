@@ -11,7 +11,7 @@ describe('Now', () => {
     uw = await createUwave('acl');
   });
   afterEach(async () => {
-    await uw.destroy();
+    await uw.close();
   });
 
   describe('GET /now', () => {

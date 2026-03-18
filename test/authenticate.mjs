@@ -21,7 +21,7 @@ describe('Authentication', () => {
   });
   afterEach(async () => {
     sandbox.restore();
-    await uw.destroy();
+    await uw.close();
   });
 
   describe('GET /auth', () => {
@@ -292,7 +292,7 @@ describe('Password Reset', () => {
   afterEach(async () => {
     sandbox.restore();
     if (uw) {
-      await uw.destroy();
+      await uw.close();
       uw = undefined;
     }
   });

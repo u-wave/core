@@ -13,7 +13,7 @@ describe('Users', () => {
     user = await uw.test.createUser();
   });
   afterEach(async () => {
-    await uw.destroy();
+    await uw.close();
   });
 
   describe('GET /api/users', () => {

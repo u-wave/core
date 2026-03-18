@@ -17,7 +17,7 @@ describe('Sockets', () => {
     uw = await createUwave('sockets');
   });
   afterEach(async () => {
-    await uw.destroy();
+    await uw.close();
   });
 
   it('keeps messages in queue', async () => {

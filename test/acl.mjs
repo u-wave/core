@@ -18,7 +18,7 @@ describe('ACL', () => {
     await uw.acl.createRole('testRole', ['test.perm']);
   });
   afterEach(async () => {
-    await uw.destroy();
+    await uw.close();
   });
 
   describe('API', () => {

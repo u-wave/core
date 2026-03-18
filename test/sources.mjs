@@ -13,7 +13,7 @@ describe('Media Sources', () => {
     uw = await createUwave('sources');
   });
   afterEach(async () => {
-    await uw.destroy();
+    await uw.close();
   });
 
   function makeTestMedia(sourceID) {

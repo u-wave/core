@@ -20,7 +20,7 @@ describe('Waitlist', () => {
     uw.source(testSource);
   });
   afterEach(async () => {
-    await uw.destroy();
+    await uw.close();
   });
 
   function createUsers(count) {

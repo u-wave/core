@@ -14,7 +14,7 @@ describe('Runtime Config', () => {
     user = await uw.test.createUser();
   });
   afterEach(async () => {
-    await uw.destroy();
+    await uw.close();
   });
 
   describe('GET /server/config', () => {

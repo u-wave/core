@@ -17,7 +17,7 @@ describe('Booth', () => {
       uw = await createUwave('booth');
     });
     afterEach(async () => {
-      await uw.destroy();
+      await uw.close();
     });
 
     it('is null when nobody is playing', async () => {
@@ -69,7 +69,7 @@ describe('Booth', () => {
       uw = await createUwave('votes');
     });
     afterEach(async () => {
-      await uw.destroy();
+      await uw.close();
     });
 
     const unknownHistoryID = '7e8c3ef1-6670-4b52-b334-0c93df924507';
@@ -191,7 +191,7 @@ describe('Booth', () => {
       uw = await createUwave('booth');
     });
     afterEach(async () => {
-      await uw.destroy();
+      await uw.close();
     });
 
     it('is empty', async () => {
@@ -247,7 +247,7 @@ describe('Booth', () => {
       uw = await createUwave('booth');
     });
     afterEach(async () => {
-      await uw.destroy();
+      await uw.close();
     });
 
     it('requires authentication', async () => {

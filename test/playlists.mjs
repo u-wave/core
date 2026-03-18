@@ -46,7 +46,7 @@ describe('Playlists', () => {
     uw.source(testSource);
   });
   afterEach(async () => {
-    await uw.destroy();
+    await uw.close();
   });
 
   describe('GET /playlists', () => {

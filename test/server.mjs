@@ -11,7 +11,7 @@ describe('üWave Core', () => {
     uw = await createUwave('core');
   });
   afterEach(async () => {
-    await uw.destroy();
+    await uw.close();
   });
 
   it('can create a üWave instance', async () => {

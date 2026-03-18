@@ -11,7 +11,7 @@ describe('MOTD', () => {
     uw = await createUwave('motd');
   });
   afterEach(async () => {
-    await uw.destroy();
+    await uw.close();
   });
 
   describe('GET /motd', () => {

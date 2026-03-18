@@ -19,7 +19,7 @@ describe('Chat', () => {
   });
   afterEach(async () => {
     sandbox.restore();
-    await uw.destroy();
+    await uw.close();
   });
 
   describe('WebSocket', () => {
