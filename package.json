@@ -109,6 +109,7 @@
     "@types/supertest": "^7.2.0",
     "@types/ultron": "^1.1.0",
     "@types/ws": "^8.2.0",
+    "@typescript/native-preview": "=7.0.0-dev.20260318.1",
     "@vitest/coverage-v8": "^4.1.0",
     "concat-stream": "^2.0.0",
     "eslint": "^9.12.0",
@@ -123,7 +124,6 @@
     "sinon": "^21.0.0",
     "supertest": "^7.0.0",
     "type-fest": "^5.0.0",
-    "typescript": "~5.9.2",
     "typescript-eslint": "^8.5.0",
     "vitest": "^4.1.0"
   },
@@ -131,7 +131,7 @@
     "lint": "eslint --cache .",
     "test": "npm run tests-only && npm run types && npm run lint",
     "tests-only": "vitest run",
-    "types": "tsc -p tsconfig.json",
+    "types": "tsgo -p tsconfig.json",
     "start": "nodemon --env-file-if-exists=.env dev/u-wave-dev-server.js | pino-pretty"
   }
 }
