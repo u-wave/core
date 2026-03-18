@@ -32,7 +32,9 @@ class LostConnection extends Emittery {
     });
 
     if (lastEventID != null) {
-      this.#initQueued(lastEventID);
+      this.#initQueued(lastEventID).catch((err) => {
+        this.#logger.warn({ err }, 'failed to save Last-Event-ID to session');
+      });
     }
   }
 
@@ -44,8 +46,13 @@ class LostConnection extends Emittery {
       this.#sessionStore.load(this.sessionID, (err, sessionData) => {
         if (err != null) {
           reject(err);
+        } else if (sessionData == null) {
+          // If we don't actually have a session we don't bother, this should only happen if
+          // a WebSocket connection was set up and authenticated without going thru a login flow
+          // or if only JWTs and no cookies were used; in those cases, clients should track last
+          // event ID and submit it when reconnecting
+          resolve(undefined);
         } else {
-          // TODO: can i populate `sessionData.cookie` here?
           this.#sessionStore.set(this.sessionID, { ...sessionData, lastEventID }, (err) => {
             if (err != null) {
               reject(err);
