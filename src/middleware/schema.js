@@ -15,11 +15,9 @@ addFormats(ajv);
 ajv.addMetaSchema(JSON.parse(fs.readFileSync(new URL('../../node_modules/ajv/dist/refs/json-schema-draft-07.json', import.meta.url), 'utf8')));
 ajv.addSchema(JSON.parse(fs.readFileSync(new URL('../schemas/definitions.json', import.meta.url), 'utf8')));
 
-/** @type {import('ajv').ValidateFunction<unknown>} */
-function alwaysTrue() {
+const alwaysTrue = Object.assign(function () {
   return true;
-}
-alwaysTrue.errors = null;
+}, { errors: null });
 
 /**
  * @template T
