@@ -1,7 +1,10 @@
 import { once } from 'node:events';
 import { setTimeout } from 'node:timers/promises';
-import supertest from 'supertest';
+import {
+  describe, it, beforeEach, afterEach,
+} from 'vitest';
 import * as sinon from 'sinon';
+import supertest from 'supertest';
 import createUwave from './utils/createUwave.mjs';
 import { retryFor } from './utils/retry.mjs';
 

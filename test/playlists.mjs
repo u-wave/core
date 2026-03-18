@@ -1,4 +1,7 @@
 import assert from 'assert';
+import {
+  describe, it, beforeEach, afterEach,
+} from 'vitest';
 import { inspect } from 'util';
 import supertest from 'supertest';
 import * as sinon from 'sinon';

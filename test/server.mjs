@@ -1,4 +1,7 @@
 import assert from 'assert';
+import {
+  describe, it, beforeEach, afterEach,
+} from 'vitest';
 import { Uwave } from 'u-wave-core';
 import createUwave from './utils/createUwave.mjs';
 
