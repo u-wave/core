@@ -28,7 +28,6 @@ import errorHandler from './middleware/errorHandler.js';
 // utils
 import AuthRegistry from './AuthRegistry.js';
 import matchOrigin from './utils/matchOrigin.js';
-import SqliteSessionStore from './utils/SqliteSessionStore.js';
 import { MS_PER_WEEK } from './utils/date.js';
 import { RateLimitError } from './errors/index.js';
 import ms from 'ms';
@@ -66,6 +65,7 @@ function defaultCreatePasswordResetEmail({ token, requestUrl }) {
 /**
  * @typedef {object} HttpApiOptions - Static options for the HTTP API.
  * @prop {string|Buffer} secret
+ * @prop {import('express-session').Store} sessionStore
  * @prop {boolean} [helmet]
  * @prop {boolean | number | string} [trustProxy]
  * @prop {(error: Error) => void} [onError]
@@ -134,7 +134,7 @@ async function httpApi(uw, options) {
         httpOnly: true,
         maxAge: SESSION_DURATION,
       },
-      store: new SqliteSessionStore(uw.db, uw.logger.child({ ns: 'uwave:sessions' })),
+      store: options.sessionStore,
     }))
     .use(uw.passport.initialize())
     .use(addFullUrl())

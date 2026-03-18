@@ -66,11 +66,12 @@ function has(object, property) {
 class SocketServer {
   /**
    * @param {import('./Uwave.js').Boot} uw
-   * @param {{ secret: Buffer|string }} options
+   * @param {{ secret: Buffer|string, sessionStore: import('express-session').Store }} options
    */
   static async plugin(uw, options) {
     uw.socketServer = new SocketServer(uw, {
       secret: options.secret,
+      sessionStore: options.sessionStore,
       server: uw.server,
     });
 
@@ -141,6 +142,7 @@ class SocketServer {
    * @param {number} [options.timeout] Time in seconds to wait for disconnected
    *     users to reconnect before removing them.
    * @param {Buffer|string} options.secret
+   * @param {import('express-session').Store} options.sessionStore
    * @param {import('http').Server | import('https').Server} [options.server]
    * @param {number} [options.port]
    * @private
@@ -471,8 +473,10 @@ class SocketServer {
       .where('id', 'in', disconnectedIDs)
       .selectAll()
       .execute();
-    disconnectedUsers.forEach((user) => {
-      this.add(this.createLostConnection(user, 'TODO: Actual session ID!!', null));
+    disconnectedUsers.forEach((_user) => {
+      // TODO (commented out but it already didn't really work)
+      void _user;
+      // this.add(this.createLostConnection(user, 'TODO: Actual session ID!!', null));
     });
   }
 
@@ -530,9 +534,12 @@ class SocketServer {
    * @private
    */
   createGuestConnection(socket) {
-    const connection = new GuestConnection(this.#uw, socket, {
-      authRegistry: this.authRegistry,
-    });
+    const connection = new GuestConnection(
+      this.#uw,
+      this.options.sessionStore,
+      socket,
+      { authRegistry: this.authRegistry },
+    );
     connection.on('close', () => {
       this.remove(connection);
     });
@@ -564,7 +571,14 @@ class SocketServer {
    * @private
    */
   createAuthedConnection(socket, user, sessionID, lastEventID) {
-    const connection = new AuthedConnection(this.#uw, socket, user, sessionID, lastEventID);
+    const connection = new AuthedConnection(
+      this.#uw,
+      this.options.sessionStore,
+      socket,
+      user,
+      sessionID,
+      lastEventID,
+    );
     connection.on('close', ({ banned, lastEventID }) => {
       if (banned) {
         this.#logger.info({ userId: user.id }, 'removing connection after ban');
@@ -607,6 +621,7 @@ class SocketServer {
   createLostConnection(user, sessionID, lastEventID) {
     const connection = new LostConnection(
       this.#uw,
+      this.options.sessionStore,
       user,
       sessionID,
       lastEventID,

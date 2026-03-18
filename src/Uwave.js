@@ -22,9 +22,9 @@ import passport from './plugins/passport.js';
 import migrations from './plugins/migrations.js';
 import { SqliteDateColumnsPlugin, connect as connectSqlite } from './utils/sqlite.js';
 import Emittery from 'emittery';
+import SqliteSessionStore from './utils/SqliteSessionStore.js';
 
 const DEFAULT_SQLITE_PATH = './uwave.sqlite';
-const DEFAULT_REDIS_URL = 'redis://localhost:6379';
 
 class UwCamelCasePlugin extends CamelCasePlugin {
   /**
@@ -56,7 +56,7 @@ class UwCamelCasePlugin extends CamelCasePlugin {
  */
 
 class UwaveServer extends EventEmitter {
-  /** @type {import('ioredis').default} */
+  /** @type {import('ioredis').default | undefined} */
   redis;
 
   /** @type {import('http').Server} */
@@ -151,7 +151,6 @@ class UwaveServer extends EventEmitter {
 
     this.options = {
       sqlite: DEFAULT_SQLITE_PATH,
-      redis: DEFAULT_REDIS_URL,
       ...options,
     };
 
@@ -174,14 +173,14 @@ class UwaveServer extends EventEmitter {
 
     if (typeof options.redis === 'string') {
       this.redis = new Redis(options.redis, { lazyConnect: true });
-    } else {
+    } else if (options.redis != null) {
       this.redis = new Redis({ ...options.redis, lazyConnect: true });
     }
 
     this.configureRedis();
 
     boot.onClose(() => Promise.all([
-      this.redis.quit(),
+      this.redis?.quit(),
       this.db.destroy(),
     ]));
 
@@ -194,9 +193,12 @@ class UwaveServer extends EventEmitter {
       secret: this.options.secret,
     });
 
+    const sessionStore = new SqliteSessionStore(this.db, this.logger.child({ ns: 'uwave:sessions' }));
+
     // Initial API setup
     boot.use(httpApi, {
       secret: this.options.secret,
+      sessionStore,
       helmet: this.options.helmet,
       trustProxy: this.options.trustProxy,
       mailTransport: this.options.mailTransport,
@@ -204,7 +206,7 @@ class UwaveServer extends EventEmitter {
       createPasswordResetEmail: this.options.createPasswordResetEmail,
       onError: this.options.onError,
     });
-    boot.use(SocketServer.plugin);
+    boot.use(SocketServer.plugin, { secret: this.options.secret, sessionStore });
 
     boot.use(acl);
     boot.use(chat);
@@ -271,6 +273,10 @@ class UwaveServer extends EventEmitter {
    * @private
    */
   configureRedis() {
+    if (this.redis == null) {
+      return;
+    }
+
     const log = this.logger.child({ ns: 'uwave:redis' });
 
     this.redis.on('error', (error) => {

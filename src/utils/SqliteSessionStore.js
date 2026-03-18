@@ -27,7 +27,7 @@ export default class SqliteSessionStore extends Store {
    * @param {import('express-session').SessionData} session
    */
   #sessionExpiration(session) {
-    const { maxAge } = session.cookie;
+    const maxAge = session.cookie?.maxAge;
     if (maxAge != null) {
       return addMilliseconds(new Date(), maxAge);
     }
