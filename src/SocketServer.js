@@ -474,7 +474,8 @@ class SocketServer {
       .selectAll()
       .execute();
     disconnectedUsers.forEach((_user) => {
-      // TODO
+      // TODO (commented out but it already didn't really work)
+      void _user;
       // this.add(this.createLostConnection(user, 'TODO: Actual session ID!!', null));
     });
   }
