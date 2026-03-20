@@ -2,7 +2,6 @@
 
 /* eslint-disable n/no-process-exit */
 import fs from 'node:fs';
-import explain from 'explain-error';
 import Ajv from 'ajv';
 import addFormats from 'ajv-formats';
 import ytSource from 'u-wave-source-youtube';
@@ -42,12 +41,6 @@ const envSchema = {
       type: 'string',
       format: 'uri',
       description: 'Only for migrations.',
-    },
-    REDIS_URL: {
-      type: 'string',
-      format: 'uri',
-      default: 'redis://localhost:6379',
-      description: 'URL of the Redis instance to connect to.',
     },
     SQLITE_PATH: {
       type: 'string',
@@ -105,8 +98,6 @@ if (argv.h || argv.help || !validConfig) {
   console.log(`    ${envSchema.properties.TRUST_PROXY.description}`);
   console.log('  SQLITE_PATH');
   console.log(`    ${envSchema.properties.SQLITE_PATH.description} Defaults to ${envSchema.properties.SQLITE_PATH.default}.`);
-  console.log('  REDIS_URL');
-  console.log(`    ${envSchema.properties.REDIS_URL.description} Defaults to ${envSchema.properties.REDIS_URL.default}.`);
   console.log('  YOUTUBE_API_KEY [optional]');
   console.log(`    ${envSchema.properties.YOUTUBE_API_KEY.description}`);
   console.log('  SMTP_HOSTNAME, SMTP_PORT, SMTP_USERNAME, SMTP_PASSWORD [optional]');
@@ -163,17 +154,12 @@ if (config.SMTP_HOSTNAME) {
 
 const uw = uwave({
   port,
-  redis: config.REDIS_URL,
   sqlite: config.SQLITE_PATH,
   secret,
   // This property is untyped, it is propagated to the also-untyped MongoDB -> SQL migration
   mongo: config.MONGODB_URL,
   trustProxy,
   mailTransport: smtpSettings,
-});
-
-uw.on('redisError', (err) => {
-  throw explain(err, 'Could not connect to the Redis server. Is it installed and running?');
 });
 
 uw.use(announce);

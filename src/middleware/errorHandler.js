@@ -55,13 +55,6 @@ function serializeError(err) {
       title: `${error.instancePath} ${error.message}`,
     }));
   }
-  if (err instanceof Error && err.name === 'ReplyError') {
-    return [{
-      status: 410,
-      code: 'redis-error',
-      title: 'Database error, please try again later.',
-    }];
-  }
   if (err instanceof httpErrors.HttpError && err.expose) {
     /** @type {SerializedError} */
     const apiError = {
