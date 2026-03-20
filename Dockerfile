@@ -1,4 +1,4 @@
-# This Dockerfile relies on Redis and SQLite databases being available.
+# This Dockerfile relies on a SQLite database being available.
 # Environment variables must be provided from the outside, eg. using docker-compose.
 # Do `docker container run $THIS_IMAGE --help` to see the list.
 

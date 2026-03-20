@@ -1,7 +1,6 @@
 import { once } from 'node:events';
 import minimist from 'minimist';
 import concat from 'concat-stream';
-import explain from 'explain-error';
 import announce from 'u-wave-announce';
 import ytSource from 'u-wave-source-youtube';
 import scSource from 'u-wave-source-soundcloud';
@@ -37,7 +36,6 @@ async function start() {
 
   const uw = uwave({
     port,
-    redis: process.env.REDIS_URL,
     sqlite: process.env.SQLITE_PATH ?? 'uwave.sqlite',
     logger: { level: 'trace' },
     secret,
@@ -49,10 +47,6 @@ async function start() {
 
   uw.use(async (instance) => {
     instance.express.set('json spaces', 2);
-  });
-
-  uw.on('redisError', (err) => {
-    throw explain(err, 'Could not connect to the Redis server. Is it installed and running?');
   });
 
   uw.use(announce, {

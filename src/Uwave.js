@@ -1,6 +1,5 @@
 import EventEmitter from 'node:events';
 import { promisify } from 'node:util';
-import Redis from 'ioredis';
 import avvio from 'avvio';
 import { pino } from 'pino';
 import { CamelCasePlugin, Kysely, SqliteDialect } from 'kysely';
@@ -43,22 +42,14 @@ class UwCamelCasePlugin extends CamelCasePlugin {
 
 /**
  * @typedef {UwaveServer & avvio.Server<UwaveServer>} Boot
- * @typedef {Pick<
- *   import('ioredis').RedisOptions,
- *   'port' | 'host' | 'family' | 'path' | 'db' | 'password' | 'username' | 'tls'
- * >} RedisOptions
  * @typedef {{
  *   port?: number,
  *   sqlite?: string,
- *   redis?: string | RedisOptions,
  *   logger?: import('pino').LoggerOptions,
  * } & import('./HttpApi.js').HttpApiOptions} Options
  */
 
 class UwaveServer extends EventEmitter {
-  /** @type {import('ioredis').default | undefined} */
-  redis;
-
   /** @type {import('http').Server} */
   // @ts-expect-error TS2564 Definitely assigned in a plugin
   server;
@@ -171,18 +162,7 @@ class UwaveServer extends EventEmitter {
       ],
     });
 
-    if (typeof options.redis === 'string') {
-      this.redis = new Redis(options.redis, { lazyConnect: true });
-    } else if (options.redis != null) {
-      this.redis = new Redis({ ...options.redis, lazyConnect: true });
-    }
-
-    this.configureRedis();
-
-    boot.onClose(() => Promise.all([
-      this.redis?.quit(),
-      this.db.destroy(),
-    ]));
+    boot.onClose(() => this.db.destroy());
 
     this.keyv = new KeyValue(this.db);
 
@@ -267,35 +247,6 @@ class UwaveServer extends EventEmitter {
     this.#sources.set(sourceType, newSource);
 
     return newSource;
-  }
-
-  /**
-   * @private
-   */
-  configureRedis() {
-    if (this.redis == null) {
-      return;
-    }
-
-    const log = this.logger.child({ ns: 'uwave:redis' });
-
-    this.redis.on('error', (error) => {
-      log.error(error);
-      this.emit('redisError', error);
-    });
-    this.redis.on('reconnecting', () => {
-      log.info('trying to reconnect...');
-    });
-
-    this.redis.on('end', () => {
-      log.info('disconnected');
-      this.emit('redisDisconnect');
-    });
-
-    this.redis.on('connect', () => {
-      log.info('connected');
-      this.emit('redisConnect');
-    });
   }
 
   /**

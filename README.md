@@ -14,8 +14,6 @@ The backend server for üWave, the collaborative listening platform.
 The server on its own only provides an HTTP API, so you must also run the web
 client to actually use it.
 
-üWave requires a Redis database.
-
 ## Usage
 
 üWave comes with an executable file that includes YouTube and SoundCloud
@@ -36,8 +34,6 @@ Environment Variables:
     hexadecimal string (= 256 bits).
  - `PORT` - Port to listen on. Defaults to 6042.
  - `SQLITE_PATH` - Path to the database file to use. Defaults to `uwave.sqlite`.
- - `REDIS_URL` - URL of the Redis instance to connect to. Defaults to
-   `redis://localhost:6379/`.
  - `YOUTUBE_API_KEY` (optional) - Your YouTube Data API key.
 
 ## Development
@@ -56,7 +52,6 @@ of the repository.
 
 ```bash
 # Database connection URLs.
-REDIS_URL=redis://localhost:6379/
 SQLITE_PATH=uwave_dev.sqlite
 
 # Enables the YouTube media source if given.
@@ -80,7 +75,6 @@ Create and start a üWave server.
 **Parameters**
 
  - `sqlite` - Path to the SQLite database file.
- - `redis` - A Redis connection URL.
 
 ### uw.source(sourcePlugin, options={})
 
@@ -102,7 +96,6 @@ Stops the üWave server.
 
 [MIT][]
 
-[IORedis]: https://github.com/luin/ioredis
 [u-wave-source keyword]: https://www.npmjs.com/browse/keyword/u-wave-source
 
 [example]: example/

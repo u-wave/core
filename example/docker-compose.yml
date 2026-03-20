@@ -1,13 +1,9 @@
 version: "3.1"
 services:
-  redis:
-    image: redis
   u-wave:
     build: .
     command: yarn start
     ports:
       - "${PORT}:${PORT}"
-    links:
-      - redis
     env_file:
       - .env
