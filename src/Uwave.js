@@ -270,6 +270,14 @@ class UwaveServer extends EventEmitter {
     const listen = promisify(this.server.listen);
     await listen.call(this.server, this.options.port);
   }
+
+  async [Symbol.asyncDispose]() {
+    /** @type {import('avvio').Avvio<this>} */
+    // @ts-expect-error TS2322
+    const boot = this; // eslint-disable-line @typescript-eslint/no-this-alias
+
+    await boot.close();
+  }
 }
 
 export default UwaveServer;

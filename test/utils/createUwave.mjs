@@ -1,7 +1,7 @@
 import uwave from 'u-wave-core';
 import testPlugin from './plugin.mjs';
 
-async function createUwave(name, options) {
+async function createUwave(name, options, plugins = []) {
   const uw = uwave({
     ...options,
     sqlite: ':memory:',
@@ -12,6 +12,9 @@ async function createUwave(name, options) {
   });
 
   uw.use(testPlugin);
+  for (const plugin of plugins) {
+    uw.use(plugin);
+  }
 
   await uw.listen();
 
