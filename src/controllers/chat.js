@@ -5,7 +5,7 @@ import toItemResponse from '../utils/toItemResponse.js';
 import toListResponse from '../utils/toListResponse.js';
 
 /**
- * @typedef {import('../schema').UserID} UserID
+ * @typedef {import('../schema.js').UserID} UserID
  * @typedef {import('../redisMessages.js').ServerActionParameters} ServerActionParameters
  */
 
@@ -164,7 +164,7 @@ async function getBackscroll(req) {
  */
 
 /**
- * @type {import('../types').AuthenticatedController<{}, {}, SendMessageBody>}
+ * @type {import('../types.js').AuthenticatedController<{}, {}, SendMessageBody>}
  */
 async function sendMessage(req) {
   const { user } = req;

@@ -37,7 +37,7 @@ const manager = [
   'motd.set',
 ];
 
-/** @typedef {Record<string, import("../schema").Permission[]>} PermissionMap */
+/** @typedef {Record<string, import('../schema.js').Permission[]>} PermissionMap */
 
 export default /** @type {PermissionMap} */ (/** @type {Record<string, unknown[]>} */ ({
   admin,

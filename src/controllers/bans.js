@@ -3,7 +3,7 @@ import getOffsetPagination from '../utils/getOffsetPagination.js';
 import toItemResponse from '../utils/toItemResponse.js';
 import toPaginatedResponse from '../utils/toPaginatedResponse.js';
 
-/** @typedef {import('../schema').UserID} UserID */
+/** @typedef {import('../schema.js').UserID} UserID */
 
 /**
  * @typedef {object} GetBansQuery
