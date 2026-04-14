@@ -10,7 +10,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
-      - uses: superfly/flyctl-actions@1.5
+      - uses: superfly/flyctl-actions@1.6
         with:
           args: deploy
         env:
