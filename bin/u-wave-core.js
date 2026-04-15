@@ -2,8 +2,8 @@
 
 /* eslint-disable n/no-process-exit */
 import fs from 'node:fs';
-import Ajv from 'ajv';
-import addFormats from 'ajv-formats';
+import { Ajv } from 'ajv';
+import ajvFormats from 'ajv-formats';
 import ytSource from 'u-wave-source-youtube';
 import scSource from 'u-wave-source-soundcloud';
 import announce from 'u-wave-announce';
@@ -26,7 +26,7 @@ const ajv = new Ajv({
     hexadecimal: /^[0-9a-fA-F]+$/,
   },
 });
-addFormats(ajv);
+ajvFormats.default(ajv);
 
 const envSchema = {
   type: 'object',

@@ -13,10 +13,10 @@ import toPaginatedResponse from '../utils/toPaginatedResponse.js';
 import { Permissions } from '../plugins/acl.js';
 
 /**
- * @typedef {import('../schema').UserID} UserID
- * @typedef {import('../schema').MediaID} MediaID
- * @typedef {import('../schema').PlaylistID} PlaylistID
- * @typedef {import('../schema').HistoryEntryID} HistoryEntryID
+ * @typedef {import('../schema.js').UserID} UserID
+ * @typedef {import('../schema.js').MediaID} MediaID
+ * @typedef {import('../schema.js').PlaylistID} PlaylistID
+ * @typedef {import('../schema.js').HistoryEntryID} HistoryEntryID
  */
 
 const KEY_HISTORY_ID = 'booth:historyID';

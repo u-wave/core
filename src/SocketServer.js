@@ -1,7 +1,7 @@
 import { promisify } from 'node:util';
 import lodash from 'lodash';
 import { WebSocketServer } from 'ws';
-import Ajv from 'ajv';
+import { Ajv } from 'ajv';
 import { stdSerializers } from 'pino';
 import { ulid, encodeTime } from 'ulid';
 import { socketVote } from './controllers/booth.js';
@@ -405,7 +405,7 @@ class SocketServer {
         const user = await users.getUser(userID);
         if (user) {
           // TODO this should not be the socket server code's responsibility
-          const userIDs = /** @type {import('./schema').UserID[] | null} */ (
+          const userIDs = /** @type {import('./schema.js').UserID[] | null} */ (
             await keyv.get(KEY_ACTIVE_SESSIONS)
           ) ?? [];
           userIDs.push(user.id);
@@ -468,7 +468,7 @@ class SocketServer {
    */
   async initLostConnections() {
     const { db, keyv } = this.#uw;
-    const userIDs = /** @type {import('./schema').UserID[] | null} */ (
+    const userIDs = /** @type {import('./schema.js').UserID[] | null} */ (
       await keyv.get(KEY_ACTIVE_SESSIONS)
     ) ?? [];
     const disconnectedIDs = userIDs.filter((userID) => !this.connection(userID));

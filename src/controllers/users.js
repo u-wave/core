@@ -12,7 +12,7 @@ import { muteUser, unmuteUser } from './chat.js';
 import { KEY_ACTIVE_SESSIONS } from '../SocketServer.js';
 
 /**
- * @typedef {import('../schema').UserID} UserID
+ * @typedef {import('../schema.js').UserID} UserID
  */
 
 /**

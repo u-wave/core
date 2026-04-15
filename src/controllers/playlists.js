@@ -6,20 +6,20 @@ import toListResponse from '../utils/toListResponse.js';
 import toPaginatedResponse from '../utils/toPaginatedResponse.js';
 
 /**
- * @typedef {import('../schema').PlaylistID} PlaylistID
- * @typedef {import('../schema').PlaylistItemID} PlaylistItemID
- * @typedef {import('../schema').MediaID} MediaID
+ * @typedef {import('../schema.js').PlaylistID} PlaylistID
+ * @typedef {import('../schema.js').PlaylistItemID} PlaylistItemID
+ * @typedef {import('../schema.js').MediaID} MediaID
  */
 
 /**
  * TODO move to a serializer?
  *
  * @param {Pick<
- *   import('../schema').PlaylistItem,
+ *   import('../schema.js').PlaylistItem,
  *   'id' | 'artist' | 'title' | 'start' | 'end' | 'createdAt'
  * >} playlistItem
  * @param {Pick<
- *   import('../schema').Media,
+ *   import('../schema.js').Media,
  *   'id' | 'sourceType' | 'sourceID' | 'sourceData' | 'artist' | 'title' | 'duration' | 'thumbnail'
  * >} media
  */

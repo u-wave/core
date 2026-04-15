@@ -22,7 +22,7 @@ import { t } from '../locale.js';
 const { BadRequest } = httpErrors;
 
 /**
- * @typedef {import('../schema').UserID} UserID
+ * @typedef {import('../schema.js').UserID} UserID
  * @typedef {import('../schema.js').PasswordResetToken} PasswordResetToken
  */
 
@@ -65,7 +65,7 @@ async function getAuthStrategies(req) {
 
 /**
  * @param {import('../types.js').Request} req
- * @param {import('../schema').User} user
+ * @param {import('../schema.js').User} user
  * @param {AuthenticateOptions & { session: 'cookie' | 'token' }} options
  */
 async function refreshSession(req, user, options) {

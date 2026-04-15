@@ -1,7 +1,7 @@
 import assert from 'node:assert';
 import fs from 'node:fs';
-import Ajv from 'ajv/dist/2019.js';
-import addFormats from 'ajv-formats';
+import { Ajv2019 as Ajv } from 'ajv/dist/2019.js';
+import ajvFormats from 'ajv-formats';
 import ValidationError from '../errors/ValidationError.js';
 
 const ajv = new Ajv({
@@ -11,7 +11,7 @@ const ajv = new Ajv({
   ownProperties: true,
   allErrors: true,
 });
-addFormats(ajv);
+ajvFormats.default(ajv);
 ajv.addMetaSchema(JSON.parse(fs.readFileSync(new URL('../../node_modules/ajv/dist/refs/json-schema-draft-07.json', import.meta.url), 'utf8')));
 ajv.addSchema(JSON.parse(fs.readFileSync(new URL('../schemas/definitions.json', import.meta.url), 'utf8')));
 
