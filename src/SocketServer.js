@@ -1,7 +1,7 @@
 import { promisify } from 'node:util';
 import lodash from 'lodash';
 import { WebSocketServer } from 'ws';
-import Ajv from 'ajv';
+import { Ajv } from 'ajv';
 import { stdSerializers } from 'pino';
 import { ulid, encodeTime } from 'ulid';
 import { socketVote } from './controllers/booth.js';

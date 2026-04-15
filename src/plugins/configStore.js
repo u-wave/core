@@ -1,8 +1,8 @@
 import assert from 'node:assert';
 import fs from 'node:fs';
 import EventEmitter from 'node:events';
-import Ajv from 'ajv/dist/2019.js';
-import formats from 'ajv-formats';
+import { Ajv2019 as Ajv } from 'ajv/dist/2019.js';
+import ajvFormats from 'ajv-formats';
 import jsonMergePatch from 'json-merge-patch';
 import ValidationError from '../errors/ValidationError.js';
 import { sql } from 'kysely';
@@ -49,7 +49,7 @@ class ConfigStore {
       strict: false,
       strictTypes: true,
     });
-    formats(this.#ajv);
+    ajvFormats.default(this.#ajv);
     this.#ajv.addMetaSchema(JSON.parse(
       fs.readFileSync(new URL('../../node_modules/ajv/dist/refs/json-schema-draft-07.json', import.meta.url), 'utf8'),
     ));
