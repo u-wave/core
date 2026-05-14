@@ -552,11 +552,18 @@ class SocketServer {
       this.remove(connection);
     });
     connection.on('authenticate', async ({ user, sessionID, lastEventID }) => {
-      const isReconnect = await connection.isReconnect(sessionID);
+      let isReconnect = await connection.isReconnect(sessionID);
       this.#logger.info({ userId: user.id, isReconnect, lastEventID }, 'authenticated socket');
       if (isReconnect) {
         const previousConnection = this.getLostConnection(sessionID);
-        if (previousConnection) this.remove(previousConnection);
+        if (previousConnection) {
+          this.remove(previousConnection);
+        } else {
+          // If there's actually no lost connection, we might've derived
+          // the reconnection flag from stale state?
+          // XXX(@goto-bus-stop): validate this
+          isReconnect = false;
+        }
       }
 
       this.replace(connection, this.createAuthedConnection(socket, user, sessionID, lastEventID));
