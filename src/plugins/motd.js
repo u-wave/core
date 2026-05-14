@@ -12,9 +12,15 @@ class MOTD {
     this.#uw = uw;
 
     uw.config.register(CONFIG_MOTD, {
+      title: 'Message of the day',
+      description: 'Display a welcome message at the top of the chat when a user joins.',
       type: 'object',
       properties: {
-        text: { type: 'string', nullable: true },
+        text: {
+          title: 'Message',
+          type: 'string',
+          nullable: true,
+        },
       },
     });
   }
