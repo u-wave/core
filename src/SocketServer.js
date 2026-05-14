@@ -559,7 +559,8 @@ class SocketServer {
         if (previousConnection) {
           this.remove(previousConnection);
         } else {
-          // If there's actually no lost connection, we might've derived the reconnection flag from stale state?
+          // If there's actually no lost connection, we might've derived
+          // the reconnection flag from stale state?
           // XXX(@goto-bus-stop): validate this
           isReconnect = false;
         }
