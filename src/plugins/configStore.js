@@ -131,7 +131,13 @@ class ConfigStore {
    * @public
    */
   register(key, schema) {
-    this.#validators.set(key, this.#ajv.compile(schema));
+    const validate = this.#ajv.compile(schema);
+
+    if (!validate({})) {
+      throw new Error(`configStore.register: configuration schema ${key} must support a default object`);
+    }
+
+    this.#validators.set(key, validate);
   }
 
   /**
@@ -203,13 +209,9 @@ class ConfigStore {
     const configs = Object.create(null);
     for (const [key, validate] of this.#validators.entries()) {
       const row = results.find((m) => m.name === key);
-      if (row) {
-        const value = JSON.parse(/** @type {string} */ (row.value));
-        validate(value);
-        configs[key] = value;
-      } else {
-        configs[key] = {};
-      }
+      configs[key] = row ? JSON.parse(/** @type {string} */ (row.value)) : {};
+      // Let the validator fill in defaults
+      validate(configs[key]);
     }
     return configs;
   }

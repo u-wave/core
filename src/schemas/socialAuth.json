@@ -58,5 +58,6 @@
       "default": {}
     }
   },
-  "required": ["google"]
+  "required": ["google"],
+  "default": {}
 }
