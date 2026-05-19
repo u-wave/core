@@ -50,7 +50,7 @@
     "ioredis": "^5.0.1",
     "json-merge-patch": "^1.0.2",
     "jsonwebtoken": "^9.0.0",
-    "kysely": "^0.28.0",
+    "kysely": "^0.29.2",
     "lodash": "^4.17.15",
     "minimist": "^1.2.5",
     "mongoose": "^9.1.4",
