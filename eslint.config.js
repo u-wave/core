@@ -1,9 +1,6 @@
 import globals from 'globals';
 import js from '@eslint/js';
-// Not sure why it doesn't find this?
-// eslint-disable-next-line import/no-unresolved
 import ts from 'typescript-eslint';
-import importPlugin from 'eslint-plugin-import';
 import nodePlugin from 'eslint-plugin-n';
 
 const PKG_NAME = 'u-wave-core';
@@ -532,8 +529,6 @@ const styleRules = {
 export default ts.config(
   { ignores: ['types/**/*', 'example/**/*'] },
   js.configs.recommended,
-  importPlugin.flatConfigs.recommended,
-  importPlugin.flatConfigs.typescript,
   nodePlugin.configs['flat/recommended-module'],
   ...ts.configs.recommended,
   {
@@ -545,16 +540,6 @@ export default ts.config(
     },
 
     rules: {
-      'import/extensions': ['error', 'ignorePackages'],
-      'import/prefer-default-export': 'off',
-      'import/no-extraneous-dependencies': ['error', {
-        devDependencies: [
-          'test/**',
-          'dev/**',
-          '**/eslint.config.js',
-        ],
-        optionalDependencies: false,
-      }],
       // Used by plugins
       'no-param-reassign': ['error', { props: false }],
       // Allow `for..of`
@@ -598,12 +583,6 @@ export default ts.config(
       parserOptions: {
         sourceType: 'module',
       },
-    },
-    rules: {
-      'import/extensions': ['error', 'ignorePackages'],
-      'import/no-unresolved': ['error', {
-        ignore: [PKG_NAME], // not ideal!
-      }],
     },
     settings: {
       n: {
