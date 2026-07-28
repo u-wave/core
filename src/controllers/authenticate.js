@@ -1,6 +1,6 @@
 import { randomUUID } from 'node:crypto';
 import { promisify } from 'node:util';
-import cookie from 'cookie';
+import { stringifySetCookie } from 'cookie';
 import jwt from 'jsonwebtoken';
 import randomString from 'random-string';
 import nodeFetch from 'node-fetch';
@@ -467,7 +467,9 @@ async function logout(req, res) {
 
   // Clear the legacy `uwsession` cookie.
   if (cookies && cookies.uwsession) {
-    const serialized = cookie.serialize('uwsession', '', {
+    const serialized = stringifySetCookie({
+      name: 'uwsession',
+      value: '',
       httpOnly: true,
       secure: !!cookieSecure,
       path: cookiePath ?? '/',
