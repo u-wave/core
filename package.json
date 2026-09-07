@@ -109,7 +109,7 @@
     "@types/ultron": "^1.1.0",
     "@types/ws": "^8.2.0",
     "@typescript/native-preview": "=7.0.0-dev.20260707.2",
-    "@vitest/coverage-v8": "^4.1.0",
+    "@vitest/coverage-v8": "^5.0.0",
     "concat-stream": "^2.0.0",
     "eslint": "^10.5.0",
     "eslint-plugin-n": "^18.1.0",
