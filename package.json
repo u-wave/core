@@ -23,7 +23,7 @@
     "u-wave-core": "bin/u-wave-core.js"
   },
   "engines": {
-    "node": ">= 20"
+    "node": ">= 22"
   },
   "dependencies": {
     "@fluent/bundle": "^0.19.1",
@@ -56,7 +56,7 @@
     "mongoose": "^9.1.4",
     "ms": "^2.1.2",
     "node-fetch": "^3.3.1",
-    "nodemailer": "^9.0.0",
+    "nodemailer": "^10.4.0",
     "object.groupby": "^1.0.1",
     "p-mutex": "^1.0.0",
     "passport": "^0.7.0",
@@ -93,7 +93,7 @@
     "@types/jsonwebtoken": "^9.0.0",
     "@types/lodash": "^4.14.168",
     "@types/ms": "^2.1.0",
-    "@types/node": "~20.19.1",
+    "@types/node": "~22.20.5",
     "@types/node-fetch": "^2.5.8",
     "@types/nodemailer": "^8.0.0",
     "@types/object.groupby": "^1.0.3",
@@ -109,12 +109,12 @@
     "@types/ultron": "^1.1.0",
     "@types/ws": "^8.2.0",
     "@typescript/native-preview": "=7.0.0-dev.20260707.2",
-    "@vitest/coverage-v8": "^4.1.0",
+    "@vitest/coverage-v8": "^5.0.0",
     "concat-stream": "^2.0.0",
     "eslint": "^10.5.0",
     "eslint-plugin-n": "^18.1.0",
     "globals": "^17.0.0",
-    "nock": "^14.0.0",
+    "nock": "^15.0.2",
     "nodemon": "^3.0.1",
     "pino-pretty": "^13.0.0",
     "recaptcha-test-keys": "^1.0.0",
@@ -122,7 +122,7 @@
     "supertest": "^7.0.0",
     "type-fest": "^5.0.0",
     "typescript-eslint": "^8.5.0",
-    "vitest": "^4.1.0"
+    "vitest": "^5.0.3"
   },
   "scripts": {
     "lint": "eslint --cache .",
