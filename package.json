@@ -23,7 +23,7 @@
     "u-wave-core": "bin/u-wave-core.js"
   },
   "engines": {
-    "node": ">= 20"
+    "node": ">= 22"
   },
   "dependencies": {
     "@fluent/bundle": "^0.19.1",
@@ -93,7 +93,7 @@
     "@types/jsonwebtoken": "^9.0.0",
     "@types/lodash": "^4.14.168",
     "@types/ms": "^2.1.0",
-    "@types/node": "~20.19.1",
+    "@types/node": "~22.20.5",
     "@types/node-fetch": "^2.5.8",
     "@types/nodemailer": "^8.0.0",
     "@types/object.groupby": "^1.0.3",
