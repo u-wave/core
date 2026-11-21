@@ -1,4 +1,3 @@
-import ObjectGroupBy from 'object.groupby';
 import {
   PlaylistNotFoundError,
   ItemNotInPlaylistError,
@@ -582,10 +581,10 @@ class PlaylistsRepository {
 
     // Group by source so we can retrieve all unknown medias from the source in
     // one call.
-    const itemsBySourceType = ObjectGroupBy(items, (item) => item.sourceType);
+    const itemsBySourceType = Map.groupBy(items, (item) => item.sourceType);
     /** @type {Map<string, Omit<Media, 'createdAt' | 'updatedAt'>>} */
     const allMedias = new Map();
-    const promises = Object.entries(itemsBySourceType).map(async ([sourceType, sourceItems]) => {
+    const promises = itemsBySourceType.entries().map(async ([sourceType, sourceItems]) => {
       const knownMedias = await db.selectFrom('media')
         .where('sourceType', '=', sourceType)
         .where('sourceID', 'in', sourceItems.map((item) => String(item.sourceID)))
