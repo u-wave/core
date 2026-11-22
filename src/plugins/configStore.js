@@ -51,10 +51,10 @@ class ConfigStore {
     });
     ajvFormats.default(this.#ajv);
     this.#ajv.addMetaSchema(JSON.parse(
-      fs.readFileSync(new URL('../../node_modules/ajv/dist/refs/json-schema-draft-07.json', import.meta.url), 'utf8'),
+      fs.readFileSync(new URL(import.meta.resolve('ajv/dist/refs/json-schema-draft-07.json')), 'utf8'),
     ));
     this.#ajv.addSchema(JSON.parse(
-      fs.readFileSync(new URL('../schemas/definitions.json', import.meta.url), 'utf8'),
+      fs.readFileSync(new URL(import.meta.resolve('../schemas/definitions.json')), 'utf8'),
     ));
 
     this.#unsubscribe = uw.events.on(CONFIG_UPDATE_MESSAGE, async (data) => {

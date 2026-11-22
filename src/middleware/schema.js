@@ -12,8 +12,8 @@ const ajv = new Ajv({
   allErrors: true,
 });
 ajvFormats.default(ajv);
-ajv.addMetaSchema(JSON.parse(fs.readFileSync(new URL('../../node_modules/ajv/dist/refs/json-schema-draft-07.json', import.meta.url), 'utf8')));
-ajv.addSchema(JSON.parse(fs.readFileSync(new URL('../schemas/definitions.json', import.meta.url), 'utf8')));
+ajv.addMetaSchema(JSON.parse(fs.readFileSync(new URL(import.meta.resolve('ajv/dist/refs/json-schema-draft-07.json')), 'utf8')));
+ajv.addSchema(JSON.parse(fs.readFileSync(new URL(import.meta.resolve('../schemas/definitions.json')), 'utf8')));
 
 const alwaysTrue = Object.assign(function () {
   return true;
