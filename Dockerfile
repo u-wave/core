@@ -7,7 +7,7 @@ FROM node:24-alpine
 WORKDIR /u-wave-core
 
 COPY package.json /u-wave-core
-RUN npm install --omit=dev
+RUN npm install --omit=dev && npm cache clean --force
 
 ENV NODE_ENV=production
 COPY . /u-wave-core
