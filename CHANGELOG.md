@@ -4,6 +4,21 @@ All notable changes to this project will be documented in this file.
 
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## 1.0.0-alpha.0 / 26 Nov 2026
+This is an alpha release, but new servers should use this version rather than an older "stable" one.
+
+There may still be minor breaking changes, but not big ones before v1.0.0.
+
+Features:
+ * **Breaking:** üWave now uses a SQLite database. v1.0.0-alpha.0 migrates from MongoDB and Redis
+   automatically on startup. (#637)
+ * Add chat backscroll endpoint. (#730)
+ * Add `?user` parameter to `/api/booth/history` endpoint. (#745)
+
+Fixes:
+ * Handle expected `ChatMutedError` when sending chat messages. (#758)
+ * Emit a `user:join` on reconnection if we don't have a lost connection. (#775)
+
 ## 0.5.0-alpha.20 / 28 Sep 2024
 This is an alpha release, but new servers should use this version rather than an older "stable" one.
 
