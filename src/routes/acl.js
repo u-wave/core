@@ -1,10 +1,10 @@
 import { Router } from 'express';
-import route from '../route.js';
-import * as validations from '../validations.js';
+import * as controller from '../controllers/acl.js';
 import protect from '../middleware/protect.js';
 import schema from '../middleware/schema.js';
-import * as controller from '../controllers/acl.js';
 import { Permissions } from '../plugins/acl.js';
+import route from '../route.js';
+import * as validations from '../validations.js';
 
 function aclRoutes() {
   return Router()

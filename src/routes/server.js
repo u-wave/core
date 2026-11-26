@@ -1,8 +1,8 @@
 import { Router } from 'express';
-import route from '../route.js';
-import protect from '../middleware/protect.js';
 import * as controller from '../controllers/server.js';
+import protect from '../middleware/protect.js';
 import { Permissions } from '../plugins/acl.js';
+import route from '../route.js';
 
 function serverRoutes() {
   return Router()

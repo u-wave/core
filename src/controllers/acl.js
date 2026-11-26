@@ -15,9 +15,9 @@ async function list(req) {
 
 /**
  * @typedef {object} CreateRoleParams
- * @prop {string} name
+ * @property {string} name
  * @typedef {object} CreateRoleBody
- * @prop {string[]} permissions
+ * @property {string[]} permissions
  */
 
 /**
@@ -48,13 +48,7 @@ async function deleteRole(req) {
 
   await acl.deleteRole(name);
 
-  return toItemResponse({}, {
-    url: req.fullUrl,
-  });
+  return toItemResponse({}, { url: req.fullUrl });
 }
 
-export {
-  list,
-  createRole,
-  deleteRole,
-};
+export { createRole, deleteRole, list };

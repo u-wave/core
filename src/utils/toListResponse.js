@@ -81,10 +81,10 @@ function extractIncluded(data, included) {
 
 /**
  * @typedef {object} ListResponse
- * @prop {import('type-fest').JsonObject} meta
- * @prop {import('type-fest').JsonValue[]} data
- * @prop {import('type-fest').JsonObject} [included]
- * @prop {Record<string, string>} links
+ * @property {import('type-fest').JsonObject} meta
+ * @property {import('type-fest').JsonValue[]} data
+ * @property {import('type-fest').JsonObject} [included]
+ * @property {Record<string, string>} links
  */
 
 /**

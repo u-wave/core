@@ -1,13 +1,13 @@
 import { Router } from 'express';
 import { rateLimit } from 'express-rate-limit';
-import route from '../route.js';
-import * as validations from '../validations.js';
-import protect from '../middleware/protect.js';
-import schema from '../middleware/schema.js';
+import ms from 'ms';
 import * as controller from '../controllers/users.js';
 import { NameChangeRateLimitError } from '../errors/index.js';
+import protect from '../middleware/protect.js';
+import schema from '../middleware/schema.js';
 import { Permissions } from '../plugins/acl.js';
-import ms from 'ms';
+import route from '../route.js';
+import * as validations from '../validations.js';
 
 function userRoutes() {
   return Router()

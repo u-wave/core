@@ -1,0 +1,22 @@
+{
+  "typescript": {
+    "typeLiteral.separatorKind": "comma",
+    "quoteStyle": "preferSingle",
+    "arrowFunction.useParentheses": "force",
+    "semicolons": "always"
+  },
+  "json": {
+  },
+  "includes": [
+    "src/**/*.{ts,js,cjs,mjs,json,md}",
+    "./*.{ts,js,cjs,mjs,json,md}"
+  ],
+  "excludes": [
+    "**/node_modules",
+    "**/*-lock.json"
+  ],
+  "plugins": [
+    "npm:@dprint/typescript@0.101.0",
+    "npm:@dprint/json@0.26.0"
+  ]
+}

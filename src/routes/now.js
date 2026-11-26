@@ -1,6 +1,6 @@
 import { Router } from 'express';
-import route from '../route.js';
 import * as controller from '../controllers/now.js';
+import route from '../route.js';
 
 function nowRoute() {
   return Router()

@@ -1,13 +1,13 @@
 /* eslint-disable n/no-missing-import,n/no-unpublished-import */
 // This file contains supporting types that can't be expressed in JavaScript/JSDoc.
 
+import type { Request as ExpressRequest, Response as ExpressResponse } from 'express';
 import type { ParsedQs } from 'qs';
 import type { JsonObject } from 'type-fest';
-import type { Request as ExpressRequest, Response as ExpressResponse } from 'express';
-import type UwaveServer from './Uwave.js';
+import type { AuthenticateOptions } from './controllers/authenticate.js';
 import type { HttpApi } from './HttpApi.js';
 import type { User as UwaveUser } from './schema.js';
-import type { AuthenticateOptions } from './controllers/authenticate.js';
+import type UwaveServer from './Uwave.js';
 
 // Add üWave specific request properties.
 declare global {
@@ -35,7 +35,7 @@ declare global {
 
 declare module 'express-session' {
   interface SessionData {
-    lastEventID?: string,
+    lastEventID?: string;
   }
 }
 

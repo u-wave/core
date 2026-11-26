@@ -1,7 +1,7 @@
-import { getBoothData } from './booth.js';
-import { serializeCurrentUser, serializePlaylist, serializeUser } from '../utils/serialize.js';
-import { legacyPlaylistItem } from './playlists.js';
 import { KEY_ACTIVE_SESSIONS } from '../SocketServer.js';
+import { serializeCurrentUser, serializePlaylist, serializeUser } from '../utils/serialize.js';
+import { getBoothData } from './booth.js';
+import { legacyPlaylistItem } from './playlists.js';
 
 /**
  * @typedef {import('../schema.js').UserID} UserID

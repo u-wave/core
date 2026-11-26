@@ -1,16 +1,16 @@
 {
   "name": "u-wave-core",
-  "version": "0.5.0-alpha.20",
+  "version": "1.0.0-alpha.0",
   "description": "The üWave core library.",
-  "license": "MIT",
   "repository": "u-wave/core",
+  "license": "MIT",
   "author": "SooYou <souyoou@googlemail.com>",
   "contributors": [
     "Felix Wong <felix@fawong.com>",
     "Goz3rr <goz3rr@gmail.com>",
     "Renée Kooi <renee@kooi.me>"
   ],
-  "main": "src/index.js",
+  "type": "module",
   "exports": {
     ".": {
       "default": "./src/index.js",
@@ -18,12 +18,16 @@
     },
     "./package.json": "./package.json"
   },
-  "type": "module",
+  "main": "src/index.js",
   "bin": {
     "u-wave-core": "bin/u-wave-core.js"
   },
-  "engines": {
-    "node": ">= 22"
+  "scripts": {
+    "lint": "oxlint && dprint check",
+    "test": "npm run tests-only && npm run types && npm run lint",
+    "tests-only": "vitest run",
+    "types": "tsc -p tsconfig.json",
+    "start": "nodemon --env-file-if-exists=.env dev/u-wave-dev-server.js | pino-pretty"
   },
   "dependencies": {
     "@fluent/bundle": "^0.19.1",
@@ -47,13 +51,11 @@
     "helmet": "^8.0.0",
     "htmlescape": "^1.1.1",
     "http-errors": "^2.0.0",
-    "ioredis": "^5.0.1",
     "json-merge-patch": "^1.0.2",
     "jsonwebtoken": "^9.0.0",
     "kysely": "^0.29.2",
     "lodash": "^4.17.15",
     "minimist": "^1.2.5",
-    "mongoose": "^9.1.4",
     "ms": "^2.1.2",
     "nodemailer": "^10.4.0",
     "p-mutex": "^1.0.0",
@@ -77,7 +79,6 @@
     "yaml": "^2.0.0"
   },
   "devDependencies": {
-    "@eslint/js": "^10.0.1",
     "@tsconfig/node22": "^22.0.7",
     "@types/better-sqlite3": "^9.6.0",
     "@types/cookie-parser": "^1.4.2",
@@ -104,27 +105,21 @@
     "@types/supertest": "^7.2.0",
     "@types/ultron": "^1.1.0",
     "@types/ws": "^8.2.0",
-    "@typescript/native-preview": "=7.0.0-dev.20260707.2",
     "@vitest/coverage-v8": "^5.0.0",
     "concat-stream": "^2.0.0",
-    "eslint": "^10.5.0",
-    "eslint-plugin-n": "^18.1.0",
-    "globals": "^17.0.0",
+    "dprint": "^0.65.0",
     "nock": "^15.0.2",
     "nodemon": "^3.0.1",
+    "oxlint": "^1.95.0",
     "pino-pretty": "^13.0.0",
     "recaptcha-test-keys": "^1.0.0",
     "sinon": "^22.0.0",
     "supertest": "^7.0.0",
-    "type-fest": "^5.0.0",
-    "typescript-eslint": "^8.5.0",
+    "type-fest": "^6.0.3",
+    "typescript": "^7.0.2",
     "vitest": "^5.0.3"
   },
-  "scripts": {
-    "lint": "eslint --cache .",
-    "test": "npm run tests-only && npm run types && npm run lint",
-    "tests-only": "vitest run",
-    "types": "tsgo -p tsconfig.json",
-    "start": "nodemon --env-file-if-exists=.env dev/u-wave-dev-server.js | pino-pretty"
+  "engines": {
+    "node": ">= 22"
   }
 }

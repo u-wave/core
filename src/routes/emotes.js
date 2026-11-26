@@ -1,6 +1,6 @@
 import { Router } from 'express';
-import route from '../route.js';
 import * as controller from '../controllers/emotes.js';
+import route from '../route.js';
 
 function emotesRoutes() {
   return Router()

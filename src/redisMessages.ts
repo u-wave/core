@@ -17,7 +17,7 @@ export type ServerActionParameters = {
         artist: string,
         title: string,
         sourceData: JsonObject,
-      }
+      },
     },
     playedAt: number,
   } | null,
@@ -137,5 +137,5 @@ export type ServerActionParameters = {
 };
 
 export type ServerActions = {
-  [Name in keyof ServerActionParameters]?: (parameter: ServerActionParameters[Name]) => void
+  [Name in keyof ServerActionParameters]?: (parameter: ServerActionParameters[Name]) => void;
 };

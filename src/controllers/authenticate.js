@@ -1,22 +1,17 @@
-import { randomUUID } from 'node:crypto';
-import { promisify } from 'node:util';
 import { stringifySetCookie } from 'cookie';
-import jwt from 'jsonwebtoken';
-import randomString from 'random-string';
 import htmlescape from 'htmlescape';
 import httpErrors from 'http-errors';
+import jwt from 'jsonwebtoken';
+import { randomUUID } from 'node:crypto';
+import { promisify } from 'node:util';
 import nodemailer from 'nodemailer';
-import {
-  BannedError,
-  ReCaptchaError,
-  InvalidResetTokenError,
-  UserNotFoundError,
-} from '../errors/index.js';
+import randomString from 'random-string';
+import { BannedError, InvalidResetTokenError, ReCaptchaError, UserNotFoundError } from '../errors/index.js';
+import { t } from '../locale.js';
+import { subHours } from '../utils/date.js';
+import { serializeCurrentUser } from '../utils/serialize.js';
 import toItemResponse from '../utils/toItemResponse.js';
 import toListResponse from '../utils/toListResponse.js';
-import { serializeCurrentUser } from '../utils/serialize.js';
-import { subHours } from '../utils/date.js';
-import { t } from '../locale.js';
 
 const { BadRequest } = httpErrors;
 
@@ -27,16 +22,16 @@ const { BadRequest } = httpErrors;
 
 /**
  * @typedef {object} AuthenticateOptions
- * @prop {string|Buffer} secret
- * @prop {string} [origin]
- * @prop {import('nodemailer').Transport} [mailTransport]
- * @prop {{ secret: string }} [recaptcha]
- * @prop {(options: { token: string, requestUrl: string }) =>
+ * @property {string|Buffer} secret
+ * @property {string} [origin]
+ * @property {import('nodemailer').Transport} [mailTransport]
+ * @property {{ secret: string }} [recaptcha]
+ * @property {(options: { token: string, requestUrl: string }) =>
  *   import('nodemailer').SendMailOptions} createPasswordResetEmail
- * @prop {boolean} [cookieSecure]
- * @prop {string} [cookiePath]
+ * @property {boolean} [cookieSecure]
+ * @property {string} [cookiePath]
  * @typedef {object} WithAuthOptions
- * @prop {AuthenticateOptions} authOptions
+ * @property {AuthenticateOptions} authOptions
  */
 
 /**
@@ -91,7 +86,7 @@ async function refreshSession(req, user, options) {
  * we only have to assign the JWT.
  *
  * @typedef {object} LoginQuery
- * @prop {'cookie'|'token'} [session]
+ * @property {'cookie'|'token'} [session]
  * @param {import('../types.js').AuthenticatedRequest<{}, LoginQuery, {}> & WithAuthOptions} req
  */
 async function login(req) {
@@ -198,10 +193,10 @@ async function socialLoginCallback(service, req, res) {
 
 /**
  * @typedef {object} SocialLoginFinishQuery
- * @prop {'cookie'|'token'} [session]
+ * @property {'cookie'|'token'} [session]
  * @typedef {object} SocialLoginFinishBody
- * @prop {string} username
- * @prop {string} avatar
+ * @property {string} username
+ * @property {string} avatar
  */
 
 /**
@@ -283,9 +278,7 @@ async function getSocketToken(req) {
 
   const socketToken = await authRegistry.createAuthToken(user, sessionID);
 
-  return toItemResponse({ socketToken }, {
-    url: req.fullUrl,
-  });
+  return toItemResponse({ socketToken }, { url: req.fullUrl });
 }
 
 /**
@@ -317,10 +310,10 @@ async function verifyCaptcha(responseString, options) {
 
 /**
  * @typedef {object} RegisterBody
- * @prop {string} email
- * @prop {string} username
- * @prop {string} password
- * @prop {string} [grecaptcha]
+ * @property {string} email
+ * @property {string} username
+ * @property {string} password
+ * @property {string} [grecaptcha]
  */
 
 /**
@@ -329,7 +322,10 @@ async function verifyCaptcha(responseString, options) {
 async function register(req) {
   const { users } = req.uwave;
   const {
-    grecaptcha, email, username, password,
+    grecaptcha,
+    email,
+    username,
+    password,
   } = req.body;
 
   const recaptchaOptions = req.authOptions.recaptcha;
@@ -356,7 +352,7 @@ async function register(req) {
 
 /**
  * @typedef {object} RequestPasswordResetBody
- * @prop {string} email
+ * @property {string} email
  */
 
 function generateResetToken() {
@@ -408,9 +404,9 @@ async function reset(req) {
 
 /**
  * @typedef {object} ChangePasswordParams
- * @prop {string} reset
+ * @property {string} reset
  * @typedef {object} ChangePasswordBody
- * @prop {string} password
+ * @property {string} password
  */
 
 /**
@@ -443,11 +439,14 @@ async function changePassword(req) {
 
     await users.updatePassword(user.id, password, tx);
 
-    return toItemResponse({}, {
-      meta: {
-        message: `Updated password for ${user.username}`,
+    return toItemResponse(
+      {},
+      {
+        meta: {
+          message: `Updated password for ${user.username}`,
+        },
       },
-    });
+    );
   });
 }
 

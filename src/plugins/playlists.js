@@ -1,17 +1,18 @@
+import { sql } from 'kysely';
+import { randomUUID } from 'node:crypto';
 import {
-  PlaylistNotFoundError,
   ItemNotInPlaylistError,
   MediaNotFoundError,
-  UserNotFoundError,
   PlaylistActiveError,
+  PlaylistNotFoundError,
+  UserNotFoundError,
 } from '../errors/index.js';
 import Page from '../Page.js';
 import routes from '../routes/playlists.js';
-import { randomUUID } from 'node:crypto';
-import { sql } from 'kysely';
+import Multimap from '../utils/Multimap.js';
 import {
   arrayCycle,
-  arrayShuffle as arrayShuffle,
+  arrayShuffle,
   fromJson,
   isForeignKeyError,
   json,
@@ -19,7 +20,6 @@ import {
   jsonEach,
   jsonLength,
 } from '../utils/sqlite.js';
-import Multimap from '../utils/Multimap.js';
 
 /**
  * @typedef {import('../schema.js').UserID} UserID
@@ -35,12 +35,12 @@ import Multimap from '../utils/Multimap.js';
 
 /**
  * @typedef {object} PlaylistItemDesc
- * @prop {string} sourceType
- * @prop {string} sourceID
- * @prop {string} [artist]
- * @prop {string} [title]
- * @prop {number} [start]
- * @prop {number} [end]
+ * @property {string} sourceType
+ * @property {string} sourceID
+ * @property {string} [artist]
+ * @property {string} [title]
+ * @property {number} [start]
+ * @property {number} [end]
  */
 
 /**
@@ -412,7 +412,7 @@ class PlaylistsRepository {
       .where('playlistItems.id', '=', (eb) => {
         /** @type {import('kysely').RawBuilder<PlaylistItemID>} */
         // items->>order doesn't work for some reason, not sure why
-        const item =  sql`json_extract(items, ${`$[${order}]`})`;
+        const item = sql`json_extract(items, ${`$[${order}]`})`;
         return eb.selectFrom('playlists')
           .select(item.as('playlistItemID'))
           .where('id', '=', playlist.id);
@@ -439,11 +439,13 @@ class PlaylistsRepository {
         (eb) => jsonEach(eb.ref('playlists.items')).as('playlistItemIDs'),
         (join) => join,
       )
-      .innerJoin('playlistItems', (join) => join.on((eb) => eb(
-        eb.ref('playlistItemIDs.value'),
-        '=',
-        eb.ref('playlistItems.id'),
-      )))
+      .innerJoin('playlistItems', (join) => join.on((eb) =>
+        eb(
+          eb.ref('playlistItemIDs.value'),
+          '=',
+          eb.ref('playlistItems.id'),
+        )
+      ))
       .innerJoin('media', 'playlistItems.mediaID', 'media.id')
       .where('playlists.id', '=', playlist.id)
       .select(playlistItemSelection);
@@ -505,8 +507,8 @@ class PlaylistsRepository {
    * Get playlists containing a particular Media.
    *
    * @typedef {object} GetPlaylistsContainingMediaOptions
-   * @prop {UserID} [author]
-   * @prop {string[]} [fields]
+   * @property {UserID} [author]
+   * @property {string[]} [fields]
    * @param {MediaID} mediaID
    * @param {GetPlaylistsContainingMediaOptions} options
    */

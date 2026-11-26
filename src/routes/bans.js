@@ -1,8 +1,8 @@
 import { Router } from 'express';
-import route from '../route.js';
-import protect from '../middleware/protect.js';
 import * as controller from '../controllers/bans.js';
+import protect from '../middleware/protect.js';
 import { Permissions } from '../plugins/acl.js';
+import route from '../route.js';
 
 function banRoutes() {
   return Router()
@@ -11,13 +11,11 @@ function banRoutes() {
       protect(Permissions.BanList),
       route(controller.getBans),
     )
-
     .post(
       '/',
       protect(Permissions.BanAdd),
       route(controller.addBan),
     )
-
     .delete(
       '/:userID',
       protect(Permissions.BanRemove),

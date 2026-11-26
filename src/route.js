@@ -1,4 +1,6 @@
 /**
+ * Transform a Promise-based async route into a callback-based route.
+ *
  * @template {Record<string, string>} TParams
  * @template {import('qs').ParsedQs} TQuery
  * @template {import('type-fest').JsonObject} TBody
@@ -19,7 +21,9 @@ function route(handler) {
       .then((json) => {
         res.json(json);
       })
-      .catch(next);
+      .catch((err) => {
+        next(err); // eslint-disable-line promise/no-callback-in-promise
+      });
   };
 }
 

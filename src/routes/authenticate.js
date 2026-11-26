@@ -1,9 +1,9 @@
 import { Router } from 'express';
-import route from '../route.js';
-import * as validations from '../validations.js';
+import * as controller from '../controllers/authenticate.js';
 import protect from '../middleware/protect.js';
 import schema from '../middleware/schema.js';
-import * as controller from '../controllers/authenticate.js';
+import route from '../route.js';
+import * as validations from '../validations.js';
 
 /**
  * @param {import('../controllers/authenticate.js').AuthenticateOptions} options
@@ -94,7 +94,9 @@ function authenticateRoutes(passport, options) {
         /** @type {import('../types.js').AuthenticatedRequest & controller.WithAuthOptions} */
         // Correct type is guaranteed by `passport.authenticate()` and `withOptions()` middlewares.
         const req = /** @type {any} */ (rawReq);
-        controller.socialLoginCallback('google', req, res).catch(next);
+        controller.socialLoginCallback('google', req, res).catch((err) => {
+          next(err); // eslint-disable-line promise/no-callback-in-promise
+        });
       },
     )
     // POST /auth/service/google/finish - Finish creating an account with Google.

@@ -18,7 +18,7 @@ async function getWaitlist(req) {
 
 /**
  * @typedef {object} AddToWaitlistBody
- * @prop {UserID} userID
+ * @property {UserID} userID
  */
 
 /**
@@ -41,8 +41,8 @@ async function addToWaitlist(req) {
 
 /**
  * @typedef {object} MoveWaitlistBody
- * @prop {UserID} userID
- * @prop {number} position
+ * @property {UserID} userID
+ * @property {number} position
  */
 
 /**
@@ -62,7 +62,7 @@ async function moveWaitlist(req) {
 
 /**
  * @typedef {object} RemoveFromWaitlistParams
- * @prop {UserID} id
+ * @property {UserID} id
  */
 
 /**
@@ -96,7 +96,7 @@ async function clearWaitlist(req) {
 
 /**
  * @typedef {object} LockWaitlistBody
- * @prop {boolean} lock
+ * @property {boolean} lock
  */
 
 /**
@@ -116,11 +116,4 @@ async function lockWaitlist(req) {
   return toItemResponse({ locked: lock }, { url: req.fullUrl });
 }
 
-export {
-  getWaitlist,
-  addToWaitlist,
-  moveWaitlist,
-  removeFromWaitlist,
-  clearWaitlist,
-  lockWaitlist,
-};
+export { addToWaitlist, clearWaitlist, getWaitlist, lockWaitlist, moveWaitlist, removeFromWaitlist };
