@@ -11,7 +11,7 @@ import { randomUUID } from 'node:crypto';
 import { sql } from 'kysely';
 import {
   arrayCycle,
-  arrayShuffle as arrayShuffle,
+  arrayShuffle,
   fromJson,
   isForeignKeyError,
   json,
@@ -35,12 +35,12 @@ import Multimap from '../utils/Multimap.js';
 
 /**
  * @typedef {object} PlaylistItemDesc
- * @prop {string} sourceType
- * @prop {string} sourceID
- * @prop {string} [artist]
- * @prop {string} [title]
- * @prop {number} [start]
- * @prop {number} [end]
+ * @property {string} sourceType
+ * @property {string} sourceID
+ * @property {string} [artist]
+ * @property {string} [title]
+ * @property {number} [start]
+ * @property {number} [end]
  */
 
 /**
@@ -505,8 +505,8 @@ class PlaylistsRepository {
    * Get playlists containing a particular Media.
    *
    * @typedef {object} GetPlaylistsContainingMediaOptions
-   * @prop {UserID} [author]
-   * @prop {string[]} [fields]
+   * @property {UserID} [author]
+   * @property {string[]} [fields]
    * @param {MediaID} mediaID
    * @param {GetPlaylistsContainingMediaOptions} options
    */

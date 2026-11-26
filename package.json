@@ -110,6 +110,7 @@
     "globals": "^17.0.0",
     "nock": "^15.0.2",
     "nodemon": "^3.0.1",
+    "oxlint": "^1.95.0",
     "pino-pretty": "^13.0.0",
     "recaptcha-test-keys": "^1.0.0",
     "sinon": "^22.0.0",

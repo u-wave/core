@@ -13,9 +13,9 @@ const BACKSCROLL_LENGTH = 20;
 
 /**
  * @typedef {object} MuteUserParams
- * @prop {UserID} id
+ * @property {UserID} id
  * @typedef {object} MuteUserBody
- * @prop {number} time
+ * @property {number} time
  */
 
 /**
@@ -41,7 +41,7 @@ async function muteUser(req) {
 
 /**
  * @typedef {object} UnmuteUserParams
- * @prop {UserID} id
+ * @property {UserID} id
  */
 
 /**
@@ -78,7 +78,7 @@ async function deleteAll(req) {
 
 /**
  * @typedef {object} DeleteByUserParams
- * @prop {UserID} id
+ * @property {UserID} id
  */
 
 /**
@@ -96,7 +96,7 @@ async function deleteByUser(req) {
 
 /**
  * @typedef {object} DeleteMessageParams
- * @prop {string} id
+ * @property {string} id
  */
 
 /**
@@ -160,7 +160,7 @@ async function getBackscroll(req) {
 
 /**
  * @typedef {object} SendMessageBody
- * @prop {string} message
+ * @property {string} message
  */
 
 /**

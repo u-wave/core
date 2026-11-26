@@ -56,10 +56,10 @@ function updateSourceData(uw, updates) {
 
 /**
  * @typedef {object} SearchParams
- * @prop {string} source
+ * @property {string} source
  * @typedef {object} SearchQuery
- * @prop {string} query
- * @prop {string} [include]
+ * @property {string} query
+ * @property {string} [include]
  */
 
 /**

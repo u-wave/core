@@ -12,9 +12,12 @@ function wrapMiddleware(middleware) {
     /** @type {import('../types.js').Request} */
     const req = /** @type {any} */ (rawReq);
 
-    middleware(req, res)
-      .then(() => next(), next);
-  };
+    middleware(req, res).then(() => {
+      next(); // eslint-disable-line promise/no-callback-in-promise
+    }, (err) => {
+      next(err); // eslint-disable-line promise/no-callback-in-promise
+    });
+};
 }
 
 export default wrapMiddleware;

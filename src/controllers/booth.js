@@ -102,8 +102,8 @@ async function doSkip(uw, moderatorID, userID, reason, opts = {}) {
 
 /**
  * @typedef {object} SkipUserAndReason
- * @prop {UserID} userID
- * @prop {string} reason
+ * @property {UserID} userID
+ * @property {string} reason
  * @typedef {{
  *   remove?: boolean,
  *   userID?: UserID,
@@ -227,7 +227,7 @@ async function socketVote(uw, userID, direction) {
 
 /**
  * @typedef {object} GetVoteParams
- * @prop {HistoryEntryID} historyID
+ * @property {HistoryEntryID} historyID
  */
 
 /**
@@ -257,9 +257,9 @@ async function getVote(req) {
 
 /**
  * @typedef {object} VoteParams
- * @prop {HistoryEntryID} historyID
+ * @property {HistoryEntryID} historyID
  * @typedef {object} VoteBody
- * @prop {1|-1} direction
+ * @property {1|-1} direction
  */
 
 /**
@@ -295,8 +295,8 @@ async function vote(req) {
 
 /**
  * @typedef {object} FavoriteBody
- * @prop {PlaylistID} playlistID
- * @prop {HistoryEntryID} historyID
+ * @property {PlaylistID} playlistID
+ * @property {HistoryEntryID} historyID
  */
 
 /**

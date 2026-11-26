@@ -7,7 +7,7 @@ import { ChatMutedError } from '../errors/index.js';
  * @typedef {import('../schema.js').UserID} UserID
  * @typedef {import('../schema.js').User} User
  * @typedef {object} ChatOptions
- * @prop {number} maxLength
+ * @property {number} maxLength
  */
 
 /** @type {ChatOptions} */

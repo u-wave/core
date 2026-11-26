@@ -27,16 +27,16 @@ const { BadRequest } = httpErrors;
 
 /**
  * @typedef {object} AuthenticateOptions
- * @prop {string|Buffer} secret
- * @prop {string} [origin]
- * @prop {import('nodemailer').Transport} [mailTransport]
- * @prop {{ secret: string }} [recaptcha]
- * @prop {(options: { token: string, requestUrl: string }) =>
+ * @property {string|Buffer} secret
+ * @property {string} [origin]
+ * @property {import('nodemailer').Transport} [mailTransport]
+ * @property {{ secret: string }} [recaptcha]
+ * @property {(options: { token: string, requestUrl: string }) =>
  *   import('nodemailer').SendMailOptions} createPasswordResetEmail
- * @prop {boolean} [cookieSecure]
- * @prop {string} [cookiePath]
+ * @property {boolean} [cookieSecure]
+ * @property {string} [cookiePath]
  * @typedef {object} WithAuthOptions
- * @prop {AuthenticateOptions} authOptions
+ * @property {AuthenticateOptions} authOptions
  */
 
 /**
@@ -91,7 +91,7 @@ async function refreshSession(req, user, options) {
  * we only have to assign the JWT.
  *
  * @typedef {object} LoginQuery
- * @prop {'cookie'|'token'} [session]
+ * @property {'cookie'|'token'} [session]
  * @param {import('../types.js').AuthenticatedRequest<{}, LoginQuery, {}> & WithAuthOptions} req
  */
 async function login(req) {
@@ -198,10 +198,10 @@ async function socialLoginCallback(service, req, res) {
 
 /**
  * @typedef {object} SocialLoginFinishQuery
- * @prop {'cookie'|'token'} [session]
+ * @property {'cookie'|'token'} [session]
  * @typedef {object} SocialLoginFinishBody
- * @prop {string} username
- * @prop {string} avatar
+ * @property {string} username
+ * @property {string} avatar
  */
 
 /**
@@ -317,10 +317,10 @@ async function verifyCaptcha(responseString, options) {
 
 /**
  * @typedef {object} RegisterBody
- * @prop {string} email
- * @prop {string} username
- * @prop {string} password
- * @prop {string} [grecaptcha]
+ * @property {string} email
+ * @property {string} username
+ * @property {string} password
+ * @property {string} [grecaptcha]
  */
 
 /**
@@ -356,7 +356,7 @@ async function register(req) {
 
 /**
  * @typedef {object} RequestPasswordResetBody
- * @prop {string} email
+ * @property {string} email
  */
 
 function generateResetToken() {
@@ -408,9 +408,9 @@ async function reset(req) {
 
 /**
  * @typedef {object} ChangePasswordParams
- * @prop {string} reset
+ * @property {string} reset
  * @typedef {object} ChangePasswordBody
- * @prop {string} password
+ * @property {string} password
  */
 
 /**

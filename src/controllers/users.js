@@ -17,7 +17,7 @@ import { KEY_ACTIVE_SESSIONS } from '../SocketServer.js';
 
 /**
  * @typedef {object} GetUsersQuery
- * @prop {string} filter
+ * @property {string} filter
  */
 
 /**
@@ -39,7 +39,7 @@ async function getUsers(req) {
 
 /**
  * @typedef {object} GetUserParams
- * @prop {UserID} id
+ * @property {UserID} id
  */
 
 /**
@@ -61,7 +61,7 @@ async function getUser(req) {
 
 /**
  * @typedef {object} GetUserRolesParams
- * @prop {UserID} id
+ * @property {UserID} id
  */
 
 /**
@@ -85,8 +85,8 @@ async function getUserRoles(req) {
 
 /**
  * @typedef {object} AddUserRoleParams
- * @prop {UserID} id
- * @prop {string} role
+ * @property {UserID} id
+ * @property {string} role
  */
 
 /**
@@ -116,8 +116,8 @@ async function addUserRole(req) {
 
 /**
  * @typedef {object} RemoveUserRoleParams
- * @prop {UserID} id
- * @prop {string} role
+ * @property {UserID} id
+ * @property {string} role
  */
 
 /**
@@ -147,9 +147,9 @@ async function removeUserRole(req) {
 
 /**
  * @typedef {object} ChangeUsernameParams
- * @prop {UserID} id
+ * @property {UserID} id
  * @typedef {object} ChangeUsernameBody
- * @prop {string} username
+ * @property {string} username
  */
 
 /**
@@ -221,7 +221,7 @@ async function disconnectUser(uw, userID) {
 
 /**
  * @typedef {object} GetHistoryParams
- * @prop {UserID} id
+ * @property {UserID} id
  */
 
 /**

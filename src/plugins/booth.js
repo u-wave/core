@@ -339,9 +339,9 @@ class Booth {
 
   /**
    * @typedef {object} AdvanceOptions
-   * @prop {boolean} [remove]
-   * @prop {boolean} [publish]
-   * @prop {AbortSignal} [signal]
+   * @property {boolean} [remove]
+   * @property {boolean} [publish]
+   * @property {AbortSignal} [signal]
    * @param {AdvanceOptions} [opts]
    * @returns {Promise<{
    *   historyEntry: HistoryEntry,

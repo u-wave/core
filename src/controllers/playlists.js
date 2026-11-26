@@ -46,7 +46,7 @@ export function legacyPlaylistItem(playlistItem, media) {
 
 /**
  * @typedef {object} GetPlaylistsQuery
- * @prop {MediaID} [contains]
+ * @property {MediaID} [contains]
  */
 
 /**
@@ -76,7 +76,7 @@ async function getPlaylists(req) {
 
 /**
  * @typedef {object} GetPlaylistParams
- * @prop {PlaylistID} id
+ * @property {PlaylistID} id
  */
 
 /**
@@ -97,7 +97,7 @@ async function getPlaylist(req) {
 
 /**
  * @typedef {object} CreatePlaylistBody
- * @prop {string} name
+ * @property {string} name
  */
 
 /**
@@ -123,7 +123,7 @@ async function createPlaylist(req) {
 
 /**
  * @typedef {object} DeletePlaylistParams
- * @prop {PlaylistID} id
+ * @property {PlaylistID} id
  */
 
 /**
@@ -147,7 +147,7 @@ const patchableKeys = ['name', 'description'];
 
 /**
  * @typedef {object} UpdatePlaylistParams
- * @prop {PlaylistID} id
+ * @property {PlaylistID} id
  * @typedef {Record<string, string>} UpdatePlaylistBody
  */
 
@@ -180,9 +180,9 @@ async function updatePlaylist(req) {
 
 /**
  * @typedef {object} RenamePlaylistParams
- * @prop {PlaylistID} id
+ * @property {PlaylistID} id
  * @typedef {object} RenamePlaylistBody
- * @prop {string} name
+ * @property {string} name
  */
 
 /**
@@ -207,7 +207,7 @@ async function renamePlaylist(req) {
 
 /**
  * @typedef {object} ActivatePlaylistParams
- * @prop {PlaylistID} id
+ * @property {PlaylistID} id
  */
 
 /**
@@ -230,7 +230,7 @@ async function activatePlaylist(req) {
 
 /**
  * @typedef {object} GetPlaylistItemsParams
- * @prop {PlaylistID} id
+ * @property {PlaylistID} id
  * @typedef {import('../types.js').PaginationQuery & { filter?: string }} GetPlaylistItemsQuery
  */
 
@@ -257,18 +257,23 @@ async function getPlaylistItems(req) {
   });
 }
 
+/** @typedef {import('../plugins/playlists.js').PlaylistItemDesc} PlaylistItemDesc */
+
 /**
- * @typedef {import('../plugins/playlists.js').PlaylistItemDesc} PlaylistItemDesc
  * @typedef {object} AddPlaylistItemsParams
- * @prop {PlaylistID} id
+ * @property {PlaylistID} id
  * @typedef {object} AtPosition
- * @prop {'start'|'end'} at
- * @prop {undefined} after
- * @typedef {object} AfterPosition
- * @prop {undefined} at
- * @prop {PlaylistItemID|-1} after
- * @typedef {{ items: PlaylistItemDesc[] } & (AtPosition | AfterPosition)} AddPlaylistItemsBody
+ * @property {'start'|'end'} at
+ * @property {undefined} after
  */
+
+/**
+ * @typedef {object} AfterPosition
+ * @property {undefined} at
+ * @property {PlaylistItemID|-1} after
+ */
+
+/** @typedef {{ items: PlaylistItemDesc[] } & (AtPosition | AfterPosition)} AddPlaylistItemsBody */
 
 /**
  * @type {import('../types.js').AuthenticatedController<
@@ -312,9 +317,9 @@ async function addPlaylistItems(req) {
 
 /**
  * @typedef {object} RemovePlaylistItemsParams
- * @prop {PlaylistID} id
+ * @property {PlaylistID} id
  * @typedef {object} RemovePlaylistItemsBody
- * @prop {PlaylistItemID[]} items
+ * @property {PlaylistItemID[]} items
  */
 
 /**
@@ -340,7 +345,7 @@ async function removePlaylistItems(req) {
 
 /**
  * @typedef {object} MovePlaylistItemsParams
- * @prop {PlaylistID} id
+ * @property {PlaylistID} id
  * @typedef {{ items: PlaylistItemID[] } & (AtPosition | AfterPosition)} MovePlaylistItemsBody
  */
 
@@ -374,7 +379,7 @@ async function movePlaylistItems(req) {
 
 /**
  * @typedef {object} ShufflePlaylistItemsParams
- * @prop {PlaylistID} id
+ * @property {PlaylistID} id
  */
 
 /**
@@ -394,8 +399,8 @@ async function shufflePlaylistItems(req) {
 
 /**
  * @typedef {object} GetPlaylistItemParams
- * @prop {PlaylistID} id
- * @prop {PlaylistItemID} itemID
+ * @property {PlaylistID} id
+ * @property {PlaylistItemID} itemID
  */
 
 /**
@@ -415,13 +420,13 @@ async function getPlaylistItem(req) {
 
 /**
  * @typedef {object} UpdatePlaylistItemParams
- * @prop {PlaylistID} id
- * @prop {PlaylistItemID} itemID
+ * @property {PlaylistID} id
+ * @property {PlaylistItemID} itemID
  * @typedef {object} UpdatePlaylistItemBody
- * @prop {string} [artist]
- * @prop {string} [title]
- * @prop {number} [start]
- * @prop {number} [end]
+ * @property {string} [artist]
+ * @property {string} [title]
+ * @property {number} [start]
+ * @property {number} [end]
  */
 
 /**
@@ -453,8 +458,8 @@ async function updatePlaylistItem(req) {
 
 /**
  * @typedef {object} RemovePlaylistItemParams
- * @prop {PlaylistID} id
- * @prop {PlaylistItemID} itemID
+ * @property {PlaylistID} id
+ * @property {PlaylistItemID} itemID
  */
 
 /**

@@ -32,9 +32,9 @@ const GUEST_COUNT_INTERVAL = 2_000;
 
 /**
  * @typedef {object} ClientActionParameters
- * @prop {string} sendChat
- * @prop {-1 | 1} vote
- * @prop {undefined} logout
+ * @property {string} sendChat
+ * @property {-1 | 1} vote
+ * @property {undefined} logout
  */
 
 /**

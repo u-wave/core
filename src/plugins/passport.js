@@ -22,7 +22,7 @@ const schema = JSON.parse(
  *   clientSecret: string,
  * })} GoogleOptions
  * @typedef {object} SocialAuthSettings
- * @prop {GoogleOptions} google
+ * @property {GoogleOptions} google
  */
 
 class PassportPlugin extends Passport {

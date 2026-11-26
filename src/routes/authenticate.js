@@ -94,7 +94,9 @@ function authenticateRoutes(passport, options) {
         /** @type {import('../types.js').AuthenticatedRequest & controller.WithAuthOptions} */
         // Correct type is guaranteed by `passport.authenticate()` and `withOptions()` middlewares.
         const req = /** @type {any} */ (rawReq);
-        controller.socialLoginCallback('google', req, res).catch(next);
+        controller.socialLoginCallback('google', req, res).catch((err) => {
+          next(err); // eslint-disable-line promise/no-callback-in-promise
+        });
       },
     )
     // POST /auth/service/google/finish - Finish creating an account with Google.

@@ -31,9 +31,9 @@ function assertNotNull(t) {
 
 /**
  * @typedef {object} Schemas
- * @prop {import('ajv').SchemaObject} [body]
- * @prop {import('ajv').SchemaObject} [params]
- * @prop {import('ajv').SchemaObject} [query]
+ * @property {import('ajv').SchemaObject} [body]
+ * @property {import('ajv').SchemaObject} [params]
+ * @property {import('ajv').SchemaObject} [query]
  * @param {Schemas} schemas
  * @returns {import('express').RequestHandler}
  */

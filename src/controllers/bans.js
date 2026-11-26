@@ -7,7 +7,7 @@ import toPaginatedResponse from '../utils/toPaginatedResponse.js';
 
 /**
  * @typedef {object} GetBansQuery
- * @prop {string} filter
+ * @property {string} filter
  */
 
 /**
@@ -30,10 +30,10 @@ async function getBans(req) {
 
 /**
  * @typedef {object} AddBanBody
- * @prop {number} [duration]
- * @prop {UserID} userID
- * @prop {boolean} [permanent]
- * @prop {string} [reason]
+ * @property {number} [duration]
+ * @property {UserID} userID
+ * @property {boolean} [permanent]
+ * @property {string} [reason]
  */
 
 /**
@@ -68,7 +68,7 @@ async function addBan(req) {
 
 /**
  * @typedef {object} RemoveBanParams
- * @prop {UserID} userID
+ * @property {UserID} userID
  */
 
 /**

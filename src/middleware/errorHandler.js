@@ -7,10 +7,10 @@ import {
 
 /**
  * @typedef {object} SerializedError
- * @prop {number} status
- * @prop {string} code
- * @prop {string} title
- * @prop {string} [source]
+ * @property {number} status
+ * @property {string} code
+ * @property {string} title
+ * @property {string} [source]
  */
 
 /**

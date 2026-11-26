@@ -64,17 +64,17 @@ function defaultCreatePasswordResetEmail({ token, requestUrl }) {
 
 /**
  * @typedef {object} HttpApiOptions - Static options for the HTTP API.
- * @prop {string|Buffer} secret
- * @prop {import('express-session').Store} sessionStore
- * @prop {boolean} [helmet]
- * @prop {boolean | number | string} [trustProxy]
- * @prop {(error: Error) => void} [onError]
- * @prop {{ secret: string }} [recaptcha]
- * @prop {import('nodemailer').Transport} [mailTransport]
- * @prop {(options: { token: string, requestUrl: string }) =>
+ * @property {string|Buffer} secret
+ * @property {import('express-session').Store} sessionStore
+ * @property {boolean} [helmet]
+ * @property {boolean | number | string} [trustProxy]
+ * @property {(error: Error) => void} [onError]
+ * @property {{ secret: string }} [recaptcha]
+ * @property {import('nodemailer').Transport} [mailTransport]
+ * @property {(options: { token: string, requestUrl: string }) =>
  *   import('nodemailer').SendMailOptions} [createPasswordResetEmail]
  * @typedef {object} HttpApiSettings - Runtime options for the HTTP API.
- * @prop {string[]} allowedOrigins
+ * @property {string[]} allowedOrigins
  */
 
 /**
