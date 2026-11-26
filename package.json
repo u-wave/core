@@ -105,6 +105,7 @@
     "@typescript/native-preview": "=7.0.0-dev.20260707.2",
     "@vitest/coverage-v8": "^5.0.0",
     "concat-stream": "^2.0.0",
+    "dprint": "^0.65.0",
     "eslint": "^10.5.0",
     "eslint-plugin-n": "^18.1.0",
     "globals": "^17.0.0",
