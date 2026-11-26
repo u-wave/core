@@ -1,8 +1,9 @@
 import assert from 'assert';
+import { randomUUID } from 'crypto';
+import { inspect } from 'util';
 import {
   describe, it, beforeEach, afterEach,
 } from 'vitest';
-import { inspect } from 'util';
 import supertest from 'supertest';
 import * as sinon from 'sinon';
 import randomString from 'random-string';
@@ -1085,13 +1086,209 @@ describe('Playlists', () => {
     });
   });
 
-  describe.skip('GET /playlists/:id/media/:itemID', () => {
-    // TODO
+  describe('GET /playlists/:id/media/:itemID', () => {
+    let playlist;
+    let items;
+    beforeEach(async () => {
+      ({ playlist } = await uw.playlists.createPlaylist(user, { name: 'Test Playlist' }));
+      const insertItems = await generateItems(20);
+      const { added } = await uw.playlists.addPlaylistItems(playlist, insertItems, { at: 'start' });
+      items = added;
+    });
+
+    it('requires authentication', async () => {
+      await supertest(uw.server)
+        .get(`/api/playlists/${playlist.id}/media/${randomUUID()}`)
+        .expect(401);
+    });
+
+    it('returns Not Found for other people\'s playlists', async () => {
+      const otherUser = await uw.test.createUser();
+      const token = await uw.test.createTestSessionToken(otherUser);
+
+      await supertest(uw.server)
+        .get(`/api/playlists/${playlist.id}/media/${randomUUID()}`)
+        .set('Cookie', `uwsession=${token}`)
+        .expect(404);
+    });
+
+    it('returns Not Found for nonexistent item', async () => {
+      const token = await uw.test.createTestSessionToken(user);
+
+      await supertest(uw.server)
+        .get(`/api/playlists/${playlist.id}/media/${randomUUID()}`)
+        .set('Cookie', `uwsession=${token}`)
+        .expect(404);
+    });
+
+    it('returns a single item', async () => {
+      const token = await uw.test.createTestSessionToken(user);
+
+      const res = await supertest(uw.server)
+        .get(`/api/playlists/${playlist.id}/media/${items[0].id}`)
+        .set('Cookie', `uwsession=${token}`)
+        .expect(200);
+
+      const [item] = items;
+      sinon.assert.match(res.body.data, {
+        _id: item.id,
+        artist: item.artist,
+        title: item.title,
+      });
+    });
   });
-  describe.skip('PUT /playlists/:id/media/:itemID', () => {
-    // TODO
+
+  describe('PUT /playlists/:id/media/:itemID', () => {
+    let playlist;
+    let items;
+    beforeEach(async () => {
+      ({ playlist } = await uw.playlists.createPlaylist(user, { name: 'Test Playlist' }));
+      const insertItems = await generateItems(20);
+      const { added } = await uw.playlists.addPlaylistItems(playlist, insertItems, { at: 'start' });
+      items = added;
+    });
+
+    it('requires authentication', async () => {
+      await supertest(uw.server)
+        .put(`/api/playlists/${playlist.id}/media/${randomUUID()}`)
+        .expect(401);
+    });
+
+    it('checks inputs', async () => {
+      const token = await uw.test.createTestSessionToken(user);
+
+      await supertest(uw.server)
+        .put(`/api/playlists/${playlist.id}/media/${randomUUID()}`)
+        .set('Cookie', `uwsession=${token}`)
+        .expect(400);
+
+      await supertest(uw.server)
+        .put(`/api/playlists/${playlist.id}/media/${randomUUID()}`)
+        .set('Cookie', `uwsession=${token}`)
+        .send({ start: -1 })
+        .expect(400);
+    });
+
+    it('accepts empty object', async () => {
+      const token = await uw.test.createTestSessionToken(user);
+
+      await supertest(uw.server)
+        .put(`/api/playlists/${playlist.id}/media/${randomUUID()}`)
+        .set('Cookie', `uwsession=${token}`)
+        .send({})
+        // We'll only get a 404 if the body was validated
+        .expect(404);
+    });
+
+    it('returns Not Found for other people\'s playlists', async () => {
+      const otherUser = await uw.test.createUser();
+      const token = await uw.test.createTestSessionToken(otherUser);
+
+      await supertest(uw.server)
+        .put(`/api/playlists/${playlist.id}/media/${randomUUID()}`)
+        .set('Cookie', `uwsession=${token}`)
+        .send({
+          artist: 'Test artist',
+          title: 'Test title',
+        })
+        .expect(404);
+    });
+
+    it('returns Not Found for nonexistent item', async () => {
+      const token = await uw.test.createTestSessionToken(user);
+
+      await supertest(uw.server)
+        .put(`/api/playlists/${playlist.id}/media/${randomUUID()}`)
+        .set('Cookie', `uwsession=${token}`)
+        .send({
+          artist: 'Test artist',
+          title: 'Test title',
+        })
+        .expect(404);
+    });
+
+    it('updates the item', async () => {
+      const token = await uw.test.createTestSessionToken(user);
+
+      const res = await supertest(uw.server)
+        .put(`/api/playlists/${playlist.id}/media/${items[0].id}`)
+        .set('Cookie', `uwsession=${token}`)
+        .send({
+          artist: 'new artist',
+          title: 'new title',
+        })
+        .expect(200);
+      sinon.assert.match(res.body.data, {
+        artist: 'new artist',
+        title: 'new title',
+      });
+
+      const media = await supertest(uw.server)
+        .get(`/api/playlists/${playlist.id}/media/${items[0].id}`)
+        .set('Cookie', `uwsession=${token}`)
+        .expect(200);
+
+      sinon.assert.match(media.body.data, {
+        _id: items[0].id,
+        artist: 'new artist',
+        title: 'new title',
+      });
+    });
   });
-  describe.skip('DELETE /playlists/:id/media/:itemID', () => {
-    // TODO
+
+  describe('DELETE /playlists/:id/media/:itemID', () => {
+    let playlist;
+    let items;
+    beforeEach(async () => {
+      ({ playlist } = await uw.playlists.createPlaylist(user, { name: 'Test Playlist' }));
+      const insertItems = await generateItems(20);
+      const { added } = await uw.playlists.addPlaylistItems(playlist, insertItems, { at: 'start' });
+      items = added;
+    });
+
+    it('requires authentication', async () => {
+      await supertest(uw.server)
+        .delete(`/api/playlists/${playlist.id}/media/${randomUUID()}`)
+        .expect(401);
+    });
+
+    it('returns Not Found for other people\'s playlists', async () => {
+      const otherUser = await uw.test.createUser();
+      const token = await uw.test.createTestSessionToken(otherUser);
+
+      await supertest(uw.server)
+        .delete(`/api/playlists/${playlist.id}/media/${randomUUID()}`)
+        .set('Cookie', `uwsession=${token}`)
+        .expect(404);
+    });
+
+    it('returns OK for nonexistent item', async () => {
+      const token = await uw.test.createTestSessionToken(user);
+
+      await supertest(uw.server)
+        .delete(`/api/playlists/${playlist.id}/media/${randomUUID()}`)
+        .set('Cookie', `uwsession=${token}`)
+        .expect(200);
+    });
+
+    it('deletes the item', async () => {
+      const token = await uw.test.createTestSessionToken(user);
+
+      await supertest(uw.server)
+        .delete(`/api/playlists/${playlist.id}/media/${items[0].id}`)
+        .set('Cookie', `uwsession=${token}`)
+        .expect(200);
+
+      const res = await supertest(uw.server)
+        .get(`/api/playlists/${playlist.id}/media`)
+        .set('Cookie', `uwsession=${token}`)
+        .expect(200);
+
+      assert.strictEqual(res.body.data.length, 19, 'should have one fewer playlist item');
+      assert(
+        res.body.data.every((item) => item._id !== items[0].id),
+        'list should not contain the deleted item',
+      );
+    });
   });
 });
