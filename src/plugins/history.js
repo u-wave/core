@@ -1,8 +1,6 @@
 import lodash from 'lodash';
 import Page from '../Page.js';
-import {
-  fromJson, json, jsonb, jsonGroupArray,
-} from '../utils/sqlite.js';
+import { fromJson, json, jsonb, jsonGroupArray } from '../utils/sqlite.js';
 
 const { clamp } = lodash;
 
@@ -34,23 +32,26 @@ const historyEntrySelection = /** @type {const} */ ([
   /** @param {import('kysely').ExpressionBuilder<Database, 'media'>} eb */
   (eb) => json(eb.fn.coalesce(eb.ref('media.sourceData'), jsonb(null))).as('media.sourceData'),
   /** @param {import('kysely').ExpressionBuilder<Database, 'historyEntries'>} eb */
-  (eb) => eb.selectFrom('feedback')
-    .where('historyEntryID', '=', eb.ref('historyEntries.id'))
-    .where('vote', '=', 1)
-    .select((eb) => jsonGroupArray(eb.ref('userID')).as('userIDs'))
-    .as('upvotes'),
+  (eb) =>
+    eb.selectFrom('feedback')
+      .where('historyEntryID', '=', eb.ref('historyEntries.id'))
+      .where('vote', '=', 1)
+      .select((eb) => jsonGroupArray(eb.ref('userID')).as('userIDs'))
+      .as('upvotes'),
   /** @param {import('kysely').ExpressionBuilder<Database, 'historyEntries'>} eb */
-  (eb) => eb.selectFrom('feedback')
-    .where('historyEntryID', '=', eb.ref('historyEntries.id'))
-    .where('vote', '=', -1)
-    .select((eb) => jsonGroupArray(eb.ref('userID')).as('userIDs'))
-    .as('downvotes'),
+  (eb) =>
+    eb.selectFrom('feedback')
+      .where('historyEntryID', '=', eb.ref('historyEntries.id'))
+      .where('vote', '=', -1)
+      .select((eb) => jsonGroupArray(eb.ref('userID')).as('userIDs'))
+      .as('downvotes'),
   /** @param {import('kysely').ExpressionBuilder<Database, 'historyEntries'>} eb */
-  (eb) => eb.selectFrom('feedback')
-    .where('historyEntryID', '=', eb.ref('historyEntries.id'))
-    .where('favorite', '=', 1)
-    .select((eb) => jsonGroupArray(eb.ref('userID')).as('userIDs'))
-    .as('favorites'),
+  (eb) =>
+    eb.selectFrom('feedback')
+      .where('historyEntryID', '=', eb.ref('historyEntries.id'))
+      .where('favorite', '=', 1)
+      .select((eb) => jsonGroupArray(eb.ref('userID')).as('userIDs'))
+      .as('favorites'),
 ]);
 
 /**

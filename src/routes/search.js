@@ -1,8 +1,8 @@
 import { Router } from 'express';
-import route from '../route.js';
+import * as controller from '../controllers/search.js';
 import protect from '../middleware/protect.js';
 import schema from '../middleware/schema.js';
-import * as controller from '../controllers/search.js';
+import route from '../route.js';
 import * as validations from '../validations.js';
 
 function searchRoutes() {

@@ -1,5 +1,5 @@
 import { sql } from 'kysely';
-import { UserNotFoundError, CannotSelfMuteError } from '../errors/index.js';
+import { CannotSelfMuteError, UserNotFoundError } from '../errors/index.js';
 import { fromJson, json } from '../utils/sqlite.js';
 import toItemResponse from '../utils/toItemResponse.js';
 import toListResponse from '../utils/toListResponse.js';
@@ -13,9 +13,9 @@ const BACKSCROLL_LENGTH = 20;
 
 /**
  * @typedef {object} MuteUserParams
- * @prop {UserID} id
+ * @property {UserID} id
  * @typedef {object} MuteUserBody
- * @prop {number} time
+ * @property {number} time
  */
 
 /**
@@ -41,7 +41,7 @@ async function muteUser(req) {
 
 /**
  * @typedef {object} UnmuteUserParams
- * @prop {UserID} id
+ * @property {UserID} id
  */
 
 /**
@@ -78,7 +78,7 @@ async function deleteAll(req) {
 
 /**
  * @typedef {object} DeleteByUserParams
- * @prop {UserID} id
+ * @property {UserID} id
  */
 
 /**
@@ -96,7 +96,7 @@ async function deleteByUser(req) {
 
 /**
  * @typedef {object} DeleteMessageParams
- * @prop {string} id
+ * @property {string} id
  */
 
 /**
@@ -120,8 +120,9 @@ async function getBackscroll(req) {
 
   const rows = await db.selectFrom('socketMessageQueue')
     .where('command', '=', 'chatMessage')
-    .innerJoin('users', (join) => join
-      .on('users.id', '=', (eb) => sql`${eb.ref('data')}->>'userID'`))
+    .innerJoin('users', (join) =>
+      join
+        .on('users.id', '=', (eb) => sql`${eb.ref('data')}->>'userID'`))
     .select((eb) => [
       json(eb.ref('data')).as('data'),
       ...users.publicUserColumns,
@@ -160,7 +161,7 @@ async function getBackscroll(req) {
 
 /**
  * @typedef {object} SendMessageBody
- * @prop {string} message
+ * @property {string} message
  */
 
 /**
@@ -175,12 +176,4 @@ async function sendMessage(req) {
   return toItemResponse(result);
 }
 
-export {
-  muteUser,
-  unmuteUser,
-  deleteAll,
-  deleteByUser,
-  deleteMessage,
-  getBackscroll,
-  sendMessage,
-};
+export { deleteAll, deleteByUser, deleteMessage, getBackscroll, muteUser, sendMessage, unmuteUser };

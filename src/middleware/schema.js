@@ -1,7 +1,7 @@
+import ajvFormats from 'ajv-formats';
+import { Ajv2019 as Ajv } from 'ajv/dist/2019.js';
 import assert from 'node:assert';
 import fs from 'node:fs';
-import { Ajv2019 as Ajv } from 'ajv/dist/2019.js';
-import ajvFormats from 'ajv-formats';
 import ValidationError from '../errors/ValidationError.js';
 
 const ajv = new Ajv({
@@ -12,10 +12,12 @@ const ajv = new Ajv({
   allErrors: true,
 });
 ajvFormats.default(ajv);
-ajv.addMetaSchema(JSON.parse(fs.readFileSync(new URL(import.meta.resolve('ajv/dist/refs/json-schema-draft-07.json')), 'utf8')));
+ajv.addMetaSchema(
+  JSON.parse(fs.readFileSync(new URL(import.meta.resolve('ajv/dist/refs/json-schema-draft-07.json')), 'utf8')),
+);
 ajv.addSchema(JSON.parse(fs.readFileSync(new URL(import.meta.resolve('../schemas/definitions.json')), 'utf8')));
 
-const alwaysTrue = Object.assign(function () {
+const alwaysTrue = Object.assign(function() {
   return true;
 }, { errors: null });
 
@@ -31,9 +33,9 @@ function assertNotNull(t) {
 
 /**
  * @typedef {object} Schemas
- * @prop {import('ajv').SchemaObject} [body]
- * @prop {import('ajv').SchemaObject} [params]
- * @prop {import('ajv').SchemaObject} [query]
+ * @property {import('ajv').SchemaObject} [body]
+ * @property {import('ajv').SchemaObject} [params]
+ * @property {import('ajv').SchemaObject} [query]
  * @param {Schemas} schemas
  * @returns {import('express').RequestHandler}
  */

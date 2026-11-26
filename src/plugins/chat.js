@@ -1,13 +1,13 @@
 import { randomUUID } from 'node:crypto';
+import { ChatMutedError } from '../errors/index.js';
 import routes from '../routes/chat.js';
 import { now } from '../utils/sqlite.js';
-import { ChatMutedError } from '../errors/index.js';
 
 /**
  * @typedef {import('../schema.js').UserID} UserID
  * @typedef {import('../schema.js').User} User
  * @typedef {object} ChatOptions
- * @prop {number} maxLength
+ * @property {number} maxLength
  */
 
 /** @type {ChatOptions} */
@@ -116,7 +116,10 @@ class Chat {
     const timestamp = Date.now();
 
     this.#uw.publish('chat:message', {
-      id, userID, message, timestamp,
+      id,
+      userID,
+      message,
+      timestamp,
     });
 
     return {

@@ -25,21 +25,24 @@ function toPaginatedResponse(
   page,
   { baseUrl = '', included } = {},
 ) {
-  return Object.assign(toListResponse(page.data, {
-    included,
-    meta: {
-      offset: page.currentPage.offset,
-      pageSize: page.pageSize,
-      results: page.filteredSize ?? null,
-      total: page.totalSize ?? null,
+  return Object.assign(
+    toListResponse(page.data, {
+      included,
+      meta: {
+        offset: page.currentPage.offset,
+        pageSize: page.pageSize,
+        results: page.filteredSize ?? null,
+        total: page.totalSize ?? null,
+      },
+    }),
+    {
+      links: {
+        self: appendQuery(baseUrl, { page: page.currentPage }),
+        next: appendQuery(baseUrl, { page: page.nextPage }),
+        prev: appendQuery(baseUrl, { page: page.prevPage }),
+      },
     },
-  }), {
-    links: {
-      self: appendQuery(baseUrl, { page: page.currentPage }),
-      next: appendQuery(baseUrl, { page: page.nextPage }),
-      prev: appendQuery(baseUrl, { page: page.prevPage }),
-    },
-  });
+  );
 }
 
 export default toPaginatedResponse;

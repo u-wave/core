@@ -1,6 +1,6 @@
 import has from 'has';
-import { Strategy } from 'passport';
 import jwt from 'jsonwebtoken';
+import { Strategy } from 'passport';
 import { BannedError } from '../errors/index.js';
 
 /**

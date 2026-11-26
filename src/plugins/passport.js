@@ -1,7 +1,7 @@
 import fs from 'node:fs';
 import { Passport } from 'passport';
-import { Strategy as LocalStrategy } from 'passport-local';
 import { Strategy as GoogleStrategy } from 'passport-google-oauth20';
+import { Strategy as LocalStrategy } from 'passport-local';
 import { callbackify } from 'util';
 import JWTStrategy from '../auth/JWTStrategy.js';
 
@@ -22,7 +22,7 @@ const schema = JSON.parse(
  *   clientSecret: string,
  * })} GoogleOptions
  * @typedef {object} SocialAuthSettings
- * @prop {GoogleOptions} google
+ * @property {GoogleOptions} google
  */
 
 class PassportPlugin extends Passport {
@@ -71,23 +71,32 @@ class PassportPlugin extends Passport {
       return uw.users.login({ type: 'local', email, password });
     }
 
-    this.use('local', new LocalStrategy({
-      usernameField: 'email',
-      passwordField: 'password',
-    }, callbackify(localLogin)));
-    this.use('jwt', new JWTStrategy(options.secret, async (claim) => {
-      try {
-        return await uw.users.getUser(claim.id);
-      } catch (err) {
-        this.#logger.warn({ err, claim }, 'could not load user from JWT');
-        return null;
-      }
-    }));
+    this.use(
+      'local',
+      new LocalStrategy({
+        usernameField: 'email',
+        passwordField: 'password',
+      }, callbackify(localLogin)),
+    );
+    this.use(
+      'jwt',
+      new JWTStrategy(options.secret, async (claim) => {
+        try {
+          return await uw.users.getUser(claim.id);
+        } catch (err) {
+          this.#logger.warn({ err, claim }, 'could not load user from JWT');
+          return null;
+        }
+      }),
+    );
 
     uw.config.register(schema['uw:key'], schema);
-    const unsubscribe = uw.config.subscribe(schema['uw:key'], /** @param {SocialAuthSettings} settings */ (settings) => {
-      this.applyAuthStrategies(settings);
-    });
+    const unsubscribe = uw.config.subscribe(
+      schema['uw:key'],
+      /** @param {SocialAuthSettings} settings */ (settings) => {
+        this.applyAuthStrategies(settings);
+      },
+    );
     uw.onClose(unsubscribe);
   }
 
@@ -150,11 +159,14 @@ class PassportPlugin extends Passport {
 
     if (settings && settings.google && settings.google.enabled) {
       this.#logger.info('enable google');
-      this.use('google', new GoogleStrategy({
-        callbackURL: '/auth/service/google/callback',
-        ...settings.google,
-        scope: ['profile'],
-      }, callbackify(this.socialLogin.bind(this))));
+      this.use(
+        'google',
+        new GoogleStrategy({
+          callbackURL: '/auth/service/google/callback',
+          ...settings.google,
+          scope: ['profile'],
+        }, callbackify(this.socialLogin.bind(this))),
+      );
     }
   }
 }

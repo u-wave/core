@@ -1,8 +1,8 @@
 import Emittery from 'emittery';
+import sjson from 'secure-json-parse';
+import { decodeTime, ulid } from 'ulid';
 import Ultron from 'ultron';
 import WebSocket from 'ws';
-import sjson from 'secure-json-parse';
-import { ulid, decodeTime } from 'ulid';
 import { fromJson, json } from '../utils/sqlite.js';
 
 const PING_TIMEOUT = 5_000;
@@ -48,7 +48,10 @@ class AuthedConnection extends Emittery {
     this.user = user;
     this.sessionID = sessionID;
     this.#logger = uw.logger.child({
-      ns: 'uwave:sockets', connectionType: 'AuthedConnection', userId: this.user.id, sessionID,
+      ns: 'uwave:sockets',
+      connectionType: 'AuthedConnection',
+      userId: this.user.id,
+      sessionID,
     });
 
     this.#events.on('close', () => {

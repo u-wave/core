@@ -20,22 +20,28 @@ import { SourceNoImportError } from './errors/index.js';
 
 /**
  * @typedef {object} SourcePluginV1
- * @prop {undefined|1} api
- * @prop {(ids: string[]) => Promise<SourceMedia[]>} get
- * @prop {(query: string, page: unknown, ...args: unknown[]) => Promise<SourceMedia[]>} search
- * @prop {(context: ImportContext, ...args: unknown[]) => Promise<unknown>} [import]
+ * @property {undefined|1} api
+ * @property {(ids: string[]) => Promise<SourceMedia[]>} get
+ * @property {(query: string, page: unknown, ...args: unknown[]) => Promise<SourceMedia[]>} search
+ * @property {(context: ImportContext, ...args: unknown[]) => Promise<unknown>} [import]
+ */
+
+/**
  * @typedef {object} SourcePluginV2
- * @prop {2} api
- * @prop {(context: SourceContext, ids: string[]) => Promise<SourceMedia[]>} get
- * @prop {(
+ * @property {2} api
+ * @property {(context: SourceContext, ids: string[]) => Promise<SourceMedia[]>} get
+ * @property {(
  *   context: SourceContext,
  *   query: string,
  *   page: unknown,
  *   ...args: unknown[]
  * ) => Promise<SourceMedia[]>} search
- * @prop {(context: ImportContext, ...args: unknown[]) => Promise<unknown>} [import]
- * @prop {(context: SourceContext, entry: PlaylistItemDesc) =>
+ * @property {(context: ImportContext, ...args: unknown[]) => Promise<unknown>} [import]
+ * @property {(context: SourceContext, entry: PlaylistItemDesc) =>
  *     Promise<import('type-fest').JsonObject>} [play]
+ */
+
+/**
  * @typedef {SourcePluginV1 | SourcePluginV2} SourcePlugin
  */
 
@@ -206,8 +212,4 @@ class Source {
   }
 }
 
-export {
-  SourceContext,
-  ImportContext,
-  Source,
-};
+export { ImportContext, Source, SourceContext };

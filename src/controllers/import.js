@@ -1,4 +1,4 @@
-import { SourceNotFoundError, SourceNoImportError, APIError } from '../errors/index.js';
+import { APIError, SourceNoImportError, SourceNotFoundError } from '../errors/index.js';
 
 /**
  * @param {import('../types.js').Request} req
