@@ -1,5 +1,5 @@
+import { OperationNodeTransformer, sql } from 'kysely';
 import lodash from 'lodash';
-import { sql, OperationNodeTransformer } from 'kysely';
 
 /**
  * Typed representation of encoded JSONB. You are not meant to actually instantiate

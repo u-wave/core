@@ -1,5 +1,4 @@
 /**
- *
  * @param {import('../HttpApi.js').HttpApi} httpApi
  * @param {import('../Uwave.js').default} uw
  * @returns {import('express').RequestHandler}

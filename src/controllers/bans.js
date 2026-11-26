@@ -81,13 +81,7 @@ async function removeBan(req) {
 
   await bans.unban(userID, { moderator });
 
-  return toItemResponse({}, {
-    url: req.fullUrl,
-  });
+  return toItemResponse({}, { url: req.fullUrl });
 }
 
-export {
-  getBans,
-  addBan,
-  removeBan,
-};
+export { addBan, getBans, removeBan };

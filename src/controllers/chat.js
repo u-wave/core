@@ -1,5 +1,5 @@
 import { sql } from 'kysely';
-import { UserNotFoundError, CannotSelfMuteError } from '../errors/index.js';
+import { CannotSelfMuteError, UserNotFoundError } from '../errors/index.js';
 import { fromJson, json } from '../utils/sqlite.js';
 import toItemResponse from '../utils/toItemResponse.js';
 import toListResponse from '../utils/toListResponse.js';
@@ -120,8 +120,9 @@ async function getBackscroll(req) {
 
   const rows = await db.selectFrom('socketMessageQueue')
     .where('command', '=', 'chatMessage')
-    .innerJoin('users', (join) => join
-      .on('users.id', '=', (eb) => sql`${eb.ref('data')}->>'userID'`))
+    .innerJoin('users', (join) =>
+      join
+        .on('users.id', '=', (eb) => sql`${eb.ref('data')}->>'userID'`))
     .select((eb) => [
       json(eb.ref('data')).as('data'),
       ...users.publicUserColumns,
@@ -175,12 +176,4 @@ async function sendMessage(req) {
   return toItemResponse(result);
 }
 
-export {
-  muteUser,
-  unmuteUser,
-  deleteAll,
-  deleteByUser,
-  deleteMessage,
-  getBackscroll,
-  sendMessage,
-};
+export { deleteAll, deleteByUser, deleteMessage, getBackscroll, muteUser, sendMessage, unmuteUser };

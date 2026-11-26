@@ -1,7 +1,7 @@
-import globals from 'globals';
 import js from '@eslint/js';
-import ts from 'typescript-eslint';
 import nodePlugin from 'eslint-plugin-n';
+import globals from 'globals';
+import ts from 'typescript-eslint';
 
 const PKG_NAME = 'u-wave-core';
 
@@ -144,7 +144,24 @@ const styleRules = {
     ImportDeclaration: 1,
     flatTernaryExpressions: false,
     // list derived from https://github.com/benjamn/ast-types/blob/HEAD/def/jsx.js
-    ignoredNodes: ['JSXElement', 'JSXElement > *', 'JSXAttribute', 'JSXIdentifier', 'JSXNamespacedName', 'JSXMemberExpression', 'JSXSpreadAttribute', 'JSXExpressionContainer', 'JSXOpeningElement', 'JSXClosingElement', 'JSXFragment', 'JSXOpeningFragment', 'JSXClosingFragment', 'JSXText', 'JSXEmptyExpression', 'JSXSpreadChild'],
+    ignoredNodes: [
+      'JSXElement',
+      'JSXElement > *',
+      'JSXAttribute',
+      'JSXIdentifier',
+      'JSXNamespacedName',
+      'JSXMemberExpression',
+      'JSXSpreadAttribute',
+      'JSXExpressionContainer',
+      'JSXOpeningElement',
+      'JSXClosingElement',
+      'JSXFragment',
+      'JSXOpeningFragment',
+      'JSXClosingFragment',
+      'JSXText',
+      'JSXEmptyExpression',
+      'JSXSpreadChild',
+    ],
     ignoreComments: false,
   }],
 
@@ -339,7 +356,8 @@ const styleRules = {
     'error',
     {
       selector: 'ForInStatement',
-      message: 'for..in loops iterate over the entire prototype chain, which is virtually never what you want. Use Object.{keys,values,entries}, and iterate over the resulting array.',
+      message:
+        'for..in loops iterate over the entire prototype chain, which is virtually never what you want. Use Object.{keys,values,entries}, and iterate over the resulting array.',
     },
     {
       selector: 'LabeledStatement',
@@ -492,8 +510,7 @@ const styleRules = {
   'space-unary-ops': ['error', {
     words: true,
     nonwords: false,
-    overrides: {
-    },
+    overrides: {},
   }],
 
   // require or disallow a space immediately following the // or /* in a comment
@@ -547,7 +564,8 @@ export default ts.config(
         'error',
         {
           selector: 'ForInStatement',
-          message: 'for..in loops iterate over the entire prototype chain, which is virtually never what you want. Use Object.{keys,values,entries}, and iterate over the resulting array.',
+          message:
+            'for..in loops iterate over the entire prototype chain, which is virtually never what you want. Use Object.{keys,values,entries}, and iterate over the resulting array.',
         },
         {
           selector: 'LabeledStatement',
@@ -560,9 +578,7 @@ export default ts.config(
       ],
     },
   },
-
   { rules: styleRules },
-
   {
     files: ['**/*.cjs'],
     languageOptions: {

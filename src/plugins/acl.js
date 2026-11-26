@@ -1,13 +1,7 @@
 import defaultRoles from '../config/defaultRoles.js';
-import routes from '../routes/acl.js';
-import {
-  isForeignKeyError,
-  fromJson,
-  json,
-  jsonb,
-  jsonEach,
-} from '../utils/sqlite.js';
 import { RoleNotFoundError } from '../errors/index.js';
+import routes from '../routes/acl.js';
+import { fromJson, isForeignKeyError, json, jsonb, jsonEach } from '../utils/sqlite.js';
 
 /**
  * @typedef {import('../schema.js').User} User

@@ -48,13 +48,7 @@ async function deleteRole(req) {
 
   await acl.deleteRole(name);
 
-  return toItemResponse({}, {
-    url: req.fullUrl,
-  });
+  return toItemResponse({}, { url: req.fullUrl });
 }
 
-export {
-  list,
-  createRole,
-  deleteRole,
-};
+export { createRole, deleteRole, list };

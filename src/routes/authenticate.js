@@ -1,9 +1,9 @@
 import { Router } from 'express';
-import route from '../route.js';
-import * as validations from '../validations.js';
+import * as controller from '../controllers/authenticate.js';
 import protect from '../middleware/protect.js';
 import schema from '../middleware/schema.js';
-import * as controller from '../controllers/authenticate.js';
+import route from '../route.js';
+import * as validations from '../validations.js';
 
 /**
  * @param {import('../controllers/authenticate.js').AuthenticateOptions} options

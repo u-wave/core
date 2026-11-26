@@ -1,8 +1,8 @@
+import { ApiClient } from '@twurple/api';
+import { AppTokenAuthProvider } from '@twurple/auth';
+import httpErrors from 'http-errors';
 import { setMaxListeners } from 'node:events';
 import fs from 'node:fs';
-import httpErrors from 'http-errors';
-import { AppTokenAuthProvider } from '@twurple/auth';
-import { ApiClient } from '@twurple/api';
 import routes from '../routes/emotes.js';
 
 const { NotFound } = httpErrors;

@@ -1,8 +1,8 @@
-import Mutex from 'p-mutex';
 import { sql } from 'kysely';
+import { randomUUID } from 'node:crypto';
+import Mutex from 'p-mutex';
 import { EmptyPlaylistError, PlaylistItemNotFoundError, UserNotInWaitlistError } from '../errors/index.js';
 import routes from '../routes/booth.js';
-import { randomUUID } from 'node:crypto';
 import { fromJson, jsonb, jsonGroupArray } from '../utils/sqlite.js';
 
 /**
@@ -81,11 +81,12 @@ class Booth {
   async getCurrentEntry(tx = this.#uw.db) {
     const entry = await tx.selectFrom('keyval')
       .where('key', '=', KEY_HISTORY_ID)
-      .innerJoin('historyEntries', (join) => join.on(
-        (eb) => sql`${eb.ref('value')}->>'$'`,
-        '=',
-        (eb) => eb.ref('historyEntries.id'),
-      ))
+      .innerJoin('historyEntries', (join) =>
+        join.on(
+          (eb) => sql`${eb.ref('value')}->>'$'`,
+          '=',
+          (eb) => eb.ref('historyEntries.id'),
+        ))
       .innerJoin('media', 'historyEntries.mediaID', 'media.id')
       .innerJoin('users', 'historyEntries.userID', 'users.id')
       .select([
@@ -107,55 +108,60 @@ class Booth {
         'historyEntries.start',
         'historyEntries.end',
         'historyEntries.createdAt',
-        (eb) => eb.selectFrom('feedback')
-          .where('historyEntryID', '=', eb.ref('historyEntries.id'))
-          .where('vote', '=', 1)
-          .select((eb) => jsonGroupArray(eb.ref('userID')).as('userIDs'))
-          .as('upvotes'),
-        (eb) => eb.selectFrom('feedback')
-          .where('historyEntryID', '=', eb.ref('historyEntries.id'))
-          .where('vote', '=', -1)
-          .select((eb) => jsonGroupArray(eb.ref('userID')).as('userIDs'))
-          .as('downvotes'),
-        (eb) => eb.selectFrom('feedback')
-          .where('historyEntryID', '=', eb.ref('historyEntries.id'))
-          .where('favorite', '=', 1)
-          .select((eb) => jsonGroupArray(eb.ref('userID')).as('userIDs'))
-          .as('favorites'),
+        (eb) =>
+          eb.selectFrom('feedback')
+            .where('historyEntryID', '=', eb.ref('historyEntries.id'))
+            .where('vote', '=', 1)
+            .select((eb) => jsonGroupArray(eb.ref('userID')).as('userIDs'))
+            .as('upvotes'),
+        (eb) =>
+          eb.selectFrom('feedback')
+            .where('historyEntryID', '=', eb.ref('historyEntries.id'))
+            .where('vote', '=', -1)
+            .select((eb) => jsonGroupArray(eb.ref('userID')).as('userIDs'))
+            .as('downvotes'),
+        (eb) =>
+          eb.selectFrom('feedback')
+            .where('historyEntryID', '=', eb.ref('historyEntries.id'))
+            .where('favorite', '=', 1)
+            .select((eb) => jsonGroupArray(eb.ref('userID')).as('userIDs'))
+            .as('favorites'),
       ])
       .executeTakeFirst();
 
-    return entry ? {
-      media: {
-        id: entry['media.id'],
-        artist: entry['media.artist'],
-        title: entry['media.title'],
-        duration: entry['media.duration'],
-        thumbnail: entry['media.thumbnail'],
-        sourceID: entry['media.sourceID'],
-        sourceType: entry['media.sourceType'],
-        sourceData: entry['media.sourceData'] ?? {},
-      },
-      user: {
-        id: entry['users.id'],
-        username: entry['users.username'],
-        avatar: entry['users.avatar'],
-        createdAt: entry['users.createdAt'],
-      },
-      historyEntry: {
-        id: entry.id,
-        userID: entry['users.id'],
-        mediaID: entry['media.id'],
-        artist: entry.artist,
-        title: entry.title,
-        start: entry.start,
-        end: entry.end,
-        createdAt: entry.createdAt,
-      },
-      upvotes: entry.upvotes != null ? fromJson(entry.upvotes) : [],
-      downvotes: entry.downvotes != null ? fromJson(entry.downvotes) : [],
-      favorites: entry.favorites != null ? fromJson(entry.favorites) : [],
-    } : null;
+    return entry
+      ? {
+        media: {
+          id: entry['media.id'],
+          artist: entry['media.artist'],
+          title: entry['media.title'],
+          duration: entry['media.duration'],
+          thumbnail: entry['media.thumbnail'],
+          sourceID: entry['media.sourceID'],
+          sourceType: entry['media.sourceType'],
+          sourceData: entry['media.sourceData'] ?? {},
+        },
+        user: {
+          id: entry['users.id'],
+          username: entry['users.username'],
+          avatar: entry['users.avatar'],
+          createdAt: entry['users.createdAt'],
+        },
+        historyEntry: {
+          id: entry.id,
+          userID: entry['users.id'],
+          mediaID: entry['media.id'],
+          artist: entry.artist,
+          title: entry.title,
+          start: entry.start,
+          end: entry.end,
+          createdAt: entry.createdAt,
+        },
+        upvotes: entry.upvotes != null ? fromJson(entry.upvotes) : [],
+        downvotes: entry.downvotes != null ? fromJson(entry.downvotes) : [],
+        favorites: entry.favorites != null ? fromJson(entry.favorites) : [],
+      }
+      : null;
   }
 
   /**

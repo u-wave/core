@@ -17,7 +17,7 @@ function wrapMiddleware(middleware) {
     }, (err) => {
       next(err); // eslint-disable-line promise/no-callback-in-promise
     });
-};
+  };
 }
 
 export default wrapMiddleware;

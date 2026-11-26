@@ -1,12 +1,12 @@
 import fs from 'node:fs';
 import {
-  PermissionError,
-  UserNotFoundError,
-  EmptyPlaylistError,
-  WaitlistLockedError,
   AlreadyInWaitlistError,
-  UserNotInWaitlistError,
+  EmptyPlaylistError,
+  PermissionError,
   UserIsPlayingError,
+  UserNotFoundError,
+  UserNotInWaitlistError,
+  WaitlistLockedError,
 } from '../errors/index.js';
 import routes from '../routes/waitlist.js';
 import { Permissions } from './acl.js';

@@ -1,19 +1,19 @@
-import { promisify } from 'node:util';
-import lodash from 'lodash';
-import { WebSocketServer } from 'ws';
 import { Ajv } from 'ajv';
+import lodash from 'lodash';
+import { promisify } from 'node:util';
 import { stdSerializers } from 'pino';
-import { ulid, encodeTime } from 'ulid';
+import { encodeTime, ulid } from 'ulid';
+import { WebSocketServer } from 'ws';
+import AuthRegistry from './AuthRegistry.js';
 import { socketVote } from './controllers/booth.js';
 import { disconnectUser } from './controllers/users.js';
-import AuthRegistry from './AuthRegistry.js';
-import GuestConnection from './sockets/GuestConnection.js';
+import { ChatMutedError } from './errors/index.js';
 import AuthedConnection from './sockets/AuthedConnection.js';
+import GuestConnection from './sockets/GuestConnection.js';
 import LostConnection from './sockets/LostConnection.js';
+import { subMinutes } from './utils/date.js';
 import { serializeUser } from './utils/serialize.js';
 import { jsonb } from './utils/sqlite.js';
-import { subMinutes } from './utils/date.js';
-import { ChatMutedError } from './errors/index.js';
 
 const { isEmpty } = lodash;
 
@@ -154,11 +154,14 @@ class SocketServer {
     }
 
     this.#uw = uw;
-    this.#logger = uw.logger.child({ ns: 'uwave:sockets' }, {
-      serializers: {
-        req: stdSerializers.req,
+    this.#logger = uw.logger.child(
+      { ns: 'uwave:sockets' },
+      {
+        serializers: {
+          req: stdSerializers.req,
+        },
       },
-    });
+    );
 
     this.options = {
       /** @type {(_socket: import('ws').WebSocket | undefined, err: Error) => void} */
@@ -335,10 +338,16 @@ class SocketServer {
        * Broadcast that a user was added to the waitlist.
        */
       'waitlist:add': ({
-        userID, moderatorID, position, waitlist,
+        userID,
+        moderatorID,
+        position,
+        waitlist,
       }) => {
         this.broadcast('waitlistAdd', {
-          userID, moderatorID, position, waitlist,
+          userID,
+          moderatorID,
+          position,
+          waitlist,
         });
       },
       /**
@@ -351,10 +360,16 @@ class SocketServer {
        * Broadcast that a user was moved in the waitlist.
        */
       'waitlist:move': ({
-        userID, moderatorID, position, waitlist,
+        userID,
+        moderatorID,
+        position,
+        waitlist,
       }) => {
         this.broadcast('waitlistMove', {
-          userID, moderatorID, position, waitlist,
+          userID,
+          moderatorID,
+          position,
+          waitlist,
         });
       },
       /**
@@ -423,10 +438,18 @@ class SocketServer {
        * Broadcast a ban event.
        */
       'user:ban': ({
-        moderatorID, userID, permanent = false, duration, expiresAt,
+        moderatorID,
+        userID,
+        permanent = false,
+        duration,
+        expiresAt,
       }) => {
         this.broadcast('ban', {
-          moderatorID, userID, permanent, duration, expiresAt,
+          moderatorID,
+          userID,
+          permanent,
+          duration,
+          expiresAt,
         });
 
         this.#connections.forEach((connection) => {

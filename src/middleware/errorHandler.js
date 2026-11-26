@@ -1,9 +1,5 @@
 import httpErrors from 'http-errors';
-import {
-  APIError,
-  CombinedError,
-  RateLimitError,
-} from '../errors/index.js';
+import { APIError, CombinedError, RateLimitError } from '../errors/index.js';
 
 /**
  * @typedef {object} SerializedError

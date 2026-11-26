@@ -1,16 +1,16 @@
 import {
+  CannotSelfFavoriteError,
+  HistoryEntryNotFoundError,
   HTTPError,
   PermissionError,
-  HistoryEntryNotFoundError,
   PlaylistNotFoundError,
-  CannotSelfFavoriteError,
   UserNotFoundError,
 } from '../errors/index.js';
+import { Permissions } from '../plugins/acl.js';
 import getOffsetPagination from '../utils/getOffsetPagination.js';
 import toItemResponse from '../utils/toItemResponse.js';
 import toListResponse from '../utils/toListResponse.js';
 import toPaginatedResponse from '../utils/toPaginatedResponse.js';
-import { Permissions } from '../plugins/acl.js';
 
 /**
  * @typedef {import('../schema.js').UserID} UserID
@@ -58,10 +58,10 @@ async function getBooth(req) {
 
   const data = await getBoothData(uw);
   if (data && req.user && data.userID === req.user.id) {
-    return toItemResponse({
-      ...data,
-      autoLeave: await uw.booth.getRemoveAfterCurrentPlay(req.user),
-    }, { url: req.fullUrl });
+    return toItemResponse(
+      { ...data, autoLeave: await uw.booth.getRemoveAfterCurrentPlay(req.user) },
+      { url: req.fullUrl },
+    );
   }
 
   return toItemResponse(data, { url: req.fullUrl });
@@ -189,16 +189,21 @@ async function addVote(uw, historyEntryID, userID, direction) {
     })
     // We should only broadcast the vote if it changed,
     // so we make sure not to update the vote if the value is the same.
-    .onConflict((oc) => oc
-      .columns(['historyEntryID', 'userID'])
-      .doUpdateSet({ vote: direction })
-      .where('vote', '!=', direction))
+    .onConflict((oc) =>
+      oc
+        .columns(['historyEntryID', 'userID'])
+        .doUpdateSet({ vote: direction })
+        .where('vote', '!=', direction)
+    )
     .executeTakeFirst();
 
-  if (result != null && result.numInsertedOrUpdatedRows != null
-      && result.numInsertedOrUpdatedRows > 0n) {
+  if (
+    result != null && result.numInsertedOrUpdatedRows != null
+    && result.numInsertedOrUpdatedRows > 0n
+  ) {
     uw.publish('booth:vote', {
-      userID, direction,
+      userID,
+      direction,
     });
   }
 }
@@ -390,14 +395,4 @@ async function getHistory(req) {
   });
 }
 
-export {
-  favorite,
-  getBooth,
-  getBoothData,
-  getHistory,
-  getVote,
-  leaveBooth,
-  skipBooth,
-  socketVote,
-  vote,
-};
+export { favorite, getBooth, getBoothData, getHistory, getVote, leaveBooth, skipBooth, socketVote, vote };

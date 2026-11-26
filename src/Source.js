@@ -212,8 +212,4 @@ class Source {
   }
 }
 
-export {
-  SourceContext,
-  ImportContext,
-  Source,
-};
+export { ImportContext, Source, SourceContext };

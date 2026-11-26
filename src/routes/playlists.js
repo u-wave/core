@@ -1,14 +1,13 @@
 import { Router } from 'express';
-import route from '../route.js';
-import * as validations from '../validations.js';
+import * as controller from '../controllers/playlists.js';
 import protect from '../middleware/protect.js';
 import schema from '../middleware/schema.js';
-import * as controller from '../controllers/playlists.js';
+import route from '../route.js';
+import * as validations from '../validations.js';
 
 function playlistRoutes() {
   return Router()
     .use(protect())
-
     // GET /playlists/ - List playlists.
     .get(
       '/',
@@ -21,7 +20,6 @@ function playlistRoutes() {
       schema(validations.createPlaylist),
       route(controller.createPlaylist),
     )
-
     // GET /playlists/:id - Get a single playlist's metadata (not items!).
     .get(
       '/:id',

@@ -1,15 +1,10 @@
-import {
-  HTTPError,
-  PermissionError,
-  UserNotFoundError,
-  UserNotInWaitlistError,
-} from '../errors/index.js';
+import { HTTPError, PermissionError, UserNotFoundError, UserNotInWaitlistError } from '../errors/index.js';
+import { KEY_ACTIVE_SESSIONS } from '../SocketServer.js';
 import getOffsetPagination from '../utils/getOffsetPagination.js';
 import toItemResponse from '../utils/toItemResponse.js';
 import toListResponse from '../utils/toListResponse.js';
 import toPaginatedResponse from '../utils/toPaginatedResponse.js';
 import { muteUser, unmuteUser } from './chat.js';
-import { KEY_ACTIVE_SESSIONS } from '../SocketServer.js';
 
 /**
  * @typedef {import('../schema.js').UserID} UserID
@@ -109,9 +104,7 @@ async function addUserRole(req) {
 
   await acl.allow(user, [role]);
 
-  return toItemResponse({}, {
-    url: req.fullUrl,
-  });
+  return toItemResponse({}, { url: req.fullUrl });
 }
 
 /**
@@ -140,9 +133,7 @@ async function removeUserRole(req) {
 
   await acl.disallow(user, [role]);
 
-  return toItemResponse({}, {
-    url: req.fullUrl,
-  });
+  return toItemResponse({}, { url: req.fullUrl });
 }
 
 /**
@@ -252,15 +243,15 @@ async function getHistory(req) {
 }
 
 export {
-  getUsers,
-  getUser,
-  getUserRoles,
   addUserRole,
-  removeUserRole,
-  changeUsername,
   changeAvatar,
+  changeUsername,
   disconnectUser,
   getHistory,
+  getUser,
+  getUserRoles,
+  getUsers,
   muteUser,
+  removeUserRole,
   unmuteUser,
 };

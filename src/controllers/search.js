@@ -1,7 +1,7 @@
 import lodash from 'lodash';
 import { SourceNotFoundError } from '../errors/index.js';
-import toListResponse from '../utils/toListResponse.js';
 import { json, jsonb } from '../utils/sqlite.js';
+import toListResponse from '../utils/toListResponse.js';
 
 const { isEqual } = lodash;
 
@@ -149,7 +149,4 @@ async function search(req) {
   });
 }
 
-export {
-  search,
-  searchAll,
-};
+export { search, searchAll };

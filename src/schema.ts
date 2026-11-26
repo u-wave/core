@@ -1,4 +1,4 @@
-import type { Kysely as KyselyBase, Generated } from 'kysely';
+import type { Generated, Kysely as KyselyBase } from 'kysely';
 import type { JsonObject, JsonValue, Tagged } from 'type-fest'; // eslint-disable-line n/no-unpublished-import
 import type { JSONB } from './utils/sqlite.js'; // eslint-disable-line n/no-missing-import
 
@@ -17,192 +17,194 @@ export type PasswordResetToken = Tagged<string, 'PasswordResetToken'>;
  * - JSON columns are resolved to their JS type. This requires conversion code when querying the
  *   data.
  */
-type Selected<T> = {
-  [K in keyof T]: T[K] extends Generated<infer Inner> ? Inner
-    : T[K] extends JSONB<JsonValue> ? T[K]['__inner']
-    : T[K] extends JSONB<JsonValue> | null ? (T[K] & {})['__inner'] | null
-    : T[K];
-} & {};
+type Selected<T> =
+  & {
+    [K in keyof T]: T[K] extends Generated<infer Inner> ? Inner
+      : T[K] extends JSONB<JsonValue> ? T[K]['__inner']
+      : T[K] extends JSONB<JsonValue> | null ? (T[K] & {})['__inner'] | null
+      : T[K];
+  }
+  & {};
 
 export type Media = Selected<MediaTable>;
 export interface MediaTable {
-  id: Generated<MediaID>,
-  sourceID: string,
-  sourceType: string,
-  sourceData: JSONB<JsonObject> | null,
-  artist: string,
-  title: string,
-  duration: number,
-  thumbnail: string,
-  createdAt: Generated<Date>,
-  updatedAt: Generated<Date>,
+  id: Generated<MediaID>;
+  sourceID: string;
+  sourceType: string;
+  sourceData: JSONB<JsonObject> | null;
+  artist: string;
+  title: string;
+  duration: number;
+  thumbnail: string;
+  createdAt: Generated<Date>;
+  updatedAt: Generated<Date>;
 }
 
 export type User = Selected<Omit<UserTable, 'email' | 'password'>>;
 export interface UserTable {
-  id: Generated<UserID>,
-  username: string,
-  email: string | null,
-  password: string | null,
-  slug: string,
-  avatar: string | null,
-  activePlaylistID: PlaylistID | null,
-  pendingActivation: boolean,
-  createdAt: Generated<Date>,
-  updatedAt: Generated<Date>,
+  id: Generated<UserID>;
+  username: string;
+  email: string | null;
+  password: string | null;
+  slug: string;
+  avatar: string | null;
+  activePlaylistID: PlaylistID | null;
+  pendingActivation: boolean;
+  createdAt: Generated<Date>;
+  updatedAt: Generated<Date>;
 }
 
 export interface UserRoleTable {
-  userID: UserID,
-  role: string,
+  userID: UserID;
+  role: string;
 }
 
 export interface RoleTable {
-  id: string,
-  permissions: JSONB<Permission[]>,
+  id: string;
+  permissions: JSONB<Permission[]>;
 }
 
 export type Ban = Selected<BanTable>;
 export interface BanTable {
-  userID: UserID,
-  moderatorID: UserID,
-  expiresAt: Date | null,
-  reason: string | null,
-  createdAt: Generated<Date>,
-  updatedAt: Generated<Date>,
+  userID: UserID;
+  moderatorID: UserID;
+  expiresAt: Date | null;
+  reason: string | null;
+  createdAt: Generated<Date>;
+  updatedAt: Generated<Date>;
 }
 
 export type Mute = Selected<MuteTable>;
 export interface MuteTable {
-  userID: UserID,
-  moderatorID: UserID,
-  expiresAt: Date,
-  createdAt: Generated<Date>,
-  updatedAt: Generated<Date>,
+  userID: UserID;
+  moderatorID: UserID;
+  expiresAt: Date;
+  createdAt: Generated<Date>;
+  updatedAt: Generated<Date>;
 }
 
 export type AuthService = Selected<AuthServiceTable>;
 export interface AuthServiceTable {
-  userID: UserID,
-  service: string,
-  serviceID: string,
-  serviceAvatar: string | null,
-  createdAt: Generated<Date>,
-  updatedAt: Generated<Date>,
+  userID: UserID;
+  service: string;
+  serviceID: string;
+  serviceAvatar: string | null;
+  createdAt: Generated<Date>;
+  updatedAt: Generated<Date>;
 }
 
 export type PasswordReset = Selected<PasswordResetTable>;
 export interface PasswordResetTable {
-  userID: UserID,
-  token: PasswordResetToken,
+  userID: UserID;
+  token: PasswordResetToken;
   /** When the password reset token was created. Expiration is derived from this. */
-  createdAt: Generated<Date>,
+  createdAt: Generated<Date>;
 }
 
 export type Playlist = Selected<Omit<PlaylistTable, 'items'>>;
 export type PlaylistWithItems = Selected<PlaylistTable>;
 export interface PlaylistTable {
-  id: Generated<PlaylistID>,
-  userID: UserID,
-  name: string,
-  items: JSONB<PlaylistItemID[]>,
-  createdAt: Generated<Date>,
-  updatedAt: Generated<Date>,
+  id: Generated<PlaylistID>;
+  userID: UserID;
+  name: string;
+  items: JSONB<PlaylistItemID[]>;
+  createdAt: Generated<Date>;
+  updatedAt: Generated<Date>;
 }
 
 export type PlaylistItem = Selected<PlaylistItemTable>;
 export interface PlaylistItemTable {
-  id: Generated<PlaylistItemID>,
-  playlistID: PlaylistID,
-  mediaID: MediaID,
-  artist: string,
-  title: string,
-  start: number,
-  end: number,
-  createdAt: Generated<Date>,
-  updatedAt: Generated<Date>,
+  id: Generated<PlaylistItemID>;
+  playlistID: PlaylistID;
+  mediaID: MediaID;
+  artist: string;
+  title: string;
+  start: number;
+  end: number;
+  createdAt: Generated<Date>;
+  updatedAt: Generated<Date>;
 }
 
 export type HistoryEntry = Selected<HistoryEntryTable>;
 export interface HistoryEntryTable {
-  id: Generated<HistoryEntryID>,
-  userID: UserID,
-  mediaID: MediaID,
+  id: Generated<HistoryEntryID>;
+  userID: UserID;
+  mediaID: MediaID;
   /** Snapshot of the media artist name at the time this entry was played. */
-  artist: string,
+  artist: string;
   /** Snapshot of the media title at the time this entry was played. */
-  title: string,
+  title: string;
   /** Time to start playback at. */
-  start: number,
+  start: number;
   /** Time to stop playback at. */
-  end: number,
+  end: number;
   /** Arbitrary source-specific data required for media playback. */
-  sourceData: JSONB<JsonObject> | null,
-  createdAt: Generated<Date>,
+  sourceData: JSONB<JsonObject> | null;
+  createdAt: Generated<Date>;
 }
 
 export type Feedback = Selected<FeedbackTable>;
 export interface FeedbackTable {
-  historyEntryID: HistoryEntryID,
-  userID: UserID,
-  vote: Generated<-1 | 0 | 1>,
-  favorite: Generated<0 | 1>,
+  historyEntryID: HistoryEntryID;
+  userID: UserID;
+  vote: Generated<-1 | 0 | 1>;
+  favorite: Generated<0 | 1>;
 }
 
 export interface ConfigurationTable {
-  name: string,
-  value: JSONB<JsonObject>,
+  name: string;
+  value: JSONB<JsonObject>;
 }
 
 export interface KeyvalTable {
-  key: string,
-  value: JSONB<JsonValue>,
+  key: string;
+  value: JSONB<JsonValue>;
 }
 
 export interface MigrationTable {
-  name: string,
+  name: string;
 }
 
 export interface SessionTable {
-  id: string, // express-session ID
-  data: JSONB<JsonObject>,
-  createdAt: Generated<Date>,
-  expiresAt: Date,
+  id: string; // express-session ID
+  data: JSONB<JsonObject>;
+  createdAt: Generated<Date>;
+  expiresAt: Date;
 }
 
 export interface SocketAuthTokenTable {
-  id: string,
-  userID: UserID,
-  sessionID: string,
-  createdAt: Generated<Date>,
+  id: string;
+  userID: UserID;
+  sessionID: string;
+  createdAt: Generated<Date>;
 }
 
 export interface SocketMessageTable {
-  id: string,
-  targetUserID: UserID | null,
-  command: string,
-  data: JSONB<JsonValue>,
+  id: string;
+  targetUserID: UserID | null;
+  command: string;
+  data: JSONB<JsonValue>;
 }
 
 export interface Database {
-  configuration: ConfigurationTable,
-  keyval: KeyvalTable,
-  migrations: MigrationTable,
-  media: MediaTable,
-  users: UserTable,
-  userRoles: UserRoleTable,
-  roles: RoleTable,
-  bans: BanTable,
-  mutes: MuteTable,
-  authServices: AuthServiceTable,
-  passwordResets: PasswordResetTable,
-  playlists: PlaylistTable,
-  playlistItems: PlaylistItemTable,
-  historyEntries: HistoryEntryTable,
-  feedback: FeedbackTable,
-  sessions: SessionTable,
-  socketAuthTokens: SocketAuthTokenTable,
-  socketMessageQueue: SocketMessageTable,
+  configuration: ConfigurationTable;
+  keyval: KeyvalTable;
+  migrations: MigrationTable;
+  media: MediaTable;
+  users: UserTable;
+  userRoles: UserRoleTable;
+  roles: RoleTable;
+  bans: BanTable;
+  mutes: MuteTable;
+  authServices: AuthServiceTable;
+  passwordResets: PasswordResetTable;
+  playlists: PlaylistTable;
+  playlistItems: PlaylistItemTable;
+  historyEntries: HistoryEntryTable;
+  feedback: FeedbackTable;
+  sessions: SessionTable;
+  socketAuthTokens: SocketAuthTokenTable;
+  socketMessageQueue: SocketMessageTable;
 }
 
 export type Kysely = KyselyBase<Database>;

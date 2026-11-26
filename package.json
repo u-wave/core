@@ -2,15 +2,15 @@
   "name": "u-wave-core",
   "version": "1.0.0-alpha.0",
   "description": "The üWave core library.",
-  "license": "MIT",
   "repository": "u-wave/core",
+  "license": "MIT",
   "author": "SooYou <souyoou@googlemail.com>",
   "contributors": [
     "Felix Wong <felix@fawong.com>",
     "Goz3rr <goz3rr@gmail.com>",
     "Renée Kooi <renee@kooi.me>"
   ],
-  "main": "src/index.js",
+  "type": "module",
   "exports": {
     ".": {
       "default": "./src/index.js",
@@ -18,12 +18,16 @@
     },
     "./package.json": "./package.json"
   },
-  "type": "module",
+  "main": "src/index.js",
   "bin": {
     "u-wave-core": "bin/u-wave-core.js"
   },
-  "engines": {
-    "node": ">= 22"
+  "scripts": {
+    "lint": "eslint --cache .",
+    "test": "npm run tests-only && npm run types && npm run lint",
+    "tests-only": "vitest run",
+    "types": "tsgo -p tsconfig.json",
+    "start": "nodemon --env-file-if-exists=.env dev/u-wave-dev-server.js | pino-pretty"
   },
   "dependencies": {
     "@fluent/bundle": "^0.19.1",
@@ -120,11 +124,7 @@
     "typescript-eslint": "^8.5.0",
     "vitest": "^5.0.3"
   },
-  "scripts": {
-    "lint": "eslint --cache .",
-    "test": "npm run tests-only && npm run types && npm run lint",
-    "tests-only": "vitest run",
-    "types": "tsgo -p tsconfig.json",
-    "start": "nodemon --env-file-if-exists=.env dev/u-wave-dev-server.js | pino-pretty"
+  "engines": {
+    "node": ">= 22"
   }
 }

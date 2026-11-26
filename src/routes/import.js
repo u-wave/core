@@ -1,7 +1,7 @@
 import { Router } from 'express';
-import route from '../route.js';
-import protect from '../middleware/protect.js';
 import * as controller from '../controllers/import.js';
+import protect from '../middleware/protect.js';
+import route from '../route.js';
 
 function importRoutes() {
   return Router()

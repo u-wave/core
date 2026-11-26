@@ -1,12 +1,7 @@
 import { Store } from 'express-session';
 import { callbackify } from 'node:util';
-import {
-  fromJson,
-  json,
-  jsonb,
-  now,
-} from './sqlite.js';
 import { addHours, addMilliseconds, isBefore } from './date.js';
+import { fromJson, json, jsonb, now } from './sqlite.js';
 
 export default class SqliteSessionStore extends Store {
   #db;
@@ -88,9 +83,11 @@ export default class SqliteSessionStore extends Store {
       await this.#db.replaceInto('sessions')
         .values({
           id: sid,
-          data: jsonb(/** @type {import('type-fest').JsonObject} */ (
-            /** @type {unknown} */ (session)
-          )),
+          data: jsonb(
+            /** @type {import('type-fest').JsonObject} */ (
+              /** @type {unknown} */ (session)
+            ),
+          ),
           expiresAt,
         })
         .executeTakeFirstOrThrow();

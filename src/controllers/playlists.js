@@ -1,6 +1,6 @@
 import { HTTPError } from '../errors/index.js';
-import { serializePlaylist, serializePlaylistItem } from '../utils/serialize.js';
 import getOffsetPagination from '../utils/getOffsetPagination.js';
+import { serializePlaylist, serializePlaylistItem } from '../utils/serialize.js';
 import toItemResponse from '../utils/toItemResponse.js';
 import toListResponse from '../utils/toListResponse.js';
 import toPaginatedResponse from '../utils/toPaginatedResponse.js';
@@ -336,11 +336,14 @@ async function removePlaylistItems(req) {
 
   await playlists.removePlaylistItems(playlist, items);
 
-  return toItemResponse({}, {
-    meta: {
-      playlistSize: playlist.size,
+  return toItemResponse(
+    {},
+    {
+      meta: {
+        playlistSize: playlist.size,
+      },
     },
-  });
+  );
 }
 
 /**
@@ -438,7 +441,10 @@ async function updatePlaylistItem(req) {
   const { playlists } = req.uwave;
   const { id, itemID } = req.params;
   const {
-    artist, title, start, end,
+    artist,
+    title,
+    start,
+    end,
   } = req.body;
 
   const patch = {
@@ -478,19 +484,19 @@ async function removePlaylistItem(req) {
 }
 
 export {
-  getPlaylists,
-  getPlaylist,
+  activatePlaylist,
+  addPlaylistItems,
   createPlaylist,
   deletePlaylist,
-  updatePlaylist,
-  renamePlaylist,
-  activatePlaylist,
-  getPlaylistItems,
-  addPlaylistItems,
-  removePlaylistItems,
-  movePlaylistItems,
-  shufflePlaylistItems,
+  getPlaylist,
   getPlaylistItem,
-  updatePlaylistItem,
+  getPlaylistItems,
+  getPlaylists,
+  movePlaylistItems,
   removePlaylistItem,
+  removePlaylistItems,
+  renamePlaylist,
+  shufflePlaylistItems,
+  updatePlaylist,
+  updatePlaylistItem,
 };

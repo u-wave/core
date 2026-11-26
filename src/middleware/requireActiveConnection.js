@@ -1,6 +1,6 @@
 import httpErrors from 'http-errors';
-import wrapMiddleware from '../utils/wrapMiddleware.js';
 import { KEY_ACTIVE_SESSIONS } from '../SocketServer.js';
+import wrapMiddleware from '../utils/wrapMiddleware.js';
 
 const { BadRequest } = httpErrors;
 

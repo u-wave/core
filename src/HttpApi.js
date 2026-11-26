@@ -1,24 +1,24 @@
-import fs from 'node:fs';
-import http from 'node:http';
-import { randomUUID } from 'node:crypto';
-import express from 'express';
 import bodyParser from 'body-parser';
 import cookieParser from 'cookie-parser';
 import cors from 'cors';
-import helmet from 'helmet';
-import session from 'express-session';
+import express from 'express';
 import { rateLimit } from 'express-rate-limit';
-import qs from 'qs';
+import session from 'express-session';
+import helmet from 'helmet';
+import { randomUUID } from 'node:crypto';
+import fs from 'node:fs';
+import http from 'node:http';
 import { pinoHttp } from 'pino-http';
+import qs from 'qs';
 
 // routes
 import authenticate from './routes/authenticate.js';
 import bans from './routes/bans.js';
+import imports from './routes/import.js';
+import now from './routes/now.js';
 import search from './routes/search.js';
 import server from './routes/server.js';
 import users from './routes/users.js';
-import now from './routes/now.js';
-import imports from './routes/import.js';
 
 // middleware
 import addFullUrl from './middleware/addFullUrl.js';
@@ -26,11 +26,11 @@ import attachUwaveMeta from './middleware/attachUwaveMeta.js';
 import errorHandler from './middleware/errorHandler.js';
 
 // utils
-import AuthRegistry from './AuthRegistry.js';
-import matchOrigin from './utils/matchOrigin.js';
-import { MS_PER_WEEK } from './utils/date.js';
-import { RateLimitError } from './errors/index.js';
 import ms from 'ms';
+import AuthRegistry from './AuthRegistry.js';
+import { RateLimitError } from './errors/index.js';
+import { MS_PER_WEEK } from './utils/date.js';
+import matchOrigin from './utils/matchOrigin.js';
 
 const SESSION_DURATION = MS_PER_WEEK;
 
@@ -83,8 +83,10 @@ function defaultCreatePasswordResetEmail({ token, requestUrl }) {
  */
 async function httpApi(uw, options) {
   if (!options.secret) {
-    throw new TypeError('"options.secret" is empty. This option is used to sign authentication '
-      + 'keys, and is required for security reasons.');
+    throw new TypeError(
+      '"options.secret" is empty. This option is used to sign authentication '
+        + 'keys, and is required for security reasons.',
+    );
   }
 
   if (options.onError != null && typeof options.onError !== 'function') {
@@ -152,13 +154,15 @@ async function httpApi(uw, options) {
     }));
 
   uw.httpApi
-    .use('/auth', authenticate(uw.passport, {
-      secret: options.secret,
-      mailTransport: options.mailTransport,
-      recaptcha: options.recaptcha,
-      createPasswordResetEmail:
-        options.createPasswordResetEmail ?? defaultCreatePasswordResetEmail,
-    }))
+    .use(
+      '/auth',
+      authenticate(uw.passport, {
+        secret: options.secret,
+        mailTransport: options.mailTransport,
+        recaptcha: options.recaptcha,
+        createPasswordResetEmail: options.createPasswordResetEmail ?? defaultCreatePasswordResetEmail,
+      }),
+    )
     .use('/bans', bans())
     .use('/import', imports())
     .use('/now', now())

@@ -1,22 +1,17 @@
-import { randomUUID } from 'node:crypto';
-import { promisify } from 'node:util';
 import { stringifySetCookie } from 'cookie';
-import jwt from 'jsonwebtoken';
-import randomString from 'random-string';
 import htmlescape from 'htmlescape';
 import httpErrors from 'http-errors';
+import jwt from 'jsonwebtoken';
+import { randomUUID } from 'node:crypto';
+import { promisify } from 'node:util';
 import nodemailer from 'nodemailer';
-import {
-  BannedError,
-  ReCaptchaError,
-  InvalidResetTokenError,
-  UserNotFoundError,
-} from '../errors/index.js';
+import randomString from 'random-string';
+import { BannedError, InvalidResetTokenError, ReCaptchaError, UserNotFoundError } from '../errors/index.js';
+import { t } from '../locale.js';
+import { subHours } from '../utils/date.js';
+import { serializeCurrentUser } from '../utils/serialize.js';
 import toItemResponse from '../utils/toItemResponse.js';
 import toListResponse from '../utils/toListResponse.js';
-import { serializeCurrentUser } from '../utils/serialize.js';
-import { subHours } from '../utils/date.js';
-import { t } from '../locale.js';
 
 const { BadRequest } = httpErrors;
 
@@ -283,9 +278,7 @@ async function getSocketToken(req) {
 
   const socketToken = await authRegistry.createAuthToken(user, sessionID);
 
-  return toItemResponse({ socketToken }, {
-    url: req.fullUrl,
-  });
+  return toItemResponse({ socketToken }, { url: req.fullUrl });
 }
 
 /**
@@ -329,7 +322,10 @@ async function verifyCaptcha(responseString, options) {
 async function register(req) {
   const { users } = req.uwave;
   const {
-    grecaptcha, email, username, password,
+    grecaptcha,
+    email,
+    username,
+    password,
   } = req.body;
 
   const recaptchaOptions = req.authOptions.recaptcha;
@@ -443,11 +439,14 @@ async function changePassword(req) {
 
     await users.updatePassword(user.id, password, tx);
 
-    return toItemResponse({}, {
-      meta: {
-        message: `Updated password for ${user.username}`,
+    return toItemResponse(
+      {},
+      {
+        meta: {
+          message: `Updated password for ${user.username}`,
+        },
       },
-    });
+    );
   });
 }
 

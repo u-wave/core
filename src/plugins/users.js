@@ -1,12 +1,10 @@
-import { randomUUID } from 'crypto';
-import lodash from 'lodash';
-import { sql } from 'kysely';
-import { slugify } from 'transliteration';
 import bcrypt from 'bcryptjs';
+import { randomUUID } from 'crypto';
+import { sql } from 'kysely';
+import lodash from 'lodash';
+import { slugify } from 'transliteration';
+import { IncorrectPasswordError, UsedEmailError, UsedUsernameError, UserNotFoundError } from '../errors/index.js';
 import Page from '../Page.js';
-import {
-  IncorrectPasswordError, UsedEmailError, UsedUsernameError, UserNotFoundError,
-} from '../errors/index.js';
 import { fromJson, jsonGroupArray } from '../utils/sqlite.js';
 
 const { pick, omit } = lodash;
@@ -24,14 +22,18 @@ function encryptPassword(password) {
 }
 
 /** @param {import('kysely').ExpressionBuilder<import('../schema.js').Database, 'users'>} eb */
-const userRolesColumn = (eb) => eb.selectFrom('userRoles')
-  .where('userRoles.userID', '=', eb.ref('users.id'))
-  .select((sb) => jsonGroupArray(sb.ref('userRoles.role')).as('roles'));
+const userRolesColumn = (eb) =>
+  eb.selectFrom('userRoles')
+    .where('userRoles.userID', '=', eb.ref('users.id'))
+    .select((sb) => jsonGroupArray(sb.ref('userRoles.role')).as('roles'));
 /** @param {import('kysely').ExpressionBuilder<import('../schema.js').Database, 'users'>} eb */
-const avatarColumn = (eb) => eb.fn.coalesce(
-  'users.avatar',
-  /** @type {import('kysely').RawBuilder<string>} */ (sql`concat('https://sigil.u-wave.net/', ${eb.ref('users.id')})`),
-);
+const avatarColumn = (eb) =>
+  eb.fn.coalesce(
+    'users.avatar',
+    /** @type {import('kysely').RawBuilder<string>} */ (sql`concat('https://sigil.u-wave.net/', ${
+      eb.ref('users.id')
+    })`),
+  );
 
 /**
  * Translate a SQLite error into a HTTP error explaining the problem.
@@ -318,7 +320,9 @@ class UsersRepository {
    * @param {{ username: string, email: string, password: string }} props
    */
   async createUser({
-    username, email, password,
+    username,
+    email,
+    password,
   }) {
     const { acl, db } = this.#uw;
 

@@ -1,5 +1,5 @@
-import fs from 'node:fs';
 import { FluentBundle, FluentResource } from '@fluent/bundle';
+import fs from 'node:fs';
 
 const en = new FluentBundle(['en-US', 'en']);
 en.addResource(new FluentResource(

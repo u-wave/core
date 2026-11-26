@@ -5,9 +5,7 @@ import toItemResponse from '../utils/toItemResponse.js';
  * @type {import('../types.js').Controller}
  */
 async function getServerTime(req) {
-  return toItemResponse({
-    time: Date.now(),
-  }, { url: req.fullUrl });
+  return toItemResponse({ time: Date.now() }, { url: req.fullUrl });
 }
 
 /**
@@ -62,14 +60,7 @@ async function updateConfig(req) {
 
   await config.set(key, values, { user: req.user });
 
-  return toItemResponse({}, {
-    url: req.fullUrl,
-  });
+  return toItemResponse({}, { url: req.fullUrl });
 }
 
-export {
-  getServerTime,
-  getAllConfig,
-  getConfig,
-  updateConfig,
-};
+export { getAllConfig, getConfig, getServerTime, updateConfig };

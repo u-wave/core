@@ -116,11 +116,4 @@ async function lockWaitlist(req) {
   return toItemResponse({ locked: lock }, { url: req.fullUrl });
 }
 
-export {
-  getWaitlist,
-  addToWaitlist,
-  moveWaitlist,
-  removeFromWaitlist,
-  clearWaitlist,
-  lockWaitlist,
-};
+export { addToWaitlist, clearWaitlist, getWaitlist, lockWaitlist, moveWaitlist, removeFromWaitlist };

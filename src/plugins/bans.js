@@ -79,8 +79,9 @@ class Bans {
       query = query.where('users.username', 'like', filter);
     }
 
-    const { total } = await db.selectFrom('bans').select(eb => eb.fn.countAll().as('total')).executeTakeFirstOrThrow();
-    const { filtered } = await query.select(eb => eb.fn.countAll().as('filtered')).executeTakeFirstOrThrow();
+    const { total } = await db.selectFrom('bans').select((eb) => eb.fn.countAll().as('total'))
+      .executeTakeFirstOrThrow();
+    const { filtered } = await query.select((eb) => eb.fn.countAll().as('filtered')).executeTakeFirstOrThrow();
 
     query = query.offset(offset).limit(size);
 
@@ -93,13 +94,15 @@ class Bans {
         createdAt: row['users.createdAt'],
         updatedAt: row['users.updatedAt'],
       },
-      moderator: row['mod.id'] != null ? {
-        id: row['mod.id'],
-        username: row['mod.username'],
-        slug: row['mod.slug'],
-        createdAt: row['mod.createdAt'],
-        updatedAt: row['mod.updatedAt'],
-      } : null,
+      moderator: row['mod.id'] != null
+        ? {
+          id: row['mod.id'],
+          username: row['mod.username'],
+          slug: row['mod.slug'],
+          createdAt: row['mod.createdAt'],
+          updatedAt: row['mod.updatedAt'],
+        }
+        : null,
       reason: row.reason,
       duration: row.expiresAt != null
         ? Math.floor(row.expiresAt.getTime() / 1_000 - row.createdAt.getTime() / 1_000) * 1_000
@@ -129,7 +132,10 @@ class Bans {
    * @param {string} [options.reason]
    */
   async ban(user, {
-    duration, moderator, permanent = false, reason = '',
+    duration,
+    moderator,
+    permanent = false,
+    reason = '',
   }) {
     const { db } = this.#uw;
 
